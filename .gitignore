@@ -1,0 +1,74 @@
+# ⚠️ AUCUNE donnée locale n'est enregistrée dans ce repo!
+# Toutes les données sont chargées directement depuis AWS (tube package)
+# Les fichiers temporaires sont toujours dans .gitignore
+
+# Cache R
+*.rds
+*.csv
+*.RData
+.RData
+*.rda
+
+# Outputs temporaires (jamais enregistrés)
+*.html
+*.png
+*.pdf
+*.xlsx
+
+# Fichiers R
+.Rhistory
+.RProfile
+.Rproj.user/
+.Rproj
+*.Rproj
+
+# Environnement
+.Renviron
+.env
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Logs
+*.log
+
+# Cache et temporaires
+cache/
+temp/
+tmp/
+*.tmp
+
+# Archives volumineux
+*.zip
+*.tar.gz
+*.7z
+
+# Données volumineuses (garder seulement les caches essentiels)
+data/*
+!data/.gitkeep
+!data/README.md
