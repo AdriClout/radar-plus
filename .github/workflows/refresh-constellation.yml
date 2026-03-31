@@ -36,6 +36,8 @@ jobs:
             libpng-dev libtiff-dev libjpeg-dev
 
       - name: Install R packages
+        env:
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
         run: |
           install.packages(
             c("remotes", "jsonlite", "dplyr", "purrr", "tidyr", "stringr", "readr", "dbplyr"),
