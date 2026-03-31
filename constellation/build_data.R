@@ -1,20 +1,14 @@
 ################################################################################
 # Constellation des Objets — Génération des données
 #
-# Ce script génère le fichier JSON utilisé par index.html pour visualiser
-# le réseau de co-occurrences des objets saillants en 3D.
-#
-# Pour chaque bloc 4h × pays, on calcule :
-#   - Nœuds   : top N objets par indice de saillance
-#   - Liens   : paires d'objets qui partagent au moins une URL commune
-#               (= ils ont co-apparu dans un même headline)
-#
-# Source unique : vitrine_datamart-salient_index
-#   (contient urls = JSON array des URLs où chaque objet apparaît)
+# Produit deux fichiers JSON :
+#   graph.json       — GRAPH_DAYS derniers jours, nœuds + articles + liens
+#                      → Mode Constellation
+#   timeseries.json  — HISTORY_DAYS derniers jours, nœuds + articles, sans liens
+#                      → Mode Évolution
 #
 # Usage :
-#   source("tools/constellation/build_data.R")
-#   → génère tools/constellation/constellation.json
+#   source("constellation/build_data.R")
 #
 # Adrien Cloutier
 ################################################################################
@@ -25,68 +19,62 @@ library(tube)
 
 # ─── Paramètres ────────────────────────────────────────────────────────────────
 
-DAYS_BACK        <- 7    # Nombre de jours dans le passé à inclure
+GRAPH_DAYS       <- 14   # Fenêtre graph.json (constellation)
+HISTORY_DAYS     <- 90   # Fenêtre timeseries.json (évolution)
 TOP_N_OBJECTS    <- 30   # Nœuds max par période × pays
-MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour afficher un lien
+MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
 SOURCE_ENV       <- "DEV"
 
-OUTPUT_FILE <- tryCatch({
-  file.path(dirname(rstudioapi::getSourceEditorContext()$path), "constellation.json")
+OUT_DIR <- tryCatch({
+  dirname(rstudioapi::getSourceEditorContext()$path)
 }, error = function(e) {
   args <- commandArgs(trailingOnly = FALSE)
   file_arg <- grep("--file=", args, value = TRUE)
   if (length(file_arg) > 0) {
-    file.path(dirname(normalizePath(sub("--file=", "", file_arg[1]))), "constellation.json")
+    dirname(normalizePath(sub("--file=", "", file_arg[1])))
   } else {
-    "/Users/adrien/repo_github/aws-refiners/tools/constellation/constellation.json"
+    "/Users/adrien/repo_github/radar-plus/constellation"
   }
 })
 
-# ─── Connexion ─────────────────────────────────────────────────────────────────
+GRAPH_FILE <- file.path(OUT_DIR, "graph.json")
+TS_FILE    <- file.path(OUT_DIR, "timeseries.json")
+
+# ─── Connexion + lecture ───────────────────────────────────────────────────────
 
 cat("Connexion à", SOURCE_ENV, "...\n")
+history_start <- format(Sys.Date() - HISTORY_DAYS, "%Y-%m-%d")
+graph_start   <- as.Date(Sys.Date() - GRAPH_DAYS)
+
+cat("Lecture de salient_index depuis", history_start, "...\n")
 condm <- tube::ellipse_connect(SOURCE_ENV, "datamarts")
-
-# ─── Lecture de salient_index ──────────────────────────────────────────────────
-
-start_date <- format(Sys.Date() - DAYS_BACK, "%Y-%m-%d")
-cat("Lecture de salient_index depuis", start_date, "...\n")
-
 df_index <- tube::ellipse_query(condm, "vitrine_datamart-salient_index") |>
-  dplyr::filter(dbplyr::sql(sprintf("date_utc >= DATE '%s'", start_date))) |>
+  dplyr::filter(dbplyr::sql(sprintf("date_utc >= DATE '%s'", history_start))) |>
   dplyr::select(country_id, date_utc, time_interval_utc,
                 extracted_objects, absolute_normalized_index, n, urls, titles) |>
   dplyr::collect()
-
 tube::ellipse_disconnect(condm)
 cat("  →", nrow(df_index), "lignes chargées\n")
 
-# ─── Lecture de salient_headlines_objects pour médias ─────────────────────────
-
-cat("Lecture de salient_headlines_objects (médias) depuis", start_date, "...\n")
-
+cat("Lecture de salient_headlines_objects (médias) depuis", history_start, "...\n")
 condm <- tube::ellipse_connect(SOURCE_ENV, "datamarts")
 df_objects <- tube::ellipse_query(condm, "vitrine_datamart-salient_headlines_objects") |>
-  dplyr::filter(dbplyr::sql(sprintf("substr(headline_stop_utc, 1, 10) >= '%s'", start_date))) |>
+  dplyr::filter(dbplyr::sql(sprintf("substr(headline_stop_utc, 1, 10) >= '%s'", history_start))) |>
   dplyr::select(country_id, time_interval_utc,
                 media_id, url, headline_stop_utc, extracted_objects) |>
   dplyr::collect() |>
-  dplyr::mutate(
-    date_utc = as.Date(substr(as.character(headline_stop_utc), 1, 10))
-  ) |>
+  dplyr::mutate(date_utc = as.Date(substr(as.character(headline_stop_utc), 1, 10))) |>
   dplyr::select(-headline_stop_utc)
-
 tube::ellipse_disconnect(condm)
 cat("  →", nrow(df_objects), "lignes médias chargées\n")
 
-# ─── Nœuds : top N par période × pays ─────────────────────────────────────────
+# ─── Nœuds : top N par période × pays (toute la fenêtre historique) ───────────
 
 df_nodes <- df_index |>
   dplyr::group_by(country_id, date_utc, time_interval_utc) |>
   dplyr::slice_max(absolute_normalized_index, n = TOP_N_OBJECTS, with_ties = FALSE) |>
   dplyr::ungroup()
 
-# Objets × médias par période
 df_obj_media <- df_objects |>
   tidyr::separate_rows(extracted_objects, sep = ",") |>
   dplyr::mutate(
@@ -95,19 +83,16 @@ df_obj_media <- df_objects |>
   ) |>
   dplyr::filter(!is.na(extracted_objects) & extracted_objects != "") |>
   dplyr::group_by(country_id, date_utc, time_interval_utc, extracted_objects) |>
-  dplyr::summarise(
-    media_ids = list(sort(unique(as.character(media_id)))),
-    .groups = "drop"
-  )
+  dplyr::summarise(media_ids = list(sort(unique(as.character(media_id)))), .groups = "drop")
 
-# ─── Liens : co-occurrence via URLs partagées ───────────────────────────────────
-#
-# Pour chaque objet dans le top N, on parse son tableau d'URLs, puis on
-# fait une self-join sur URL pour trouver les paires d'objets co-occurrents.
+# ─── Liens : co-occurrence (fenêtre graph seulement) ──────────────────────────
 
-cat("Calcul des co-occurrences via URLs partagées...\n")
+df_nodes_graph   <- df_nodes   |> dplyr::filter(date_utc >= graph_start)
+df_objects_graph <- df_objects |> dplyr::filter(date_utc >= graph_start)
 
-df_obj_urls <- df_nodes |>
+cat("Calcul des co-occurrences (", GRAPH_DAYS, "derniers jours)...\n")
+
+df_obj_urls <- df_nodes_graph |>
   dplyr::mutate(
     url_list = purrr::map(urls, function(u) {
       tryCatch(jsonlite::fromJSON(u), error = function(e) character(0))
@@ -118,11 +103,10 @@ df_obj_urls <- df_nodes |>
   dplyr::rename(url = url_list) |>
   dplyr::filter(!is.na(url) & url != "")
 
-# Self-join : deux objets liés si même URL dans la même période
 df_edges <- df_obj_urls |>
   dplyr::inner_join(
     df_obj_urls |> dplyr::rename(extracted_objects_b = extracted_objects),
-    by           = c("country_id", "date_utc", "time_interval_utc", "url"),
+    by = c("country_id", "date_utc", "time_interval_utc", "url"),
     relationship = "many-to-many"
   ) |>
   dplyr::filter(extracted_objects < extracted_objects_b) |>
@@ -131,8 +115,7 @@ df_edges <- df_obj_urls |>
   dplyr::summarise(value = dplyr::n(), .groups = "drop") |>
   dplyr::filter(value >= MIN_COOCCURRENCE)
 
-# Liens × médias par période, à partir des headlines bruts
-df_obj_urls_media <- df_objects |>
+df_obj_urls_media <- df_objects_graph |>
   dplyr::filter(!is.na(url) & url != "") |>
   tidyr::separate_rows(extracted_objects, sep = ",") |>
   dplyr::mutate(
@@ -144,35 +127,19 @@ df_obj_urls_media <- df_objects |>
 
 df_edges_media <- df_obj_urls_media |>
   dplyr::inner_join(
-    df_obj_urls_media |>
-      dplyr::rename(extracted_objects_b = extracted_objects),
+    df_obj_urls_media |> dplyr::rename(extracted_objects_b = extracted_objects),
     by = c("country_id", "date_utc", "time_interval_utc", "url"),
     relationship = "many-to-many"
   ) |>
   dplyr::mutate(media_id = dplyr::coalesce(media_id.x, media_id.y)) |>
   dplyr::filter(extracted_objects < extracted_objects_b) |>
-  dplyr::group_by(
-    country_id, date_utc, time_interval_utc,
-    source = extracted_objects, target = extracted_objects_b
-  ) |>
-  dplyr::summarise(
-    media_ids = list(sort(unique(as.character(media_id)))),
-    .groups = "drop"
-  )
+  dplyr::group_by(country_id, date_utc, time_interval_utc,
+                  source = extracted_objects, target = extracted_objects_b) |>
+  dplyr::summarise(media_ids = list(sort(unique(as.character(media_id)))), .groups = "drop")
 
 cat("  →", nrow(df_edges), "liens calculés\n")
 
-# ─── Assemblage JSON ───────────────────────────────────────────────────────────
-
-cat("Assemblage du JSON...\n")
-
-periods <- df_nodes |>
-  dplyr::distinct(date_utc, time_interval_utc) |>
-  dplyr::arrange(date_utc, time_interval_utc) |>
-  dplyr::mutate(
-    key   = paste0(date_utc, "_", time_interval_utc),
-    label = paste0(format(as.Date(date_utc), "%b %d"), " · ", time_interval_utc, " UTC")
-  )
+# ─── Helpers ───────────────────────────────────────────────────────────────────
 
 countries <- c("CAN", "QC", "USA")
 
@@ -181,7 +148,6 @@ parse_json_chr <- function(x) {
   tryCatch(as.character(jsonlite::fromJSON(x)), error = function(e) character(0))
 }
 
-# Lookup url → media_id (un seul média par URL, le premier rencontré)
 url_to_media <- {
   lkp <- df_objects |>
     dplyr::filter(!is.na(url) & url != "") |>
@@ -193,75 +159,45 @@ url_to_media <- {
 build_articles <- function(urls_json, titles_json, max_articles = 15) {
   urls <- parse_json_chr(urls_json)
   if (!length(urls)) return(list())
-
   titles <- parse_json_chr(titles_json)
   if (!length(titles)) titles <- rep("", length(urls))
-  if (length(titles) < length(urls)) {
-    titles <- c(titles, rep("", length(urls) - length(titles)))
-  }
-
+  if (length(titles) < length(urls)) titles <- c(titles, rep("", length(urls) - length(titles)))
   seen <- character(0)
-  out <- list()
+  out  <- list()
   for (i in seq_along(urls)) {
     u <- urls[i]
     if (is.na(u) || !nzchar(u) || u %in% seen) next
     seen <- c(seen, u)
     title_i <- trimws(titles[i])
     media_i <- url_to_media[u]
-    item <- list(
+    out[[length(out) + 1]] <- list(
       title    = if (nzchar(title_i)) title_i else u,
       url      = u,
       media_id = if (!is.na(media_i)) unname(media_i) else NULL
     )
-    out[[length(out) + 1]] <- item
     if (length(out) >= max_articles) break
   }
   out
 }
 
-graphs <- purrr::map(countries, function(country) {
-  purrr::map(seq_len(nrow(periods)), function(i) {
-    d  <- periods$date_utc[i]
-    ti <- periods$time_interval_utc[i]
-
-    nodes_i <- df_nodes |>
-      dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |>
-      dplyr::arrange(dplyr::desc(absolute_normalized_index))
-
-    node_media_i <- df_obj_media |>
-      dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
-
-    links_i <- df_edges |>
-      dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
-
-    link_media_i <- df_edges_media |>
-      dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
-
-    list(
-      nodes = purrr::map(seq_len(nrow(nodes_i)), function(j) list(
-        id   = nodes_i$extracted_objects[j],
-        size = round(nodes_i$absolute_normalized_index[j], 3),
-        n    = nodes_i$n[j],
-        articles = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
-        media_ids = {
-          mm <- node_media_i |>
-            dplyr::filter(extracted_objects == nodes_i$extracted_objects[j])
-          if (nrow(mm) == 0) character(0) else mm$media_ids[[1]]
-        }
-      )),
-      links = purrr::map(seq_len(nrow(links_i)), function(j) list(
-        source = links_i$source[j],
-        target = links_i$target[j],
-        value  = links_i$value[j],
-        media_ids = {
-          lm <- link_media_i |>
-            dplyr::filter(source == links_i$source[j], target == links_i$target[j])
-          if (nrow(lm) == 0) character(0) else lm$media_ids[[1]]
-        }
-      ))
+make_periods_df <- function(df) {
+  df |>
+    dplyr::distinct(date_utc, time_interval_utc) |>
+    dplyr::arrange(date_utc, time_interval_utc) |>
+    dplyr::mutate(
+      key   = paste0(date_utc, "_", time_interval_utc),
+      label = paste0(format(as.Date(date_utc), "%b %d"), " · ", time_interval_utc, " UTC")
     )
-  }) |> setNames(periods$key)
-}) |> setNames(countries)
+}
+
+make_periods_list <- function(df_p) {
+  purrr::map(seq_len(nrow(df_p)), function(i) list(
+    key      = df_p$key[i],
+    date     = as.character(df_p$date_utc[i]),
+    interval = df_p$time_interval_utc[i],
+    label    = df_p$label[i]
+  ))
+}
 
 all_media_ids <- df_objects |>
   dplyr::filter(!is.na(media_id) & media_id != "") |>
@@ -270,30 +206,104 @@ all_media_ids <- df_objects |>
   dplyr::pull(media_id) |>
   as.character()
 
-result <- list(
+# ─── graph.json ────────────────────────────────────────────────────────────────
+
+cat("\nAssemblage graph.json (", GRAPH_DAYS, "jours)...\n")
+
+periods_graph <- make_periods_df(df_nodes_graph)
+
+graphs_graph <- purrr::map(countries, function(country) {
+  purrr::map(seq_len(nrow(periods_graph)), function(i) {
+    d  <- periods_graph$date_utc[i]
+    ti <- periods_graph$time_interval_utc[i]
+
+    nodes_i    <- df_nodes_graph |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::arrange(dplyr::desc(absolute_normalized_index))
+    node_med_i <- df_obj_media   |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
+    links_i    <- df_edges       |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
+    link_med_i <- df_edges_media |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
+
+    list(
+      nodes = purrr::map(seq_len(nrow(nodes_i)), function(j) list(
+        id        = nodes_i$extracted_objects[j],
+        size      = round(nodes_i$absolute_normalized_index[j], 3),
+        n         = nodes_i$n[j],
+        articles  = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
+        media_ids = {
+          mm <- node_med_i |> dplyr::filter(extracted_objects == nodes_i$extracted_objects[j])
+          if (nrow(mm) == 0) character(0) else mm$media_ids[[1]]
+        }
+      )),
+      links = purrr::map(seq_len(nrow(links_i)), function(j) list(
+        source    = links_i$source[j],
+        target    = links_i$target[j],
+        value     = links_i$value[j],
+        media_ids = {
+          lm <- link_med_i |> dplyr::filter(source == links_i$source[j], target == links_i$target[j])
+          if (nrow(lm) == 0) character(0) else lm$media_ids[[1]]
+        }
+      ))
+    )
+  }) |> setNames(periods_graph$key)
+}) |> setNames(countries)
+
+result_graph <- list(
   meta = list(
-    generated_at     = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
-    days_back        = DAYS_BACK,
-    top_n            = TOP_N_OBJECTS,
-    min_cooccurrence = MIN_COOCCURRENCE,
-    articles_per_node = 15,
-    media_ids = all_media_ids,
-    periods = purrr::map(seq_len(nrow(periods)), function(i) list(
-      key      = periods$key[i],
-      date     = as.character(periods$date_utc[i]),
-      interval = periods$time_interval_utc[i],
-      label    = periods$label[i]
-    )),
-    countries = countries
+    generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    mode         = "graph",
+    graph_days   = GRAPH_DAYS,
+    top_n        = TOP_N_OBJECTS,
+    media_ids    = all_media_ids,
+    periods      = make_periods_list(periods_graph),
+    countries    = countries
   ),
-  graphs = graphs
+  graphs = graphs_graph
 )
 
-# ─── Export ────────────────────────────────────────────────────────────────────
+jsonlite::write_json(result_graph, GRAPH_FILE, auto_unbox = TRUE, pretty = FALSE)
+cat("✓ graph.json      :", round(file.size(GRAPH_FILE) / 1024 / 1024, 2), "Mo —",
+    nrow(periods_graph), "périodes\n")
 
-jsonlite::write_json(result, OUTPUT_FILE, auto_unbox = TRUE, pretty = FALSE)
+# ─── timeseries.json ───────────────────────────────────────────────────────────
 
-cat("\n✓ Écrit:", OUTPUT_FILE, "\n")
-cat("  Périodes :", nrow(periods), "\n")
-cat("  Pays     :", length(countries), "\n")
-cat("  Taille   :", round(file.size(OUTPUT_FILE) / 1024 / 1024, 2), "Mo\n")
+cat("\nAssemblage timeseries.json (", HISTORY_DAYS, "jours)...\n")
+
+periods_ts <- make_periods_df(df_nodes)
+
+graphs_ts <- purrr::map(countries, function(country) {
+  purrr::map(seq_len(nrow(periods_ts)), function(i) {
+    d  <- periods_ts$date_utc[i]
+    ti <- periods_ts$time_interval_utc[i]
+
+    nodes_i <- df_nodes |>
+      dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |>
+      dplyr::arrange(dplyr::desc(absolute_normalized_index))
+
+    list(
+      nodes = purrr::map(seq_len(nrow(nodes_i)), function(j) list(
+        id       = nodes_i$extracted_objects[j],
+        size     = round(nodes_i$absolute_normalized_index[j], 3),
+        n        = nodes_i$n[j],
+        articles = build_articles(nodes_i$urls[j], nodes_i$titles[j])
+      )),
+      links = list()
+    )
+  }) |> setNames(periods_ts$key)
+}) |> setNames(countries)
+
+result_ts <- list(
+  meta = list(
+    generated_at  = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    mode          = "timeseries",
+    history_days  = HISTORY_DAYS,
+    top_n         = TOP_N_OBJECTS,
+    periods       = make_periods_list(periods_ts),
+    countries     = countries
+  ),
+  graphs = graphs_ts
+)
+
+jsonlite::write_json(result_ts, TS_FILE, auto_unbox = TRUE, pretty = FALSE)
+cat("✓ timeseries.json :", round(file.size(TS_FILE) / 1024 / 1024, 2), "Mo —",
+    nrow(periods_ts), "périodes\n")
+
+cat("\nFini!\n")

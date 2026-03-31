@@ -450,23 +450,29 @@
 (async () => {
   try {
   // ── Données ───────────────────────────────────────────────────────────────
-  let data;
+  let graphData, tsData;
   try {
-    const res = await fetch('./constellation.json');
-    if (!res.ok) throw new Error(res.statusText);
-    data = await res.json();
+    const [gRes, tRes] = await Promise.all([fetch('./graph.json'), fetch('./timeseries.json')]);
+    if (!gRes.ok) throw new Error('graph.json: ' + gRes.statusText);
+    if (!tRes.ok) throw new Error('timeseries.json: ' + tRes.statusText);
+    [graphData, tsData] = await Promise.all([gRes.json(), tRes.json()]);
   } catch(e) {
     const loading = document.getElementById('loading-text');
     if (window.location.protocol === 'file:') {
       loading.textContent = 'ouvrir via http://localhost (pas file://) — ex: ./run_chrome.sh';
     } else {
-      loading.textContent = 'constellation.json introuvable — lancer build_data.R';
+      loading.textContent = 'fichiers introuvables — lancer build_data.R (' + e.message + ')';
     }
     return;
   }
-  const { meta, graphs } = data;
-  const periods = meta.periods, countries = meta.countries;
-  const allMediaIds = Array.isArray(meta.media_ids) ? meta.media_ids : [];
+  // Constellation utilise graphData, Évolution utilise tsData.
+  // On swap les globals à chaque changement de mode (voir setMode).
+  let graphs  = graphData.graphs;
+  let periods = graphData.meta.periods;
+  const countries   = graphData.meta.countries;
+  const allMediaIds = Array.isArray(graphData.meta.media_ids) ? graphData.meta.media_ids : [];
+  let graphIdx = graphData.meta.periods.length - 1;
+  let tsIdx    = tsData.meta.periods.length - 1;
   let mediaPanelCollapsed = false;
 
   const TOP_LABELS     = Number.POSITIVE_INFINITY;
@@ -1172,8 +1178,26 @@
   }
 
   function setMode(mode) {
+    // Sauvegarder l'index courant avant de changer de mode
+    if (currentMode === 'constellation') graphIdx = currentIdx;
+    else tsIdx = currentIdx;
+
     currentMode = mode;
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+
+    // Swapper les données + slider selon le mode
+    if (mode === 'evolution') {
+      graphs  = tsData.graphs;
+      periods = tsData.meta.periods;
+      currentIdx = Math.min(tsIdx, periods.length - 1);
+    } else {
+      graphs  = graphData.graphs;
+      periods = graphData.meta.periods;
+      currentIdx = Math.min(graphIdx, periods.length - 1);
+    }
+    slider.max   = periods.length - 1;
+    slider.value = currentIdx;
+
     const evoView = document.getElementById('evolution-view');
     const top10El = document.getElementById('top10-panel');
     const mediaEl = document.getElementById('media-panel');
@@ -1185,6 +1209,8 @@
     } else {
       evoView.classList.remove('visible'); top10El.style.display = ''; mediaEl.style.display = '';
       graphDiv.style.opacity = ''; graphDiv.style.pointerEvents = '';
+      applyTimelineHeat(currentCountry);
+      loadPeriod(currentCountry, currentIdx);
     }
   }
 
