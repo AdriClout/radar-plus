@@ -1,0 +1,63 @@
+name: Refresh Constellation Data
+
+on:
+  schedule:
+    # 30min après chaque run Glue (00:03, 04:03, 08:03, 12:03, 16:03, 20:03 UTC)
+    - cron: '33 0,4,8,12,16,20 * * *'
+  workflow_dispatch: # Déclenchement manuel possible
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.4'
+
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-constellation-${{ hashFiles('constellation/build_data.R') }}
+          restore-keys: r-constellation-
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev \
+            libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev \
+            libpng-dev libtiff-dev libjpeg-dev
+
+      - name: Install R packages
+        run: |
+          install.packages(
+            c("remotes", "jsonlite", "dplyr", "purrr", "tidyr", "stringr", "readr", "dbplyr"),
+            repos = "https://cloud.r-project.org",
+            INSTALL_opts = c("--no-help", "--no-html", "--no-docs")
+          )
+          remotes::install_github("ellipse-science/tube", quiet = TRUE)
+        shell: Rscript {0}
+
+      - name: Build constellation data
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: Rscript constellation/build_data.R
+
+      - name: Commit & push updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add constellation/graph.json constellation/timeseries.json
+          git diff --staged --quiet || (
+            git commit -m "chore: refresh constellation data [skip ci]" &&
+            git push
+          )
