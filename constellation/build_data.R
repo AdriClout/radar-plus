@@ -13,10 +13,6 @@
 # Adrien Cloutier
 ################################################################################
 
-library(tidyverse)
-library(jsonlite)
-library(tube)
-
 # ─── Paramètres ────────────────────────────────────────────────────────────────
 
 GRAPH_DAYS       <- 14   # Fenêtre graph.json (constellation)
