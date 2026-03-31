@@ -72,3 +72,10 @@ tmp/
 data/*
 !data/.gitkeep
 !data/README.md
+
+# Constellation — site web complet versionné
+!constellation/*.html
+!constellation/*.png
+!constellation/*.js
+!constellation/*.json
+!constellation/*.sh
