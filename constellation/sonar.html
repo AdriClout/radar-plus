@@ -328,6 +328,12 @@
     <section class="card" style="margin-bottom: 12px;">
       <h2>Top entree (table loadee, toutes colonnes)</h2>
       <div class="help">Top de la derniere periode chargee depuis Athena (salient_index), avec toutes les colonnes brutes.</div>
+      <div class="controls" style="margin-bottom:8px;">
+        <select id="inputTableSelect">
+          <option value="salient_index_top">salient_index (top score)</option>
+          <option value="salient_objects_top">salient_objects (recent headlines)</option>
+        </select>
+      </div>
       <div class="table-wrap" style="max-height: 340px;">
         <table id="inputTopTable" class="wide-table">
           <thead></thead>
@@ -400,6 +406,7 @@
     const csvBtn = document.getElementById('csvBtn');
     const datasetSelect = document.getElementById('datasetSelect');
     const countrySelect = document.getElementById('countrySelect');
+    const inputTableSelect = document.getElementById('inputTableSelect');
     const reportEl = document.getElementById('reportCard');
     const qualityBody = document.querySelector('#qualityTable tbody');
     const topBody = document.querySelector('#topTable tbody');
@@ -744,11 +751,14 @@
     function buildInputOutputTables() {
       const country = countrySelect.value;
 
-      const inRows = asArray(allData.input?.by_country?.[country]?.salient_index_top);
+      const inKey = inputTableSelect.value;
+      const inRows = asArray(allData.input?.by_country?.[country]?.[inKey]);
       renderDynamicTable(
         inputTopTable,
         inRows,
-        ['country_id', 'date_utc', 'time_interval_utc', 'extracted_objects', 'absolute_normalized_index', 'n', 'urls', 'titles']
+        inKey === 'salient_objects_top'
+          ? ['country_id', 'time_interval_utc', 'media_id', 'url', 'headline_stop_utc', 'extracted_objects']
+          : ['country_id', 'date_utc', 'time_interval_utc', 'extracted_objects', 'absolute_normalized_index', 'n', 'urls', 'titles']
       );
 
       const outDataset = allData.graph;
@@ -800,6 +810,7 @@
     csvBtn.addEventListener('click', downloadCsv);
     datasetSelect.addEventListener('change', refreshViews);
     countrySelect.addEventListener('change', buildTrendAndTop);
+    inputTableSelect.addEventListener('change', buildInputOutputTables);
     for (const id of ['lagWarn','lagCrit','emptyWarn','emptyCrit','orphanWarn','orphanCrit','missingWarn','missingCrit','dupWarn','dupCrit']) {
       document.getElementById(id).addEventListener('change', refreshViews);
     }
