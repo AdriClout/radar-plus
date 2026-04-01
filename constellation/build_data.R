@@ -19,7 +19,6 @@ GRAPH_DAYS       <- 14   # Fenêtre graph.json (constellation)
 HISTORY_DAYS     <- 90   # Fenêtre timeseries.json (évolution)
 TOP_N_OBJECTS    <- 30   # Nœuds max par période × pays
 MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
-SOURCE_ENV       <- "DEV"
 
 # Objets génériques exclus par pays (même logique que radar-hot-20)
 EXCLUSION_BY_COUNTRY <- list(
@@ -43,51 +42,28 @@ OUT_DIR <- tryCatch({
 GRAPH_FILE <- file.path(OUT_DIR, "graph.json")
 TS_FILE    <- file.path(OUT_DIR, "timeseries.json")
 
-# ─── Connexion + lecture ───────────────────────────────────────────────────────
+# ─── Lecture des CSV produits par fetch_data.py ────────────────────────────────
 
-# Connexion directe à Athena via noctua.
-# paws lit les credentials depuis les env vars standard AWS_ACCESS_KEY_ID /
-# AWS_SECRET_ACCESS_KEY — pas de session token → pas d'erreur IMDS/session.
-# En dev local, on copie AWS_ACCESS_KEY_ID_DEV → AWS_ACCESS_KEY_ID si besoin.
-athena_connect <- function(env = SOURCE_ENV) {
-  if (!nchar(Sys.getenv("AWS_ACCESS_KEY_ID"))) {
-    key    <- Sys.getenv(paste0("AWS_ACCESS_KEY_ID_",     env))
-    secret <- Sys.getenv(paste0("AWS_SECRET_ACCESS_KEY_", env))
-    if (nchar(key)) Sys.setenv(AWS_ACCESS_KEY_ID = key, AWS_SECRET_ACCESS_KEY = secret)
-  }
-  DBI::dbConnect(
-    noctua::athena(),
-    schema_name    = "gluestackdatamartdbd046f685",
-    work_group     = "ellipse-work-group",
-    s3_staging_dir = "s3://pipeline-stack-athenaqueryresultsbucket6f63bbe4-1hrrrojv867l3",
-    region_name    = "ca-central-1"
-  )
-}
-
-cat("Connexion à", SOURCE_ENV, "...\n")
 history_start <- format(Sys.Date() - HISTORY_DAYS, "%Y-%m-%d")
 graph_start   <- as.Date(Sys.Date() - GRAPH_DAYS)
 
-cat("Lecture de salient_index depuis", history_start, "...\n")
-condm <- athena_connect()
-df_index <- dplyr::tbl(condm, "vitrine_datamart-salient_index") |>
-  dplyr::filter(dbplyr::sql(sprintf("date_utc >= DATE '%s'", history_start))) |>
-  dplyr::select(country_id, date_utc, time_interval_utc,
-                extracted_objects, absolute_normalized_index, n, urls, titles) |>
-  dplyr::collect()
-DBI::dbDisconnect(condm)
+cat("Lecture de salient_index...\n")
+df_index <- readr::read_csv(file.path(OUT_DIR, "salient_index.csv"),
+                            show_col_types = FALSE) |>
+  dplyr::mutate(
+    date_utc                  = as.Date(date_utc),
+    n                         = as.integer(n),
+    absolute_normalized_index = as.numeric(absolute_normalized_index)
+  ) |>
+  dplyr::filter(date_utc >= as.Date(history_start))
 cat("  →", nrow(df_index), "lignes chargées\n")
 
-cat("Lecture de salient_headlines_objects (médias) depuis", history_start, "...\n")
-condm <- athena_connect()
-df_objects <- dplyr::tbl(condm, "vitrine_datamart-salient_headlines_objects") |>
-  dplyr::filter(dbplyr::sql(sprintf("substr(headline_stop_utc, 1, 10) >= '%s'", history_start))) |>
-  dplyr::select(country_id, time_interval_utc,
-                media_id, url, headline_stop_utc, extracted_objects) |>
-  dplyr::collect() |>
+cat("Lecture de salient_headlines_objects (médias)...\n")
+df_objects <- readr::read_csv(file.path(OUT_DIR, "salient_objects.csv"),
+                              show_col_types = FALSE) |>
   dplyr::mutate(date_utc = as.Date(substr(as.character(headline_stop_utc), 1, 10))) |>
-  dplyr::select(-headline_stop_utc)
-DBI::dbDisconnect(condm)
+  dplyr::select(-headline_stop_utc) |>
+  dplyr::filter(date_utc >= as.Date(history_start))
 cat("  →", nrow(df_objects), "lignes médias chargées\n")
 
 # ─── Nœuds : top N par période × pays (toute la fenêtre historique) ───────────

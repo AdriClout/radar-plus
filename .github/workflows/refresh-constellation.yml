@@ -25,31 +25,33 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-constellation-v2-${{ hashFiles('constellation/build_data.R') }}
-          restore-keys: r-constellation-v2-
+          key: r-constellation-v3-${{ hashFiles('constellation/build_data.R') }}
+          restore-keys: r-constellation-v3-
 
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev \
-            libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev \
-            libpng-dev libtiff-dev libjpeg-dev
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
       - name: Install R packages
         run: |
           install.packages(
-            c("jsonlite", "dplyr", "purrr", "tidyr", "stringr", "dbplyr",
-              "DBI", "noctua", "paws.storage", "paws.analytics"),
+            c("jsonlite", "dplyr", "purrr", "tidyr", "stringr", "readr"),
             repos = "https://cloud.r-project.org",
             INSTALL_opts = c("--no-help", "--no-html", "--no-docs")
           )
         shell: Rscript {0}
 
-      - name: Build constellation data
+      - name: Fetch Athena data (Python boto3)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           AWS_DEFAULT_REGION: ca-central-1
+        run: |
+          pip install boto3 --quiet
+          python3 constellation/fetch_data.py
+
+      - name: Build constellation data (R)
         run: Rscript constellation/build_data.R
 
       - name: Commit & push updated data
