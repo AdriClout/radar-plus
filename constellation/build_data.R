@@ -63,7 +63,6 @@ cat("Lecture de salient_headlines_objects (médias)...\n")
 df_objects <- readr::read_csv(file.path(OUT_DIR, "salient_objects.csv"),
                               show_col_types = FALSE) |>
   dplyr::mutate(date_utc = as.Date(substr(as.character(headline_stop_utc), 1, 10))) |>
-  dplyr::select(-headline_stop_utc) |>
   dplyr::filter(date_utc >= as.Date(history_start))
 cat("  →", nrow(df_objects), "lignes médias chargées\n")
 
