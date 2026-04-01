@@ -45,25 +45,11 @@ jobs:
           )
         shell: Rscript {0}
 
-      - name: Debug AWS env (safe)
-        env:
-          AWS_ACCESS_KEY_ID_DEV: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          AWS_SECRET_ACCESS_KEY_DEV: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          echo "AKID set? $([ -n \"$AWS_ACCESS_KEY_ID_DEV\" ] && echo yes || echo no)"
-          echo "SAK  set? $([ -n \"$AWS_SECRET_ACCESS_KEY_DEV\" ] && echo yes || echo no)"
-          echo "REG  set? $([ -n \"$AWS_REGION\" ] && echo yes || echo no)"
-          echo "AKID len: ${#AWS_ACCESS_KEY_ID_DEV}"
-          echo "SAK  len: ${#AWS_SECRET_ACCESS_KEY_DEV}"
-          echo "REG val: $AWS_REGION"
-          echo "AKID prefix: ${AWS_ACCESS_KEY_ID_DEV:0:4}****"
-
       - name: Build constellation data
         env:
-          AWS_ACCESS_KEY_ID_DEV: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          AWS_SECRET_ACCESS_KEY_DEV: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_DEFAULT_REGION: ca-central-1
         run: Rscript constellation/build_data.R
 
       - name: Commit & push updated data

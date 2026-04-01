@@ -21,6 +21,13 @@ TOP_N_OBJECTS    <- 30   # Nœuds max par période × pays
 MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
 SOURCE_ENV       <- "DEV"
 
+# Objets génériques exclus par pays (même logique que radar-hot-20)
+EXCLUSION_BY_COUNTRY <- list(
+  QC  = c("quebec", "montreal", "canada"),
+  USA = c("usa", "united states", "fox news", "cnn", "washington dc"),
+  CAN = c("canada", "ottawa")
+)
+
 OUT_DIR <- tryCatch({
   dirname(rstudioapi::getSourceEditorContext()$path)
 }, error = function(e) {
@@ -38,17 +45,22 @@ TS_FILE    <- file.path(OUT_DIR, "timeseries.json")
 
 # ─── Connexion + lecture ───────────────────────────────────────────────────────
 
-# Connexion directe à Athena via noctua (sans tube::ellipse_connect qui exige
-# s3:ListAllMyBuckets — permission absente en CI GitHub Actions)
-athena_connect <- function(env) {
+# Connexion directe à Athena via noctua.
+# paws lit les credentials depuis les env vars standard AWS_ACCESS_KEY_ID /
+# AWS_SECRET_ACCESS_KEY — pas de session token → pas d'erreur IMDS/session.
+# En dev local, on copie AWS_ACCESS_KEY_ID_DEV → AWS_ACCESS_KEY_ID si besoin.
+athena_connect <- function(env = SOURCE_ENV) {
+  if (!nchar(Sys.getenv("AWS_ACCESS_KEY_ID"))) {
+    key    <- Sys.getenv(paste0("AWS_ACCESS_KEY_ID_",     env))
+    secret <- Sys.getenv(paste0("AWS_SECRET_ACCESS_KEY_", env))
+    if (nchar(key)) Sys.setenv(AWS_ACCESS_KEY_ID = key, AWS_SECRET_ACCESS_KEY = secret)
+  }
   DBI::dbConnect(
     noctua::athena(),
-    aws_access_key_id     = Sys.getenv(paste0("AWS_ACCESS_KEY_ID_", env)),
-    aws_secret_access_key = Sys.getenv(paste0("AWS_SECRET_ACCESS_KEY_", env)),
-    schema_name           = "gluestackdatamartdbd046f685",
-    work_group            = "ellipse-work-group",
-    s3_staging_dir        = "s3://pipeline-stack-athenaqueryresultsbucket6f63bbe4-1hrrrojv867l3",
-    region_name           = "ca-central-1"
+    schema_name    = "gluestackdatamartdbd046f685",
+    work_group     = "ellipse-work-group",
+    s3_staging_dir = "s3://pipeline-stack-athenaqueryresultsbucket6f63bbe4-1hrrrojv867l3",
+    region_name    = "ca-central-1"
   )
 }
 
@@ -57,7 +69,7 @@ history_start <- format(Sys.Date() - HISTORY_DAYS, "%Y-%m-%d")
 graph_start   <- as.Date(Sys.Date() - GRAPH_DAYS)
 
 cat("Lecture de salient_index depuis", history_start, "...\n")
-condm <- athena_connect(SOURCE_ENV)
+condm <- athena_connect()
 df_index <- dplyr::tbl(condm, "vitrine_datamart-salient_index") |>
   dplyr::filter(dbplyr::sql(sprintf("date_utc >= DATE '%s'", history_start))) |>
   dplyr::select(country_id, date_utc, time_interval_utc,
@@ -67,7 +79,7 @@ DBI::dbDisconnect(condm)
 cat("  →", nrow(df_index), "lignes chargées\n")
 
 cat("Lecture de salient_headlines_objects (médias) depuis", history_start, "...\n")
-condm <- athena_connect(SOURCE_ENV)
+condm <- athena_connect()
 df_objects <- dplyr::tbl(condm, "vitrine_datamart-salient_headlines_objects") |>
   dplyr::filter(dbplyr::sql(sprintf("substr(headline_stop_utc, 1, 10) >= '%s'", history_start))) |>
   dplyr::select(country_id, time_interval_utc,
