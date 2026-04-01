@@ -75,9 +75,15 @@ jobs:
           curl -fsS -X POST "${NETLIFY_BUILD_HOOK_URL}"
 
       - name: Validate live site is updated
-        if: ${{ secrets.NETLIFY_BUILD_HOOK_URL != '' }}
+        env:
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
         run: |
           set -euo pipefail
+
+          if [ -z "${NETLIFY_BUILD_HOOK_URL}" ]; then
+            echo "NETLIFY_BUILD_HOOK_URL absent: skipping live site validation."
+            exit 0
+          fi
 
           expected_graph="$(jq -r '.meta.generated_at' constellation/graph.json)"
           expected_timeseries="$(jq -r '.meta.generated_at' constellation/timeseries.json)"
