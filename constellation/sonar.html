@@ -144,6 +144,12 @@
       gap: 8px;
     }
 
+    .schema-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
     .thr {
       border: 1px solid rgba(122, 156, 255, 0.22);
       border-radius: 8px;
@@ -239,6 +245,7 @@
 
     @media (max-width: 1040px) {
       .grid { grid-template-columns: 1fr; }
+      .schema-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -315,6 +322,41 @@
     </section>
 
     <section class="card" style="margin-bottom: 12px;">
+      <h2>Schema des tables (colonnes)</h2>
+      <div class="help">Entree: tables Athena chargees. Sortie: structures publiees dans les JSON.</div>
+      <div class="schema-grid">
+        <div>
+          <h2 style="font-size:14px; margin-bottom:6px;">Tables load (entree)</h2>
+          <div class="table-wrap" style="max-height: 260px;">
+            <table id="sourceSchemaTable" style="min-width: 560px;">
+              <thead>
+                <tr>
+                  <th>Table</th>
+                  <th>Colonnes</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h2 style="font-size:14px; margin-bottom:6px;">Tables en sortie (JSON)</h2>
+          <div class="table-wrap" style="max-height: 260px;">
+            <table id="outputSchemaTable" style="min-width: 560px;">
+              <thead>
+                <tr>
+                  <th>Structure</th>
+                  <th>Colonnes detectees</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 12px;">
       <h2>Top objets (derniere periode)</h2>
       <div class="help">Apercu operationnel des objets les plus saillants en sortie.</div>
       <div class="table-wrap" style="max-height: 320px;">
@@ -370,10 +412,23 @@
     const reportEl = document.getElementById('reportCard');
     const qualityBody = document.querySelector('#qualityTable tbody');
     const topBody = document.querySelector('#topTable tbody');
+    const sourceSchemaBody = document.querySelector('#sourceSchemaTable tbody');
+    const outputSchemaBody = document.querySelector('#outputSchemaTable tbody');
     const chartEl = document.getElementById('seriesChart');
 
     let allData = {};
     let qualityRows = [];
+
+    const SOURCE_TABLES = [
+      {
+        table: 'vitrine_datamart-salient_index',
+        columns: ['country_id', 'date_utc', 'time_interval_utc', 'extracted_objects', 'absolute_normalized_index', 'n', 'urls', 'titles']
+      },
+      {
+        table: 'vitrine_datamart-salient_headlines_objects',
+        columns: ['country_id', 'time_interval_utc', 'media_id', 'url', 'headline_stop_utc', 'extracted_objects']
+      }
+    ];
 
     const asArray = (v) => Array.isArray(v) ? v : [];
     const fmt = (n, d = 0) => Number.isFinite(n) ? n.toLocaleString('fr-CA', { maximumFractionDigits: d, minimumFractionDigits: d }) : '-';
@@ -677,6 +732,52 @@
       URL.revokeObjectURL(url);
     }
 
+    function detectColumnsFromJson() {
+      const targets = [
+        { key: 'graph.nodes', dataset: allData.graph, kind: 'nodes' },
+        { key: 'graph.links', dataset: allData.graph, kind: 'links' },
+        { key: 'timeseries.nodes', dataset: allData.timeseries, kind: 'nodes' },
+        { key: 'timeseries.links', dataset: allData.timeseries, kind: 'links' }
+      ];
+
+      return targets.map(target => {
+        const cols = new Set();
+        const dataset = target.dataset;
+        const countries = asArray(dataset?.meta?.countries);
+        const periods = parsePeriodKeys(dataset);
+
+        for (const country of countries) {
+          for (const periodKey of periods) {
+            const snap = snapshot(dataset, country, periodKey);
+            const rows = asArray(snap[target.kind]);
+            for (const row of rows) {
+              if (!row || typeof row !== 'object') continue;
+              Object.keys(row).forEach(k => cols.add(k));
+            }
+          }
+        }
+
+        return { structure: target.key, columns: Array.from(cols).sort() };
+      });
+    }
+
+    function buildSchemaTables() {
+      sourceSchemaBody.innerHTML = SOURCE_TABLES.map(t => `
+        <tr>
+          <td><span class="pill">${t.table}</span></td>
+          <td>${t.columns.join(', ')}</td>
+        </tr>
+      `).join('');
+
+      const outputRows = detectColumnsFromJson();
+      outputSchemaBody.innerHTML = outputRows.map(r => `
+        <tr>
+          <td><span class="pill">${r.structure}</span></td>
+          <td>${r.columns.length ? r.columns.join(', ') : '-'}</td>
+        </tr>
+      `).join('');
+    }
+
     function refreshViews() {
       const thr = thresholds();
       buildCountrySelector();
@@ -688,6 +789,7 @@
       buildReportCard();
       buildQualityTable();
       buildTrendAndTop();
+      buildSchemaTables();
     }
 
     async function run() {
