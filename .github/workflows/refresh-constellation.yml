@@ -49,6 +49,31 @@ jobs:
           remotes::install_github("ellipse-science/tube", quiet = TRUE, upgrade = "never")
         shell: Rscript {0}
 
+      - name: Debug AWS connection
+        env:
+          AWS_ACCESS_KEY_ID_DEV: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY_DEV: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          Rscript -e "
+            key <- Sys.getenv('AWS_ACCESS_KEY_ID_DEV')
+            secret <- Sys.getenv('AWS_SECRET_ACCESS_KEY_DEV')
+            cat('Key present:', nzchar(key), '\n')
+            cat('Key prefix:', substr(key, 1, 4), '\n')
+            cat('Secret present:', nzchar(secret), '\n')
+            cat('Region:', Sys.getenv('AWS_DEFAULT_REGION'), '\n')
+            creds <- list(credentials = list(creds = list(
+              access_key_id = key,
+              secret_access_key = secret
+            )))
+            tryCatch({
+              r <- paws.storage::s3(config = c(creds, close_connection = TRUE))\$list_buckets()
+              cat('list_buckets OK, n buckets:', length(r\$Buckets), '\n')
+            }, error = function(e) {
+              cat('list_buckets ERROR:', conditionMessage(e), '\n')
+            })
+          "
+
       - name: Build constellation data
         env:
           AWS_ACCESS_KEY_ID_DEV: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
