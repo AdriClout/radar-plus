@@ -31,7 +31,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev jq
 
       - name: Install R packages
         run: |
@@ -63,3 +63,40 @@ jobs:
             git commit -m "chore: refresh constellation data [skip ci]" &&
             git push
           )
+
+      - name: Trigger Netlify deploy
+        env:
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+        run: |
+          if [ -z "${NETLIFY_BUILD_HOOK_URL}" ]; then
+            echo "Missing required secret: NETLIFY_BUILD_HOOK_URL"
+            exit 1
+          fi
+          curl -fsS -X POST "${NETLIFY_BUILD_HOOK_URL}"
+
+      - name: Validate live site is updated
+        run: |
+          set -euo pipefail
+
+          expected_graph="$(jq -r '.meta.generated_at' constellation/graph.json)"
+          expected_timeseries="$(jq -r '.meta.generated_at' constellation/timeseries.json)"
+
+          echo "Expected graph.json meta.generated_at: ${expected_graph}"
+          echo "Expected timeseries.json meta.generated_at: ${expected_timeseries}"
+
+          for attempt in $(seq 1 30); do
+            live_graph="$(curl -fsS https://radarplus.org/graph.json | jq -r '.meta.generated_at')"
+            live_timeseries="$(curl -fsS https://radarplus.org/timeseries.json | jq -r '.meta.generated_at')"
+
+            echo "Attempt ${attempt}/30 -> graph: ${live_graph} | timeseries: ${live_timeseries}"
+
+            if [ "${live_graph}" = "${expected_graph}" ] && [ "${live_timeseries}" = "${expected_timeseries}" ]; then
+              echo "Live site data is in sync with refreshed JSON files."
+              exit 0
+            fi
+
+            sleep 20
+          done
+
+          echo "Timed out waiting for radarplus.org to serve the refreshed JSON files."
+          exit 1
