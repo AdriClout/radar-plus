@@ -147,6 +147,16 @@ parse_json_chr <- function(x) {
   tryCatch(as.character(jsonlite::fromJSON(x)), error = function(e) character(0))
 }
 
+rows_to_records <- function(df) {
+  if (nrow(df) == 0) return(list())
+
+  df_safe <- df |>
+    dplyr::mutate(dplyr::across(where(inherits, "Date"), as.character),
+                  dplyr::across(where(inherits, "POSIXt"), as.character))
+
+  purrr::transpose(df_safe)
+}
+
 url_to_media <- {
   lkp <- df_objects |>
     dplyr::filter(!is.na(url) & url != "") |>
@@ -309,6 +319,25 @@ cat("✓ timeseries.json :", round(file.size(TS_FILE) / 1024 / 1024, 2), "Mo —
 
 cat("\nAssemblage monitor_input.json (tops entrée)...\n")
 
+required_index_cols <- c(
+  "country_id", "date_utc", "time_interval_utc", "extracted_objects",
+  "absolute_normalized_index", "n", "urls", "titles"
+)
+required_objects_cols <- c(
+  "country_id", "time_interval_utc", "media_id", "url",
+  "headline_stop_utc", "extracted_objects"
+)
+
+missing_index_cols <- setdiff(required_index_cols, names(df_index))
+missing_objects_cols <- setdiff(required_objects_cols, names(df_objects))
+
+if (length(missing_index_cols) > 0) {
+  stop("Colonnes manquantes dans df_index: ", paste(missing_index_cols, collapse = ", "))
+}
+if (length(missing_objects_cols) > 0) {
+  stop("Colonnes manquantes dans df_objects: ", paste(missing_objects_cols, collapse = ", "))
+}
+
 latest_periods <- df_index |>
   dplyr::distinct(country_id, date_utc, time_interval_utc) |>
   dplyr::arrange(country_id, dplyr::desc(date_utc), dplyr::desc(time_interval_utc)) |>
@@ -347,8 +376,8 @@ build_top_input_rows <- function(country) {
 
   list(
     period_key = pk,
-    salient_index_top = purrr::transpose(idx_top),
-    salient_objects_top = purrr::transpose(obj_top)
+    salient_index_top = rows_to_records(idx_top),
+    salient_objects_top = rows_to_records(obj_top)
   )
 }
 
