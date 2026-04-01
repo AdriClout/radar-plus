@@ -99,6 +99,18 @@ radar-plus/
 **Créé par**: Adrien & Claude  
 **16 janvier 2026**
 
+## 🌐 Hébergement (Primaire + Backup)
+
+- **Primaire**: Netlify (`https://radarplus.org/`)
+- **Backup**: GitHub Pages (`https://adriclout.github.io/radar-plus/`)
+
+Pour SONAR:
+
+- Primaire: `https://radarplus.org/sonar.html`
+- Backup: `https://adriclout.github.io/radar-plus/sonar.html`
+
+Le backup GitHub Pages est déployé automatiquement via `.github/workflows/deploy-github-pages.yml`.
+
 Le dossier `templates/` contient **4 templates essentiels** pour démarrer rapidement:
 
 | Template | Description | Quand l'utiliser? |
