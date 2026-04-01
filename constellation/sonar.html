@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SONAR - Monitoring Data Radar+</title>
+  <style>
+    :root {
+      --bg: #070b18;
+      --panel: rgba(17, 26, 52, 0.78);
+      --border: rgba(122, 156, 255, 0.34);
+      --text: #e8efff;
+      --muted: #8ca4d5;
+      --ok: #7df1be;
+      --warn: #ffd17d;
+      --bad: #ff8ea3;
+      --accent: #7ea9ff;
+      --line-a: #86f3b8;
+      --line-b: #8fb6ff;
+      --mono: "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+      --sans: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(1300px 500px at -10% -20%, rgba(88, 122, 255, 0.18), transparent 60%),
+        radial-gradient(1000px 420px at 110% 10%, rgba(53, 190, 177, 0.16), transparent 60%),
+        linear-gradient(160deg, #060a15 0%, #090f1f 60%, #071022 100%);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    .wrap { width: min(1220px, 95vw); margin: 20px auto 34px; }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    h1 { margin: 0; font-size: clamp(24px, 3.5vw, 38px); letter-spacing: 0.2px; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button, select, input {
+      border: 1px solid var(--border);
+      background: rgba(12, 20, 40, 0.8);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    button { cursor: pointer; }
+    button:hover { border-color: rgba(162, 189, 255, 0.78); }
+
+    .status {
+      margin: 4px 0 14px;
+      min-height: 18px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .kpi {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+      padding: 10px 12px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 4px;
+    }
+
+    .kpi .value {
+      font-family: var(--mono);
+      font-size: 16px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--panel);
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .card h2 { margin: 0 0 8px; font-size: 16px; }
+    .help { margin: -2px 0 10px; color: var(--muted); font-size: 12px; }
+
+    .chart {
+      width: 100%;
+      height: 240px;
+      border: 1px solid rgba(122, 156, 255, 0.23);
+      border-radius: 8px;
+      background: rgba(7, 12, 26, 0.82);
+      display: block;
+    }
+
+    .legend { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+    .dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; margin-right: 6px; transform: translateY(1px); }
+
+    .threshold-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+    }
+
+    .thr {
+      border: 1px solid rgba(122, 156, 255, 0.22);
+      border-radius: 8px;
+      padding: 8px;
+      background: rgba(8, 13, 26, 0.75);
+    }
+
+    .thr label {
+      color: var(--muted);
+      display: block;
+      font-size: 11px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .thr-row { display: flex; gap: 6px; align-items: center; }
+    .thr-row span { font-size: 11px; color: var(--muted); }
+    .thr input { width: 74px; padding: 6px 7px; font-family: var(--mono); }
+
+    .report {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .report-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(8, 13, 26, 0.75);
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border: 1px solid;
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    .b-ok { color: var(--ok); border-color: rgba(125, 241, 190, 0.5); }
+    .b-warn { color: var(--warn); border-color: rgba(255, 209, 125, 0.5); }
+    .b-bad { color: var(--bad); border-color: rgba(255, 142, 163, 0.5); }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid rgba(122, 156, 255, 0.24);
+      border-radius: 9px;
+      background: rgba(6, 11, 24, 0.85);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    th, td {
+      border-bottom: 1px solid rgba(122, 156, 255, 0.18);
+      padding: 7px 8px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th:first-child, td:first-child,
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) { text-align: left; }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #111a34;
+      color: #cddfff;
+    }
+
+    .pill {
+      border: 1px solid rgba(122, 156, 255, 0.36);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: #cfe0ff;
+    }
+
+    .cell-ok { color: var(--ok); }
+    .cell-warn { color: var(--warn); }
+    .cell-bad { color: var(--bad); }
+
+    @media (max-width: 1040px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>SONAR</h1>
+        <div class="subtitle">Monitoring des tables Constellation: fraicheur, qualite, couverture et derive.</div>
+      </div>
+      <div class="controls">
+        <button id="reloadBtn">Reload</button>
+        <button id="csvBtn">Export QC CSV</button>
+        <select id="datasetSelect">
+          <option value="graph">graph.json</option>
+          <option value="timeseries">timeseries.json</option>
+        </select>
+        <select id="countrySelect"></select>
+      </div>
+    </div>
+
+    <div id="status" class="status warn">Chargement SONAR en cours...</div>
+
+    <div id="kpis" class="kpis"></div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Suivi de volume par periode</h2>
+        <div class="help">Noeuds et liens par periode sur le dataset/pays selectionne.</div>
+        <svg id="seriesChart" class="chart" viewBox="0 0 900 240" preserveAspectRatio="none"></svg>
+        <div class="legend">
+          <span><span class="dot" style="background: var(--line-a);"></span>Noeuds</span>
+          <span><span class="dot" style="background: var(--line-b);"></span>Liens</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Report Card</h2>
+        <div class="help">Synthese automatique OK / Warning / Critical basee sur tes seuils.</div>
+        <div id="reportCard" class="report"></div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-bottom: 12px;">
+      <h2>Seuils d'alerte</h2>
+      <div class="help">Ajuste les seuils, puis clique Reload pour recalculer les alertes.</div>
+      <div class="threshold-grid">
+        <div class="thr">
+          <label>Lag generation (min)</label>
+          <div class="thr-row"><span>Warn</span><input id="lagWarn" type="number" min="0" value="45"></div>
+          <div class="thr-row"><span>Crit</span><input id="lagCrit" type="number" min="0" value="120"></div>
+        </div>
+        <div class="thr">
+          <label>Periodes vides</label>
+          <div class="thr-row"><span>Warn</span><input id="emptyWarn" type="number" min="0" value="1"></div>
+          <div class="thr-row"><span>Crit</span><input id="emptyCrit" type="number" min="0" value="4"></div>
+        </div>
+        <div class="thr">
+          <label>Liens orphelins</label>
+          <div class="thr-row"><span>Warn</span><input id="orphanWarn" type="number" min="0" value="1"></div>
+          <div class="thr-row"><span>Crit</span><input id="orphanCrit" type="number" min="0" value="10"></div>
+        </div>
+        <div class="thr">
+          <label>Noeuds sans id</label>
+          <div class="thr-row"><span>Warn</span><input id="missingWarn" type="number" min="0" value="1"></div>
+          <div class="thr-row"><span>Crit</span><input id="missingCrit" type="number" min="0" value="10"></div>
+        </div>
+        <div class="thr">
+          <label>Doublons de noeuds</label>
+          <div class="thr-row"><span>Warn</span><input id="dupWarn" type="number" min="0" value="1"></div>
+          <div class="thr-row"><span>Crit</span><input id="dupCrit" type="number" min="0" value="5"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 12px;">
+      <h2>Top objets (derniere periode)</h2>
+      <div class="help">Apercu operationnel des objets les plus saillants en sortie.</div>
+      <div class="table-wrap" style="max-height: 320px;">
+        <table id="topTable">
+          <thead>
+            <tr>
+              <th>Objet</th>
+              <th>Size</th>
+              <th>Mentions (n)</th>
+              <th>Articles</th>
+              <th>Medias</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Controle qualite par table et pays</h2>
+      <div class="help">Vides, doublons de noeuds, liens orphelins, couverture et severite.</div>
+      <div class="table-wrap" style="max-height: 430px;">
+        <table id="qualityTable">
+          <thead>
+            <tr>
+              <th>Table</th>
+              <th>Pays</th>
+              <th>Severite</th>
+              <th>Periodes</th>
+              <th>Periodes vides</th>
+              <th>Noeuds moyens</th>
+              <th>Liens moyens</th>
+              <th>Doublons noeuds</th>
+              <th>Noeuds sans id</th>
+              <th>Liens orphelins</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const SOURCES = { graph: './graph.json', timeseries: './timeseries.json' };
+
+    const statusEl = document.getElementById('status');
+    const kpiEl = document.getElementById('kpis');
+    const reloadBtn = document.getElementById('reloadBtn');
+    const csvBtn = document.getElementById('csvBtn');
+    const datasetSelect = document.getElementById('datasetSelect');
+    const countrySelect = document.getElementById('countrySelect');
+    const reportEl = document.getElementById('reportCard');
+    const qualityBody = document.querySelector('#qualityTable tbody');
+    const topBody = document.querySelector('#topTable tbody');
+    const chartEl = document.getElementById('seriesChart');
+
+    let allData = {};
+    let qualityRows = [];
+
+    const asArray = (v) => Array.isArray(v) ? v : [];
+    const fmt = (n, d = 0) => Number.isFinite(n) ? n.toLocaleString('fr-CA', { maximumFractionDigits: d, minimumFractionDigits: d }) : '-';
+
+    function setStatus(msg, cls = 'warn') {
+      statusEl.className = `status ${cls}`;
+      statusEl.textContent = msg;
+    }
+
+    function thresholds() {
+      return {
+        lagWarn: Number(document.getElementById('lagWarn').value),
+        lagCrit: Number(document.getElementById('lagCrit').value),
+        emptyWarn: Number(document.getElementById('emptyWarn').value),
+        emptyCrit: Number(document.getElementById('emptyCrit').value),
+        orphanWarn: Number(document.getElementById('orphanWarn').value),
+        orphanCrit: Number(document.getElementById('orphanCrit').value),
+        missingWarn: Number(document.getElementById('missingWarn').value),
+        missingCrit: Number(document.getElementById('missingCrit').value),
+        dupWarn: Number(document.getElementById('dupWarn').value),
+        dupCrit: Number(document.getElementById('dupCrit').value)
+      };
+    }
+
+    function severityFor(value, warn, crit) {
+      if (!Number.isFinite(value)) return 'warn';
+      if (value >= crit) return 'critical';
+      if (value >= warn) return 'warning';
+      return 'ok';
+    }
+
+    function severityBadge(s) {
+      if (s === 'critical') return '<span class="badge b-bad">CRITICAL</span>';
+      if (s === 'warning') return '<span class="badge b-warn">WARNING</span>';
+      return '<span class="badge b-ok">OK</span>';
+    }
+
+    function combineSeverity(values) {
+      if (values.includes('critical')) return 'critical';
+      if (values.includes('warning')) return 'warning';
+      return 'ok';
+    }
+
+    async function loadJson(key) {
+      const res = await fetch(SOURCES[key], { cache: 'no-store' });
+      if (!res.ok) throw new Error(`${key}.json HTTP ${res.status}`);
+      return res.json();
+    }
+
+    function parsePeriodKeys(dataset) {
+      return asArray(dataset.meta?.periods).map(p => p.key).filter(Boolean);
+    }
+
+    function snapshot(dataset, country, periodKey) {
+      return dataset?.graphs?.[country]?.[periodKey] || {};
+    }
+
+    function analyzeDataset(datasetKey, dataset, thr) {
+      const countries = asArray(dataset.meta?.countries);
+      const periodKeys = parsePeriodKeys(dataset);
+
+      return countries.map(country => {
+        let emptyPeriods = 0;
+        let totalNodes = 0;
+        let totalLinks = 0;
+        let duplicateNodeIds = 0;
+        let missingNodeIds = 0;
+        let orphanLinks = 0;
+
+        for (const key of periodKeys) {
+          const snap = snapshot(dataset, country, key);
+          const nodes = asArray(snap.nodes);
+          const links = asArray(snap.links);
+
+          if (nodes.length === 0) emptyPeriods += 1;
+          totalNodes += nodes.length;
+          totalLinks += links.length;
+
+          const seen = new Set();
+          const ids = new Set();
+          for (const n of nodes) {
+            if (!n || !n.id) {
+              missingNodeIds += 1;
+              continue;
+            }
+            ids.add(n.id);
+            if (seen.has(n.id)) duplicateNodeIds += 1;
+            seen.add(n.id);
+          }
+
+          for (const l of links) {
+            if (!l) continue;
+            if (!ids.has(l.source) || !ids.has(l.target)) orphanLinks += 1;
+          }
+        }
+
+        const count = periodKeys.length || 1;
+        const severities = [
+          severityFor(emptyPeriods, thr.emptyWarn, thr.emptyCrit),
+          severityFor(orphanLinks, thr.orphanWarn, thr.orphanCrit),
+          severityFor(missingNodeIds, thr.missingWarn, thr.missingCrit),
+          severityFor(duplicateNodeIds, thr.dupWarn, thr.dupCrit)
+        ];
+
+        return {
+          dataset: datasetKey,
+          country,
+          severity: combineSeverity(severities),
+          periods: periodKeys.length,
+          emptyPeriods,
+          avgNodes: totalNodes / count,
+          avgLinks: totalLinks / count,
+          duplicateNodeIds,
+          missingNodeIds,
+          orphanLinks
+        };
+      });
+    }
+
+    function buildCountrySelector() {
+      const dataset = allData[datasetSelect.value];
+      const countries = asArray(dataset.meta?.countries);
+      const current = countrySelect.value;
+      countrySelect.innerHTML = countries.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (countries.includes(current)) countrySelect.value = current;
+    }
+
+    function buildKpis(thr) {
+      const graph = allData.graph;
+      const ts = allData.timeseries;
+      const graphTime = Date.parse(graph.meta?.generated_at || '');
+      const tsTime = Date.parse(ts.meta?.generated_at || '');
+      const now = Date.now();
+
+      const lagGraph = Number.isFinite(graphTime) ? Math.max(0, (now - graphTime) / 60000) : NaN;
+      const lagTs = Number.isFinite(tsTime) ? Math.max(0, (now - tsTime) / 60000) : NaN;
+
+      const graphLagS = severityFor(lagGraph, thr.lagWarn, thr.lagCrit);
+      const tsLagS = severityFor(lagTs, thr.lagWarn, thr.lagCrit);
+
+      const cards = [
+        ['graph genere', graph.meta?.generated_at || '-', graphLagS],
+        ['timeseries genere', ts.meta?.generated_at || '-', tsLagS],
+        ['lag graph (min)', fmt(lagGraph, 1), graphLagS],
+        ['lag timeseries (min)', fmt(lagTs, 1), tsLagS],
+        ['periodes graph', fmt(asArray(graph.meta?.periods).length), 'ok'],
+        ['periodes timeseries', fmt(asArray(ts.meta?.periods).length), 'ok'],
+        ['pays', asArray(graph.meta?.countries).join(', '), 'ok'],
+        ['medias suivis', fmt(asArray(graph.meta?.media_ids).length), 'ok']
+      ];
+
+      kpiEl.innerHTML = cards.map(([label, value, sev]) => {
+        const cls = sev === 'critical' ? 'cell-bad' : sev === 'warning' ? 'cell-warn' : 'cell-ok';
+        return `
+          <div class="kpi">
+            <div class="label">${label}</div>
+            <div class="value ${cls}">${value}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function drawSeriesChart(pointsA, pointsB) {
+      const width = 900;
+      const height = 240;
+      const padL = 40;
+      const padR = 18;
+      const padT = 18;
+      const padB = 26;
+      const n = Math.max(pointsA.length, pointsB.length, 1);
+      const maxY = Math.max(1, ...pointsA, ...pointsB);
+
+      const toPoints = (arr) => arr.map((v, i) => {
+        const x = padL + (i * (width - padL - padR) / Math.max(n - 1, 1));
+        const y = padT + ((maxY - v) * (height - padT - padB) / maxY);
+        return `${x},${y}`;
+      }).join(' ');
+
+      const grid = [0, 0.25, 0.5, 0.75, 1].map(t => {
+        const y = padT + t * (height - padT - padB);
+        const val = Math.round((1 - t) * maxY);
+        return `
+          <line x1="${padL}" y1="${y}" x2="${width - padR}" y2="${y}" stroke="rgba(122,156,255,0.18)" stroke-width="1" />
+          <text x="${padL - 6}" y="${y + 4}" text-anchor="end" fill="rgba(168,191,237,0.75)" font-size="11" font-family="var(--mono)">${val}</text>
+        `;
+      }).join('');
+
+      chartEl.innerHTML = `
+        <rect x="0" y="0" width="${width}" height="${height}" fill="transparent" />
+        ${grid}
+        <polyline fill="none" stroke="var(--line-a)" stroke-width="2.2" points="${toPoints(pointsA)}" />
+        <polyline fill="none" stroke="var(--line-b)" stroke-width="2.2" points="${toPoints(pointsB)}" />
+      `;
+    }
+
+    function buildTrendAndTop() {
+      const dataset = allData[datasetSelect.value];
+      const country = countrySelect.value;
+      const periods = parsePeriodKeys(dataset);
+
+      const nodeSeries = [];
+      const linkSeries = [];
+      for (const key of periods) {
+        const snap = snapshot(dataset, country, key);
+        nodeSeries.push(asArray(snap.nodes).length);
+        linkSeries.push(asArray(snap.links).length);
+      }
+      drawSeriesChart(nodeSeries, linkSeries);
+
+      const lastKey = periods[periods.length - 1];
+      const lastSnap = snapshot(dataset, country, lastKey);
+      const nodes = asArray(lastSnap.nodes).slice().sort((a, b) => (Number(b?.size) || 0) - (Number(a?.size) || 0)).slice(0, 15);
+
+      topBody.innerHTML = nodes.map(n => {
+        const mediaCount = asArray(n.media_ids).length;
+        const articles = asArray(n.articles).length;
+        return `
+          <tr>
+            <td>${n.id || '-'}</td>
+            <td>${fmt(Number(n.size) || 0, 2)}</td>
+            <td>${fmt(Number(n.n) || 0)}</td>
+            <td>${fmt(articles)}</td>
+            <td>${fmt(mediaCount)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function severityClass(s) {
+      if (s === 'critical') return 'cell-bad';
+      if (s === 'warning') return 'cell-warn';
+      return 'cell-ok';
+    }
+
+    function buildQualityTable() {
+      qualityBody.innerHTML = qualityRows.map(r => `
+        <tr>
+          <td><span class="pill">${r.dataset}</span></td>
+          <td>${r.country}</td>
+          <td class="${severityClass(r.severity)}">${r.severity.toUpperCase()}</td>
+          <td>${fmt(r.periods)}</td>
+          <td class="${severityClass(severityFor(r.emptyPeriods, thresholds().emptyWarn, thresholds().emptyCrit))}">${fmt(r.emptyPeriods)}</td>
+          <td>${fmt(r.avgNodes, 1)}</td>
+          <td>${fmt(r.avgLinks, 1)}</td>
+          <td class="${severityClass(severityFor(r.duplicateNodeIds, thresholds().dupWarn, thresholds().dupCrit))}">${fmt(r.duplicateNodeIds)}</td>
+          <td class="${severityClass(severityFor(r.missingNodeIds, thresholds().missingWarn, thresholds().missingCrit))}">${fmt(r.missingNodeIds)}</td>
+          <td class="${severityClass(severityFor(r.orphanLinks, thresholds().orphanWarn, thresholds().orphanCrit))}">${fmt(r.orphanLinks)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function buildReportCard() {
+      const counts = { ok: 0, warning: 0, critical: 0 };
+      for (const r of qualityRows) counts[r.severity] += 1;
+      const overall = counts.critical > 0 ? 'critical' : counts.warning > 0 ? 'warning' : 'ok';
+
+      reportEl.innerHTML = `
+        <div class="report-card">
+          <div class="help">Etat global</div>
+          ${severityBadge(overall)}
+        </div>
+        <div class="report-card">
+          <div class="help">Segments OK</div>
+          <div class="mono">${fmt(counts.ok)}</div>
+          ${severityBadge('ok')}
+        </div>
+        <div class="report-card">
+          <div class="help">Segments Warning</div>
+          <div class="mono">${fmt(counts.warning)}</div>
+          ${severityBadge('warning')}
+        </div>
+        <div class="report-card">
+          <div class="help">Segments Critical</div>
+          <div class="mono">${fmt(counts.critical)}</div>
+          ${severityBadge('critical')}
+        </div>
+      `;
+    }
+
+    function downloadCsv() {
+      const headers = [
+        'dataset','country','severity','periods','emptyPeriods','avgNodes','avgLinks','duplicateNodeIds','missingNodeIds','orphanLinks'
+      ];
+      const lines = [headers.join(',')];
+
+      for (const r of qualityRows) {
+        const vals = [
+          r.dataset, r.country, r.severity, r.periods, r.emptyPeriods,
+          r.avgNodes.toFixed(2), r.avgLinks.toFixed(2), r.duplicateNodeIds,
+          r.missingNodeIds, r.orphanLinks
+        ];
+        lines.push(vals.join(','));
+      }
+
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sonar_qc_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function refreshViews() {
+      const thr = thresholds();
+      buildCountrySelector();
+      buildKpis(thr);
+      qualityRows = [
+        ...analyzeDataset('graph', allData.graph, thr),
+        ...analyzeDataset('timeseries', allData.timeseries, thr)
+      ];
+      buildReportCard();
+      buildQualityTable();
+      buildTrendAndTop();
+    }
+
+    async function run() {
+      try {
+        setStatus('Chargement des tables SONAR...', 'warn');
+        const [graph, timeseries] = await Promise.all([
+          loadJson('graph'),
+          loadJson('timeseries')
+        ]);
+        allData = { graph, timeseries };
+        refreshViews();
+        setStatus('SONAR charge avec succes.', 'ok');
+      } catch (err) {
+        setStatus(`Erreur de chargement: ${err.message}`, 'bad');
+      }
+    }
+
+    reloadBtn.addEventListener('click', run);
+    csvBtn.addEventListener('click', downloadCsv);
+    datasetSelect.addEventListener('change', refreshViews);
+    countrySelect.addEventListener('change', buildTrendAndTop);
+    for (const id of ['lagWarn','lagCrit','emptyWarn','emptyCrit','orphanWarn','orphanCrit','missingWarn','missingCrit','dupWarn','dupCrit']) {
+      document.getElementById(id).addEventListener('change', refreshViews);
+    }
+
+    run();
+  </script>
+</body>
+</html>
