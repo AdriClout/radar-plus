@@ -41,6 +41,7 @@ OUT_DIR <- tryCatch({
 
 GRAPH_FILE <- file.path(OUT_DIR, "graph.json")
 TS_FILE    <- file.path(OUT_DIR, "timeseries.json")
+MONITOR_INPUT_FILE <- file.path(OUT_DIR, "monitor_input.json")
 
 # ─── Lecture des CSV produits par fetch_data.py ────────────────────────────────
 
@@ -303,5 +304,71 @@ result_ts <- list(
 jsonlite::write_json(result_ts, TS_FILE, auto_unbox = TRUE, pretty = FALSE)
 cat("✓ timeseries.json :", round(file.size(TS_FILE) / 1024 / 1024, 2), "Mo —",
     nrow(periods_ts), "périodes\n")
+
+# ─── monitor_input.json (tops entrée complets) ───────────────────────────────
+
+cat("\nAssemblage monitor_input.json (tops entrée)...\n")
+
+latest_periods <- df_index |>
+  dplyr::distinct(country_id, date_utc, time_interval_utc) |>
+  dplyr::arrange(country_id, dplyr::desc(date_utc), dplyr::desc(time_interval_utc)) |>
+  dplyr::group_by(country_id) |>
+  dplyr::slice_head(n = 1) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(period_key = paste0(date_utc, "_", time_interval_utc))
+
+build_top_input_rows <- function(country) {
+  p <- latest_periods |>
+    dplyr::filter(country_id == country)
+
+  if (nrow(p) == 0) {
+    return(list(
+      period_key = NULL,
+      salient_index_top = list(),
+      salient_objects_top = list()
+    ))
+  }
+
+  d <- p$date_utc[[1]]
+  ti <- p$time_interval_utc[[1]]
+  pk <- p$period_key[[1]]
+
+  idx_top <- df_index |>
+    dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |>
+    dplyr::arrange(dplyr::desc(absolute_normalized_index), dplyr::desc(n)) |>
+    dplyr::slice_head(n = TOP_N_OBJECTS)
+
+  obj_top <- df_objects |>
+    dplyr::mutate(period_date = as.Date(substr(as.character(headline_stop_utc), 1, 10))) |>
+    dplyr::filter(country_id == country, period_date == d, time_interval_utc == ti) |>
+    dplyr::arrange(dplyr::desc(headline_stop_utc)) |>
+    dplyr::select(-period_date) |>
+    dplyr::slice_head(n = TOP_N_OBJECTS)
+
+  list(
+    period_key = pk,
+    salient_index_top = purrr::transpose(idx_top),
+    salient_objects_top = purrr::transpose(obj_top)
+  )
+}
+
+by_country <- purrr::map(countries, build_top_input_rows) |>
+  stats::setNames(countries)
+
+monitor_input <- list(
+  meta = list(
+    generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    top_n = TOP_N_OBJECTS,
+    countries = countries,
+    columns = list(
+      salient_index = names(df_index),
+      salient_objects = names(df_objects)
+    )
+  ),
+  by_country = by_country
+)
+
+jsonlite::write_json(monitor_input, MONITOR_INPUT_FILE, auto_unbox = TRUE, pretty = FALSE)
+cat("✓ monitor_input.json:", round(file.size(MONITOR_INPUT_FILE) / 1024, 1), "Ko\n")
 
 cat("\nFini!\n")

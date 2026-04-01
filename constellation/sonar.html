@@ -144,10 +144,15 @@
       gap: 8px;
     }
 
-    .schema-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+    .wide-table {
+      min-width: 1200px;
+    }
+
+    .json-cell {
+      max-width: 360px;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.25;
     }
 
     .thr {
@@ -245,7 +250,6 @@
 
     @media (max-width: 1040px) {
       .grid { grid-template-columns: 1fr; }
-      .schema-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -322,37 +326,24 @@
     </section>
 
     <section class="card" style="margin-bottom: 12px;">
-      <h2>Schema des tables (colonnes)</h2>
-      <div class="help">Entree: tables Athena chargees. Sortie: structures publiees dans les JSON.</div>
-      <div class="schema-grid">
-        <div>
-          <h2 style="font-size:14px; margin-bottom:6px;">Tables load (entree)</h2>
-          <div class="table-wrap" style="max-height: 260px;">
-            <table id="sourceSchemaTable" style="min-width: 560px;">
-              <thead>
-                <tr>
-                  <th>Table</th>
-                  <th>Colonnes</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-        <div>
-          <h2 style="font-size:14px; margin-bottom:6px;">Tables en sortie (JSON)</h2>
-          <div class="table-wrap" style="max-height: 260px;">
-            <table id="outputSchemaTable" style="min-width: 560px;">
-              <thead>
-                <tr>
-                  <th>Structure</th>
-                  <th>Colonnes detectees</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
+      <h2>Top entree (table loadee, toutes colonnes)</h2>
+      <div class="help">Top de la derniere periode chargee depuis Athena (salient_index), avec toutes les colonnes brutes.</div>
+      <div class="table-wrap" style="max-height: 340px;">
+        <table id="inputTopTable" class="wide-table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 12px;">
+      <h2>Top sortie (table publiee, toutes colonnes)</h2>
+      <div class="help">Top de la derniere periode publiee (nodes du graph), avec toutes les colonnes de sortie.</div>
+      <div class="table-wrap" style="max-height: 340px;">
+        <table id="outputTopTable" class="wide-table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </section>
 
@@ -401,7 +392,7 @@
   </div>
 
   <script>
-    const SOURCES = { graph: './graph.json', timeseries: './timeseries.json' };
+    const SOURCES = { graph: './graph.json', timeseries: './timeseries.json', input: './monitor_input.json' };
 
     const statusEl = document.getElementById('status');
     const kpiEl = document.getElementById('kpis');
@@ -412,23 +403,18 @@
     const reportEl = document.getElementById('reportCard');
     const qualityBody = document.querySelector('#qualityTable tbody');
     const topBody = document.querySelector('#topTable tbody');
-    const sourceSchemaBody = document.querySelector('#sourceSchemaTable tbody');
-    const outputSchemaBody = document.querySelector('#outputSchemaTable tbody');
+    const inputTopTable = document.getElementById('inputTopTable');
+    const outputTopTable = document.getElementById('outputTopTable');
     const chartEl = document.getElementById('seriesChart');
 
     let allData = {};
     let qualityRows = [];
 
-    const SOURCE_TABLES = [
-      {
-        table: 'vitrine_datamart-salient_index',
-        columns: ['country_id', 'date_utc', 'time_interval_utc', 'extracted_objects', 'absolute_normalized_index', 'n', 'urls', 'titles']
-      },
-      {
-        table: 'vitrine_datamart-salient_headlines_objects',
-        columns: ['country_id', 'time_interval_utc', 'media_id', 'url', 'headline_stop_utc', 'extracted_objects']
-      }
-    ];
+    function compact(v) {
+      if (v === null || v === undefined) return '-';
+      if (Array.isArray(v) || typeof v === 'object') return JSON.stringify(v);
+      return String(v);
+    }
 
     const asArray = (v) => Array.isArray(v) ? v : [];
     const fmt = (n, d = 0) => Number.isFinite(n) ? n.toLocaleString('fr-CA', { maximumFractionDigits: d, minimumFractionDigits: d }) : '-';
@@ -732,50 +718,52 @@
       URL.revokeObjectURL(url);
     }
 
-    function detectColumnsFromJson() {
-      const targets = [
-        { key: 'graph.nodes', dataset: allData.graph, kind: 'nodes' },
-        { key: 'graph.links', dataset: allData.graph, kind: 'links' },
-        { key: 'timeseries.nodes', dataset: allData.timeseries, kind: 'nodes' },
-        { key: 'timeseries.links', dataset: allData.timeseries, kind: 'links' }
-      ];
+    function renderDynamicTable(tableEl, rows, preferredCols = []) {
+      const thead = tableEl.querySelector('thead');
+      const tbody = tableEl.querySelector('tbody');
 
-      return targets.map(target => {
-        const cols = new Set();
-        const dataset = target.dataset;
-        const countries = asArray(dataset?.meta?.countries);
-        const periods = parsePeriodKeys(dataset);
+      if (!rows.length) {
+        thead.innerHTML = '<tr><th>Aucune donnee</th></tr>';
+        tbody.innerHTML = '<tr><td>-</td></tr>';
+        return;
+      }
 
-        for (const country of countries) {
-          for (const periodKey of periods) {
-            const snap = snapshot(dataset, country, periodKey);
-            const rows = asArray(snap[target.kind]);
-            for (const row of rows) {
-              if (!row || typeof row !== 'object') continue;
-              Object.keys(row).forEach(k => cols.add(k));
-            }
-          }
-        }
+      const keys = new Set();
+      rows.forEach(r => Object.keys(r || {}).forEach(k => keys.add(k)));
+      const rest = Array.from(keys).filter(k => !preferredCols.includes(k)).sort();
+      const cols = [...preferredCols.filter(c => keys.has(c)), ...rest];
 
-        return { structure: target.key, columns: Array.from(cols).sort() };
-      });
+      thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          ${cols.map(c => `<td class="json-cell">${compact(r[c])}</td>`).join('')}
+        </tr>
+      `).join('');
     }
 
-    function buildSchemaTables() {
-      sourceSchemaBody.innerHTML = SOURCE_TABLES.map(t => `
-        <tr>
-          <td><span class="pill">${t.table}</span></td>
-          <td>${t.columns.join(', ')}</td>
-        </tr>
-      `).join('');
+    function buildInputOutputTables() {
+      const country = countrySelect.value;
 
-      const outputRows = detectColumnsFromJson();
-      outputSchemaBody.innerHTML = outputRows.map(r => `
-        <tr>
-          <td><span class="pill">${r.structure}</span></td>
-          <td>${r.columns.length ? r.columns.join(', ') : '-'}</td>
-        </tr>
-      `).join('');
+      const inRows = asArray(allData.input?.by_country?.[country]?.salient_index_top);
+      renderDynamicTable(
+        inputTopTable,
+        inRows,
+        ['country_id', 'date_utc', 'time_interval_utc', 'extracted_objects', 'absolute_normalized_index', 'n', 'urls', 'titles']
+      );
+
+      const outDataset = allData.graph;
+      const periods = parsePeriodKeys(outDataset);
+      const lastKey = periods[periods.length - 1];
+      const outRows = asArray(snapshot(outDataset, country, lastKey).nodes)
+        .slice()
+        .sort((a, b) => (Number(b?.size) || 0) - (Number(a?.size) || 0))
+        .slice(0, 30);
+
+      renderDynamicTable(
+        outputTopTable,
+        outRows,
+        ['id', 'size', 'n', 'articles', 'media_ids']
+      );
     }
 
     function refreshViews() {
@@ -789,17 +777,18 @@
       buildReportCard();
       buildQualityTable();
       buildTrendAndTop();
-      buildSchemaTables();
+      buildInputOutputTables();
     }
 
     async function run() {
       try {
         setStatus('Chargement des tables SONAR...', 'warn');
-        const [graph, timeseries] = await Promise.all([
+        const [graph, timeseries, input] = await Promise.all([
           loadJson('graph'),
-          loadJson('timeseries')
+          loadJson('timeseries'),
+          loadJson('input').catch(() => ({ by_country: {} }))
         ]);
-        allData = { graph, timeseries };
+        allData = { graph, timeseries, input };
         refreshViews();
         setStatus('SONAR charge avec succes.', 'ok');
       } catch (err) {
