@@ -44,7 +44,9 @@ jobs:
             repos = "https://cloud.r-project.org",
             INSTALL_opts = c("--no-help", "--no-html", "--no-docs")
           )
-          remotes::install_github("ellipse-science/tube", quiet = TRUE)
+          remotes::install_version("paws.storage", version = "0.9.0", repos = "https://cloud.r-project.org", INSTALL_opts = c("--no-help", "--no-html", "--no-docs"))
+          remotes::install_version("noctua", version = "2.6.3", repos = "https://cloud.r-project.org", INSTALL_opts = c("--no-help", "--no-html", "--no-docs"))
+          remotes::install_github("ellipse-science/tube", quiet = TRUE, upgrade = "never")
         shell: Rscript {0}
 
       - name: Build constellation data
