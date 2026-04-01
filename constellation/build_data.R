@@ -151,8 +151,10 @@ rows_to_records <- function(df) {
   if (nrow(df) == 0) return(list())
 
   df_safe <- df |>
-    dplyr::mutate(dplyr::across(where(inherits, "Date"), as.character),
-                  dplyr::across(where(inherits, "POSIXt"), as.character))
+    dplyr::mutate(
+      dplyr::across(where(~ inherits(.x, "Date")), as.character),
+      dplyr::across(where(~ inherits(.x, "POSIXt")), as.character)
+    )
 
   purrr::transpose(df_safe)
 }
