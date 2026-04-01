@@ -38,30 +38,44 @@ TS_FILE    <- file.path(OUT_DIR, "timeseries.json")
 
 # ─── Connexion + lecture ───────────────────────────────────────────────────────
 
+# Connexion directe à Athena via noctua (sans tube::ellipse_connect qui exige
+# s3:ListAllMyBuckets — permission absente en CI GitHub Actions)
+athena_connect <- function(env) {
+  DBI::dbConnect(
+    noctua::athena(),
+    aws_access_key_id     = Sys.getenv(paste0("AWS_ACCESS_KEY_ID_", env)),
+    aws_secret_access_key = Sys.getenv(paste0("AWS_SECRET_ACCESS_KEY_", env)),
+    schema_name           = "gluestackdatamartdbd046f685",
+    work_group            = "ellipse-work-group",
+    s3_staging_dir        = "s3://pipeline-stack-athenaqueryresultsbucket6f63bbe4-1hrrrojv867l3",
+    region_name           = "ca-central-1"
+  )
+}
+
 cat("Connexion à", SOURCE_ENV, "...\n")
 history_start <- format(Sys.Date() - HISTORY_DAYS, "%Y-%m-%d")
 graph_start   <- as.Date(Sys.Date() - GRAPH_DAYS)
 
 cat("Lecture de salient_index depuis", history_start, "...\n")
-condm <- tube::ellipse_connect(SOURCE_ENV, "datamarts")
-df_index <- tube::ellipse_query(condm, "vitrine_datamart-salient_index") |>
+condm <- athena_connect(SOURCE_ENV)
+df_index <- dplyr::tbl(condm, "vitrine_datamart-salient_index") |>
   dplyr::filter(dbplyr::sql(sprintf("date_utc >= DATE '%s'", history_start))) |>
   dplyr::select(country_id, date_utc, time_interval_utc,
                 extracted_objects, absolute_normalized_index, n, urls, titles) |>
   dplyr::collect()
-tube::ellipse_disconnect(condm)
+DBI::dbDisconnect(condm)
 cat("  →", nrow(df_index), "lignes chargées\n")
 
 cat("Lecture de salient_headlines_objects (médias) depuis", history_start, "...\n")
-condm <- tube::ellipse_connect(SOURCE_ENV, "datamarts")
-df_objects <- tube::ellipse_query(condm, "vitrine_datamart-salient_headlines_objects") |>
+condm <- athena_connect(SOURCE_ENV)
+df_objects <- dplyr::tbl(condm, "vitrine_datamart-salient_headlines_objects") |>
   dplyr::filter(dbplyr::sql(sprintf("substr(headline_stop_utc, 1, 10) >= '%s'", history_start))) |>
   dplyr::select(country_id, time_interval_utc,
                 media_id, url, headline_stop_utc, extracted_objects) |>
   dplyr::collect() |>
   dplyr::mutate(date_utc = as.Date(substr(as.character(headline_stop_utc), 1, 10))) |>
   dplyr::select(-headline_stop_utc)
-tube::ellipse_disconnect(condm)
+DBI::dbDisconnect(condm)
 cat("  →", nrow(df_objects), "lignes médias chargées\n")
 
 # ─── Nœuds : top N par période × pays (toute la fenêtre historique) ───────────

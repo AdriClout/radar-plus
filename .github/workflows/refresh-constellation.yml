@@ -25,8 +25,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-constellation-${{ hashFiles('constellation/build_data.R') }}
-          restore-keys: r-constellation-
+          key: r-constellation-v2-${{ hashFiles('constellation/build_data.R') }}
+          restore-keys: r-constellation-v2-
 
       - name: Install system dependencies
         run: |
@@ -36,51 +36,19 @@ jobs:
             libpng-dev libtiff-dev libjpeg-dev
 
       - name: Install R packages
-        env:
-          GITHUB_PAT: ${{ secrets.GH_PAT }}
         run: |
           install.packages(
-            c("remotes", "jsonlite", "dplyr", "purrr", "tidyr", "stringr", "readr", "dbplyr"),
+            c("jsonlite", "dplyr", "purrr", "tidyr", "stringr", "dbplyr",
+              "DBI", "noctua", "paws.storage", "paws.analytics"),
             repos = "https://cloud.r-project.org",
             INSTALL_opts = c("--no-help", "--no-html", "--no-docs")
           )
-          remotes::install_version("paws.storage", version = "0.9.0", repos = "https://cloud.r-project.org", INSTALL_opts = c("--no-help", "--no-html", "--no-docs"))
-          remotes::install_version("noctua", version = "2.6.3", repos = "https://cloud.r-project.org", INSTALL_opts = c("--no-help", "--no-html", "--no-docs"))
-          remotes::install_github("ellipse-science/tube", quiet = TRUE, upgrade = "never")
         shell: Rscript {0}
-
-      - name: Debug AWS connection
-        env:
-          AWS_ACCESS_KEY_ID_DEV: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          AWS_SECRET_ACCESS_KEY_DEV: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          Rscript -e "
-            key <- Sys.getenv('AWS_ACCESS_KEY_ID_DEV')
-            secret <- Sys.getenv('AWS_SECRET_ACCESS_KEY_DEV')
-            cat('Key present:', nzchar(key), '\n')
-            cat('Key prefix:', substr(key, 1, 4), '\n')
-            cat('Secret present:', nzchar(secret), '\n')
-            cat('Region:', Sys.getenv('AWS_DEFAULT_REGION'), '\n')
-            creds <- list(credentials = list(creds = list(
-              access_key_id = key,
-              secret_access_key = secret
-            )))
-            tryCatch({
-              r <- paws.storage::s3(config = c(creds, close_connection = TRUE))\$list_buckets()
-              cat('list_buckets OK, n buckets:', length(r\$Buckets), '\n')
-            }, error = function(e) {
-              cat('list_buckets ERROR:', conditionMessage(e), '\n')
-            })
-          "
 
       - name: Build constellation data
         env:
           AWS_ACCESS_KEY_ID_DEV: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           AWS_SECRET_ACCESS_KEY_DEV: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: Rscript constellation/build_data.R
 
