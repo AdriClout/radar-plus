@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radar+ Data Format Inspector</title>
+  <style>
+    :root {
+      --bg: #071022;
+      --panel: #0e1a35;
+      --border: #2f4f9a;
+      --text: #d9e8ff;
+      --muted: #8fb0e5;
+      --ok: #86f3b8;
+      --warn: #ffd27a;
+      --err: #ff8f9c;
+      --mono: "SFMono-Regular", Menlo, Consolas, Monaco, monospace;
+      --sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(57, 96, 191, 0.25), transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(26, 168, 157, 0.22), transparent 48%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: min(1100px, 94vw);
+      margin: 24px auto 40px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      letter-spacing: 0.3px;
+    }
+
+    .sub {
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: rgba(14, 26, 53, 0.75);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover { border-color: #7ea7ff; }
+
+    .status {
+      margin: 10px 0 18px;
+      font-family: var(--mono);
+      font-size: 13px;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .err { color: var(--err); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid rgba(126, 167, 255, 0.38);
+      border-radius: 10px;
+      background: rgba(14, 26, 53, 0.72);
+      backdrop-filter: blur(2px);
+      padding: 12px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      border: 1px solid rgba(126, 167, 255, 0.32);
+      border-radius: 8px;
+      padding: 8px;
+      background: rgba(7, 16, 34, 0.6);
+    }
+
+    .k {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 4px;
+      font-family: var(--mono);
+    }
+
+    .v {
+      font-family: var(--mono);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    pre {
+      margin: 0;
+      overflow: auto;
+      max-height: 280px;
+      border: 1px solid rgba(126, 167, 255, 0.2);
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(5, 10, 22, 0.8);
+      font-size: 12px;
+      line-height: 1.35;
+      font-family: var(--mono);
+    }
+
+    @media (max-width: 680px) {
+      h1 { font-size: 22px; }
+      .wrap { margin-top: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Data Format Inspector</h1>
+    <div class="sub">Loads graph.json and timeseries.json from the live site root and shows key structure + sample content.</div>
+
+    <div class="actions">
+      <button id="reload">Reload JSON</button>
+      <button id="expand">Show larger samples</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const gridEl = document.getElementById('grid');
+    const reloadBtn = document.getElementById('reload');
+    const expandBtn = document.getElementById('expand');
+
+    const SOURCES = [
+      { name: 'graph', url: './graph.json' },
+      { name: 'timeseries', url: './timeseries.json' }
+    ];
+
+    let largeSample = false;
+
+    function log(line, level = 'ok') {
+      const span = document.createElement('div');
+      span.className = level;
+      span.textContent = line;
+      statusEl.appendChild(span);
+    }
+
+    function clearUI() {
+      statusEl.textContent = '';
+      gridEl.textContent = '';
+    }
+
+    function pretty(obj) {
+      return JSON.stringify(obj, null, 2);
+    }
+
+    function firstArrayValue(obj) {
+      for (const [key, val] of Object.entries(obj || {})) {
+        if (Array.isArray(val)) return [key, val];
+      }
+      return [null, null];
+    }
+
+    function toMetaRows(data) {
+      const meta = data && typeof data === 'object' ? (data.meta || {}) : {};
+      const rows = [
+        ['generated_at', meta.generated_at],
+        ['mode', meta.mode],
+        ['periods_count', Array.isArray(meta.periods) ? meta.periods.length : 0],
+        ['keys_root', Object.keys(data || {}).join(', ')],
+        ['keys_meta', Object.keys(meta || {}).join(', ')]
+      ];
+      return rows;
+    }
+
+    function samplePayload(data) {
+      const out = {};
+      out.meta = data.meta || {};
+
+      for (const key of ['nodes', 'edges', 'periods']) {
+        if (Array.isArray(data[key])) {
+          out[key] = data[key].slice(0, largeSample ? 3 : 1);
+        }
+      }
+
+      if (!out.nodes && !out.edges && !out.periods) {
+        const [arrKey, arrVal] = firstArrayValue(data);
+        if (arrKey) out[arrKey] = arrVal.slice(0, largeSample ? 3 : 1);
+      }
+
+      return out;
+    }
+
+    function makeCard(name, data) {
+      const card = document.createElement('section');
+      card.className = 'card';
+
+      const title = document.createElement('h2');
+      title.textContent = `${name}.json`;
+      card.appendChild(title);
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+
+      for (const [k, v] of toMetaRows(data)) {
+        const pill = document.createElement('div');
+        pill.className = 'pill';
+
+        const key = document.createElement('span');
+        key.className = 'k';
+        key.textContent = k;
+
+        const val = document.createElement('span');
+        val.className = 'v';
+        val.textContent = String(v ?? 'null');
+
+        pill.appendChild(key);
+        pill.appendChild(val);
+        meta.appendChild(pill);
+      }
+
+      const pre = document.createElement('pre');
+      pre.textContent = pretty(samplePayload(data));
+
+      card.appendChild(meta);
+      card.appendChild(pre);
+      return card;
+    }
+
+    async function loadOne(src) {
+      const res = await fetch(src.url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`${src.name}.json HTTP ${res.status}`);
+      const data = await res.json();
+      return { src, data };
+    }
+
+    async function run() {
+      clearUI();
+      log('Loading JSON from live site...', 'warn');
+
+      for (const src of SOURCES) {
+        try {
+          const { data } = await loadOne(src);
+          log(`OK ${src.name}.json loaded`, 'ok');
+          gridEl.appendChild(makeCard(src.name, data));
+        } catch (err) {
+          log(`ERROR ${src.name}.json: ${err.message}`, 'err');
+        }
+      }
+    }
+
+    reloadBtn.addEventListener('click', run);
+    expandBtn.addEventListener('click', () => {
+      largeSample = !largeSample;
+      expandBtn.textContent = largeSample ? 'Show smaller samples' : 'Show larger samples';
+      run();
+    });
+
+    run();
+  </script>
+</body>
+</html>
