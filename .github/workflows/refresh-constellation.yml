@@ -75,26 +75,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run deploy-github-pages.yml --ref main
 
-      - name: Trigger Netlify deploy
-        env:
-          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
-        run: |
-          if [ -z "${NETLIFY_BUILD_HOOK_URL}" ]; then
-            echo "NETLIFY_BUILD_HOOK_URL absent: skipping explicit Netlify deploy trigger."
-            exit 0
-          fi
-          curl -fsS -X POST "${NETLIFY_BUILD_HOOK_URL}"
-
       - name: Validate live site is updated
-        env:
-          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
         run: |
           set -euo pipefail
-
-          if [ -z "${NETLIFY_BUILD_HOOK_URL}" ]; then
-            echo "NETLIFY_BUILD_HOOK_URL absent: skipping live site validation."
-            exit 0
-          fi
 
           expected_graph="$(jq -r '.meta.generated_at' constellation/graph.json)"
           expected_timeseries="$(jq -r '.meta.generated_at' constellation/timeseries.json)"

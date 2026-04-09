@@ -7,6 +7,7 @@ on:
 
 permissions:
   pages: write
+  actions: write
 
 jobs:
   finalize:
@@ -64,7 +65,8 @@ jobs:
           enforced="$(echo "${response}" | jq -r '.https_enforced // false')"
 
           if [ "${enforced}" = "true" ]; then
-            echo "HTTPS is now enforced."
+            echo "HTTPS is now enforced. Disabling this scheduled workflow."
+            gh workflow disable finalize-pages-domain.yml
             exit 0
           fi
 
