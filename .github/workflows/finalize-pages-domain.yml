@@ -16,6 +16,7 @@ jobs:
       - name: Ensure custom domain and enforce HTTPS when certificate is ready
         env:
           GH_TOKEN: ${{ github.token }}
+          PAGES_API_TOKEN: ${{ secrets.PAGES_API_TOKEN }}
           OWNER: AdriClout
           REPO: radar-plus
           DOMAIN: radarplus.org
@@ -23,9 +24,10 @@ jobs:
           set -euo pipefail
 
           api_url="https://api.github.com/repos/${OWNER}/${REPO}/pages"
+          token="${PAGES_API_TOKEN:-${GH_TOKEN}}"
 
           current="$(curl -fsSL \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Authorization: Bearer ${token}" \
             -H "Accept: application/vnd.github+json" \
             "${api_url}")"
 
@@ -40,7 +42,7 @@ jobs:
           if [ "${current_cname}" != "${DOMAIN}" ]; then
             echo "Setting custom domain to ${DOMAIN}..."
             curl -fsSL -X PUT \
-              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Authorization: Bearer ${token}" \
               -H "Accept: application/vnd.github+json" \
               "${api_url}" \
               -d "{\"cname\":\"${DOMAIN}\",\"source\":{\"branch\":\"main\",\"path\":\"/\"}}" >/dev/null
@@ -53,7 +55,7 @@ jobs:
 
           echo "Trying to enforce HTTPS..."
           response="$(curl -sS -X PUT \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Authorization: Bearer ${token}" \
             -H "Accept: application/vnd.github+json" \
             "${api_url}" \
             -d '{"https_enforced":true}')"
@@ -68,6 +70,12 @@ jobs:
 
           if [ "${message}" = "The certificate does not exist yet" ]; then
             echo "Certificate is not ready yet. Will retry on next scheduled run."
+            exit 0
+          fi
+
+          if [ "${message}" = "Resource not accessible by integration" ]; then
+            echo "Token cannot enforce Pages HTTPS via API."
+            echo "Set repository secret PAGES_API_TOKEN (PAT with repo/admin:repo_hook scope) to enable full automation."
             exit 0
           fi
 
