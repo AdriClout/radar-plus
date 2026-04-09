@@ -1,0 +1,75 @@
+name: Finalize Pages Domain
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  pages: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ensure custom domain and enforce HTTPS when certificate is ready
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER: AdriClout
+          REPO: radar-plus
+          DOMAIN: radarplus.org
+        run: |
+          set -euo pipefail
+
+          api_url="https://api.github.com/repos/${OWNER}/${REPO}/pages"
+
+          current="$(curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${api_url}")"
+
+          current_cname="$(echo "${current}" | jq -r '.cname // empty')"
+          current_https="$(echo "${current}" | jq -r '.https_enforced')"
+          cert_state="$(echo "${current}" | jq -r '.https_certificate.state // "none"')"
+
+          echo "Current cname: ${current_cname:-<none>}"
+          echo "Current https_enforced: ${current_https}"
+          echo "Current certificate state: ${cert_state}"
+
+          if [ "${current_cname}" != "${DOMAIN}" ]; then
+            echo "Setting custom domain to ${DOMAIN}..."
+            curl -fsSL -X PUT \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "${api_url}" \
+              -d "{\"cname\":\"${DOMAIN}\",\"source\":{\"branch\":\"main\",\"path\":\"/\"}}" >/dev/null
+          fi
+
+          if [ "${current_https}" = "true" ]; then
+            echo "HTTPS already enforced. Nothing to do."
+            exit 0
+          fi
+
+          echo "Trying to enforce HTTPS..."
+          response="$(curl -sS -X PUT \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${api_url}" \
+            -d '{"https_enforced":true}')"
+
+          message="$(echo "${response}" | jq -r '.message // empty')"
+          enforced="$(echo "${response}" | jq -r '.https_enforced // false')"
+
+          if [ "${enforced}" = "true" ]; then
+            echo "HTTPS is now enforced."
+            exit 0
+          fi
+
+          if [ "${message}" = "The certificate does not exist yet" ]; then
+            echo "Certificate is not ready yet. Will retry on next scheduled run."
+            exit 0
+          fi
+
+          echo "Unexpected response while enforcing HTTPS: ${response}"
+          exit 1
