@@ -196,7 +196,17 @@ make_periods_df <- function(df) {
     dplyr::arrange(date_utc, time_interval_utc) |>
     dplyr::mutate(
       key   = paste0(date_utc, "_", time_interval_utc),
-      label = paste0(format(as.Date(date_utc), "%b %d"), " · ", time_interval_utc, " UTC")
+      label = {
+        parts <- strsplit(time_interval_utc, "-")
+        est_start <- (as.integer(sapply(parts, `[`, 1)) - 5) %% 24
+        est_end   <- (as.integer(sapply(parts, `[`, 2)) - 5) %% 24
+        est_interval <- paste0(est_start, "-", est_end)
+        # Adjust date if interval crosses midnight (UTC 0-4 → EST prev day 19-23)
+        est_date <- ifelse(as.integer(sapply(parts, `[`, 1)) < 5,
+                           format(as.Date(date_utc) - 1, "%b %d"),
+                           format(as.Date(date_utc), "%b %d"))
+        paste0(est_date, " · ", est_interval, " EST")
+      }
     )
 }
 
