@@ -55,20 +55,30 @@ jobs:
           fi
 
           echo "Trying to enforce HTTPS..."
-          response="$(curl -sS -X PUT \
+          http_code="$(curl -sS -o /dev/null -w "%{http_code}" -X PUT \
             -H "Authorization: Bearer ${token}" \
             -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
             "${api_url}" \
             -d '{"https_enforced":true}')"
 
-          message="$(echo "${response}" | jq -r '.message // empty')"
-          enforced="$(echo "${response}" | jq -r '.https_enforced // false')"
+          echo "PUT response HTTP code: ${http_code}"
 
-          if [ "${enforced}" = "true" ]; then
+          if [ "${http_code}" = "204" ] || [ "${http_code}" = "200" ]; then
             echo "HTTPS is now enforced. Disabling this scheduled workflow."
             gh workflow disable finalize-pages-domain.yml
             exit 0
           fi
+
+          # Lire la réponse avec corps pour diagnostiquer les erreurs
+          response="$(curl -sS -X PUT \
+            -H "Authorization: Bearer ${token}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            "${api_url}" \
+            -d '{"https_enforced":true}')"
+
+          message="$(echo "${response}" | jq -r '.message // empty')"
 
           if [ "${message}" = "The certificate does not exist yet" ]; then
             echo "Certificate is not ready yet. Will retry on next scheduled run."
@@ -77,9 +87,9 @@ jobs:
 
           if [ "${message}" = "Resource not accessible by integration" ]; then
             echo "Token cannot enforce Pages HTTPS via API."
-            echo "Set repository secret PAGES_API_TOKEN (PAT with repo/admin:repo_hook scope) to enable full automation."
+            echo "Set repository secret GH_PAT with repo scope to enable full automation."
             exit 0
           fi
 
-          echo "Unexpected response while enforcing HTTPS: ${response}"
+          echo "Unexpected response (HTTP ${http_code}): ${response}"
           exit 1
