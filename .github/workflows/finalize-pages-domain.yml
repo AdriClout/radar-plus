@@ -17,7 +17,7 @@ jobs:
       - name: Ensure custom domain and enforce HTTPS when certificate is ready
         env:
           GH_TOKEN: ${{ github.token }}
-          PAGES_API_TOKEN: ${{ secrets.PAGES_API_TOKEN }}
+          PAGES_API_TOKEN: ${{ secrets.GH_PAT }}
           OWNER: AdriClout
           REPO: radar-plus
           DOMAIN: radarplus.org
