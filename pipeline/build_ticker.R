@@ -83,6 +83,8 @@ parse_ts_utc <- function(x) {
   out
 }
 
+cutoff_utc <- Sys.time() - as.difftime(LOOKBACK_HOURS, units = "hours")
+
 items_df <- df_objects |>
   dplyr::mutate(
     headline_stop_ts = parse_ts_utc(headline_stop_utc),
@@ -91,6 +93,7 @@ items_df <- df_objects |>
     country_id = as.character(country_id)
   ) |>
   dplyr::filter(!is.na(headline_stop_ts), !is.na(url), nzchar(url), !is.na(media_id), nzchar(media_id)) |>
+  dplyr::filter(headline_stop_ts >= cutoff_utc) |>
   dplyr::arrange(dplyr::desc(headline_stop_ts))
 
 # We always keep the latest scraped headline per media.

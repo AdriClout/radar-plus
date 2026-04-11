@@ -264,6 +264,9 @@ def main():
     if dwh_db:
         try:
             print(f"Fetching ticker objects from datawarehouse table {dwh_db}.{DATAWAREHOUSE_TABLE}...")
+            # Use partition keys for efficient pruning — only last 2 days
+            today = date.today()
+            yesterday = today - timedelta(days=1)
             q_dwh = f"""
                 SELECT
                     '' AS country_id,
@@ -284,9 +287,13 @@ def main():
                   AND title <> ''
                   AND metadata_url IS NOT NULL
                   AND metadata_url <> ''
-                  AND extraction_year >= YEAR(current_date) - 1
+                  AND (
+                    (extraction_year = {today.year} AND extraction_month = {today.month} AND extraction_day = {today.day})
+                    OR
+                    (extraction_year = {yesterday.year} AND extraction_month = {yesterday.month} AND extraction_day = {yesterday.day})
+                  )
                 ORDER BY extraction_year DESC, extraction_month DESC, extraction_day DESC, extraction_time DESC
-                LIMIT 4000
+                LIMIT 500
             """
             dwh_loc = run_query(athena, q_dwh, dwh_db)
             s3_download(s3, dwh_loc, os.path.join(script_dir, "ticker_objects.csv"))
