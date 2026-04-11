@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Constellation des Objets</title>
+  <title>Évolution des Objets</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -480,7 +480,7 @@
   </style>
 </head>
 <body>
-  <div id="loading"><div id="loading-text">initialisation · constellation</div></div>
+  <div id="loading"><div id="loading-text">initialisation · évolution</div></div>
   <div id="graph"></div>
   <div id="evolution-view">
     <canvas id="evo-canvas"></canvas>
@@ -505,14 +505,14 @@
       <button class="tab" data-country="USA">USA</button>
     </div>
     <div id="mode-tabs">
-      <span class="mode-tab active">Constellation</span>
-      <a class="mode-tab" href="./evolution.html">Évolution</a>
+      <a class="mode-tab" href="./constellation.html">Constellation</a>
+      <span class="mode-tab active">Évolution</span>
     </div>
     <div id="search-wrap">
       <input type="text" id="search-input" placeholder="/ rechercher un objet…" autocomplete="off" spellcheck="false" />
       <div id="search-status"></div>
     </div>
-    <div id="title">constellation des objets · v0.3</div>
+    <div id="title">évolution des objets · v0.3</div>
   </div>
   <div id="media-panel">
     <div id="media-head">
@@ -1519,6 +1519,9 @@
   loadPeriod(currentCountry, currentIdx);
   refreshTicker();
   setInterval(refreshTicker, 120000);
+
+  // Auto-start en mode évolution
+  setMode('evolution');
 
   } catch(e) {
     document.getElementById('loading-text').textContent = 'ERREUR: ' + e.message;
