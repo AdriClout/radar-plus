@@ -26,6 +26,7 @@ WORKGROUP = "ellipse-work-group"
 DATABASE = "gluestackdatamartdbd046f685"
 LOOKBACK_DAYS = 2
 SLACK_API_BASE = "https://slack.com/api"
+DATAWAREHOUSE_TABLE = "r-media-headlines"
 
 
 def write_rows_csv(path, fieldnames, rows):
@@ -178,10 +179,10 @@ def fetch_slack_messages(token, channel_id, lookback_minutes, out_dir):
     return True
 
 
-def run_query(athena, sql):
+def run_query(athena, sql, database):
     resp = athena.start_query_execution(
         QueryString=sql,
-        QueryExecutionContext={"Database": DATABASE},
+        QueryExecutionContext={"Database": database},
         WorkGroup=WORKGROUP,
     )
     qid = resp["QueryExecutionId"]
@@ -204,6 +205,41 @@ def s3_download(s3, s3_uri, local_path):
     s3.download_file(bucket, key, local_path)
 
 
+def resolve_database_for_table(glue, table_name, preferred_db=None):
+    if preferred_db:
+        try:
+            glue.get_table(DatabaseName=preferred_db, Name=table_name)
+            return preferred_db
+        except Exception:
+            pass
+
+    paginator = glue.get_paginator("get_databases")
+    names = []
+    for page in paginator.paginate():
+        for db in page.get("DatabaseList", []):
+            n = db.get("Name")
+            if n:
+                names.append(n)
+
+    # Try likely matches first for faster resolution.
+    preferred_order = sorted(
+        names,
+        key=lambda n: (
+            0 if "datawarehouse" in n else (1 if "datamart" in n else 2),
+            n,
+        ),
+    )
+
+    for db_name in preferred_order:
+        try:
+            glue.get_table(DatabaseName=db_name, Name=table_name)
+            return db_name
+        except Exception:
+            continue
+
+    return None
+
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     start_date = (date.today() - timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%d")
@@ -220,6 +256,39 @@ def main():
 
     athena = boto3.client("athena", region_name=REGION)
     s3 = boto3.client("s3", region_name=REGION)
+    glue = boto3.client("glue", region_name=REGION)
+
+    preferred_dwh_db = os.environ.get("DATAWAREHOUSE_DATABASE", "").strip() or None
+    dwh_db = resolve_database_for_table(glue, DATAWAREHOUSE_TABLE, preferred_db=preferred_dwh_db)
+
+    if dwh_db:
+        try:
+            print(f"Fetching ticker objects from datawarehouse table {dwh_db}.{DATAWAREHOUSE_TABLE}...")
+            q_dwh = f"""
+                SELECT
+                    '' AS country_id,
+                    '' AS time_interval_utc,
+                    media_id,
+                    metadata_url AS url,
+                    CONCAT(CAST(extraction_date AS VARCHAR), ' ', COALESCE(extraction_time, '00:00:00')) AS headline_stop_utc,
+                    '' AS extracted_objects,
+                    title
+                FROM "{DATAWAREHOUSE_TABLE}"
+                WHERE extraction_date >= DATE '{start_date}'
+            """
+            dwh_loc = run_query(athena, q_dwh, dwh_db)
+            s3_download(s3, dwh_loc, os.path.join(script_dir, "ticker_objects.csv"))
+            # Keep compatibility with build script even if we don't need title mapping.
+            write_rows_csv(
+                os.path.join(script_dir, "ticker_index.csv"),
+                ["date_utc", "time_interval_utc", "urls", "titles"],
+                [],
+            )
+            print("  -> saved ticker_objects.csv (datawarehouse source)")
+            print("  -> saved ticker_index.csv (empty compatibility file)")
+            return
+        except Exception as e:
+            print(f"WARNING: datawarehouse query failed ({e}); falling back to datamart.", file=sys.stderr)
 
     print(f"Fetching ticker objects from {start_date}...")
     q_objects = f"""
@@ -228,7 +297,7 @@ def main():
         FROM "vitrine_datamart-salient_headlines_objects"
         WHERE substr(headline_stop_utc, 1, 10) >= '{start_date}'
     """
-    objects_loc = run_query(athena, q_objects)
+    objects_loc = run_query(athena, q_objects, DATABASE)
     s3_download(s3, objects_loc, os.path.join(script_dir, "ticker_objects.csv"))
     print("  -> saved ticker_objects.csv")
 
@@ -238,7 +307,7 @@ def main():
         FROM "vitrine_datamart-salient_index"
         WHERE date_utc >= DATE '{start_date}'
     """
-    index_loc = run_query(athena, q_index)
+    index_loc = run_query(athena, q_index, DATABASE)
     s3_download(s3, index_loc, os.path.join(script_dir, "ticker_index.csv"))
     print("  -> saved ticker_index.csv")
 
