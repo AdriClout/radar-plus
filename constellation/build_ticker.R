@@ -97,9 +97,11 @@ if (nrow(items_df) > 0) {
 items_df <- items_df |>
   dplyr::mutate(
     title = vapply(url, lookup_title, FUN.VALUE = character(1)),
-    title = dplyr::if_else(is.na(title) | !nzchar(title), safe_title_from_url(url), title),
+    fallback_title = vapply(url, safe_title_from_url, FUN.VALUE = character(1)),
+    title = dplyr::if_else(is.na(title) | !nzchar(title), fallback_title, title),
     ts_utc = format(headline_stop_ts, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
   ) |>
+  dplyr::select(-fallback_title) |>
   dplyr::arrange(dplyr::desc(headline_stop_ts)) |>
   dplyr::slice_head(n = MAX_ITEMS)
 
