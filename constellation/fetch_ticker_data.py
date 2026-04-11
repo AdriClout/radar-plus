@@ -270,11 +270,23 @@ def main():
                     '' AS time_interval_utc,
                     media_id,
                     metadata_url AS url,
-                    CONCAT(CAST(extraction_date AS VARCHAR), ' ', COALESCE(extraction_time, '00:00:00')) AS headline_stop_utc,
+                    CONCAT(
+                        CAST(extraction_year AS VARCHAR), '-',
+                        LPAD(CAST(extraction_month AS VARCHAR), 2, '0'), '-',
+                        LPAD(CAST(extraction_day AS VARCHAR), 2, '0'), ' ',
+                        COALESCE(extraction_time, '00:00:00')
+                    ) AS headline_stop_utc,
                     '' AS extracted_objects,
                     title
                 FROM "{DATAWAREHOUSE_TABLE}"
-                WHERE extraction_date >= DATE '{start_date}'
+                WHERE media_id IS NOT NULL
+                  AND title IS NOT NULL
+                  AND title <> ''
+                  AND metadata_url IS NOT NULL
+                  AND metadata_url <> ''
+                  AND extraction_year >= YEAR(current_date) - 1
+                ORDER BY extraction_year DESC, extraction_month DESC, extraction_day DESC, extraction_time DESC
+                LIMIT 4000
             """
             dwh_loc = run_query(athena, q_dwh, dwh_db)
             s3_download(s3, dwh_loc, os.path.join(script_dir, "ticker_objects.csv"))
