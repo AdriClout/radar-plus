@@ -1,0 +1,94 @@
+name: Refresh News Ticker
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-ticker
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.4'
+
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-ticker-v1-${{ hashFiles('constellation/build_ticker.R') }}
+          restore-keys: r-ticker-v1-
+
+      - name: Install R packages
+        run: |
+          install.packages(
+            c("jsonlite", "dplyr", "purrr", "readr"),
+            repos = "https://cloud.r-project.org",
+            INSTALL_opts = c("--no-help", "--no-html", "--no-docs")
+          )
+        shell: Rscript {0}
+
+      - name: Fetch ticker source data (Athena)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_DEFAULT_REGION: ca-central-1
+        run: |
+          pip install boto3 --quiet
+          python3 constellation/fetch_ticker_data.py
+
+      - name: Build ticker.json
+        run: Rscript constellation/build_ticker.R
+
+      - name: Commit and push ticker
+        id: commit_data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add constellation/ticker.json
+          if git diff --staged --quiet; then
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: refresh ticker data"
+            git push
+            echo "updated=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger GitHub Pages deploy
+        if: steps.commit_data.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-github-pages.yml --ref main
+
+      - name: Validate live ticker is updated
+        if: steps.commit_data.outputs.updated == 'true'
+        run: |
+          set -euo pipefail
+          expected_ticker="$(jq -r '.meta.generated_at' constellation/ticker.json)"
+          echo "Expected ticker.json meta.generated_at: ${expected_ticker}"
+
+          for attempt in $(seq 1 30); do
+            live_ticker="$(curl -fsS https://radarplus.org/ticker.json | jq -r '.meta.generated_at')"
+            echo "Attempt ${attempt}/30 -> ticker: ${live_ticker}"
+            if [ "${live_ticker}" = "${expected_ticker}" ]; then
+              echo "Live ticker is in sync."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Timed out waiting for radarplus.org to serve refreshed ticker.json"
+          exit 1
