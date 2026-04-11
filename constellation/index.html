@@ -203,7 +203,7 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 18px 16px;
+      padding: 16px 16px 14px;
       transition: all 0.3s;
       position: relative;
       overflow: hidden;
@@ -219,19 +219,38 @@
     .hot20-card:hover { border-color: rgba(100,150,255,0.5); transform: translateY(-2px); }
     .hot20-card:hover::before { transform: scaleX(1); }
 
+    /* Podium: top 3 cards */
+    .hot20-card.podium {
+      border-color: rgba(100,160,255,0.35);
+      background: linear-gradient(145deg, rgba(15,25,65,0.9), var(--card-bg));
+    }
+    .hot20-card.podium .hot20-rank { color: rgba(100,160,255,0.5); font-size: 36px; }
+    .hot20-card.rank-1 { border-color: rgba(255,200,60,0.4); background: linear-gradient(145deg, rgba(50,40,10,0.5), var(--card-bg)); }
+    .hot20-card.rank-1 .hot20-rank { color: rgba(255,200,60,0.45); }
+    .hot20-card.rank-1::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+    .hot20-card.rank-2 { border-color: rgba(200,210,230,0.3); }
+    .hot20-card.rank-2 .hot20-rank { color: rgba(200,210,230,0.35); }
+    .hot20-card.rank-2::before { background: linear-gradient(90deg, #c0cfdf, #94a3b8); }
+    .hot20-card.rank-3 { border-color: rgba(200,150,80,0.3); }
+    .hot20-card.rank-3 .hot20-rank { color: rgba(200,150,80,0.35); }
+    .hot20-card.rank-3::before { background: linear-gradient(90deg, #c8966a, #a0764a); }
+    .hot20-card.podium:hover::before { transform: scaleX(1); }
+
     .hot20-rank {
       font-family: var(--orbitron); font-size: 28px; font-weight: 700;
       color: rgba(80,130,255,0.25); position: absolute; top: 10px; right: 14px;
-      line-height: 1;
+      line-height: 1; display: flex; align-items: baseline; gap: 4px;
     }
     .hot20-name {
       font-size: 15px; font-weight: 700; color: #e8f0ff;
       margin-bottom: 6px; text-transform: capitalize;
-      max-width: calc(100% - 40px);
+      max-width: calc(100% - 60px);
     }
-    .hot20-meta {
-      font-size: 11px; color: var(--muted); margin-bottom: 10px;
+    .hot20-pct {
+      font-family: var(--mono); font-size: 11px; color: var(--text);
+      margin-bottom: 8px;
     }
+    .hot20-pct strong { color: #e8f0ff; font-size: 13px; }
     .hot20-bar-track {
       height: 4px; background: rgba(60,100,200,0.15);
       border-radius: 2px; overflow: hidden;
@@ -241,13 +260,8 @@
       background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8));
       transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .hot20-medias {
-      margin-top: 10px; display: flex; gap: 4px; flex-wrap: wrap;
-    }
-    .hot20-media-tag {
-      font-size: 9px; padding: 2px 6px; border-radius: 3px;
-      background: rgba(60,100,200,0.2); color: rgba(180,210,255,0.8);
-      letter-spacing: 0.5px;
+    .hot20-coverage {
+      margin-top: 8px; font-size: 10px; color: var(--muted);
     }
 
     .hot20-empty {
@@ -257,13 +271,17 @@
 
     /* Trend indicators */
     .hot20-trend {
-      display: inline-block; font-size: 11px; font-weight: 700;
-      margin-left: 6px; vertical-align: middle;
+      font-size: 10px; font-weight: 700;
+      white-space: nowrap;
     }
     .hot20-trend.up { color: #4ade80; }
     .hot20-trend.down { color: #f87171; }
     .hot20-trend.new { color: #fbbf24; }
+    .hot20-trend.comeback { color: #c084fc; }
     .hot20-trend.stable { color: var(--muted); }
+    .hot20-streak {
+      font-size: 9px; color: var(--muted); margin-top: 2px;
+    }
 
     /* Search bar */
     .hot20-search {
@@ -668,54 +686,94 @@ function renderHot20() {
     return;
   }
 
-  var nodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }).slice(0, 20);
-  var maxSize = nodes[0] ? (nodes[0].size || 1) : 1;
+  var allNodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
+  var nodes = allNodes.slice(0, 20);
+  var totalSize = allNodes.reduce(function(acc, n) { return acc + (n.size || 0); }, 0) || 1;
 
   /* Trend: compare with previous period */
   var prevRanks = {};
+  var prevIds = {};
   if (currentPeriodIdx > 0) {
     var prevPeriod = allPeriods[currentPeriodIdx - 1];
     var prevData = countryGraphs ? countryGraphs[prevPeriod.key] : null;
     if (prevData && prevData.nodes) {
       var prevSorted = prevData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-      prevSorted.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; });
+      prevSorted.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; prevIds[n.id] = true; });
     }
   }
+
+  /* Consecutive periods: count how many recent periods each entity appears in */
+  var streaks = {};
+  nodes.forEach(function(node) {
+    var count = 0;
+    for (var pi = currentPeriodIdx; pi >= 0; pi--) {
+      var pd = countryGraphs[allPeriods[pi].key];
+      if (!pd || !pd.nodes) break;
+      var found = pd.nodes.some(function(n) { return n.id === node.id; });
+      if (found) count++;
+      else break;
+    }
+    streaks[node.id] = count;
+  });
+
+  /* Comeback detection: was absent for 2+ periods before reappearing */
+  var comebacks = {};
+  nodes.forEach(function(node) {
+    if (prevIds[node.id]) return; /* was in previous period — not a comeback */
+    /* Check if it appeared 2-10 periods ago */
+    for (var pi = currentPeriodIdx - 2; pi >= Math.max(0, currentPeriodIdx - 10); pi--) {
+      var pd = countryGraphs[allPeriods[pi].key];
+      if (pd && pd.nodes && pd.nodes.some(function(n) { return n.id === node.id; })) {
+        comebacks[node.id] = true;
+        return;
+      }
+    }
+  });
 
   /* Store nodes for click handler */
   window._hot20Nodes = nodes;
 
   grid.innerHTML = nodes.map(function(node, i) {
-    var pct = Math.round(((node.size || 0) / maxSize) * 100);
-    var mediaTags = (node.media_ids || []).slice(0, 6).map(function(m) {
-      return '<span class="hot20-media-tag">' + escapeHtml(m) + '</span>';
-    }).join('');
+    var pct = Math.round(((node.size || 0) / totalSize) * 100);
+    var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
     var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+    var mediaCount = (node.media_ids || []).length;
 
     /* Trend badge */
     var trendHtml = '';
     if (currentPeriodIdx > 0) {
       var prevRank = prevRanks[node.id];
-      if (!prevRank) {
-        trendHtml = '<span class="hot20-trend new" title="Nouveau">&#128293; NEW</span>';
+      if (!prevRank && comebacks[node.id]) {
+        trendHtml = '<span class="hot20-trend comeback" title="De retour">&#128260; Retour</span>';
+      } else if (!prevRank) {
+        trendHtml = '<span class="hot20-trend new" title="Nouveau">&#128293; Nouveau</span>';
       } else {
         var diff = prevRank - (i + 1);
         if (diff > 0) {
-          trendHtml = '<span class="hot20-trend up" title="Montée de ' + diff + '">&#9650;' + diff + '</span>';
+          trendHtml = '<span class="hot20-trend up" title="Monte de ' + diff + '">&#9650;' + diff + '</span>';
         } else if (diff < 0) {
-          trendHtml = '<span class="hot20-trend down" title="Descente de ' + Math.abs(diff) + '">&#9660;' + Math.abs(diff) + '</span>';
+          trendHtml = '<span class="hot20-trend down" title="Descend de ' + Math.abs(diff) + '">&#9660;' + Math.abs(diff) + '</span>';
         } else {
           trendHtml = '<span class="hot20-trend stable">&mdash;</span>';
         }
       }
     }
 
-    return '<div class="hot20-card" data-node-idx="' + i + '">' +
-      '<div class="hot20-rank">' + (i + 1) + trendHtml + '</div>' +
+    /* Streak badge */
+    var streak = streaks[node.id] || 0;
+    var streakHtml = streak > 1 ? '<div class="hot20-streak">&#128204; ' + streak + 'e p&eacute;riode cons&eacute;cutive</div>' : '';
+
+    /* Podium class */
+    var podiumClass = '';
+    if (i < 3) podiumClass = ' podium rank-' + (i + 1);
+
+    return '<div class="hot20-card' + podiumClass + '" data-node-idx="' + i + '">' +
+      '<div class="hot20-rank">' + (i + 1) + ' ' + trendHtml + '</div>' +
       '<div class="hot20-name">' + escapeHtml(name) + '</div>' +
-      '<div class="hot20-meta">' + (node.n || 0) + ' mentions &middot; score ' + (node.size || 0).toFixed(2) + '</div>' +
-      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + pct + '%"></div></div>' +
-      (mediaTags ? '<div class="hot20-medias">' + mediaTags + '</div>' : '') +
+      '<div class="hot20-pct"><strong>' + pct + '%</strong> du radar</div>' +
+      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
+      '<div class="hot20-coverage">Couvert par ' + mediaCount + ' m&eacute;dia' + (mediaCount > 1 ? 's' : '') + '</div>' +
+      streakHtml +
     '</div>';
   }).join('');
 
