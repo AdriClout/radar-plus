@@ -29,7 +29,12 @@ safe_title_from_url <- function(u) {
 }
 
 cat("Lecture ticker_index.csv...\n")
-df_index <- readr::read_csv(file.path(OUT_DIR, "ticker_index.csv"), show_col_types = FALSE)
+index_file <- file.path(OUT_DIR, "ticker_index.csv")
+df_index <- if (file.exists(index_file)) {
+  readr::read_csv(index_file, show_col_types = FALSE)
+} else {
+  dplyr::tibble(date_utc = character(), time_interval_utc = character(), urls = character(), titles = character())
+}
 cat("  ->", nrow(df_index), "lignes\n")
 
 cat("Lecture ticker_objects.csv...\n")
@@ -96,12 +101,14 @@ if (nrow(items_df) > 0) {
 
 items_df <- items_df |>
   dplyr::mutate(
+    direct_title = if ("title" %in% names(items_df)) as.character(title) else NA_character_,
     title = vapply(url, lookup_title, FUN.VALUE = character(1)),
     fallback_title = vapply(url, safe_title_from_url, FUN.VALUE = character(1)),
+    title = dplyr::if_else(!is.na(direct_title) & nzchar(direct_title), direct_title, title),
     title = dplyr::if_else(is.na(title) | !nzchar(title), fallback_title, title),
     ts_utc = format(headline_stop_ts, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
   ) |>
-  dplyr::select(-fallback_title) |>
+  dplyr::select(-fallback_title, -direct_title) |>
   dplyr::arrange(dplyr::desc(headline_stop_ts)) |>
   dplyr::slice_head(n = MAX_ITEMS)
 

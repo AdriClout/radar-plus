@@ -43,6 +43,9 @@ jobs:
 
       - name: Fetch ticker source data (Athena)
         env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: C06MSBSNH7D
+          SLACK_LOOKBACK_MINUTES: 240
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           AWS_DEFAULT_REGION: ca-central-1
