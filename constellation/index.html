@@ -363,12 +363,13 @@
 
     /* ========== TICKER ========== */
     .ticker-section {
-      position: relative; z-index: 1;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
       border-top: 1px solid var(--border);
       height: 38px; display: flex; align-items: center;
       overflow: hidden;
-      background: linear-gradient(to right, rgba(5,12,36,0.96), rgba(9,18,52,0.96));
+      background: linear-gradient(to right, rgba(5,12,36,0.98), rgba(9,18,52,0.98));
     }
+    body { padding-bottom: 38px; }
     .ticker-label {
       flex-shrink: 0; height: 100%; min-width: 140px;
       padding: 0 14px; display: flex; align-items: center; justify-content: center;
