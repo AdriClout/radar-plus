@@ -197,6 +197,7 @@ def athena_fallback(athena, s3_client, glue, dwh_db, script_dir):
             print(f"[fallback] Querying Athena table {dwh_db}.{DATAWAREHOUSE_TABLE}...")
             today = date.today()
             yesterday = today - timedelta(days=1)
+            # Cast partition columns to VARCHAR for safe comparison (handles int or string partitions).
             q = f"""
                 SELECT '' AS country_id, '' AS time_interval_utc,
                        media_id, metadata_url AS url,
@@ -208,26 +209,30 @@ def athena_fallback(athena, s3_client, glue, dwh_db, script_dir):
                 FROM "{DATAWAREHOUSE_TABLE}"
                 WHERE media_id IS NOT NULL AND title IS NOT NULL AND title<>''
                   AND metadata_url IS NOT NULL AND metadata_url<>''
-                  AND ((extraction_year={today.year} AND extraction_month={today.month} AND extraction_day={today.day})
-                    OR (extraction_year={yesterday.year} AND extraction_month={yesterday.month} AND extraction_day={yesterday.day}))
+                  AND CAST(extraction_year AS VARCHAR) = '{today.year}'
+                  AND (
+                    (CAST(extraction_month AS INTEGER) = {today.month} AND CAST(extraction_day AS INTEGER) = {today.day})
+                    OR
+                    (CAST(extraction_month AS INTEGER) = {yesterday.month} AND CAST(extraction_day AS INTEGER) = {yesterday.day})
+                  )
                 ORDER BY extraction_year DESC, extraction_month DESC, extraction_day DESC, extraction_time DESC
                 LIMIT 500
             """
             loc = run_query(athena, q, dwh_db)
             out_path = os.path.join(script_dir, "ticker_objects.csv")
             s3_download(s3_client, loc, out_path)
-            # Count rows for diagnostic.
             with open(out_path, "r") as f:
-                row_count = sum(1 for _ in f) - 1  # subtract header
-            print(f"  -> saved ticker_objects.csv (Athena datawarehouse fallback) — {row_count} rows")
-            write_rows_csv(os.path.join(script_dir, "ticker_index.csv"),
-                           ["date_utc", "time_interval_utc", "urls", "titles"], [])
-            print("  -> saved ticker_objects.csv (Athena datawarehouse fallback)")
-            return True
+                row_count = sum(1 for _ in f) - 1
+            print(f"  -> saved ticker_objects.csv (Athena DWH fallback) — {row_count} rows")
+            if row_count > 0:
+                write_rows_csv(os.path.join(script_dir, "ticker_index.csv"),
+                               ["date_utc", "time_interval_utc", "urls", "titles"], [])
+                return True
+            print("  DWH returned 0 rows, trying datamart...")
         except Exception as e:
             print(f"  WARN: Athena DWH query failed: {e}", file=sys.stderr)
 
-    # Last resort: datamart.
+    # Last resort: datamart (has salient objects with titles from the 4h ETL).
     try:
         print(f"[fallback] Querying datamart from {start_date}...")
         q = f"""
@@ -237,7 +242,11 @@ def athena_fallback(athena, s3_client, glue, dwh_db, script_dir):
             WHERE substr(headline_stop_utc,1,10) >= '{start_date}'
         """
         loc = run_query(athena, q, DATABASE)
-        s3_download(s3_client, loc, os.path.join(script_dir, "ticker_objects.csv"))
+        out_path = os.path.join(script_dir, "ticker_objects.csv")
+        s3_download(s3_client, loc, out_path)
+        with open(out_path, "r") as f:
+            row_count = sum(1 for _ in f) - 1
+        print(f"  -> saved ticker_objects.csv (datamart fallback) — {row_count} rows")
         q2 = f"""
             SELECT date_utc, time_interval_utc, urls, titles
             FROM "vitrine_datamart-salient_index"
@@ -245,7 +254,9 @@ def athena_fallback(athena, s3_client, glue, dwh_db, script_dir):
         """
         loc2 = run_query(athena, q2, DATABASE)
         s3_download(s3_client, loc2, os.path.join(script_dir, "ticker_index.csv"))
-        print("  -> saved from datamart fallback")
+        with open(os.path.join(script_dir, "ticker_index.csv"), "r") as f:
+            idx_count = sum(1 for _ in f) - 1
+        print(f"  -> saved ticker_index.csv (datamart fallback) — {idx_count} rows")
         return True
     except Exception as e:
         print(f"  ERROR: datamart fallback failed: {e}", file=sys.stderr)
