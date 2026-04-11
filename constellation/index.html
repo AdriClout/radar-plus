@@ -365,30 +365,53 @@
     .ticker-section {
       position: relative; z-index: 1;
       border-top: 1px solid var(--border);
-      padding: 30px 20px 40px;
+      height: 38px; display: flex; align-items: center;
+      overflow: hidden;
+      background: linear-gradient(to right, rgba(5,12,36,0.96), rgba(9,18,52,0.96));
     }
-    .ticker-container { max-width: 1100px; margin: 0 auto; }
     .ticker-label {
-      font-family: var(--orbitron); font-size: 12px; letter-spacing: 2px;
-      color: var(--muted); text-transform: uppercase; margin-bottom: 16px;
+      flex-shrink: 0; height: 100%; min-width: 140px;
+      padding: 0 14px; display: flex; align-items: center; justify-content: center;
+      font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.5px;
+      color: rgba(215,234,255,0.95); text-transform: uppercase;
+      background: linear-gradient(to right, rgba(28,60,140,0.75), rgba(22,48,112,0.62));
+      border-right: 1px solid rgba(95,140,255,0.30);
     }
-    .ticker-items {
-      display: flex; gap: 10px; overflow-x: auto;
-      padding: 4px 0 8px; scroll-behavior: smooth;
+    .ticker-viewport {
+      position: relative; flex: 1; height: 100%;
+      overflow: hidden; display: flex; align-items: center;
     }
-    .ticker-items::-webkit-scrollbar { height: 4px; }
-    .ticker-items::-webkit-scrollbar-track { background: rgba(60,100,200,0.08); border-radius: 2px; }
-    .ticker-items::-webkit-scrollbar-thumb { background: rgba(60,100,200,0.25); border-radius: 2px; }
+    .ticker-track {
+      --ticker-duration: 65s;
+      display: flex; align-items: center; width: max-content;
+      animation: ticker-scroll var(--ticker-duration) linear infinite;
+      will-change: transform;
+    }
+    .ticker-section:hover .ticker-track { animation-play-state: paused; }
+    .ticker-section:not(.ready) .ticker-track { animation: none; }
+    .ticker-strip {
+      display: flex; align-items: center; gap: 18px;
+      padding-right: 18px; white-space: nowrap;
+    }
     .ticker-item {
-      flex-shrink: 0; min-width: 220px; max-width: 300px;
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 4px; padding: 12px 14px;
-      font-size: 12px; line-height: 1.55; color: rgba(210,225,255,0.9);
-      transition: all 0.2s;
+      color: rgba(192,221,255,0.93); text-decoration: none;
+      font-size: 11px; letter-spacing: 0.2px;
     }
-    .ticker-item:hover { border-color: rgba(100,150,255,0.5); }
-    .ticker-item[data-url] { cursor: pointer; }
-    .ticker-media { font-weight: 700; color: var(--accent); margin-right: 4px; }
+    .ticker-item:hover { color: rgba(235,245,255,1); text-decoration: underline; }
+    .ticker-media {
+      color: rgba(106,176,255,0.95); text-transform: uppercase;
+      margin-right: 7px; font-family: var(--orbitron);
+      font-size: 10px; letter-spacing: 0.8px;
+    }
+    .ticker-sep { color: rgba(110,150,220,0.55); font-size: 10px; }
+    .ticker-empty {
+      color: rgba(120,155,210,0.78); font-size: 10px;
+      letter-spacing: 0.5px; padding-left: 14px; white-space: nowrap;
+    }
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
 
     /* ========== FOOTER ========== */
     footer {
@@ -427,7 +450,7 @@
   <a href="./graph.html">Évolution <span class="nav-badge">TIMELINE</span></a>
   <a href="./sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>
   <a href="#hot20">Hot 20</a>
-  <a href="#ticker">Dernière minute</a>
+  <a href="#ticker-section">Dernière minute</a>
   <a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>
   <h3 style="margin-top: 30px;">À propos</h3>
   <a href="https://www.clessn.com" target="_blank" rel="noopener">CLESSN</a>
@@ -510,11 +533,11 @@
 </section>
 
 <!-- ========== TICKER ========== -->
-<section class="ticker-section" id="ticker">
-  <div class="ticker-container">
-    <div class="ticker-label">Dernière minute</div>
-    <div class="ticker-items" id="ticker-items">
-      <div class="ticker-item" style="color:var(--muted);font-style:italic">Chargement&hellip;</div>
+<section class="ticker-section" id="ticker-section">
+  <div class="ticker-label">Dernière minute</div>
+  <div class="ticker-viewport">
+    <div class="ticker-track" id="ticker-track">
+      <span class="ticker-empty">Chargement des manchettes&hellip;</span>
     </div>
   </div>
 </section>
@@ -734,26 +757,34 @@ document.getElementById('week-next').addEventListener('click', function() {
 
 /* ===== TICKER ===== */
 async function loadTicker() {
+  var section = document.getElementById('ticker-section');
+  var track = document.getElementById('ticker-track');
   try {
     var res = await fetch('./ticker.json');
     if (!res.ok) throw new Error('fetch failed');
     var data = await res.json();
-    var container = document.getElementById('ticker-items');
     if (!data.items || data.items.length === 0) {
-      container.innerHTML = '<div class="ticker-item" style="color:var(--muted)">Aucune donnée</div>';
+      track.innerHTML = '<span class="ticker-empty">Aucune manchette récente.</span>';
+      section.classList.add('ready');
       return;
     }
-    container.innerHTML = data.items.map(function(item) {
-      var media = item.media_id ? '<span class="ticker-media">[' + escapeHtml(item.media_id) + ']</span>' : '';
-      var urlAttr = item.url ? ' data-url="' + escapeHtml(item.url) + '"' : '';
-      return '<div class="ticker-item"' + urlAttr + '>' + media + escapeHtml(item.title) + '</div>';
-    }).join('');
-    container.addEventListener('click', function(e) {
-      var item = e.target.closest('.ticker-item[data-url]');
-      if (item) window.open(item.dataset.url, '_blank', 'noopener');
+    var payload = data.items.map(function(item) {
+      var media = escapeHtml(item.media_id || '');
+      var title = escapeHtml(item.title || 'Article');
+      var url = escapeHtml(item.url || '#');
+      return '<a class="ticker-item" href="' + url + '" target="_blank" rel="noopener"><span class="ticker-media">' + media + '</span>' + title + '</a>';
+    }).join('<span class="ticker-sep">&bull;</span>');
+    track.innerHTML = '<div class="ticker-strip">' + payload + '</div><div class="ticker-strip" aria-hidden="true">' + payload + '</div>';
+    requestAnimationFrame(function() {
+      var firstStrip = track.querySelector('.ticker-strip');
+      var px = firstStrip ? firstStrip.scrollWidth : 1600;
+      var duration = Math.max(35, Math.round(px / 70));
+      track.style.setProperty('--ticker-duration', duration + 's');
+      section.classList.add('ready');
     });
   } catch (e) {
-    document.getElementById('ticker-items').innerHTML = '<div class="ticker-item" style="color:var(--muted)">Erreur de chargement</div>';
+    track.innerHTML = '<span class="ticker-empty">Erreur de chargement du ticker.</span>';
+    section.classList.add('ready');
   }
 }
 
