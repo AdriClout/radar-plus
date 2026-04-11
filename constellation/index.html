@@ -6,345 +6,587 @@
   <title>RADAR+ • Analyse de Saillance Médiatique</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      background: #00000f;
-      font-family: 'Space Mono', 'SF Mono', monospace;
-      color: #c3dcff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
+    :root {
+      --bg: #020010;
+      --text: #d0e0ff;
+      --muted: rgba(140,170,220,0.6);
+      --accent: #5588ff;
+      --accent-glow: rgba(80,130,255,0.45);
+      --card-bg: rgba(10,18,50,0.7);
+      --border: rgba(90,140,255,0.22);
+      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; }
+
+    /* ========== STARFIELD ========== */
+    #stars-canvas {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
     }
 
-    /* HEADER */
-    header {
-      padding: 40px 20px;
-      text-align: center;
-      background: linear-gradient(to bottom, rgba(0,0,15,0.95) 0%, rgba(0,0,15,0.4) 100%);
-      border-bottom: 1px solid rgba(100,150,255,0.15);
+    /* ========== SIDE NAV ========== */
+    .nav-toggle {
+      position: fixed; top: 20px; right: 20px; z-index: 200;
+      background: rgba(10,18,50,0.85); border: 1px solid var(--border);
+      border-radius: 4px; padding: 10px 13px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 5px;
+      transition: all 0.3s;
+      backdrop-filter: blur(6px);
+    }
+    .nav-toggle:hover { border-color: var(--accent); }
+    .nav-toggle span {
+      display: block; width: 22px; height: 2px;
+      background: var(--text); transition: all 0.3s;
+    }
+    .nav-toggle.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    .side-nav {
+      position: fixed; top: 0; right: -320px; width: 320px; height: 100vh;
+      background: linear-gradient(175deg, rgba(6,12,38,0.97), rgba(3,6,20,0.99));
+      border-left: 1px solid var(--border);
+      z-index: 190; padding: 80px 30px 40px;
+      transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      backdrop-filter: blur(20px);
+      overflow-y: auto;
+    }
+    .side-nav.open { right: 0; }
+    .side-nav h3 {
+      font-family: var(--orbitron); font-size: 11px; letter-spacing: 2px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 20px;
+    }
+    .side-nav a {
+      display: block; padding: 14px 0; border-bottom: 1px solid rgba(80,130,255,0.1);
+      text-decoration: none; color: var(--text); font-size: 15px;
+      transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .side-nav a:hover { color: #fff; padding-left: 8px; }
+    .side-nav .nav-badge {
+      display: inline-block; font-size: 9px; padding: 2px 7px;
+      border: 1px solid var(--border); border-radius: 3px;
+      margin-left: 8px; color: var(--muted); vertical-align: middle;
     }
 
-    .logo-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
+    /* ========== HERO (viewport) ========== */
+    .hero {
+      position: relative; min-height: 100vh; display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      z-index: 1; overflow: hidden;
     }
 
-    .logo-container img {
-      display: block;
-      width: min(360px, 72vw);
-      height: auto;
-      filter: drop-shadow(0 0 15px rgba(80, 130, 255, 0.4));
+    .hero-robot {
+      position: relative; width: min(720px, 90vw); margin: 0 auto;
     }
 
-    h1 {
-      font-family: 'Orbitron', monospace;
-      font-size: clamp(32px, 6vw, 52px);
-      letter-spacing: 3px;
-      color: rgba(195, 220, 255, 0.95);
-      text-transform: uppercase;
-      text-shadow: 0 0 20px rgba(80, 130, 255, 0.3);
-      margin-bottom: 8px;
+    .hero-robot img {
+      width: 100%; height: auto;
+      filter: drop-shadow(0 0 40px rgba(60,100,255,0.25));
     }
 
-    .subtitle {
-      font-size: 17px;
-      letter-spacing: 1.2px;
-      color: rgba(196, 214, 245, 0.88);
-      max-width: 720px;
-      margin: 0 auto;
-      line-height: 1.5;
+    /* Media logos overlay — positioned over the SVG */
+    .media-overlay {
+      position: absolute; inset: 0;
+    }
+    .media-hotspot {
+      position: absolute; cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s;
+      z-index: 5; display: block;
+    }
+    .media-hotspot:hover {
+      transform: scale(1.45);
+      filter: brightness(1.6) drop-shadow(0 0 12px rgba(200,220,255,0.6));
+      z-index: 10;
+    }
+    .media-hotspot .media-tooltip {
+      position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+      background: rgba(5,10,30,0.95); border: 1px solid var(--border);
+      border-radius: 4px; padding: 5px 10px; font-size: 11px;
+      white-space: nowrap; color: #fff; opacity: 0;
+      transition: opacity 0.2s; pointer-events: none;
+      font-family: var(--mono);
+    }
+    .media-hotspot:hover .media-tooltip { opacity: 1; }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute; bottom: 30px; left: 50%;
+      transform: translateX(-50%); text-align: center;
+      animation: float 2.5s ease-in-out infinite;
+      z-index: 5;
+    }
+    .scroll-hint .arrow {
+      width: 24px; height: 24px; margin: 0 auto 6px;
+      border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
+      transform: rotate(45deg); opacity: 0.6;
+    }
+    .scroll-hint span {
+      font-size: 10px; letter-spacing: 2px; color: var(--muted);
+      text-transform: uppercase; font-family: var(--orbitron);
+    }
+    @keyframes float {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
     }
 
-    /* MAIN CONTENT */
-    main {
-      flex: 1;
-      padding: 60px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    /* Dotted connection lines from robot to Hot20 */
+    .dotted-bridge {
+      width: 100%; height: 120px; position: relative; z-index: 1;
+    }
+    .dotted-bridge svg { width: 100%; height: 100%; }
+
+    /* ========== HOT 20 SECTION ========== */
+    .hot20-section {
+      position: relative; z-index: 1;
+      padding: 0 20px 80px;
+      max-width: 1100px; margin: 0 auto;
     }
 
-    .hero-section {
-      max-width: 820px;
-      text-align: center;
-      margin-bottom: 70px;
+    .hot20-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+      margin-bottom: 32px;
     }
 
-    .description {
-      font-size: 21px;
-      line-height: 1.75;
-      color: rgba(208, 224, 255, 0.94);
-      margin-bottom: 18px;
+    .hot20-title {
+      font-family: var(--orbitron); font-size: clamp(20px, 3vw, 32px);
+      letter-spacing: 2px; color: #e0ecff;
+    }
+    .hot20-title .accent { color: var(--accent); }
+
+    .hot20-controls {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
     }
 
-    .meta {
-      font-size: 13px;
-      color: rgba(135, 165, 205, 0.95);
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
+    .country-tabs { display: flex; gap: 6px; }
+    .country-tab {
+      padding: 6px 16px; border: 1px solid var(--border); border-radius: 4px;
+      background: var(--card-bg); color: var(--muted); font-family: var(--mono);
+      font-size: 12px; letter-spacing: 1.5px; cursor: pointer;
+      transition: all 0.25s; text-transform: uppercase;
+    }
+    .country-tab:hover { border-color: rgba(100,150,255,0.5); color: var(--text); }
+    .country-tab.active {
+      background: rgba(40,70,160,0.5); border-color: rgba(100,160,255,0.7);
+      color: #fff; box-shadow: 0 0 12px var(--accent-glow);
     }
 
-    /* TOOLS GRID */
-    .tools-grid {
+    .week-nav {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .week-btn {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text); font-size: 16px;
+      width: 32px; height: 32px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; font-family: var(--mono);
+    }
+    .week-btn:hover { border-color: var(--accent); color: #fff; }
+    .week-btn:disabled { opacity: 0.3; cursor: default; }
+    .week-label {
+      font-size: 13px; color: var(--text); min-width: 180px;
+      text-align: center; letter-spacing: 0.5px;
+    }
+
+    /* Hot 20 grid */
+    .hot20-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      max-width: 900px;
-      width: 100%;
-      margin-bottom: 80px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
     }
 
-    .tool-card {
-      border: 1px solid rgba(80, 130, 255, 0.25);
+    .hot20-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 32px 24px;
-      background: linear-gradient(135deg, rgba(14, 26, 66, 0.72) 0%, rgba(8, 16, 42, 0.52) 100%);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      padding: 18px 16px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+    .hot20-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), rgba(100,60,255,0.6));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s;
+    }
+    .hot20-card:hover { border-color: rgba(100,150,255,0.5); transform: translateY(-2px); }
+    .hot20-card:hover::before { transform: scaleX(1); }
+
+    .hot20-rank {
+      font-family: var(--orbitron); font-size: 28px; font-weight: 700;
+      color: rgba(80,130,255,0.25); position: absolute; top: 10px; right: 14px;
+      line-height: 1;
+    }
+    .hot20-name {
+      font-size: 15px; font-weight: 700; color: #e8f0ff;
+      margin-bottom: 6px; text-transform: capitalize;
+      max-width: calc(100% - 40px);
+    }
+    .hot20-meta {
+      font-size: 11px; color: var(--muted); margin-bottom: 10px;
+    }
+    .hot20-bar-track {
+      height: 4px; background: rgba(60,100,200,0.15);
+      border-radius: 2px; overflow: hidden;
+    }
+    .hot20-bar {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8));
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .hot20-medias {
+      margin-top: 10px; display: flex; gap: 4px; flex-wrap: wrap;
+    }
+    .hot20-media-tag {
+      font-size: 9px; padding: 2px 6px; border-radius: 3px;
+      background: rgba(60,100,200,0.2); color: rgba(180,210,255,0.8);
+      letter-spacing: 0.5px;
     }
 
-    .tool-card:hover {
-      border-color: rgba(120, 180, 255, 0.6);
-      background: linear-gradient(135deg, rgba(20, 40, 80, 0.5) 0%, rgba(10, 20, 50, 0.3) 100%);
-      box-shadow: 0 0 20px rgba(80, 130, 255, 0.2),
-                  inset 0 0 20px rgba(80, 130, 255, 0.05);
-      transform: translateY(-2px);
+    .hot20-empty {
+      grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+      color: var(--muted); font-size: 14px;
     }
 
-    .tool-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    .tool-title {
-      font-family: 'Orbitron', monospace;
-      font-size: 17px;
-      letter-spacing: 1.5px;
-      color: #c7dbff;
-      text-transform: uppercase;
-      margin: 8px 0;
-    }
-
-    .tool-desc {
-      font-size: 15px;
-      color: rgba(216, 228, 247, 0.88);
-      line-height: 1.75;
-    }
-
-    /* TICKER SECTION */
+    /* ========== TICKER ========== */
     .ticker-section {
-      width: 100%;
-      border-top: 1px solid rgba(100, 150, 255, 0.15);
-      padding: 20px;
-      background: linear-gradient(to top, rgba(0,0,15,0.95) 0%, rgba(0,0,15,0.3) 100%);
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 30px 20px 40px;
     }
-
-    .ticker-container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
+    .ticker-container { max-width: 1100px; margin: 0 auto; }
     .ticker-label {
-      font-family: 'Orbitron', monospace;
-      font-size: 13px;
-      letter-spacing: 2px;
-      color: #9fc3ff;
-      text-transform: uppercase;
-      margin-bottom: 14px;
+      font-family: var(--orbitron); font-size: 12px; letter-spacing: 2px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 16px;
     }
-
     .ticker-items {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 8px 0;
-      scroll-behavior: smooth;
+      display: flex; gap: 10px; overflow-x: auto;
+      padding: 4px 0 8px; scroll-behavior: smooth;
     }
-
-    .ticker-items::-webkit-scrollbar {
-      height: 4px;
-    }
-
-    .ticker-items::-webkit-scrollbar-track {
-      background: rgba(80, 130, 255, 0.1);
-      border-radius: 2px;
-    }
-
-    .ticker-items::-webkit-scrollbar-thumb {
-      background: rgba(80, 130, 255, 0.3);
-      border-radius: 2px;
-    }
-
+    .ticker-items::-webkit-scrollbar { height: 4px; }
+    .ticker-items::-webkit-scrollbar-track { background: rgba(60,100,200,0.08); border-radius: 2px; }
+    .ticker-items::-webkit-scrollbar-thumb { background: rgba(60,100,200,0.25); border-radius: 2px; }
     .ticker-item {
-      flex-shrink: 0;
-      background: rgba(22, 44, 90, 0.82);
-      border: 1px solid rgba(124, 170, 255, 0.34);
-      border-radius: 4px;
-      padding: 12px 16px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: rgba(225, 235, 255, 0.95);
-      white-space: pre-wrap;
-      word-break: break-word;
-      min-width: 200px;
-      max-width: 320px;
+      flex-shrink: 0; min-width: 220px; max-width: 300px;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 4px; padding: 12px 14px;
+      font-size: 12px; line-height: 1.55; color: rgba(210,225,255,0.9);
       transition: all 0.2s;
     }
+    .ticker-item:hover { border-color: rgba(100,150,255,0.5); }
+    .ticker-item[data-url] { cursor: pointer; }
+    .ticker-media { font-weight: 700; color: var(--accent); margin-right: 4px; }
 
-    .ticker-item:hover {
-      border-color: rgba(100, 150, 255, 0.5);
-      background: rgba(30, 50, 100, 0.7);
-    }
-
-    .ticker-loading {
-      color: rgba(100, 130, 200, 0.6);
-      font-style: italic;
-    }
-
-    /* FOOTER */
+    /* ========== FOOTER ========== */
     footer {
-      padding: 20px;
-      text-align: center;
-      font-size: 12px;
-      color: rgba(145, 170, 205, 0.82);
-      border-top: 1px solid rgba(100, 150, 255, 0.1);
+      position: relative; z-index: 1;
+      text-align: center; padding: 24px 20px;
+      font-size: 11px; color: var(--muted);
+      border-top: 1px solid rgba(80,130,255,0.08);
     }
 
-    /* RESPONSIVE */
+    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
-      .tools-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
-      h1 {
-        font-size: 28px;
-      }
-
-      .subtitle {
-        font-size: 15px;
-      }
-
-      main {
-        padding: 40px 16px;
-      }
-
-      .description {
-        font-size: 17px;
-        line-height: 1.7;
-      }
-
-      .meta {
-        font-size: 12px;
-        line-height: 1.6;
-      }
-
-      .tool-desc {
-        font-size: 14px;
-      }
-
-      .ticker-item {
-        font-size: 12px;
-      }
+      .hero-robot { width: 95vw; }
+      .hot20-header { flex-direction: column; align-items: flex-start; }
+      .hot20-grid { grid-template-columns: 1fr 1fr; }
+      .side-nav { width: 280px; right: -280px; }
+    }
+    @media (max-width: 480px) {
+      .hot20-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo-container">
-      <img src="./design/assets/img/animation-radar.svg" alt="RADAR+ Logo" />
+
+<!-- Starfield -->
+<canvas id="stars-canvas"></canvas>
+
+<!-- Side Navigation -->
+<button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+  <span></span><span></span><span></span>
+</button>
+<nav class="side-nav" id="side-nav">
+  <h3>Navigation</h3>
+  <a href="#hero">Accueil</a>
+  <a href="./graph.html">Constellation <span class="nav-badge">LIVE</span></a>
+  <a href="./graph.html">Évolution <span class="nav-badge">TIMELINE</span></a>
+  <a href="./sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>
+  <a href="#hot20">Hot 20</a>
+  <a href="#ticker">Dernière minute</a>
+  <a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>
+  <h3 style="margin-top: 30px;">À propos</h3>
+  <a href="https://www.clessn.com" target="_blank" rel="noopener">CLESSN</a>
+  <a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>
+</nav>
+
+<!-- ========== HERO ========== -->
+<section class="hero" id="hero">
+  <div class="hero-robot">
+    <img src="./design/assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
+    <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
+    <div class="media-overlay" id="media-overlay">
+      <!-- Row 1: top media logos -->
+      <a class="media-hotspot" href="https://globalnews.ca"            target="_blank" rel="noopener" style="top:1%;  left:3%;  width:13%; height:8%"><span class="media-tooltip">Global News</span></a>
+      <a class="media-hotspot" href="https://montrealgazette.com"      target="_blank" rel="noopener" style="top:3%;  left:22%; width:14%; height:8%"><span class="media-tooltip">Montreal Gazette</span></a>
+      <a class="media-hotspot" href="https://ici.radio-canada.ca"      target="_blank" rel="noopener" style="top:1%;  left:39%; width:14%; height:8%"><span class="media-tooltip">ICI Radio-Canada</span></a>
+      <a class="media-hotspot" href="https://cbc.ca"                   target="_blank" rel="noopener" style="top:8%;  left:59%; width:14%; height:8%"><span class="media-tooltip">CBC</span></a>
+      <a class="media-hotspot" href="https://ctvnews.ca"               target="_blank" rel="noopener" style="top:8%;  left:73%; width:12%; height:7%"><span class="media-tooltip">CTV News</span></a>
+      <!-- Row 2: middle media logos -->
+      <a class="media-hotspot" href="https://tvanouvelles.ca"          target="_blank" rel="noopener" style="top:15%; left:32%; width:14%; height:8%"><span class="media-tooltip">TVA Nouvelles</span></a>
+      <a class="media-hotspot" href="https://theglobeandmail.com"      target="_blank" rel="noopener" style="top:16%; left:51%; width:16%; height:8%"><span class="media-tooltip">The Globe and Mail</span></a>
+      <a class="media-hotspot" href="https://lapresse.ca"              target="_blank" rel="noopener" style="top:22%; left:77%; width:13%; height:8%"><span class="media-tooltip">La Presse</span></a>
+      <!-- Row 3: lower media logos -->
+      <a class="media-hotspot" href="https://ledevoir.com"             target="_blank" rel="noopener" style="top:26%; left:18%; width:14%; height:8%"><span class="media-tooltip">Le Devoir</span></a>
+      <a class="media-hotspot" href="https://thestar.com"              target="_blank" rel="noopener" style="top:27%; left:59%; width:14%; height:8%"><span class="media-tooltip">Toronto Star</span></a>
+      <a class="media-hotspot" href="https://journaldemontreal.com"    target="_blank" rel="noopener" style="top:34%; left:85%; width:12%; height:8%"><span class="media-tooltip">Journal de Montréal</span></a>
+      <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:38%; left:6%;  width:13%; height:8%"><span class="media-tooltip">National Post</span></a>
+      <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:14%; left:1%;  width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
     </div>
-    <h1>RADAR+</h1>
-    <p class="subtitle">Analyse de Saillance Médiatique • Québec, Canada &amp; États-Unis</p>
-  </header>
+  </div>
+  <div class="scroll-hint">
+    <div class="arrow"></div>
+    <span>Explorer</span>
+  </div>
+</section>
 
-  <main>
-    <div class="hero-section">
-      <p class="description">
-        Radar+ est un outil de suivi en temps réel de l'actualité saillante développé par la Chaire CLESSN. 
-        Explorez comment les objets médiatiques (personnes, événements, concepts) montent et descendent dans le paysage médiatique.
-      </p>
-      <p class="meta">15 médias • QC + CAN + USA • Analyse en continu toutes les 10 minutes</p>
-    </div>
+<!-- Dotted bridge -->
+<div class="dotted-bridge">
+  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="350" y1="0" x2="300" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="500" y1="0" x2="500" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="650" y1="0" x2="700" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <circle r="3" fill="rgba(80,130,255,0.7)">
+      <animateMotion dur="2s" repeatCount="indefinite" path="M350,0 L300,120"/>
+    </circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)">
+      <animateMotion dur="2.3s" repeatCount="indefinite" path="M500,0 L500,120"/>
+    </circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)">
+      <animateMotion dur="2.6s" repeatCount="indefinite" path="M650,0 L700,120"/>
+    </circle>
+  </svg>
+</div>
 
-    <div class="tools-grid">
-      <a href="./graph.html" class="tool-card">
-        <div class="tool-icon">🌌</div>
-        <div class="tool-title">Constellation</div>
-        <div class="tool-desc">L'univers des objets médiatiques. Visualisez les relations, les clusters et l'évolution en temps réel via une force-graph interactive.</div>
-      </a>
-
-      <a href="./sonar.html" class="tool-card">
-        <div class="tool-icon">📡</div>
-        <div class="tool-title">Sonar</div>
-        <div class="tool-desc">Monitoring en direct des pipelines. Vérifiez l'état du système, la santé des données et l'historique des extractions.</div>
-      </a>
-
-      <a href="https://github.com/adriclout/radar-plus/tree/main/analyses" class="tool-card">
-        <div class="tool-icon">📊</div>
-        <div class="tool-title">Analyses</div>
-        <div class="tool-desc">Rapports ponctuels et détaillés. Explorez les données brutes, les visualisations et les tendances par période.</div>
-      </a>
-    </div>
-  </main>
-
-  <div class="ticker-section">
-    <div class="ticker-container">
-      <div class="ticker-label">Dernière minute</div>
-      <div class="ticker-items" id="ticker-items">
-        <div class="ticker-item ticker-loading">Chargement des dernières nouvelles...</div>
+<!-- ========== HOT 20 ========== -->
+<section class="hot20-section" id="hot20">
+  <div class="hot20-header">
+    <h2 class="hot20-title">HOT <span class="accent">20</span></h2>
+    <div class="hot20-controls">
+      <div class="country-tabs" id="country-tabs">
+        <button class="country-tab active" data-country="QC">Québec</button>
+        <button class="country-tab" data-country="CAN">Canada</button>
+        <button class="country-tab" data-country="USA">États-Unis</button>
+      </div>
+      <div class="week-nav">
+        <button class="week-btn" id="week-prev" title="Semaine précédente">&#8249;</button>
+        <span class="week-label" id="week-label">&mdash;</span>
+        <button class="week-btn" id="week-next" title="Semaine suivante">&#8250;</button>
       </div>
     </div>
   </div>
+  <div class="hot20-grid" id="hot20-grid">
+    <div class="hot20-empty">Chargement&hellip;</div>
+  </div>
+</section>
 
-  <footer>
-    <p>© CLESSN • Université Laval • Transparence Médiatique 24/7</p>
-  </footer>
+<!-- ========== TICKER ========== -->
+<section class="ticker-section" id="ticker">
+  <div class="ticker-container">
+    <div class="ticker-label">Dernière minute</div>
+    <div class="ticker-items" id="ticker-items">
+      <div class="ticker-item" style="color:var(--muted);font-style:italic">Chargement&hellip;</div>
+    </div>
+  </div>
+</section>
 
-  <script>
-    async function loadTicker() {
-      try {
-        const response = await fetch('./ticker.json');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        
-        const tickerItems = document.getElementById('ticker-items');
-        tickerItems.innerHTML = '';
+<footer>&copy; CLESSN &bull; Université Laval &bull; Transparence médiatique 24/7</footer>
 
-        if (data.items && data.items.length > 0) {
-          data.items.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'ticker-item';
-            const mediaLabel = item.media_id ? `[${item.media_id}]` : '';
-            div.textContent = `${mediaLabel} ${item.title}`;
-            div.title = item.url || '';
-            if (item.url) {
-              div.style.cursor = 'pointer';
-              div.onclick = () => window.open(item.url, '_blank');
-            }
-            tickerItems.appendChild(div);
-          });
-        } else {
-          tickerItems.innerHTML = '<div class="ticker-item ticker-loading">Aucune donnée disponible</div>';
-        }
-      } catch (error) {
-        console.error('Error loading ticker:', error);
-        document.getElementById('ticker-items').innerHTML = '<div class="ticker-item ticker-loading">Erreur lors du chargement</div>';
-      }
+<script>
+/* ===== STARFIELD ===== */
+(function() {
+  const c = document.getElementById('stars-canvas');
+  const ctx = c.getContext('2d');
+  let stars = [];
+  function resize() {
+    c.width = window.innerWidth;
+    c.height = document.documentElement.scrollHeight;
+    init();
+  }
+  function init() {
+    const count = Math.floor((c.width * c.height) / 2400);
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * c.width,
+      y: Math.random() * c.height,
+      r: Math.random() * 1.2 + 0.3,
+      a: Math.random() * 0.6 + 0.2,
+      speed: Math.random() * 0.003 + 0.001,
+      phase: Math.random() * Math.PI * 2,
+    }));
+  }
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    t += 0.016;
+    for (const s of stars) {
+      const alpha = s.a + Math.sin(t * s.speed * 60 + s.phase) * 0.15;
+      ctx.fillStyle = 'rgba(180,200,255,' + Math.max(0, alpha) + ')';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
     }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
 
-    document.addEventListener('DOMContentLoaded', loadTicker);
-  </script>
+/* ===== SIDE NAV ===== */
+const navToggle = document.getElementById('nav-toggle');
+const sideNav = document.getElementById('side-nav');
+navToggle.addEventListener('click', function() {
+  navToggle.classList.toggle('open');
+  sideNav.classList.toggle('open');
+});
+sideNav.querySelectorAll('a').forEach(function(a) {
+  a.addEventListener('click', function() {
+    navToggle.classList.remove('open');
+    sideNav.classList.remove('open');
+  });
+});
+
+/* ===== HOT 20 ===== */
+var graphData = null;
+var timeseriesData = null;
+var allPeriods = [];
+var currentCountry = 'QC';
+var currentPeriodIdx = 0;
+
+function escapeHtml(str) {
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+async function loadData() {
+  try {
+    var results = await Promise.all([
+      fetch('./graph.json').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+      fetch('./timeseries.json').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+    ]);
+    graphData = results[0];
+    timeseriesData = results[1];
+  } catch (e) { console.error('Data load error', e); }
+  buildPeriods();
+  renderHot20();
+}
+
+function buildPeriods() {
+  var src = timeseriesData || graphData;
+  if (!src || !src.meta || !src.meta.periods) return;
+  allPeriods = src.meta.periods.slice().sort(function(a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
+  currentPeriodIdx = allPeriods.length - 1;
+}
+
+function renderHot20() {
+  var grid = document.getElementById('hot20-grid');
+  var label = document.getElementById('week-label');
+  var prevBtn = document.getElementById('week-prev');
+  var nextBtn = document.getElementById('week-next');
+
+  if (!allPeriods.length) {
+    grid.innerHTML = '<div class="hot20-empty">Données non disponibles</div>';
+    return;
+  }
+
+  var period = allPeriods[currentPeriodIdx];
+  label.textContent = period.label || period.key;
+  prevBtn.disabled = currentPeriodIdx === 0;
+  nextBtn.disabled = currentPeriodIdx === allPeriods.length - 1;
+
+  var src = timeseriesData || graphData;
+  var countryGraphs = src.graphs ? src.graphs[currentCountry] : null;
+  var periodData = countryGraphs ? countryGraphs[period.key] : null;
+
+  if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
+    grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour cette période</div>';
+    return;
+  }
+
+  var nodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }).slice(0, 20);
+  var maxSize = nodes[0] ? (nodes[0].size || 1) : 1;
+
+  grid.innerHTML = nodes.map(function(node, i) {
+    var pct = Math.round(((node.size || 0) / maxSize) * 100);
+    var mediaTags = (node.media_ids || []).slice(0, 6).map(function(m) {
+      return '<span class="hot20-media-tag">' + escapeHtml(m) + '</span>';
+    }).join('');
+    var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+    return '<div class="hot20-card">' +
+      '<div class="hot20-rank">' + (i + 1) + '</div>' +
+      '<div class="hot20-name">' + escapeHtml(name) + '</div>' +
+      '<div class="hot20-meta">' + (node.n || 0) + ' mentions &middot; score ' + (node.size || 0).toFixed(2) + '</div>' +
+      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + pct + '%"></div></div>' +
+      (mediaTags ? '<div class="hot20-medias">' + mediaTags + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+/* Country tabs */
+document.getElementById('country-tabs').addEventListener('click', function(e) {
+  var tab = e.target.closest('.country-tab');
+  if (!tab) return;
+  document.querySelectorAll('.country-tab').forEach(function(t) { t.classList.remove('active'); });
+  tab.classList.add('active');
+  currentCountry = tab.dataset.country;
+  currentPeriodIdx = allPeriods.length - 1;
+  renderHot20();
+});
+
+/* Week nav */
+document.getElementById('week-prev').addEventListener('click', function() {
+  if (currentPeriodIdx > 0) { currentPeriodIdx--; renderHot20(); }
+});
+document.getElementById('week-next').addEventListener('click', function() {
+  if (currentPeriodIdx < allPeriods.length - 1) { currentPeriodIdx++; renderHot20(); }
+});
+
+/* ===== TICKER ===== */
+async function loadTicker() {
+  try {
+    var res = await fetch('./ticker.json');
+    if (!res.ok) throw new Error('fetch failed');
+    var data = await res.json();
+    var container = document.getElementById('ticker-items');
+    if (!data.items || data.items.length === 0) {
+      container.innerHTML = '<div class="ticker-item" style="color:var(--muted)">Aucune donnée</div>';
+      return;
+    }
+    container.innerHTML = data.items.map(function(item) {
+      var media = item.media_id ? '<span class="ticker-media">[' + escapeHtml(item.media_id) + ']</span>' : '';
+      var urlAttr = item.url ? ' data-url="' + escapeHtml(item.url) + '"' : '';
+      return '<div class="ticker-item"' + urlAttr + '>' + media + escapeHtml(item.title) + '</div>';
+    }).join('');
+    container.addEventListener('click', function(e) {
+      var item = e.target.closest('.ticker-item[data-url]');
+      if (item) window.open(item.dataset.url, '_blank', 'noopener');
+    });
+  } catch (e) {
+    document.getElementById('ticker-items').innerHTML = '<div class="ticker-item" style="color:var(--muted)">Erreur de chargement</div>';
+  }
+}
+
+/* ===== INIT ===== */
+loadData();
+loadTicker();
+</script>
 </body>
 </html>
