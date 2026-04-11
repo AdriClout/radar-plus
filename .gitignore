@@ -26,6 +26,9 @@
 .Renviron
 .env
 
+# Claude settings (may contain tokens)
+.claude/
+
 # macOS
 .DS_Store
 .AppleDouble
