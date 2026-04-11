@@ -2,26 +2,48 @@
 """
 Fetch source data for the live news ticker.
 
-Queries the datawarehouse table r-media-headlines directly via Athena
-(same source the Slack bot used). Falls back to the datamart if needed.
+Primary: reads raw CSV files directly from S3 (written every ~10 min by the
+scraper Lambdas).  This gives true real-time freshness without waiting for the
+4-hour Glue ETL that populates the Parquet/Athena layer.
+
+Fallback: Athena query on the datawarehouse or datamart tables.
 
 Writes ticker_objects.csv and ticker_index.csv next to this script.
 """
 
 import csv
+import io
 import os
 import sys
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import boto3
 
 REGION = "ca-central-1"
 WORKGROUP = "ellipse-work-group"
 DATABASE = "gluestackdatamartdbd046f685"
-LOOKBACK_DAYS = 2
 DATAWAREHOUSE_TABLE = "r-media-headlines"
 
+# How far back to look for raw CSVs (hours).
+LOOKBACK_HOURS = 12
+
+# Known media IDs (partition folders in S3).
+MEDIA_IDS = [
+    "TVA", "RCI", "NP", "JDM", "CBC", "LAP", "VS",
+    "LED", "MG", "CTV", "TTS", "GN", "GAM", "FXN", "CNN",
+]
+
+# Output field order expected by build_ticker.R.
+OUT_FIELDS = [
+    "country_id", "time_interval_utc", "media_id",
+    "url", "headline_stop_utc", "extracted_objects", "title",
+]
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 def write_rows_csv(path, fieldnames, rows):
     with open(path, "w", newline="", encoding="utf-8") as f:
@@ -30,6 +52,107 @@ def write_rows_csv(path, fieldnames, rows):
         for row in rows:
             writer.writerow(row)
 
+
+def discover_dwh_bucket(glue):
+    """Get the S3 bucket that backs the r-media-headlines Glue table."""
+    paginator = glue.get_paginator("get_databases")
+    db_names = []
+    for page in paginator.paginate():
+        for db in page.get("DatabaseList", []):
+            n = db.get("Name", "")
+            if n:
+                db_names.append(n)
+
+    # Try datawarehouse DBs first.
+    db_names.sort(key=lambda n: (0 if "datawarehouse" in n else 1, n))
+
+    for db_name in db_names:
+        try:
+            tbl = glue.get_table(DatabaseName=db_name, Name=DATAWAREHOUSE_TABLE)
+            location = tbl["Table"]["StorageDescriptor"]["Location"]
+            # location looks like s3://bucket-name/prefix/
+            parts = location.replace("s3://", "").split("/", 1)
+            bucket = parts[0]
+            print(f"Discovered bucket '{bucket}' from Glue table {db_name}.{DATAWAREHOUSE_TABLE}")
+            return bucket, db_name
+        except Exception:
+            continue
+    return None, None
+
+
+def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
+    """List and download recent raw CSV files from S3, return merged rows."""
+    rows = []
+    seen_keys = set()
+
+    for media_id in MEDIA_IDS:
+        prefix = f"r-media-headlines/{media_id}/unprocessed/"
+        try:
+            paginator = s3_client.get_paginator("list_objects_v2")
+            for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+                for obj in page.get("Contents", []):
+                    key = obj["Key"]
+                    # Only consider files modified after cutoff.
+                    last_mod = obj.get("LastModified")
+                    if last_mod and last_mod < cutoff_dt:
+                        continue
+                    if not key.endswith(".csv"):
+                        continue
+                    if key in seen_keys:
+                        continue
+                    seen_keys.add(key)
+
+                    try:
+                        resp = s3_client.get_object(Bucket=bucket, Key=key)
+                        body = resp["Body"].read().decode("utf-8", errors="replace")
+                        reader = csv.DictReader(io.StringIO(body))
+                        for r in reader:
+                            title = (r.get("title") or "").strip()
+                            url = (r.get("metadata_url") or "").strip()
+                            mid = (r.get("media_id") or media_id).strip().upper()
+                            if not title or not url:
+                                continue
+                            # Build headline_stop_utc from extraction partition fields.
+                            ey = r.get("extraction_year", "")
+                            em = r.get("extraction_month", "")
+                            ed = r.get("extraction_day", "")
+                            et = r.get("extraction_time", "00:00:00")
+                            if ey and em and ed:
+                                ts = f"{ey}-{int(em):02d}-{int(ed):02d} {et or '00:00:00'}"
+                            else:
+                                # Fallback: use extraction_date if available.
+                                ed_full = r.get("extraction_date", "")
+                                ts = f"{ed_full} {et or '00:00:00'}" if ed_full else ""
+                            if not ts:
+                                continue
+                            rows.append({
+                                "country_id": "",
+                                "time_interval_utc": "",
+                                "media_id": mid,
+                                "url": url,
+                                "headline_stop_utc": ts,
+                                "extracted_objects": "",
+                                "title": title,
+                            })
+                    except Exception as e:
+                        print(f"  WARN: could not parse {key}: {e}", file=sys.stderr)
+        except Exception as e:
+            print(f"  WARN: could not list {prefix}: {e}", file=sys.stderr)
+
+    # Deduplicate by (media_id, url).
+    unique = {}
+    for row in rows:
+        k = (row["media_id"], row["url"])
+        if k not in unique or row["headline_stop_utc"] > unique[k]["headline_stop_utc"]:
+            unique[k] = row
+
+    result = sorted(unique.values(), key=lambda r: r["headline_stop_utc"], reverse=True)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Athena helpers (fallback)
+# ---------------------------------------------------------------------------
 
 def run_query(athena, sql, database):
     resp = athena.start_query_execution(
@@ -52,125 +175,101 @@ def run_query(athena, sql, database):
     sys.exit(1)
 
 
-def s3_download(s3, s3_uri, local_path):
+def s3_download(s3_client, s3_uri, local_path):
     bucket, key = s3_uri.replace("s3://", "").split("/", 1)
-    s3.download_file(bucket, key, local_path)
+    s3_client.download_file(bucket, key, local_path)
 
 
-def resolve_database_for_table(glue, table_name, preferred_db=None):
-    if preferred_db:
-        try:
-            glue.get_table(DatabaseName=preferred_db, Name=table_name)
-            return preferred_db
-        except Exception:
-            pass
-
-    paginator = glue.get_paginator("get_databases")
-    names = []
-    for page in paginator.paginate():
-        for db in page.get("DatabaseList", []):
-            n = db.get("Name")
-            if n:
-                names.append(n)
-
-    # Try likely matches first for faster resolution.
-    preferred_order = sorted(
-        names,
-        key=lambda n: (
-            0 if "datawarehouse" in n else (1 if "datamart" in n else 2),
-            n,
-        ),
-    )
-
-    for db_name in preferred_order:
-        try:
-            glue.get_table(DatabaseName=db_name, Name=table_name)
-            return db_name
-        except Exception:
-            continue
-
-    return None
-
-
-def main():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    start_date = (date.today() - timedelta(days=LOOKBACK_DAYS)).strftime("%Y-%m-%d")
-
-    athena = boto3.client("athena", region_name=REGION)
-    s3 = boto3.client("s3", region_name=REGION)
-    glue = boto3.client("glue", region_name=REGION)
-
-    # --- Primary source: datawarehouse (r-media-headlines) ---
-    preferred_dwh_db = os.environ.get("DATAWAREHOUSE_DATABASE", "").strip() or None
-    dwh_db = resolve_database_for_table(glue, DATAWAREHOUSE_TABLE, preferred_db=preferred_dwh_db)
+def athena_fallback(athena, s3_client, glue, dwh_db, script_dir):
+    """Fallback: query Athena Parquet tables (up to 4h stale)."""
+    start_date = (date.today() - timedelta(days=2)).strftime("%Y-%m-%d")
 
     if dwh_db:
         try:
-            print(f"Fetching ticker from datawarehouse table {dwh_db}.{DATAWAREHOUSE_TABLE}...")
+            print(f"[fallback] Querying Athena table {dwh_db}.{DATAWAREHOUSE_TABLE}...")
             today = date.today()
             yesterday = today - timedelta(days=1)
-            q_dwh = f"""
-                SELECT
-                    '' AS country_id,
-                    '' AS time_interval_utc,
-                    media_id,
-                    metadata_url AS url,
-                    CONCAT(
-                        CAST(extraction_year AS VARCHAR), '-',
-                        LPAD(CAST(extraction_month AS VARCHAR), 2, '0'), '-',
-                        LPAD(CAST(extraction_day AS VARCHAR), 2, '0'), ' ',
-                        COALESCE(extraction_time, '00:00:00')
-                    ) AS headline_stop_utc,
-                    '' AS extracted_objects,
-                    title
+            q = f"""
+                SELECT '' AS country_id, '' AS time_interval_utc,
+                       media_id, metadata_url AS url,
+                       CONCAT(CAST(extraction_year AS VARCHAR),'-',
+                              LPAD(CAST(extraction_month AS VARCHAR),2,'0'),'-',
+                              LPAD(CAST(extraction_day AS VARCHAR),2,'0'),' ',
+                              COALESCE(extraction_time,'00:00:00')) AS headline_stop_utc,
+                       '' AS extracted_objects, title
                 FROM "{DATAWAREHOUSE_TABLE}"
-                WHERE media_id IS NOT NULL
-                  AND title IS NOT NULL
-                  AND title <> ''
-                  AND metadata_url IS NOT NULL
-                  AND metadata_url <> ''
-                  AND (
-                    (extraction_year = {today.year} AND extraction_month = {today.month} AND extraction_day = {today.day})
-                    OR
-                    (extraction_year = {yesterday.year} AND extraction_month = {yesterday.month} AND extraction_day = {yesterday.day})
-                  )
+                WHERE media_id IS NOT NULL AND title IS NOT NULL AND title<>''
+                  AND metadata_url IS NOT NULL AND metadata_url<>''
+                  AND ((extraction_year={today.year} AND extraction_month={today.month} AND extraction_day={today.day})
+                    OR (extraction_year={yesterday.year} AND extraction_month={yesterday.month} AND extraction_day={yesterday.day}))
                 ORDER BY extraction_year DESC, extraction_month DESC, extraction_day DESC, extraction_time DESC
                 LIMIT 500
             """
-            dwh_loc = run_query(athena, q_dwh, dwh_db)
-            s3_download(s3, dwh_loc, os.path.join(script_dir, "ticker_objects.csv"))
-            write_rows_csv(
-                os.path.join(script_dir, "ticker_index.csv"),
-                ["date_utc", "time_interval_utc", "urls", "titles"],
-                [],
-            )
-            print("  -> saved ticker_objects.csv (datawarehouse)")
+            loc = run_query(athena, q, dwh_db)
+            s3_download(s3_client, loc, os.path.join(script_dir, "ticker_objects.csv"))
+            write_rows_csv(os.path.join(script_dir, "ticker_index.csv"),
+                           ["date_utc", "time_interval_utc", "urls", "titles"], [])
+            print("  -> saved ticker_objects.csv (Athena datawarehouse fallback)")
+            return True
+        except Exception as e:
+            print(f"  WARN: Athena DWH query failed: {e}", file=sys.stderr)
+
+    # Last resort: datamart.
+    try:
+        print(f"[fallback] Querying datamart from {start_date}...")
+        q = f"""
+            SELECT country_id, time_interval_utc, media_id, url,
+                   headline_stop_utc, extracted_objects
+            FROM "vitrine_datamart-salient_headlines_objects"
+            WHERE substr(headline_stop_utc,1,10) >= '{start_date}'
+        """
+        loc = run_query(athena, q, DATABASE)
+        s3_download(s3_client, loc, os.path.join(script_dir, "ticker_objects.csv"))
+        q2 = f"""
+            SELECT date_utc, time_interval_utc, urls, titles
+            FROM "vitrine_datamart-salient_index"
+            WHERE date_utc >= DATE '{start_date}'
+        """
+        loc2 = run_query(athena, q2, DATABASE)
+        s3_download(s3_client, loc2, os.path.join(script_dir, "ticker_index.csv"))
+        print("  -> saved from datamart fallback")
+        return True
+    except Exception as e:
+        print(f"  ERROR: datamart fallback failed: {e}", file=sys.stderr)
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    s3_client = boto3.client("s3", region_name=REGION)
+    glue = boto3.client("glue", region_name=REGION)
+
+    # Discover bucket name from Glue catalog.
+    bucket, dwh_db = discover_dwh_bucket(glue)
+
+    if bucket:
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)
+        print(f"Fetching raw CSVs from s3://{bucket}/r-media-headlines/*/unprocessed/ (since {cutoff.isoformat()})...")
+        rows = fetch_raw_csvs(s3_client, bucket, cutoff)
+        print(f"  -> found {len(rows)} unique headlines from raw CSVs")
+
+        if rows:
+            write_rows_csv(os.path.join(script_dir, "ticker_objects.csv"), OUT_FIELDS, rows)
+            write_rows_csv(os.path.join(script_dir, "ticker_index.csv"),
+                           ["date_utc", "time_interval_utc", "urls", "titles"], [])
+            print("  -> saved ticker_objects.csv (real-time S3 source)")
             print("  -> saved ticker_index.csv (empty compatibility file)")
             return
-        except Exception as e:
-            print(f"WARNING: datawarehouse query failed ({e}); falling back to datamart.", file=sys.stderr)
 
-    # --- Fallback: datamart ---
-    print(f"Fetching ticker objects from datamart ({start_date})...")
-    q_objects = f"""
-        SELECT country_id, time_interval_utc, media_id, url,
-               headline_stop_utc, extracted_objects
-        FROM "vitrine_datamart-salient_headlines_objects"
-        WHERE substr(headline_stop_utc, 1, 10) >= '{start_date}'
-    """
-    objects_loc = run_query(athena, q_objects, DATABASE)
-    s3_download(s3, objects_loc, os.path.join(script_dir, "ticker_objects.csv"))
-    print("  -> saved ticker_objects.csv")
+        print("  No rows from raw CSVs; falling back to Athena.", file=sys.stderr)
 
-    print(f"Fetching ticker title map from datamart ({start_date})...")
-    q_index = f"""
-        SELECT date_utc, time_interval_utc, urls, titles
-        FROM "vitrine_datamart-salient_index"
-        WHERE date_utc >= DATE '{start_date}'
-    """
-    index_loc = run_query(athena, q_index, DATABASE)
-    s3_download(s3, index_loc, os.path.join(script_dir, "ticker_index.csv"))
-    print("  -> saved ticker_index.csv")
+    # Fallback to Athena.
+    athena = boto3.client("athena", region_name=REGION)
+    athena_fallback(athena, s3_client, glue, dwh_db, script_dir)
 
 
 if __name__ == "__main__":
