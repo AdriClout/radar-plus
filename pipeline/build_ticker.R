@@ -10,11 +10,13 @@ OUT_DIR <- tryCatch({
   if (length(file_arg) > 0) {
     dirname(normalizePath(sub("--file=", "", file_arg[1])))
   } else {
-    "/Users/adrien/repo_github/radar-plus/constellation"
+    "/Users/adrien/repo_github/radar-plus/pipeline"
   }
 })
 
-TICKER_FILE <- file.path(OUT_DIR, "ticker.json")
+SITE_DIR <- file.path(dirname(OUT_DIR), "site")
+
+TICKER_FILE <- file.path(SITE_DIR, "ticker.json")
 LOOKBACK_HOURS <- 12
 MAX_ITEMS <- 120
 

@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-ticker-v1-${{ hashFiles('constellation/build_ticker.R') }}
+          key: r-ticker-v1-${{ hashFiles('pipeline/build_ticker.R') }}
           restore-keys: r-ticker-v1-
 
       - name: Install R packages
@@ -51,17 +51,17 @@ jobs:
           AWS_DEFAULT_REGION: ca-central-1
         run: |
           pip install boto3 --quiet
-          python3 constellation/fetch_ticker_data.py
+          python3 pipeline/fetch_ticker_data.py
 
       - name: Build ticker.json
-        run: Rscript constellation/build_ticker.R
+        run: Rscript pipeline/build_ticker.R
 
       - name: Commit and push ticker
         id: commit_data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add constellation/ticker.json
+          git add site/ticker.json
           if git diff --staged --quiet; then
             echo "updated=false" >> "$GITHUB_OUTPUT"
           else
@@ -80,7 +80,7 @@ jobs:
         if: steps.commit_data.outputs.updated == 'true'
         run: |
           set -euo pipefail
-          expected_ticker="$(jq -r '.meta.generated_at' constellation/ticker.json)"
+          expected_ticker="$(jq -r '.meta.generated_at' site/ticker.json)"
           echo "Expected ticker.json meta.generated_at: ${expected_ticker}"
 
           for attempt in $(seq 1 30); do

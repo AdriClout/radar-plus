@@ -35,13 +35,15 @@ OUT_DIR <- tryCatch({
   if (length(file_arg) > 0) {
     dirname(normalizePath(sub("--file=", "", file_arg[1])))
   } else {
-    "/Users/adrien/repo_github/radar-plus/constellation"
+    "/Users/adrien/repo_github/radar-plus/pipeline"
   }
 })
 
-GRAPH_FILE <- file.path(OUT_DIR, "graph.json")
-TS_FILE    <- file.path(OUT_DIR, "timeseries.json")
-MONITOR_INPUT_FILE <- file.path(OUT_DIR, "monitor_input.json")
+SITE_DIR <- file.path(dirname(OUT_DIR), "site")
+
+GRAPH_FILE <- file.path(SITE_DIR, "graph.json")
+TS_FILE    <- file.path(SITE_DIR, "timeseries.json")
+MONITOR_INPUT_FILE <- file.path(SITE_DIR, "monitor_input.json")
 
 # ─── Lecture des CSV produits par fetch_data.py ────────────────────────────────
 

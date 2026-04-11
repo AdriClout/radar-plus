@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api:*)",
+      "Bash(gh run:*)",
+      "Bash(curl -sI https://radarplus.org)",
+      "Bash(dig radarplus.org A +short)",
+      "Bash(dig www.radarplus.org CNAME +short)",
+      "Bash(git add:*)",
+      "Bash(git pull:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(dig radarplus.org NS +short)",
+      "Bash(dig radarplus.org SOA +short)",
+      "Bash(netlify --version)",
+      "Bash(curl -sS -H 'Authorization: Bearer nfp_SGsoxgc2uEQ2JsXvkwwj5wUFi9fSKTTV035a' https://api.netlify.com/api/v1/dns_zones)",
+      "Bash(curl -sS -H 'Authorization: Bearer nfp_SGsoxgc2uEQ2JsXvkwwj5wUFi9fSKTTV035a' https://api.netlify.com/api/v1/dns_zones/69cc3f07116fc4052f60eb97/dns_records)",
+      "Bash(dig radarplus.org A +short @dns1.p03.nsone.net)",
+      "Bash(curl -sI http://radarplus.org)",
+      "Bash(dig radarplus.org CAA +short)",
+      "Bash(dig radarplus.org TXT +short)",
+      "Bash(dig _github-pages-challenge-adriclout.radarplus.org TXT +short)",
+      "Bash(git commit:*)",
+      "Bash(gh workflow:*)"
+    ]
+  }
+}
