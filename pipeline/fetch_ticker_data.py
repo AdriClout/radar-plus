@@ -87,17 +87,21 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
 
     for media_id in MEDIA_IDS:
         prefix = f"r-media-headlines/{media_id}/unprocessed/"
+        media_total = 0
+        media_recent = 0
         try:
             paginator = s3_client.get_paginator("list_objects_v2")
             for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
                 for obj in page.get("Contents", []):
                     key = obj["Key"]
+                    media_total += 1
                     # Only consider files modified after cutoff.
                     last_mod = obj.get("LastModified")
                     if last_mod and last_mod < cutoff_dt:
                         continue
                     if not key.endswith(".csv"):
                         continue
+                    media_recent += 1
                     if key in seen_keys:
                         continue
                     seen_keys.add(key)
@@ -136,6 +140,10 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
                             })
                     except Exception as e:
                         print(f"  WARN: could not parse {key}: {e}", file=sys.stderr)
+            if media_total > 0:
+                print(f"  {media_id}: {media_total} total objects, {media_recent} recent CSVs")
+            else:
+                print(f"  {media_id}: no objects found at {prefix}")
         except Exception as e:
             print(f"  WARN: could not list {prefix}: {e}", file=sys.stderr)
 
@@ -206,7 +214,12 @@ def athena_fallback(athena, s3_client, glue, dwh_db, script_dir):
                 LIMIT 500
             """
             loc = run_query(athena, q, dwh_db)
-            s3_download(s3_client, loc, os.path.join(script_dir, "ticker_objects.csv"))
+            out_path = os.path.join(script_dir, "ticker_objects.csv")
+            s3_download(s3_client, loc, out_path)
+            # Count rows for diagnostic.
+            with open(out_path, "r") as f:
+                row_count = sum(1 for _ in f) - 1  # subtract header
+            print(f"  -> saved ticker_objects.csv (Athena datawarehouse fallback) — {row_count} rows")
             write_rows_csv(os.path.join(script_dir, "ticker_index.csv"),
                            ["date_utc", "time_interval_utc", "urls", "titles"], [])
             print("  -> saved ticker_objects.csv (Athena datawarehouse fallback)")
