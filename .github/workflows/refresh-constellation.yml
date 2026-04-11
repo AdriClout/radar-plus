@@ -2,8 +2,8 @@ name: Refresh Constellation Data
 
 on:
   schedule:
-    # 30min après chaque run Glue (00:03, 04:03, 08:03, 12:03, 16:03, 20:03 UTC)
-    - cron: '33 0,4,8,12,16,20 * * *'
+    # Déclenchement tardif pour laisser le temps au segment Athena d'être disponible
+    - cron: '55 0,4,8,12,16,20 * * *'
   workflow_dispatch: # Déclenchement manuel possible
 
 jobs:
