@@ -928,7 +928,7 @@ function formatTickerGeneratedAt(ms) {
 
   var diffMin = Math.max(0, Math.round((Date.now() - ms) / 60000));
   var rel = '';
-  if (diffMin <= 1) rel = 'a l\'instant';
+  if (diffMin <= 1) rel = 'à l\'instant';
   else if (diffMin < 60) rel = 'il y a ' + diffMin + ' min';
   else {
     var h = Math.floor(diffMin / 60);
@@ -941,7 +941,7 @@ function formatTickerGeneratedAt(ms) {
     minute: '2-digit'
   }).format(dt);
 
-  return 'Scrape ' + hhmm + ' (' + rel + ')';
+  return 'Scrapé ' + hhmm + ' (' + rel + ')';
 }
 
 function refreshTickerGeneratedAtLabel() {
