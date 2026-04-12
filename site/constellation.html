@@ -1520,6 +1520,10 @@
   refreshTicker();
   setInterval(refreshTicker, 120000);
 
+  // ── Lien entrant ?node= ───────────────────────────────────────────────────
+  const urlNode = new URLSearchParams(window.location.search).get('node');
+  if (urlNode) setTimeout(() => handleSearch(urlNode), 350);
+
   } catch(e) {
     document.getElementById('loading-text').textContent = 'ERREUR: ' + e.message;
     console.error(e);

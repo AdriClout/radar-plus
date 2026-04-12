@@ -1523,6 +1523,21 @@
   // Auto-start en mode évolution
   setMode('evolution');
 
+  // ── Lien entrant ?node= ───────────────────────────────────────────────────
+  const urlNode = new URLSearchParams(window.location.search).get('node');
+  if (urlNode) {
+    const q = urlNode.toLowerCase();
+    let foundId = null;
+    for (let i = periods.length - 1; i >= 0 && !foundId; i--) {
+      const g = graphs[currentCountry]?.[periods[i].key];
+      if (!g) continue;
+      const m = (g.nodes || []).find(n => n.id.toLowerCase() === q) ||
+                (g.nodes || []).find(n => n.id.toLowerCase().includes(q));
+      if (m) foundId = m.id;
+    }
+    if (foundId) addTracked(foundId);
+  }
+
   } catch(e) {
     document.getElementById('loading-text').textContent = 'ERREUR: ' + e.message;
     console.error(e);

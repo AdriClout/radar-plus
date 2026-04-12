@@ -634,6 +634,7 @@
     <button class="article-panel-close" id="article-panel-close">&times;</button>
     <div class="article-panel-title" id="article-panel-title"></div>
     <div class="article-panel-meta" id="article-panel-meta"></div>
+    <div class="article-panel-links" id="article-panel-links"></div>
   </div>
   <div class="article-panel-body" id="article-panel-body"></div>
 </div>
@@ -1131,6 +1132,12 @@ function openArticlePanel(node) {
   var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
   title.textContent = name;
   meta.textContent = (node.n || 0) + ' mentions \u00b7 score ' + (node.size || 0).toFixed(2);
+
+  var links = document.getElementById('article-panel-links');
+  var enc = encodeURIComponent(node.id);
+  links.innerHTML =
+    '<a class="article-panel-link" href="./constellation.html?node=' + enc + '" target="_blank">Constellation ↗</a>' +
+    '<a class="article-panel-link" href="./evolution.html?node=' + enc + '" target="_blank">\u00c9volution ↗</a>';
 
   /* Période courante */
   var currentArticles = node.articles || [];
