@@ -1299,7 +1299,7 @@ function parsePeriodLabel(label) {
     var h0 = m[3];
     var h1 = m[4] === '0' ? 'minuit' : m[4] + 'h';
     var year = allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear();
-    return { date: day + ' ' + month + ' ' + year, interval: 'Saillance de ' + h0 + 'h à ' + h1 };
+    return { date: day + ' ' + month + ' ' + year, interval: 'Saillant entre ' + h0 + 'h et ' + h1 };
   }
   return parsePeriodKey(label);
 }
@@ -1311,7 +1311,7 @@ function parsePeriodKey(key) {
   var ip = parts[1].split('-');
   var dateStr = parseInt(dp[2], 10) + ' ' + (FR_MONTHS[parseInt(dp[1], 10) - 1] || dp[1]) + ' ' + dp[0];
   var h1 = ip[1] === '24' ? 'minuit' : ip[1] + 'h';
-  return { date: dateStr, interval: 'Saillance de ' + ip[0] + 'h à ' + h1 };
+  return { date: dateStr, interval: 'Saillant entre ' + ip[0] + 'h et ' + h1 };
 }
 
 /* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */
