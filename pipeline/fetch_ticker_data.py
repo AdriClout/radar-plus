@@ -14,6 +14,7 @@ Writes ticker_objects.csv and ticker_index.csv next to this script.
 import csv
 import io
 import os
+import re
 import sys
 import time
 from datetime import date, datetime, timedelta, timezone
@@ -62,6 +63,57 @@ def first_nonempty(row, keys):
         s = str(v).strip()
         if s:
             return s
+    return ""
+
+
+def normalize_row_keys(row):
+    """Normalize CSV row keys for resilient access (trim + lowercase)."""
+    out = {}
+    for k, v in row.items():
+        if k is None:
+            continue
+        nk = str(k).strip().lower()
+        out[nk] = v
+    return out
+
+
+def detect_csv_dialect(text):
+    """Detect delimiter/quoting for raw CSV exports.
+
+    Some upstream exports are semicolon- or tab-delimited, which would make
+    DictReader treat each row as a single column if we force comma.
+    """
+    sample = text[:4096]
+    try:
+        return csv.Sniffer().sniff(sample, delimiters=",;\t|")
+    except Exception:
+        class Fallback(csv.Dialect):
+            delimiter = ","
+            quotechar = '"'
+            doublequote = True
+            skipinitialspace = False
+            lineterminator = "\n"
+            quoting = csv.QUOTE_MINIMAL
+
+        return Fallback
+
+
+def first_url_in_row(row):
+    """Find first URL-like value in a row if known URL columns are empty."""
+    for v in row.values():
+        if v is None:
+            continue
+        s = str(v).strip()
+        if s.startswith("http://") or s.startswith("https://"):
+            return s
+    return ""
+
+
+def infer_media_from_key(key):
+    """Infer media id from object key path r-media-headlines/{MEDIA}/unprocessed/..."""
+    m = re.search(r"r-media-headlines/([^/]+)/unprocessed/", key)
+    if m:
+        return m.group(1).strip().upper()
     return ""
 
 
@@ -162,29 +214,36 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
                     try:
                         resp = s3_client.get_object(Bucket=bucket, Key=key)
                         body = resp["Body"].read().decode("utf-8", errors="replace")
-                        reader = csv.DictReader(io.StringIO(body))
+                        dialect = detect_csv_dialect(body)
+                        reader = csv.DictReader(io.StringIO(body), dialect=dialect)
+                        key_media = infer_media_from_key(key)
                         for r in reader:
-                            title = first_nonempty(r, [
+                            nr = normalize_row_keys(r)
+
+                            title = first_nonempty(nr, [
                                 "title", "headline", "headlines", "article_title", "message", "text",
                             ])
-                            url = first_nonempty(r, [
+                            url = first_nonempty(nr, [
                                 "metadata_url", "url", "article_url", "link", "permalink",
                             ])
-                            mid = first_nonempty(r, ["media_id", "media", "source", "publisher"]).upper() or media_id
+                            if not url:
+                                url = first_url_in_row(nr)
+
+                            mid = first_nonempty(nr, ["media_id", "media", "source", "publisher"]).upper() or key_media or media_id
                             if not title or not url:
                                 continue
 
                             # Build headline_stop_utc from known timestamp fields first.
-                            ts = normalize_ts_utc(first_nonempty(r, [
+                            ts = normalize_ts_utc(first_nonempty(nr, [
                                 "headline_stop_utc", "published_at", "published_utc", "created_at",
                                 "timestamp", "datetime", "extraction_datetime", "extraction_ts",
                             ]))
 
                             # Then try partition-style date fields.
-                            ey = r.get("extraction_year", "")
-                            em = r.get("extraction_month", "")
-                            ed = r.get("extraction_day", "")
-                            et = r.get("extraction_time", "00:00:00")
+                            ey = nr.get("extraction_year", "")
+                            em = nr.get("extraction_month", "")
+                            ed = nr.get("extraction_day", "")
+                            et = nr.get("extraction_time", "00:00:00")
                             if not ts and ey and em and ed:
                                 try:
                                     ts = f"{int(ey):04d}-{int(em):02d}-{int(ed):02d} {(et or '00:00:00').strip()}"
@@ -193,7 +252,7 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
 
                             # Fallback: use extraction_date/date if available.
                             if not ts:
-                                ed_full = first_nonempty(r, ["extraction_date", "date", "day"])
+                                ed_full = first_nonempty(nr, ["extraction_date", "date", "day"])
                                 if ed_full:
                                     ts = normalize_ts_utc(f"{ed_full} {et or '00:00:00'}")
 
