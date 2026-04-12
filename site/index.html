@@ -1144,7 +1144,7 @@ function openArticlePanel(node) {
 
   var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
   title.textContent = name;
-  meta.textContent = (node.n || 0) + ' mentions \u00b7 score ' + (node.size || 0).toFixed(2);
+  meta.textContent = (node.n || 0) + ' articles \u00b7 score ' + (node.size || 0).toFixed(2);
 
   var links = document.getElementById('article-panel-links');
   var enc = encodeURIComponent(node.id);
