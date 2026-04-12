@@ -29,7 +29,7 @@ DATAWAREHOUSE_TABLE = "r-media-headlines"
 # How far back to look for raw CSVs (hours).
 LOOKBACK_HOURS = 12
 
-# Known media IDs (partition folders in S3).
+# Known media IDs (partition folders in S3). Used as a fallback seed only.
 MEDIA_IDS = [
     "TVA", "RCI", "NP", "JDM", "CBC", "LAP", "VS",
     "LED", "MG", "CTV", "TTS", "GN", "GAM", "FXN", "CNN",
@@ -109,11 +109,19 @@ def first_url_in_row(row):
     return ""
 
 
-def infer_media_from_key(key):
-    """Infer media id from object key path r-media-headlines/{MEDIA}/unprocessed/..."""
-    m = re.search(r"r-media-headlines/([^/]+)/unprocessed/", key)
-    if m:
-        return m.group(1).strip().upper()
+def infer_media_from_key(key, raw_prefix):
+    """Infer media id from key path under the discovered raw table prefix."""
+    rp = (raw_prefix or "").strip("/")
+    rel = key
+    if rp and key.startswith(rp + "/"):
+        rel = key[len(rp) + 1 :]
+    parts = [p for p in rel.split("/") if p]
+    if not parts:
+        return ""
+    # Typical layouts: {MEDIA}/unprocessed/*.csv or {MEDIA}/processed/*.csv
+    if len(parts) >= 2 and parts[1].lower() in ("unprocessed", "processed"):
+        return parts[0].strip().upper()
+    return parts[0].strip().upper()
     return ""
 
 
@@ -157,7 +165,7 @@ def normalize_ts_utc(ts):
 
 
 def discover_dwh_bucket(glue):
-    """Get the S3 bucket that backs the r-media-headlines Glue table."""
+    """Get bucket + key prefix backing the r-media-headlines Glue table."""
     paginator = glue.get_paginator("get_databases")
     db_names = []
     for page in paginator.paginate():
@@ -176,14 +184,39 @@ def discover_dwh_bucket(glue):
             # location looks like s3://bucket-name/prefix/
             parts = location.replace("s3://", "").split("/", 1)
             bucket = parts[0]
-            print(f"Discovered bucket '{bucket}' from Glue table {db_name}.{DATAWAREHOUSE_TABLE}")
-            return bucket, db_name
+            table_prefix = parts[1].strip("/") if len(parts) > 1 else ""
+            print(
+                f"Discovered bucket '{bucket}' and prefix '{table_prefix}' "
+                f"from Glue table {db_name}.{DATAWAREHOUSE_TABLE}"
+            )
+            return bucket, db_name, table_prefix
         except Exception:
             continue
-    return None, None
+    return None, None, None
 
 
-def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
+def list_media_prefixes(s3_client, bucket, raw_prefix):
+    """Discover media folder prefixes under the raw table root."""
+    rp = (raw_prefix or "").strip("/")
+    root = f"{rp}/" if rp else ""
+    out = []
+    try:
+        paginator = s3_client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix=root, Delimiter="/"):
+            for p in page.get("CommonPrefixes", []):
+                pref = p.get("Prefix", "").rstrip("/")
+                if not pref:
+                    continue
+                rel = pref[len(root) :] if root and pref.startswith(root) else pref
+                media = rel.split("/")[0].strip().upper()
+                if media and media not in out:
+                    out.append(media)
+    except Exception as e:
+        print(f"  WARN: could not discover media prefixes under {root}: {e}", file=sys.stderr)
+    return out
+
+
+def fetch_raw_csvs(s3_client, bucket, raw_prefix, cutoff_dt):
     """List and download raw CSV files from S3, return merged rows.
 
     We do not trust S3 object LastModified for freshness because upstream
@@ -193,8 +226,16 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
     rows = []
     seen_keys = set()
 
-    for media_id in MEDIA_IDS:
-        prefix = f"r-media-headlines/{media_id}/unprocessed/"
+    discovered_media = list_media_prefixes(s3_client, bucket, raw_prefix)
+    media_ids = discovered_media or MEDIA_IDS
+    rp = (raw_prefix or "r-media-headlines").strip("/")
+    if discovered_media:
+        print(f"  discovered {len(discovered_media)} media prefixes under {rp}")
+    else:
+        print(f"  no media prefixes discovered under {rp}; using fallback list")
+
+    for media_id in media_ids:
+        prefix = f"{rp}/{media_id}/"
         media_total = 0
         media_recent = 0
         try:
@@ -206,6 +247,9 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
                     media_total += 1
                     if not key.endswith(".csv"):
                         continue
+                    # Prefer raw unprocessed rows, but keep processed as fallback.
+                    if "/unprocessed/" not in key and "/processed/" not in key:
+                        continue
                     media_recent += 1
                     if key in seen_keys:
                         continue
@@ -216,7 +260,7 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
                         body = resp["Body"].read().decode("utf-8", errors="replace")
                         dialect = detect_csv_dialect(body)
                         reader = csv.DictReader(io.StringIO(body), dialect=dialect)
-                        key_media = infer_media_from_key(key)
+                        key_media = infer_media_from_key(key, rp)
                         for r in reader:
                             nr = normalize_row_keys(r)
 
@@ -408,13 +452,14 @@ def main():
     s3_client = boto3.client("s3", region_name=REGION)
     glue = boto3.client("glue", region_name=REGION)
 
-    # Discover bucket name from Glue catalog.
-    bucket, dwh_db = discover_dwh_bucket(glue)
+    # Discover bucket + key prefix from Glue catalog.
+    bucket, dwh_db, raw_prefix = discover_dwh_bucket(glue)
 
     if bucket:
         cutoff = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)
-        print(f"Fetching raw CSVs from s3://{bucket}/r-media-headlines/*/unprocessed/ (since {cutoff.isoformat()})...")
-        rows = fetch_raw_csvs(s3_client, bucket, cutoff)
+        rp = (raw_prefix or "r-media-headlines").strip("/")
+        print(f"Fetching raw CSVs from s3://{bucket}/{rp}/ (since {cutoff.isoformat()})...")
+        rows = fetch_raw_csvs(s3_client, bucket, rp, cutoff)
         print(f"  -> found {len(rows)} unique headlines from raw CSVs")
 
         if rows:
