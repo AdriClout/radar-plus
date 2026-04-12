@@ -387,6 +387,30 @@
     .article-item-title {
       font-size: 13px; line-height: 1.5;
     }
+    .article-section-header {
+      margin: 20px 0 4px;
+      padding: 8px 0 6px;
+      border-top: 1px solid rgba(80,130,255,0.18);
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 2px;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .article-period-label {
+      margin: 14px 0 0;
+      font-size: 10px; color: rgba(120,160,255,0.55);
+      letter-spacing: 0.5px;
+    }
+    .article-section-header {
+      margin: 20px 0 4px;
+      padding: 8px 0 6px;
+      border-top: 1px solid rgba(80,130,255,0.18);
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 2px;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .article-period-label {
+      margin: 14px 0 0;
+      font-size: 10px; color: rgba(120,160,255,0.55);
+      letter-spacing: 0.5px;
+    }
 
     /* Scroll-in animation handled in .hot20-row / .hot20-row.visible */
 
@@ -1090,6 +1114,13 @@ async function loadTicker() {
 }
 
 /* ===== ARTICLE PANEL ===== */
+function articleItemHtml(art) {
+  return '<a class="article-item" href="' + escapeHtml(art.url || '#') + '" target="_blank" rel="noopener">' +
+    '<div class="article-item-media">' + escapeHtml(art.media_id || '') + '</div>' +
+    '<div class="article-item-title">' + escapeHtml(art.title || 'Sans titre') + '</div>' +
+  '</a>';
+}
+
 function openArticlePanel(node) {
   var overlay = document.getElementById('article-overlay');
   var panel = document.getElementById('article-panel');
@@ -1099,20 +1130,48 @@ function openArticlePanel(node) {
 
   var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
   title.textContent = name;
-  meta.textContent = (node.n || 0) + ' mentions · score ' + (node.size || 0).toFixed(2);
+  meta.textContent = (node.n || 0) + ' mentions \u00b7 score ' + (node.size || 0).toFixed(2);
 
-  var articles = node.articles || [];
-  if (articles.length === 0) {
-    body.innerHTML = '<p style="color:var(--muted);padding:20px 0;font-size:13px;">Aucun article disponible pour cette période.</p>';
-  } else {
-    body.innerHTML = articles.map(function(art) {
-      return '<a class="article-item" href="' + escapeHtml(art.url || '#') + '" target="_blank" rel="noopener">' +
-        '<div class="article-item-media">' + escapeHtml(art.media_id || '') + '</div>' +
-        '<div class="article-item-title">' + escapeHtml(art.title || 'Sans titre') + '</div>' +
-      '</a>';
-    }).join('');
+  /* Période courante */
+  var currentArticles = node.articles || [];
+  var seenUrls = {};
+  currentArticles.forEach(function(a) { if (a.url) seenUrls[a.url] = true; });
+
+  var html = currentArticles.length
+    ? currentArticles.map(articleItemHtml).join('')
+    : '<p style="color:var(--muted);padding:20px 0;font-size:13px;">Aucun article disponible pour cette p\u00e9riode.</p>';
+
+  /* Périodes précédentes — décroissant, dédupliqué par URL */
+  var src = timeseriesData || graphData;
+  var countryGraphs = src && src.graphs ? src.graphs[currentCountry] : null;
+  var prevGroups = [];
+  if (countryGraphs) {
+    for (var pi = currentPeriodIdx - 1; pi >= 0; pi--) {
+      var pd = countryGraphs[allPeriods[pi].key];
+      if (!pd || !pd.nodes) continue;
+      var pnode = null;
+      for (var ni = 0; ni < pd.nodes.length; ni++) {
+        if (pd.nodes[ni].id === node.id) { pnode = pd.nodes[ni]; break; }
+      }
+      if (!pnode || !pnode.articles || !pnode.articles.length) continue;
+      var fresh = pnode.articles.filter(function(a) { return a.url && !seenUrls[a.url]; });
+      if (!fresh.length) continue;
+      fresh.forEach(function(a) { seenUrls[a.url] = true; });
+      var pf = parsePeriodKey(allPeriods[pi].key);
+      prevGroups.push({ label: pf.date + ' \u00b7 ' + pf.interval, articles: fresh });
+      if (prevGroups.length >= 8) break;
+    }
   }
 
+  if (prevGroups.length > 0) {
+    html += '<div class="article-section-header">Pr\u00e9c\u00e9demment</div>';
+    prevGroups.forEach(function(g) {
+      html += '<div class="article-period-label">' + escapeHtml(g.label) + '</div>';
+      html += g.articles.map(articleItemHtml).join('');
+    });
+  }
+
+  body.innerHTML = html;
   overlay.classList.add('open');
   panel.classList.add('open');
 }
