@@ -192,67 +192,76 @@
       text-align: center; letter-spacing: 0.5px;
     }
 
-    /* Hot 20 grid */
-    .hot20-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 14px;
-    }
-
-    .hot20-card {
-      background: var(--card-bg);
+    /* Hot 20 list (Billboard-style) */
+    .hot20-list {
+      width: 100%;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 16px 16px 14px;
-      transition: all 0.3s;
-      position: relative;
       overflow: hidden;
+    }
+    .hot20-list-header {
+      display: grid;
+      grid-template-columns: 64px 52px 1fr 190px 76px;
+      padding: 8px 16px;
+      border-bottom: 1px solid rgba(80,130,255,0.2);
+      background: rgba(10,18,50,0.85);
+      font-family: var(--orbitron);
+      font-size: 9px; letter-spacing: 1.5px;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .hot20-list-header span { display: flex; align-items: center; }
+    .hot20-list-header span:first-child { justify-content: flex-end; padding-right: 16px; }
+    .hot20-list-header span:nth-child(2) { justify-content: center; }
+    .hot20-list-header span:last-child { justify-content: flex-end; }
+
+    .hot20-row {
+      display: grid;
+      grid-template-columns: 64px 52px 1fr 190px 76px;
+      align-items: center;
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(80,130,255,0.07);
       cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+      opacity: 0; transform: translateX(-8px);
     }
-    .hot20-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, var(--accent), rgba(100,60,255,0.6));
-      transform: scaleX(0); transform-origin: left;
-      transition: transform 0.4s;
+    .hot20-row.visible {
+      opacity: 1; transform: translateX(0);
+      transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s;
     }
-    .hot20-card:hover { border-color: rgba(100,150,255,0.5); transform: translateY(-2px); }
-    .hot20-card:hover::before { transform: scaleX(1); }
+    .hot20-row:hover { background: rgba(40,70,160,0.18); }
+    .hot20-row:last-child { border-bottom: none; }
 
-    /* Podium: top 3 cards */
-    .hot20-card.podium {
-      border-color: rgba(100,160,255,0.35);
-      background: linear-gradient(145deg, rgba(15,25,65,0.9), var(--card-bg));
-    }
-    .hot20-card.podium .hot20-rank { color: rgba(100,160,255,0.5); font-size: 36px; }
-    .hot20-card.rank-1 { border-color: rgba(255,200,60,0.4); background: linear-gradient(145deg, rgba(50,40,10,0.5), var(--card-bg)); }
-    .hot20-card.rank-1 .hot20-rank { color: rgba(255,200,60,0.45); }
-    .hot20-card.rank-1::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
-    .hot20-card.rank-2 { border-color: rgba(200,210,230,0.3); }
-    .hot20-card.rank-2 .hot20-rank { color: rgba(200,210,230,0.35); }
-    .hot20-card.rank-2::before { background: linear-gradient(90deg, #c0cfdf, #94a3b8); }
-    .hot20-card.rank-3 { border-color: rgba(200,150,80,0.3); }
-    .hot20-card.rank-3 .hot20-rank { color: rgba(200,150,80,0.35); }
-    .hot20-card.rank-3::before { background: linear-gradient(90deg, #c8966a, #a0764a); }
-    .hot20-card.podium:hover::before { transform: scaleX(1); }
+    /* Podium rows */
+    .hot20-row.rank-1 { border-left: 3px solid rgba(255,200,60,0.75); background: rgba(50,40,10,0.14); }
+    .hot20-row.rank-2 { border-left: 3px solid rgba(200,210,230,0.4); }
+    .hot20-row.rank-3 { border-left: 3px solid rgba(200,150,80,0.5); }
+    .hot20-row.rank-1:hover { background: rgba(80,60,10,0.22); }
 
-    .hot20-rank {
-      font-family: var(--orbitron); font-size: 28px; font-weight: 700;
-      color: rgba(80,130,255,0.25); position: absolute; top: 10px; right: 14px;
-      line-height: 1; display: flex; align-items: baseline; gap: 4px;
+    .hot20-row-rank {
+      font-family: var(--orbitron); font-size: clamp(20px, 2.4vw, 28px);
+      font-weight: 700; color: rgba(80,130,255,0.35);
+      text-align: right; padding-right: 16px; line-height: 1;
     }
-    .hot20-name {
+    .hot20-row.rank-1 .hot20-row-rank { color: rgba(255,200,60,0.85); }
+    .hot20-row.rank-2 .hot20-row-rank { color: rgba(200,210,230,0.65); }
+    .hot20-row.rank-3 .hot20-row-rank { color: rgba(200,150,80,0.72); }
+
+    .hot20-row-trend { text-align: center; padding: 0 4px; }
+    .hot20-row-info { min-width: 0; padding: 0 12px; }
+    .hot20-row-name {
       font-size: 15px; font-weight: 700; color: #e8f0ff;
-      margin-bottom: 6px; text-transform: capitalize;
-      max-width: calc(100% - 60px);
+      text-transform: capitalize; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
     }
-    .hot20-pct {
-      font-family: var(--mono); font-size: 11px; color: var(--text);
-      margin-bottom: 8px;
+    .hot20-row-streak { font-size: 9px; color: var(--muted); margin-top: 3px; }
+    .hot20-row-score { padding: 0 12px; }
+    .hot20-row-pct {
+      font-family: var(--mono); font-size: 11px; color: var(--text); margin-bottom: 4px;
     }
-    .hot20-pct strong { color: #e8f0ff; font-size: 13px; }
+    .hot20-row-pct strong { color: #e8f0ff; font-size: 13px; }
     .hot20-bar-track {
-      height: 4px; background: rgba(60,100,200,0.15);
+      height: 3px; background: rgba(60,100,200,0.15);
       border-radius: 2px; overflow: hidden;
     }
     .hot20-bar {
@@ -260,12 +269,10 @@
       background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8));
       transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .hot20-coverage {
-      margin-top: 8px; font-size: 10px; color: var(--muted);
-    }
+    .hot20-row-media { font-size: 10px; color: var(--muted); text-align: right; white-space: nowrap; }
 
     .hot20-empty {
-      grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+      text-align: center; padding: 60px 20px;
       color: var(--muted); font-size: 14px;
     }
 
@@ -279,9 +286,6 @@
     .hot20-trend.new { color: #fbbf24; }
     .hot20-trend.comeback { color: #c084fc; }
     .hot20-trend.stable { color: var(--muted); }
-    .hot20-streak {
-      font-size: 9px; color: var(--muted); margin-top: 2px;
-    }
 
     /* Search bar */
     .hot20-search {
@@ -372,12 +376,7 @@
       font-size: 13px; line-height: 1.5;
     }
 
-    /* Scroll-in animation */
-    .hot20-card { opacity: 0; transform: translateY(20px); }
-    .hot20-card.visible {
-      opacity: 1; transform: translateY(0);
-      transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s, box-shadow 0.3s;
-    }
+    /* Scroll-in animation handled in .hot20-row / .hot20-row.visible */
 
     /* ========== TICKER ========== */
     .ticker-section {
@@ -462,12 +461,15 @@
     @media (max-width: 768px) {
       .hero-robot { width: 95vw; }
       .hot20-header { flex-direction: column; align-items: flex-start; }
-      .hot20-grid { grid-template-columns: 1fr 1fr; }
+      .hot20-list-header { display: none; }
+      .hot20-row { grid-template-columns: 48px 44px 1fr 130px; }
+      .hot20-row-media { display: none; }
       .side-nav { width: 280px; right: -280px; }
       .article-panel { width: 100vw; right: -100vw; }
     }
     @media (max-width: 480px) {
-      .hot20-grid { grid-template-columns: 1fr; }
+      .hot20-row { grid-template-columns: 44px 40px 1fr 110px; }
+      .hot20-row-name { font-size: 13px; }
     }
   </style>
 </head>
@@ -565,7 +567,7 @@
     <input type="text" id="hot20-search-input" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
   </div>
   <div class="hot20-search-result" id="search-result"></div>
-  <div class="hot20-grid" id="hot20-grid">
+  <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty">Chargement&hellip;</div>
   </div>
 </section>
@@ -845,62 +847,74 @@ function renderHot20() {
   /* Store nodes for click handler */
   window._hot20Nodes = nodes;
 
-  grid.innerHTML = nodes.map(function(node, i) {
-    var pct = Math.round(((node.size || 0) / totalSize) * 100);
-    var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
-    var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
-    var mediaCount = (node.media_ids || []).length;
+  grid.innerHTML =
+    '<div class="hot20-list-header">' +
+      '<span>Rang</span>' +
+      '<span>Mv</span>' +
+      '<span style="padding-left:12px;">Sujet</span>' +
+      '<span style="padding-left:12px;">Score</span>' +
+      '<span>M&eacute;dias</span>' +
+    '</div>' +
+    nodes.map(function(node, i) {
+      var pct = Math.round(((node.size || 0) / totalSize) * 100);
+      var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
+      var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+      var mediaCount = (node.media_ids || []).length;
 
-    /* Trend badge */
-    var trendHtml = '';
-    if (currentPeriodIdx > 0) {
-      var prevRank = prevRanks[node.id];
-      if (!prevRank && comebacks[node.id]) {
-        trendHtml = '<span class="hot20-trend comeback" title="De retour">&#128260; Retour</span>';
-      } else if (!prevRank) {
-        trendHtml = '<span class="hot20-trend new" title="Nouveau">&#128293; Nouveau</span>';
-      } else {
-        var diff = prevRank - (i + 1);
-        if (diff > 0) {
-          trendHtml = '<span class="hot20-trend up" title="Monte de ' + diff + '">&#9650;' + diff + '</span>';
-        } else if (diff < 0) {
-          trendHtml = '<span class="hot20-trend down" title="Descend de ' + Math.abs(diff) + '">&#9660;' + Math.abs(diff) + '</span>';
+      /* Trend badge */
+      var trendHtml = '';
+      if (currentPeriodIdx > 0) {
+        var prevRank = prevRanks[node.id];
+        if (!prevRank && comebacks[node.id]) {
+          trendHtml = '<span class="hot20-trend comeback" title="De retour">&#128260; Retour</span>';
+        } else if (!prevRank) {
+          trendHtml = '<span class="hot20-trend new" title="Nouveau">&#128293; Nouveau</span>';
         } else {
-          trendHtml = '<span class="hot20-trend stable">&mdash;</span>';
+          var diff = prevRank - (i + 1);
+          if (diff > 0) {
+            trendHtml = '<span class="hot20-trend up" title="Monte de ' + diff + '">&#9650;' + diff + '</span>';
+          } else if (diff < 0) {
+            trendHtml = '<span class="hot20-trend down" title="Descend de ' + Math.abs(diff) + '">&#9660;' + Math.abs(diff) + '</span>';
+          } else {
+            trendHtml = '<span class="hot20-trend stable">&mdash;</span>';
+          }
         }
       }
-    }
 
-    /* Streak badge */
-    var streak = streaks[node.id] || 0;
-    var streakHtml = streak > 1 ? '<div class="hot20-streak">&#128204; ' + streak + 'e p&eacute;riode cons&eacute;cutive</div>' : '';
+      /* Streak */
+      var streak = streaks[node.id] || 0;
+      var streakHtml = streak > 1 ? '<div class="hot20-row-streak">&#128204; ' + streak + 'e p&eacute;riode cons&eacute;cutive</div>' : '';
 
-    /* Podium class */
-    var podiumClass = '';
-    if (i < 3) podiumClass = ' podium rank-' + (i + 1);
+      /* Rank class */
+      var rankClass = i < 3 ? ' rank-' + (i + 1) : '';
 
-    return '<div class="hot20-card' + podiumClass + '" data-node-idx="' + i + '">' +
-      '<div class="hot20-rank">' + (i + 1) + ' ' + trendHtml + '</div>' +
-      '<div class="hot20-name">' + escapeHtml(name) + '</div>' +
-      '<div class="hot20-pct"><strong>' + pct + '%</strong> du radar</div>' +
-      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
-      '<div class="hot20-coverage">Couvert par ' + mediaCount + ' m&eacute;dia' + (mediaCount > 1 ? 's' : '') + '</div>' +
-      streakHtml +
-    '</div>';
-  }).join('');
+      return '<div class="hot20-row' + rankClass + '" data-node-idx="' + i + '">' +
+        '<div class="hot20-row-rank">' + (i + 1) + '</div>' +
+        '<div class="hot20-row-trend">' + trendHtml + '</div>' +
+        '<div class="hot20-row-info">' +
+          '<div class="hot20-row-name">' + escapeHtml(name) + '</div>' +
+          streakHtml +
+        '</div>' +
+        '<div class="hot20-row-score">' +
+          '<div class="hot20-row-pct"><strong>' + pct + '%</strong> du radar</div>' +
+          '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
+        '</div>' +
+        '<div class="hot20-row-media">' + mediaCount + ' m&eacute;dia' + (mediaCount > 1 ? 's' : '') + '</div>' +
+      '</div>';
+    }).join('');
 
   /* Scroll-in animation */
-  var cards = grid.querySelectorAll('.hot20-card');
+  var cards = grid.querySelectorAll('.hot20-row');
   if ('IntersectionObserver' in window) {
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
           var idx = parseInt(entry.target.dataset.nodeIdx) || 0;
-          setTimeout(function() { entry.target.classList.add('visible'); }, idx * 50);
+          setTimeout(function() { entry.target.classList.add('visible'); }, idx * 40);
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.05 });
     cards.forEach(function(card) { observer.observe(card); });
   } else {
     cards.forEach(function(card) { card.classList.add('visible'); });
@@ -1034,7 +1048,7 @@ document.getElementById('article-overlay').addEventListener('click', closeArticl
 
 /* Card click delegation */
 document.getElementById('hot20-grid').addEventListener('click', function(e) {
-  var card = e.target.closest('.hot20-card');
+  var card = e.target.closest('.hot20-row');
   if (!card || !window._hot20Nodes) return;
   var idx = parseInt(card.dataset.nodeIdx);
   if (isNaN(idx)) return;
