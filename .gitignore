@@ -66,6 +66,17 @@ temp/
 tmp/
 *.tmp
 
+# Python
+__pycache__/
+*.py.bak
+*.pyc
+.venv/
+
+# Pipeline — fichiers intermédiaires (jamais versionnés)
+pipeline/ticker_objects.csv
+pipeline/ticker_index.csv
+pipeline/_wh_raw.csv
+
 # Archives volumineux
 *.zip
 *.tar.gz
