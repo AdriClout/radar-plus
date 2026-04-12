@@ -239,10 +239,12 @@ graphs_graph <- purrr::map(countries, function(country) {
     d  <- periods_graph$date_utc[i]
     ti <- periods_graph$time_interval_utc[i]
 
-    nodes_i    <- df_nodes_graph |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::arrange(dplyr::desc(absolute_normalized_index))
+    excl <- EXCLUSION_BY_COUNTRY[[country]]  # NULL si pays inconnu → aucune exclusion
+
+    nodes_i    <- df_nodes_graph |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(extracted_objects) %in% excl) |> dplyr::arrange(dplyr::desc(absolute_normalized_index))
     node_med_i <- df_obj_media   |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
-    links_i    <- df_edges       |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
-    link_med_i <- df_edges_media |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
+    links_i    <- df_edges       |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(source) %in% excl, !tolower(target) %in% excl)
+    link_med_i <- df_edges_media |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(source) %in% excl, !tolower(target) %in% excl)
 
     list(
       nodes = purrr::map(seq_len(nrow(nodes_i)), function(j) list(
@@ -296,8 +298,11 @@ graphs_ts <- purrr::map(countries, function(country) {
     d  <- periods_ts$date_utc[i]
     ti <- periods_ts$time_interval_utc[i]
 
+    excl <- EXCLUSION_BY_COUNTRY[[country]]  # NULL si pays inconnu → aucune exclusion
+
     nodes_i <- df_nodes |>
       dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |>
+      dplyr::filter(!tolower(extracted_objects) %in% excl) |>
       dplyr::arrange(dplyr::desc(absolute_normalized_index))
 
     list(
