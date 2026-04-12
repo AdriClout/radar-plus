@@ -847,6 +847,13 @@ function renderHot20() {
   /* Store nodes for click handler */
   window._hot20Nodes = nodes;
 
+  /* FLIP — capture old row positions before re-render */
+  var oldPos = {};
+  grid.querySelectorAll('.hot20-row[data-node-id]').forEach(function(el) {
+    oldPos[el.dataset.nodeId] = el.getBoundingClientRect().top;
+  });
+  var hasOldRows = Object.keys(oldPos).length > 0;
+
   grid.innerHTML =
     '<div class="hot20-list-header">' +
       '<span>Rang</span>' +
@@ -891,7 +898,7 @@ function renderHot20() {
       /* Rank class */
       var rankClass = i < 3 ? ' rank-' + (i + 1) : '';
 
-      return '<div class="hot20-row' + rankClass + '" data-node-idx="' + i + '">' +
+      return '<div class="hot20-row' + rankClass + '" data-node-idx="' + i + '" data-node-id="' + escapeHtml(node.id) + '">' +
         '<div class="hot20-row-rank">' + (i + 1) + '</div>' +
         '<div class="hot20-row-trend">' + trendHtml + '</div>' +
         '<div class="hot20-row-info">' +
@@ -906,21 +913,72 @@ function renderHot20() {
       '</div>';
     }).join('');
 
-  /* Scroll-in animation */
-  var cards = grid.querySelectorAll('.hot20-row');
-  if ('IntersectionObserver' in window) {
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          var idx = parseInt(entry.target.dataset.nodeIdx) || 0;
-          setTimeout(function() { entry.target.classList.add('visible'); }, idx * 40);
-          observer.unobserve(entry.target);
+  var rows = grid.querySelectorAll('.hot20-row');
+
+  if (!hasOldRows) {
+    /* First render: scroll-in via IntersectionObserver */
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var idx = parseInt(entry.target.dataset.nodeIdx) || 0;
+            setTimeout(function() { entry.target.classList.add('visible'); }, idx * 40);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.05 });
+      rows.forEach(function(row) { observer.observe(row); });
+    } else {
+      rows.forEach(function(row) { row.classList.add('visible'); });
+    }
+  } else {
+    /* FLIP animation: items slide from old position to new */
+    var flipItems = [];
+    rows.forEach(function(el) {
+      flipItems.push({
+        el: el,
+        id: el.dataset.nodeId,
+        newTop: el.getBoundingClientRect().top
+      });
+    });
+
+    /* Apply start state (all writes batched) */
+    flipItems.forEach(function(item) {
+      var oldTop = oldPos[item.id];
+      if (oldTop !== undefined) {
+        var delta = Math.round(oldTop - item.newTop);
+        item.el.classList.add('visible');
+        if (Math.abs(delta) > 1) {
+          item.el.style.transition = 'none';
+          item.el.style.transform = 'translateY(' + delta + 'px)';
+          item.delta = delta;
+        }
+      } else {
+        /* New entry: start invisible, slide from right */
+        item.el.style.transition = 'none';
+        item.el.style.opacity = '0';
+        item.el.style.transform = 'translateX(28px)';
+      }
+    });
+
+    /* Force layout to commit start state, then animate */
+    grid.getBoundingClientRect();
+    requestAnimationFrame(function() {
+      flipItems.forEach(function(item) {
+        var oldTop = oldPos[item.id];
+        if (oldTop !== undefined) {
+          if (item.delta !== undefined) {
+            item.el.style.transition = 'transform 0.52s cubic-bezier(0.22, 1, 0.36, 1)';
+            item.el.style.transform = 'translateY(0)';
+          }
+        } else {
+          item.el.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease 0.08s';
+          item.el.style.opacity = '1';
+          item.el.style.transform = 'translateX(0)';
+          item.el.classList.add('visible');
         }
       });
-    }, { threshold: 0.05 });
-    cards.forEach(function(card) { observer.observe(card); });
-  } else {
-    cards.forEach(function(card) { card.classList.add('visible'); });
+    });
   }
 }
 
