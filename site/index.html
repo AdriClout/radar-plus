@@ -859,7 +859,10 @@ function renderHot20() {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
       var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
       var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
-      var mediaCount = (node.media_ids || []).length;
+      var mediaIds = node.media_ids && node.media_ids.length
+        ? node.media_ids
+        : (node.articles || []).map(function(a) { return a.media_id; }).filter(function(v, i, s) { return v && s.indexOf(v) === i; });
+      var mediaCount = mediaIds.length;
 
       /* Trend badge */
       var trendHtml = '';
