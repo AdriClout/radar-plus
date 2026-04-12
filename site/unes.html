@@ -243,7 +243,7 @@
     <div class="topbar">
       <a class="back-link" href="./index.html">← Retour Accueil</a>
       <div class="title-wrap">
-        <h1>Dernière Minutes</h1>
+        <h1>Dernière Minute</h1>
         <p>Les Unes en direct, triées par pays, avec navigation temporelle.</p>
       </div>
     </div>
@@ -325,6 +325,16 @@
     let currentBucketIdx = 0;
     let meta = null;
 
+    function localTzShort() {
+      try {
+        const parts = new Intl.DateTimeFormat('fr-CA', { timeZoneName: 'short' }).formatToParts(new Date());
+        const tz = parts.find((p) => p.type === 'timeZoneName');
+        return tz && tz.value ? tz.value : 'locale';
+      } catch (e) {
+        return 'locale';
+      }
+    }
+
     function escapeHtml(str) {
       const d = document.createElement('div');
       d.textContent = String(str || '');
@@ -355,7 +365,7 @@
         hour: '2-digit',
         minute: '2-digit'
       }).format(dt);
-      return datePart + ' · ' + timePart;
+      return datePart + ' · ' + timePart + ' (' + localTzShort() + ')';
     }
 
     function formatHm(ts) {
@@ -378,7 +388,7 @@
       const hm = isNaN(g.getTime()) ? '--:--' : new Intl.DateTimeFormat('fr-CA', { hour: '2-digit', minute: '2-digit' }).format(g);
       const lookback = meta.lookback_hours || '--';
       const total = buckets.reduce((acc, b) => acc + b.items.length, 0);
-      el.textContent = 'Les Unes de ' + hm + ' · ' + total + ' manchettes visibles · fenêtre de ' + lookback + 'h';
+      el.textContent = 'Les Unes de ' + hm + ' · ' + total + ' manchettes visibles · fenêtre de ' + lookback + 'h · heures locales (' + localTzShort() + ')';
     }
 
     function render() {
