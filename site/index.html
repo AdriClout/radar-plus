@@ -188,8 +188,20 @@
     .week-btn:hover { border-color: var(--accent); color: #fff; }
     .week-btn:disabled { opacity: 0.3; cursor: default; }
     .week-label {
-      font-size: 13px; color: var(--text); min-width: 180px;
-      text-align: center; letter-spacing: 0.5px;
+      min-width: 260px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .week-label-date {
+      font-family: var(--orbitron); font-size: 14px; color: #e8f0ff; letter-spacing: 1px;
+    }
+    .week-label-interval {
+      font-size: 11px; color: var(--text); letter-spacing: 0.3px;
+    }
+    .week-label-countdown {
+      font-size: 10px; color: var(--muted); margin-top: 1px;
+    }
+    .week-label-countdown .cdval {
+      color: var(--accent); font-family: var(--mono); font-size: 11px;
     }
 
     /* Hot 20 list (Billboard-style) */
@@ -557,7 +569,11 @@
       </div>
       <div class="week-nav">
         <button class="week-btn" id="week-prev" title="Semaine précédente">&#8249;</button>
-        <span class="week-label" id="week-label">&mdash;</span>
+        <div class="week-label" id="week-label">
+          <span class="week-label-date" id="wl-date">&mdash;</span>
+          <span class="week-label-interval" id="wl-interval"></span>
+          <span class="week-label-countdown">Prochaine mise &agrave; jour&nbsp;: <span class="cdval" id="wl-countdown">&mdash;</span></span>
+        </div>
         <button class="week-btn" id="week-next" title="Semaine suivante">&#8250;</button>
       </div>
     </div>
@@ -787,7 +803,9 @@ function renderHot20() {
   }
 
   var period = allPeriods[currentPeriodIdx];
-  label.textContent = period.label || period.key;
+  var pf = parsePeriodKey(period.key);
+  document.getElementById('wl-date').textContent = pf.date;
+  document.getElementById('wl-interval').textContent = pf.interval;
   prevBtn.disabled = currentPeriodIdx === 0;
   nextBtn.disabled = currentPeriodIdx === allPeriods.length - 1;
 
@@ -1189,6 +1207,55 @@ document.getElementById('hot20-search-input').addEventListener('input', function
 });
 
 /* ===== INIT ===== */
+/* ===== PÉRIODE LABEL ===== */
+var FR_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+function parsePeriodKey(key) {
+  /* key: "2026-04-11_12-16" */
+  var parts = (key || '').split('_');
+  if (parts.length < 2) return { date: key, interval: '' };
+  var dp = parts[0].split('-');
+  var ip = parts[1].split('-');
+  var dateStr = parseInt(dp[2], 10) + ' ' + (FR_MONTHS[parseInt(dp[1], 10) - 1] || dp[1]) + ' ' + dp[0];
+  var intervalStr = 'Saillance calculée entre ' + ip[0] + 'h et ' + ip[1] + 'h';
+  return { date: dateStr, interval: intervalStr };
+}
+
+/* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */
+/* Constellation cron: '55 0,4,8,12,16,20 * * *' UTC */
+var CRON_SLOTS = [0, 4, 8, 12, 16, 20];
+function getNextUpdate() {
+  var now = new Date();
+  var h = now.getUTCHours(), m = now.getUTCMinutes(), s = now.getUTCSeconds();
+  for (var i = 0; i < CRON_SLOTS.length; i++) {
+    var sh = CRON_SLOTS[i];
+    if (sh > h || (sh === h && 55 > m) || (sh === h && 55 === m && s === 0)) {
+      var next = new Date(now);
+      next.setUTCHours(sh, 55, 0, 0);
+      return next;
+    }
+  }
+  var next = new Date(now);
+  next.setUTCDate(next.getUTCDate() + 1);
+  next.setUTCHours(0, 55, 0, 0);
+  return next;
+}
+function formatCountdown(ms) {
+  if (ms <= 0) return 'bientôt…';
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  var pad = function(n) { return String(n).padStart(2, '0'); };
+  return (h > 0 ? h + 'h ' : '') + pad(m) + 'm ' + pad(sec) + 's';
+}
+function tickCountdown() {
+  var el = document.getElementById('wl-countdown');
+  if (!el) return;
+  el.textContent = formatCountdown(getNextUpdate() - new Date());
+}
+tickCountdown();
+setInterval(tickCountdown, 1000);
+
 loadData();
 loadTicker();
 </script>
