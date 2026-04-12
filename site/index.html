@@ -479,7 +479,7 @@
   <a href="./evolution.html">Évolution <span class="nav-badge">TIMELINE</span></a>
   <a href="./sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>
   <a href="#hot20">Hot 20</a>
-  <a href="#ticker-section">À la Une</a>
+  <a href="#ticker-section">Dernière minutes</a>
   <a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>
   <h3 style="margin-top: 30px;">À propos</h3>
   <a href="https://www.clessn.com" target="_blank" rel="noopener">CLESSN</a>
@@ -565,8 +565,8 @@
 <!-- ========== TICKER ========== -->
 <section class="ticker-section" id="ticker-section">
   <div class="ticker-label">
-    <span class="ticker-label-title">À la Une</span>
-    <span class="ticker-updated" id="ticker-updated">Scraping: --</span>
+    <span class="ticker-label-title">Dernière minutes</span>
+    <span class="ticker-updated" id="ticker-updated">Les Unes de --:--</span>
   </div>
   <div class="ticker-viewport">
     <div class="ticker-track" id="ticker-track">
@@ -924,31 +924,21 @@ var tickerLabelTimerStarted = false;
 
 function formatTickerGeneratedAt(ms) {
   var dt = new Date(ms);
-  if (isNaN(dt.getTime())) return 'Scraping: indisponible';
-
-  var diffMin = Math.max(0, Math.round((Date.now() - ms) / 60000));
-  var rel = '';
-  if (diffMin <= 1) rel = 'à l\'instant';
-  else if (diffMin < 60) rel = 'il y a ' + diffMin + ' min';
-  else {
-    var h = Math.floor(diffMin / 60);
-    var m = diffMin % 60;
-    rel = 'il y a ' + h + ' h' + (m ? ' ' + m + ' min' : '');
-  }
+  if (isNaN(dt.getTime())) return 'Les Unes indisponibles';
 
   var hhmm = new Intl.DateTimeFormat('fr-CA', {
     hour: '2-digit',
     minute: '2-digit'
   }).format(dt);
 
-  return 'Scrapé ' + hhmm + ' (' + rel + ')';
+  return 'Les Unes de ' + hhmm;
 }
 
 function refreshTickerGeneratedAtLabel() {
   var el = document.getElementById('ticker-updated');
   if (!el) return;
   if (!tickerGeneratedAtMs) {
-    el.textContent = 'Scraping: indisponible';
+    el.textContent = 'Les Unes indisponibles';
     return;
   }
   el.textContent = formatTickerGeneratedAt(tickerGeneratedAtMs);
