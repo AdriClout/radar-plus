@@ -383,18 +383,28 @@
     .ticker-section {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
       border-top: 1px solid var(--border);
-      height: 38px; display: flex; align-items: center;
+      height: 44px; display: flex; align-items: center;
       overflow: hidden;
       background: linear-gradient(to right, rgba(5,12,36,0.98), rgba(9,18,52,0.98));
     }
-    body { padding-bottom: 38px; }
+    body { padding-bottom: 44px; }
     .ticker-label {
-      flex-shrink: 0; height: 100%; min-width: 140px;
-      padding: 0 14px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; height: 100%; min-width: 220px;
+      padding: 4px 14px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
       font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.5px;
       color: rgba(215,234,255,0.95); text-transform: uppercase;
       background: linear-gradient(to right, rgba(28,60,140,0.75), rgba(22,48,112,0.62));
       border-right: 1px solid rgba(95,140,255,0.30);
+    }
+    .ticker-label-title { line-height: 1.1; }
+    .ticker-updated {
+      margin-top: 3px;
+      font-family: var(--mono);
+      font-size: 9px;
+      text-transform: none;
+      letter-spacing: 0.2px;
+      color: rgba(182,208,245,0.86);
+      white-space: nowrap;
     }
     .ticker-viewport {
       position: relative; flex: 1; height: 100%;
@@ -469,7 +479,7 @@
   <a href="./evolution.html">Évolution <span class="nav-badge">TIMELINE</span></a>
   <a href="./sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>
   <a href="#hot20">Hot 20</a>
-  <a href="#ticker-section">Dernière minute</a>
+  <a href="#ticker-section">À la Une</a>
   <a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>
   <h3 style="margin-top: 30px;">À propos</h3>
   <a href="https://www.clessn.com" target="_blank" rel="noopener">CLESSN</a>
@@ -554,7 +564,10 @@
 
 <!-- ========== TICKER ========== -->
 <section class="ticker-section" id="ticker-section">
-  <div class="ticker-label">Dernière minute</div>
+  <div class="ticker-label">
+    <span class="ticker-label-title">À la Une</span>
+    <span class="ticker-updated" id="ticker-updated">Scraping: --</span>
+  </div>
   <div class="ticker-viewport">
     <div class="ticker-track" id="ticker-track">
       <span class="ticker-empty">Chargement des manchettes&hellip;</span>
@@ -906,6 +919,51 @@ document.getElementById('week-next').addEventListener('click', function() {
 });
 
 /* ===== TICKER ===== */
+var tickerGeneratedAtMs = null;
+var tickerLabelTimerStarted = false;
+
+function formatTickerGeneratedAt(ms) {
+  var dt = new Date(ms);
+  if (isNaN(dt.getTime())) return 'Scraping: indisponible';
+
+  var diffMin = Math.max(0, Math.round((Date.now() - ms) / 60000));
+  var rel = '';
+  if (diffMin <= 1) rel = 'a l\'instant';
+  else if (diffMin < 60) rel = 'il y a ' + diffMin + ' min';
+  else {
+    var h = Math.floor(diffMin / 60);
+    var m = diffMin % 60;
+    rel = 'il y a ' + h + ' h' + (m ? ' ' + m + ' min' : '');
+  }
+
+  var hhmm = new Intl.DateTimeFormat('fr-CA', {
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(dt);
+
+  return 'Scrape ' + hhmm + ' (' + rel + ')';
+}
+
+function refreshTickerGeneratedAtLabel() {
+  var el = document.getElementById('ticker-updated');
+  if (!el) return;
+  if (!tickerGeneratedAtMs) {
+    el.textContent = 'Scraping: indisponible';
+    return;
+  }
+  el.textContent = formatTickerGeneratedAt(tickerGeneratedAtMs);
+}
+
+function setTickerGeneratedAt(isoTs) {
+  var ms = isoTs ? Date.parse(isoTs) : NaN;
+  tickerGeneratedAtMs = isNaN(ms) ? null : ms;
+  refreshTickerGeneratedAtLabel();
+  if (!tickerLabelTimerStarted) {
+    tickerLabelTimerStarted = true;
+    setInterval(refreshTickerGeneratedAtLabel, 60000);
+  }
+}
+
 async function loadTicker() {
   var section = document.getElementById('ticker-section');
   var track = document.getElementById('ticker-track');
@@ -913,6 +971,7 @@ async function loadTicker() {
     var res = await fetch('./ticker.json');
     if (!res.ok) throw new Error('fetch failed');
     var data = await res.json();
+    setTickerGeneratedAt(data && data.meta ? data.meta.generated_at : null);
     if (!data.items || data.items.length === 0) {
       track.innerHTML = '<span class="ticker-empty">Aucune manchette récente.</span>';
       section.classList.add('ready');
@@ -933,6 +992,7 @@ async function loadTicker() {
       section.classList.add('ready');
     });
   } catch (e) {
+    setTickerGeneratedAt(null);
     track.innerHTML = '<span class="ticker-empty">Erreur de chargement du ticker.</span>';
     section.classList.add('ready');
   }
