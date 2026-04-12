@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RADAR+ • Les Unes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #020010;
+      --text: #d0e0ff;
+      --muted: rgba(140,170,220,0.68);
+      --accent: #5b8eff;
+      --card-bg: rgba(10,18,50,0.74);
+      --border: rgba(90,140,255,0.24);
+      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      overflow-x: hidden;
+    }
+
+    #stars-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card-bg);
+      padding: 8px 12px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .back-link:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .title-wrap h1 {
+      font-family: var(--orbitron);
+      font-size: clamp(24px, 4vw, 38px);
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: #e6f0ff;
+      line-height: 1.05;
+    }
+    .title-wrap p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+      letter-spacing: 0.4px;
+    }
+
+    .controls {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: linear-gradient(160deg, rgba(9,18,52,0.78), rgba(6,12,34,0.86));
+      backdrop-filter: blur(8px);
+      padding: 14px;
+      margin-bottom: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .country-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .country-tab {
+      border: 1px solid var(--border);
+      background: rgba(12,22,58,0.7);
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 12px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .country-tab:hover { border-color: rgba(130,175,255,0.65); color: var(--text); }
+    .country-tab.active {
+      color: #fff;
+      border-color: rgba(120,165,255,0.85);
+      background: rgba(40,70,160,0.52);
+      box-shadow: 0 0 14px rgba(75,120,255,0.24);
+    }
+
+    .time-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .time-btn {
+      border: 1px solid var(--border);
+      background: rgba(12,22,58,0.7);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .time-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .time-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+    .time-label {
+      font-size: 13px;
+      color: #d7e7ff;
+      letter-spacing: 0.3px;
+      min-width: 250px;
+    }
+
+    .meta-line {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+    }
+
+    .board {
+      display: grid;
+      gap: 14px;
+    }
+
+    .country-block {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card-bg);
+      overflow: hidden;
+    }
+
+    .country-head {
+      padding: 10px 12px;
+      font-family: var(--orbitron);
+      font-size: 12px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #e7f0ff;
+      border-bottom: 1px solid rgba(100,150,255,0.18);
+      background: linear-gradient(90deg, rgba(25,45,110,0.48), rgba(11,22,58,0.12));
+    }
+
+    .headline-list {
+      display: grid;
+      gap: 1px;
+      background: rgba(82,120,200,0.12);
+    }
+
+    .headline-item {
+      display: grid;
+      grid-template-columns: auto auto 1fr;
+      gap: 10px;
+      align-items: start;
+      background: rgba(6,12,34,0.92);
+      padding: 10px 12px;
+      text-decoration: none;
+      color: #d6e8ff;
+      transition: background 0.2s;
+    }
+    .headline-item:hover { background: rgba(11,22,58,0.96); }
+
+    .h-time {
+      font-size: 11px;
+      color: rgba(190,210,245,0.9);
+      min-width: 45px;
+    }
+    .h-media {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      color: rgba(110,176,255,0.95);
+      min-width: 40px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    .h-title {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #e9f2ff;
+    }
+
+    .empty {
+      border: 1px dashed rgba(120,160,235,0.35);
+      border-radius: 10px;
+      color: var(--muted);
+      padding: 26px 16px;
+      text-align: center;
+      font-size: 13px;
+      background: rgba(7,13,37,0.78);
+    }
+
+    @media (max-width: 740px) {
+      .headline-item {
+        grid-template-columns: auto 1fr;
+      }
+      .h-media {
+        grid-column: 1 / 2;
+      }
+      .h-title {
+        grid-column: 2 / 3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars-canvas"></canvas>
+
+  <main class="page">
+    <div class="topbar">
+      <a class="back-link" href="./index.html">← Retour Accueil</a>
+      <div class="title-wrap">
+        <h1>Dernière Minutes</h1>
+        <p>Les Unes en direct, triées par pays, avec navigation temporelle.</p>
+      </div>
+    </div>
+
+    <section class="controls">
+      <div class="country-tabs" id="country-tabs">
+        <button class="country-tab active" data-country="ALL">Tous</button>
+        <button class="country-tab" data-country="QC">Québec</button>
+        <button class="country-tab" data-country="CAN">Canada</button>
+        <button class="country-tab" data-country="USA">États-Unis</button>
+      </div>
+
+      <div class="time-controls">
+        <button class="time-btn" id="time-older">← Plus ancien</button>
+        <div class="time-label" id="time-label">Période: --</div>
+        <button class="time-btn" id="time-newer">Plus récent →</button>
+      </div>
+
+      <div class="meta-line" id="meta-line">Chargement des données…</div>
+    </section>
+
+    <section class="board" id="board">
+      <div class="empty">Chargement des Unes…</div>
+    </section>
+  </main>
+
+  <script>
+    (function() {
+      const c = document.getElementById('stars-canvas');
+      const ctx = c.getContext('2d');
+      let stars = [];
+      function resize() {
+        c.width = window.innerWidth;
+        c.height = document.documentElement.scrollHeight;
+        const count = Math.floor((c.width * c.height) / 2800);
+        stars = Array.from({ length: count }, () => ({
+          x: Math.random() * c.width,
+          y: Math.random() * c.height,
+          r: Math.random() * 1.2 + 0.3,
+          a: Math.random() * 0.55 + 0.2,
+          s: Math.random() * 0.003 + 0.001,
+          p: Math.random() * Math.PI * 2,
+        }));
+      }
+      let t = 0;
+      function draw() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        t += 0.016;
+        for (const s of stars) {
+          const a = s.a + Math.sin(t * s.s * 60 + s.p) * 0.16;
+          ctx.fillStyle = 'rgba(180,200,255,' + Math.max(0, a) + ')';
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    })();
+
+    const mediaCountry = {
+      TVA: 'QC', RCI: 'QC', LAP: 'QC', LED: 'QC', MG: 'QC', JDM: 'QC',
+      GN: 'CAN', TTS: 'CAN', NP: 'CAN', GAM: 'CAN', CTV: 'CAN', VS: 'CAN', CBC: 'CAN',
+      CNN: 'USA', FXN: 'USA'
+    };
+    const countryName = {
+      ALL: 'Tous les pays',
+      QC: 'Québec',
+      CAN: 'Canada',
+      USA: 'États-Unis',
+      INTL: 'International'
+    };
+    const displayOrder = ['QC', 'CAN', 'USA', 'INTL'];
+
+    let selectedCountry = 'ALL';
+    let buckets = [];
+    let currentBucketIdx = 0;
+    let meta = null;
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    }
+
+    function normalizeCountry(item) {
+      const raw = (item.country_id || '').toUpperCase();
+      if (raw === 'QC' || raw === 'CAN' || raw === 'USA') return raw;
+      const media = (item.media_id || '').toUpperCase();
+      return mediaCountry[media] || 'INTL';
+    }
+
+    function toHourBucket(ts) {
+      const dt = new Date(ts);
+      if (isNaN(dt.getTime())) return null;
+      dt.setMinutes(0, 0, 0);
+      return dt;
+    }
+
+    function formatHourLabel(dt) {
+      const datePart = new Intl.DateTimeFormat('fr-CA', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short'
+      }).format(dt);
+      const timePart = new Intl.DateTimeFormat('fr-CA', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(dt);
+      return datePart + ' · ' + timePart;
+    }
+
+    function formatHm(ts) {
+      const dt = new Date(ts);
+      if (isNaN(dt.getTime())) return '--:--';
+      return new Intl.DateTimeFormat('fr-CA', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(dt);
+    }
+
+    function formatMetaLine() {
+      const el = document.getElementById('meta-line');
+      if (!el) return;
+      if (!meta || !meta.generated_at) {
+        el.textContent = 'Données indisponibles.';
+        return;
+      }
+      const g = new Date(meta.generated_at);
+      const hm = isNaN(g.getTime()) ? '--:--' : new Intl.DateTimeFormat('fr-CA', { hour: '2-digit', minute: '2-digit' }).format(g);
+      const lookback = meta.lookback_hours || '--';
+      const total = buckets.reduce((acc, b) => acc + b.items.length, 0);
+      el.textContent = 'Les Unes de ' + hm + ' · ' + total + ' manchettes visibles · fenêtre de ' + lookback + 'h';
+    }
+
+    function render() {
+      const board = document.getElementById('board');
+      const label = document.getElementById('time-label');
+      const olderBtn = document.getElementById('time-older');
+      const newerBtn = document.getElementById('time-newer');
+
+      if (!buckets.length) {
+        board.innerHTML = '<div class="empty">Aucune donnée disponible dans ticker.json.</div>';
+        label.textContent = 'Période: --';
+        olderBtn.disabled = true;
+        newerBtn.disabled = true;
+        formatMetaLine();
+        return;
+      }
+
+      const bucket = buckets[currentBucketIdx];
+      label.textContent = 'Période: ' + formatHourLabel(bucket.date);
+      olderBtn.disabled = currentBucketIdx >= buckets.length - 1;
+      newerBtn.disabled = currentBucketIdx <= 0;
+
+      const items = bucket.items.filter((it) => selectedCountry === 'ALL' || it.country === selectedCountry);
+
+      if (!items.length) {
+        board.innerHTML = '<div class="empty">Aucune Une pour ce pays dans cette période.</div>';
+        formatMetaLine();
+        return;
+      }
+
+      if (selectedCountry !== 'ALL') {
+        board.innerHTML = renderCountryBlock(selectedCountry, items);
+        formatMetaLine();
+        return;
+      }
+
+      const grouped = {};
+      for (const c of displayOrder) grouped[c] = [];
+      for (const it of items) {
+        if (!grouped[it.country]) grouped[it.country] = [];
+        grouped[it.country].push(it);
+      }
+
+      board.innerHTML = displayOrder
+        .filter((c) => grouped[c] && grouped[c].length)
+        .map((c) => renderCountryBlock(c, grouped[c]))
+        .join('');
+      formatMetaLine();
+    }
+
+    function renderCountryBlock(country, items) {
+      const sorted = items.slice().sort((a, b) => b.tsMs - a.tsMs);
+      const rows = sorted.map((it) => (
+        '<a class="headline-item" href="' + escapeHtml(it.url || '#') + '" target="_blank" rel="noopener">' +
+          '<div class="h-time">' + formatHm(it.ts_utc) + '</div>' +
+          '<div class="h-media">' + escapeHtml(it.media_id || '') + '</div>' +
+          '<div class="h-title">' + escapeHtml(it.title || 'Article') + '</div>' +
+        '</a>'
+      )).join('');
+
+      return (
+        '<article class="country-block">' +
+          '<header class="country-head">' + escapeHtml(countryName[country] || country) + '</header>' +
+          '<div class="headline-list">' + rows + '</div>' +
+        '</article>'
+      );
+    }
+
+    async function loadUnes() {
+      try {
+        const res = await fetch('./ticker.json');
+        if (!res.ok) throw new Error('fetch failed');
+        const data = await res.json();
+        meta = data.meta || null;
+        const rawItems = Array.isArray(data.items) ? data.items : [];
+
+        const normalized = rawItems
+          .map((it) => {
+            const ts = new Date(it.ts_utc);
+            if (isNaN(ts.getTime())) return null;
+            return {
+              ...it,
+              country: normalizeCountry(it),
+              tsMs: ts.getTime(),
+            };
+          })
+          .filter(Boolean)
+          .sort((a, b) => b.tsMs - a.tsMs);
+
+        const map = new Map();
+        for (const it of normalized) {
+          const b = toHourBucket(it.ts_utc);
+          if (!b) continue;
+          const key = b.toISOString();
+          if (!map.has(key)) map.set(key, { date: b, items: [] });
+          map.get(key).items.push(it);
+        }
+
+        buckets = Array.from(map.values()).sort((a, b) => b.date.getTime() - a.date.getTime());
+        currentBucketIdx = 0;
+        render();
+      } catch (e) {
+        document.getElementById('board').innerHTML = '<div class="empty">Erreur de chargement des Unes.</div>';
+        document.getElementById('meta-line').textContent = 'Impossible de récupérer ticker.json.';
+      }
+    }
+
+    document.getElementById('country-tabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.country-tab');
+      if (!btn) return;
+      document.querySelectorAll('.country-tab').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedCountry = btn.dataset.country;
+      render();
+    });
+
+    document.getElementById('time-older').addEventListener('click', () => {
+      if (currentBucketIdx < buckets.length - 1) {
+        currentBucketIdx += 1;
+        render();
+      }
+    });
+
+    document.getElementById('time-newer').addEventListener('click', () => {
+      if (currentBucketIdx > 0) {
+        currentBucketIdx -= 1;
+        render();
+      }
+    });
+
+    loadUnes();
+  </script>
+</body>
+</html>
