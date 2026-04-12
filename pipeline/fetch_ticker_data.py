@@ -53,6 +53,57 @@ def write_rows_csv(path, fieldnames, rows):
             writer.writerow(row)
 
 
+def first_nonempty(row, keys):
+    """Return the first non-empty string value among the provided keys."""
+    for k in keys:
+        v = row.get(k)
+        if v is None:
+            continue
+        s = str(v).strip()
+        if s:
+            return s
+    return ""
+
+
+def normalize_ts_utc(ts):
+    """Normalize timestamp-like text to YYYY-MM-DD HH:MM:SS (UTC-ish)."""
+    if not ts:
+        return ""
+    x = str(ts).strip()
+    if not x:
+        return ""
+
+    # Common shapes: 2026-04-12T00:28:19Z / 2026-04-12 00:28:19 / with millis
+    try:
+        y = x.replace("Z", "+00:00") if x.endswith("Z") else x
+        dt = datetime.fromisoformat(y)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+    except Exception:
+        pass
+
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            dt = datetime.strptime(x, fmt)
+            if fmt == "%Y-%m-%d":
+                dt = dt.replace(hour=0, minute=0, second=0)
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            continue
+
+    # Last resort: trim fractional seconds if any.
+    if "." in x:
+        base = x.split(".", 1)[0].replace("T", " ")
+        try:
+            dt = datetime.strptime(base, "%Y-%m-%d %H:%M:%S")
+            return dt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            pass
+
+    return ""
+
+
 def discover_dwh_bucket(glue):
     """Get the S3 bucket that backs the r-media-headlines Glue table."""
     paginator = glue.get_paginator("get_databases")
@@ -99,6 +150,7 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
             for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
                 for obj in page.get("Contents", []):
                     key = obj["Key"]
+                    last_mod = obj.get("LastModified")
                     media_total += 1
                     if not key.endswith(".csv"):
                         continue
@@ -112,22 +164,46 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
                         body = resp["Body"].read().decode("utf-8", errors="replace")
                         reader = csv.DictReader(io.StringIO(body))
                         for r in reader:
-                            title = (r.get("title") or "").strip()
-                            url = (r.get("metadata_url") or "").strip()
-                            mid = (r.get("media_id") or media_id).strip().upper()
+                            title = first_nonempty(r, [
+                                "title", "headline", "headlines", "article_title", "message", "text",
+                            ])
+                            url = first_nonempty(r, [
+                                "metadata_url", "url", "article_url", "link", "permalink",
+                            ])
+                            mid = first_nonempty(r, ["media_id", "media", "source", "publisher"]).upper() or media_id
                             if not title or not url:
                                 continue
-                            # Build headline_stop_utc from extraction partition fields.
+
+                            # Build headline_stop_utc from known timestamp fields first.
+                            ts = normalize_ts_utc(first_nonempty(r, [
+                                "headline_stop_utc", "published_at", "published_utc", "created_at",
+                                "timestamp", "datetime", "extraction_datetime", "extraction_ts",
+                            ]))
+
+                            # Then try partition-style date fields.
                             ey = r.get("extraction_year", "")
                             em = r.get("extraction_month", "")
                             ed = r.get("extraction_day", "")
                             et = r.get("extraction_time", "00:00:00")
-                            if ey and em and ed:
-                                ts = f"{ey}-{int(em):02d}-{int(ed):02d} {et or '00:00:00'}"
-                            else:
-                                # Fallback: use extraction_date if available.
-                                ed_full = r.get("extraction_date", "")
-                                ts = f"{ed_full} {et or '00:00:00'}" if ed_full else ""
+                            if not ts and ey and em and ed:
+                                try:
+                                    ts = f"{int(ey):04d}-{int(em):02d}-{int(ed):02d} {(et or '00:00:00').strip()}"
+                                except Exception:
+                                    ts = ""
+
+                            # Fallback: use extraction_date/date if available.
+                            if not ts:
+                                ed_full = first_nonempty(r, ["extraction_date", "date", "day"])
+                                if ed_full:
+                                    ts = normalize_ts_utc(f"{ed_full} {et or '00:00:00'}")
+
+                            # Absolute fallback to object modification timestamp.
+                            if not ts and last_mod is not None:
+                                try:
+                                    ts = last_mod.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                                except Exception:
+                                    ts = ""
+
                             if not ts:
                                 continue
                             rows.append({
