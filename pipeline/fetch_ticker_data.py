@@ -216,6 +216,25 @@ def list_media_prefixes(s3_client, bucket, raw_prefix):
     return out
 
 
+def list_csv_keys_recursive(s3_client, bucket, raw_prefix):
+    """List CSV keys under a root, preferring unprocessed/processed paths."""
+    rp = (raw_prefix or "").strip("/")
+    root = f"{rp}/" if rp else ""
+    keys = []
+    try:
+        paginator = s3_client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix=root):
+            for obj in page.get("Contents", []):
+                key = obj.get("Key", "")
+                if not key.endswith(".csv"):
+                    continue
+                if "/unprocessed/" in key or "/processed/" in key:
+                    keys.append(key)
+    except Exception as e:
+        print(f"  WARN: recursive listing failed under {root}: {e}", file=sys.stderr)
+    return keys
+
+
 def fetch_raw_csvs(s3_client, bucket, raw_prefix, cutoff_dt):
     """List and download raw CSV files from S3, return merged rows.
 
@@ -227,10 +246,72 @@ def fetch_raw_csvs(s3_client, bucket, raw_prefix, cutoff_dt):
     seen_keys = set()
 
     discovered_media = list_media_prefixes(s3_client, bucket, raw_prefix)
-    media_ids = discovered_media or MEDIA_IDS
+    partition_like = [m for m in discovered_media if "=" in m]
+    media_like = [m for m in discovered_media if "=" not in m]
+    media_ids = media_like or MEDIA_IDS
     rp = (raw_prefix or "r-media-headlines").strip("/")
     if discovered_media:
-        print(f"  discovered {len(discovered_media)} media prefixes under {rp}")
+        print(f"  discovered {len(discovered_media)} top-level prefixes under {rp}")
+        if partition_like and not media_like:
+            print("  top-level looks partitioned; attempting recursive csv scan for unprocessed feed")
+            csv_keys = list_csv_keys_recursive(s3_client, bucket, rp)
+            if csv_keys:
+                print(f"  found {len(csv_keys)} candidate csv keys via recursive scan")
+            rows = []
+            seen_keys = set()
+            for key in csv_keys:
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                try:
+                    resp = s3_client.get_object(Bucket=bucket, Key=key)
+                    body = resp["Body"].read().decode("utf-8", errors="replace")
+                    dialect = detect_csv_dialect(body)
+                    reader = csv.DictReader(io.StringIO(body), dialect=dialect)
+                    last_mod = resp.get("LastModified")
+                    key_media = infer_media_from_key(key, rp)
+                    for r in reader:
+                        nr = normalize_row_keys(r)
+                        title = first_nonempty(nr, [
+                            "title", "headline", "headlines", "article_title", "message", "text",
+                        ])
+                        url = first_nonempty(nr, [
+                            "metadata_url", "url", "article_url", "link", "permalink",
+                        ])
+                        if not url:
+                            url = first_url_in_row(nr)
+                        mid = first_nonempty(nr, ["media_id", "media", "source", "publisher"]).upper() or key_media
+                        if not title or not url or not mid:
+                            continue
+                        ts = normalize_ts_utc(first_nonempty(nr, [
+                            "headline_stop_utc", "published_at", "published_utc", "created_at",
+                            "timestamp", "datetime", "extraction_datetime", "extraction_ts",
+                        ]))
+                        if not ts and last_mod is not None:
+                            try:
+                                ts = last_mod.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                            except Exception:
+                                ts = ""
+                        if not ts:
+                            continue
+                        rows.append({
+                            "country_id": "",
+                            "time_interval_utc": "",
+                            "media_id": mid,
+                            "url": url,
+                            "headline_stop_utc": ts,
+                            "extracted_objects": "",
+                            "title": title,
+                        })
+                except Exception as e:
+                    print(f"  WARN: could not parse {key}: {e}", file=sys.stderr)
+
+            unique = {}
+            for row in rows:
+                k = (row["media_id"], row["url"])
+                if k not in unique or row["headline_stop_utc"] > unique[k]["headline_stop_utc"]:
+                    unique[k] = row
+            return sorted(unique.values(), key=lambda r: r["headline_stop_utc"], reverse=True)
     else:
         print(f"  no media prefixes discovered under {rp}; using fallback list")
 
@@ -459,16 +540,27 @@ def main():
         cutoff = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK_HOURS)
         rp = (raw_prefix or "r-media-headlines").strip("/")
         print(f"Fetching raw CSVs from s3://{bucket}/{rp}/ (since {cutoff.isoformat()})...")
-        rows = fetch_raw_csvs(s3_client, bucket, rp, cutoff)
-        print(f"  -> found {len(rows)} unique headlines from raw CSVs")
+        candidates = [rp]
+        if rp.endswith("-output"):
+            candidates.append(rp[: -len("-output")])
+        if "r-media-headlines" not in candidates:
+            candidates.append("r-media-headlines")
 
-        if rows:
-            write_rows_csv(os.path.join(script_dir, "ticker_objects.csv"), OUT_FIELDS, rows)
-            write_rows_csv(os.path.join(script_dir, "ticker_index.csv"),
-                           ["date_utc", "time_interval_utc", "urls", "titles"], [])
-            print("  -> saved ticker_objects.csv (real-time S3 source)")
-            print("  -> saved ticker_index.csv (empty compatibility file)")
-            return
+        rows = []
+        for cand in candidates:
+            cand = (cand or "").strip("/")
+            if not cand:
+                continue
+            print(f"Trying raw source candidate: s3://{bucket}/{cand}/")
+            rows = fetch_raw_csvs(s3_client, bucket, cand, cutoff)
+            print(f"  -> found {len(rows)} unique headlines from raw CSVs at {cand}")
+            if rows:
+                write_rows_csv(os.path.join(script_dir, "ticker_objects.csv"), OUT_FIELDS, rows)
+                write_rows_csv(os.path.join(script_dir, "ticker_index.csv"),
+                               ["date_utc", "time_interval_utc", "urls", "titles"], [])
+                print(f"  -> saved ticker_objects.csv (real-time S3 source from {cand})")
+                print("  -> saved ticker_index.csv (empty compatibility file)")
+                return
 
         print("  No rows from raw CSVs; falling back to Athena.", file=sys.stderr)
 
