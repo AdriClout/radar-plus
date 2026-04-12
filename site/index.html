@@ -827,7 +827,7 @@ function renderHot20() {
   }
 
   var period = allPeriods[currentPeriodIdx];
-  var pf = parsePeriodKey(period.key);
+  var pf = parsePeriodLabel(period.label || period.key);
   document.getElementById('wl-date').textContent = pf.date;
   document.getElementById('wl-interval').textContent = pf.interval;
   prevBtn.disabled = currentPeriodIdx === 0;
@@ -1157,8 +1157,8 @@ function openArticlePanel(node) {
       var fresh = pnode.articles.filter(function(a) { return a.url && !seenUrls[a.url]; });
       if (!fresh.length) continue;
       fresh.forEach(function(a) { seenUrls[a.url] = true; });
-      var pf = parsePeriodKey(allPeriods[pi].key);
-      prevGroups.push({ label: pf.date + ' \u00b7 ' + pf.interval, articles: fresh });
+      var pf = parsePeriodLabel(allPeriods[pi].label || allPeriods[pi].key);
+      prevGroups.push({ label: pf.date + ' · ' + pf.interval, articles: fresh });
       if (prevGroups.length >= 8) break;
     }
   }
@@ -1268,15 +1268,30 @@ document.getElementById('hot20-search-input').addEventListener('input', function
 /* ===== INIT ===== */
 /* ===== PÉRIODE LABEL ===== */
 var FR_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+var FR_MONTHS_SHORT = {Jan:'janvier',Feb:'février',Mar:'mars',Apr:'avril',May:'mai',Jun:'juin',Jul:'juillet',Aug:'août',Sep:'septembre',Oct:'octobre',Nov:'novembre',Dec:'décembre'};
+
+/* Parse JSON label: "Apr 11 · 12-16 EDT" → {date, interval} en français */
+function parsePeriodLabel(label) {
+  var m = (label || '').match(/^([A-Za-z]+)\s+(\d+)\s*·\s*(\d+)-(\d+)/);
+  if (m) {
+    var month = FR_MONTHS_SHORT[m[1]] || m[1];
+    var day = parseInt(m[2], 10);
+    var h0 = m[3];
+    var h1 = m[4] === '0' ? 'minuit' : m[4] + 'h';
+    var year = allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear();
+    return { date: day + ' ' + month + ' ' + year, interval: 'Saillance de ' + h0 + 'h à ' + h1 };
+  }
+  return parsePeriodKey(label);
+}
+
 function parsePeriodKey(key) {
-  /* key: "2026-04-11_12-16" */
   var parts = (key || '').split('_');
   if (parts.length < 2) return { date: key, interval: '' };
   var dp = parts[0].split('-');
   var ip = parts[1].split('-');
   var dateStr = parseInt(dp[2], 10) + ' ' + (FR_MONTHS[parseInt(dp[1], 10) - 1] || dp[1]) + ' ' + dp[0];
-  var intervalStr = 'Saillance calculée entre ' + ip[0] + 'h et ' + ip[1] + 'h';
-  return { date: dateStr, interval: intervalStr };
+  var h1 = ip[1] === '24' ? 'minuit' : ip[1] + 'h';
+  return { date: dateStr, interval: 'Saillance de ' + ip[0] + 'h à ' + h1 };
 }
 
 /* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */
