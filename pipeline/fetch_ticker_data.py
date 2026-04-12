@@ -81,7 +81,12 @@ def discover_dwh_bucket(glue):
 
 
 def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
-    """List and download recent raw CSV files from S3, return merged rows."""
+    """List and download raw CSV files from S3, return merged rows.
+
+    We do not trust S3 object LastModified for freshness because upstream
+    ingestion can preserve object timestamps while still containing fresh
+    extraction rows. Freshness is enforced later from row timestamps.
+    """
     rows = []
     seen_keys = set()
 
@@ -95,10 +100,6 @@ def fetch_raw_csvs(s3_client, bucket, cutoff_dt):
                 for obj in page.get("Contents", []):
                     key = obj["Key"]
                     media_total += 1
-                    # Only consider files modified after cutoff.
-                    last_mod = obj.get("LastModified")
-                    if last_mod and last_mod < cutoff_dt:
-                        continue
                     if not key.endswith(".csv"):
                         continue
                     media_recent += 1
