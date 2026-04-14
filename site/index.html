@@ -1317,11 +1317,11 @@ function parsePeriodKey(key) {
 /* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */
 /*
   Le refresh Constellation est calé sur les blocs Montréal:
-  00:55, 04:55, 08:55, 12:55, 16:55, 20:55 (heure locale, DST inclus).
+  00:00, 04:00, 08:00, 12:00, 16:00, 20:00 (heure locale, DST inclus).
 */
 var MTL_TZ = 'America/Toronto';
 var MTL_SLOTS = [0, 4, 8, 12, 16, 20];
-var MTL_SLOT_MINUTE = 55;
+var MTL_SLOT_MINUTE = 0;
 var mtlHourMinuteFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: MTL_TZ,
   hour12: false,
