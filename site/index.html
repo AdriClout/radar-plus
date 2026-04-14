@@ -1395,7 +1395,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
       var currentNode = currentRank > 0 ? currentSorted[currentRank - 1] : null;
 
       var lastSeen = null;
-      var bestSeen = null;
+      var peakSeen = null;
 
       for (var p = allPeriods.length - 1; p >= 0; p--) {
         var periodObj = allPeriods[p];
@@ -1412,8 +1412,18 @@ document.getElementById('hot20-search-input').addEventListener('input', function
         };
 
         if (!lastSeen) lastSeen = seen;
-        if (!bestSeen || rank < bestSeen.rank || (rank === bestSeen.rank && p > bestSeen.periodIdx)) {
-          bestSeen = seen;
+        if (!peakSeen) {
+          peakSeen = seen;
+        } else {
+          var seenScore = Number(seen.node.size) || 0;
+          var peakScore = Number(peakSeen.node.size) || 0;
+          if (
+            seenScore > peakScore ||
+            (seenScore === peakScore && seen.rank < peakSeen.rank) ||
+            (seenScore === peakScore && seen.rank === peakSeen.rank && p > peakSeen.periodIdx)
+          ) {
+            peakSeen = seen;
+          }
         }
       }
 
@@ -1425,20 +1435,20 @@ document.getElementById('hot20-search-input').addEventListener('input', function
       }
 
       var statusNow = currentNode
-        ? 'P&eacute;riode affich&eacute;e&nbsp;: rang <strong>' + currentRank + '</strong>' +
+        ? 'Actuellement&nbsp;: rang <strong>' + currentRank + '</strong>' +
           (currentRank <= 20 ? ' (Top 20)' : ' (hors Top 20)') +
           ' &middot; ' + formatArticleCount(currentNode.n) + ' &middot; score ' + (currentNode.size || 0).toFixed(2)
-        : 'P&eacute;riode affich&eacute;e&nbsp;: Actuellement absent du radar';
+        : 'Actuellement absent du radar';
 
       var lastSeenText = lastSeen
         ? 'Derni&egrave;re apparition&nbsp;: rang <strong>' + lastSeen.rank + '</strong> &middot; ' +
           formatArticleCount(lastSeen.node.n) + ' &middot; ' + formatPeriodForSearch(lastSeen.period)
         : 'Derni&egrave;re apparition&nbsp;: n/a';
 
-      var bestSeenText = bestSeen
-        ? 'Meilleure position observ&eacute;e&nbsp;: rang <strong>' + bestSeen.rank + '</strong> &middot; ' +
-          formatArticleCount(bestSeen.node.n) + ' &middot; ' + formatPeriodForSearch(bestSeen.period)
-        : 'Meilleure position observ&eacute;e&nbsp;: n/a';
+      var peakSeenText = peakSeen
+        ? 'P&eacute;riode la plus saillante&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(2) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
+          formatArticleCount(peakSeen.node.n) + ' &middot; ' + formatPeriodForSearch(peakSeen.period)
+        : 'P&eacute;riode la plus saillante&nbsp;: n/a';
 
       var evolutionUrl = './evolution.html?country=' + encodeURIComponent(currentCountry) + '&node=' + encodeURIComponent(targetId);
 
@@ -1449,7 +1459,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
         '<div class="sr-info">' +
           statusNow +
           '<br>' + lastSeenText +
-          '<br>' + bestSeenText +
+          '<br>' + peakSeenText +
           '<div class="sr-actions">' +
             '<a class="sr-evo-btn" href="' + evolutionUrl + '">Voir l&rsquo;&eacute;volution de la saillance</a>' +
           '</div>' +
