@@ -1315,24 +1315,51 @@ function parsePeriodKey(key) {
 }
 
 /* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */
-/* Constellation cron: '55 0,4,8,12,16,20 * * *' UTC */
-var CRON_SLOTS = [0, 4, 8, 12, 16, 20];
-function getNextUpdate() {
-  var now = new Date();
-  var h = now.getUTCHours(), m = now.getUTCMinutes(), s = now.getUTCSeconds();
-  for (var i = 0; i < CRON_SLOTS.length; i++) {
-    var sh = CRON_SLOTS[i];
-    if (sh > h || (sh === h && 55 > m) || (sh === h && 55 === m && s === 0)) {
-      var next = new Date(now);
-      next.setUTCHours(sh, 55, 0, 0);
-      return next;
-    }
+/*
+  Le refresh Constellation est calé sur les blocs Montréal:
+  00:55, 04:55, 08:55, 12:55, 16:55, 20:55 (heure locale, DST inclus).
+*/
+var MTL_TZ = 'America/Toronto';
+var MTL_SLOTS = [0, 4, 8, 12, 16, 20];
+var MTL_SLOT_MINUTE = 55;
+var mtlHourMinuteFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: MTL_TZ,
+  hour12: false,
+  hour: '2-digit',
+  minute: '2-digit'
+});
+
+function getMontrealHourMinute(date) {
+  var parts = mtlHourMinuteFormatter.formatToParts(date);
+  var hour = 0;
+  var minute = 0;
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].type === 'hour') hour = parseInt(parts[i].value, 10);
+    if (parts[i].type === 'minute') minute = parseInt(parts[i].value, 10);
   }
-  var next = new Date(now);
-  next.setUTCDate(next.getUTCDate() + 1);
-  next.setUTCHours(0, 55, 0, 0);
-  return next;
+  return { hour: hour, minute: minute };
 }
+
+function isMontrealRefreshSlot(date) {
+  var hm = getMontrealHourMinute(date);
+  return hm.minute === MTL_SLOT_MINUTE && MTL_SLOTS.indexOf(hm.hour) !== -1;
+}
+
+function computeNextUpdate() {
+  var candidate = new Date();
+  candidate.setMilliseconds(0);
+  candidate.setSeconds(0);
+  candidate = new Date(candidate.getTime() + 60000);
+
+  for (var i = 0; i < 48 * 60; i++) {
+    if (isMontrealRefreshSlot(candidate)) return candidate;
+    candidate = new Date(candidate.getTime() + 60000);
+  }
+
+  return new Date(Date.now() + 4 * 3600 * 1000);
+}
+
+var nextUpdate = computeNextUpdate();
 function formatCountdown(ms) {
   if (ms <= 0) return 'bientôt…';
   var s = Math.floor(ms / 1000);
@@ -1345,7 +1372,10 @@ function formatCountdown(ms) {
 function tickCountdown() {
   var el = document.getElementById('wl-countdown');
   if (!el) return;
-  el.textContent = formatCountdown(getNextUpdate() - new Date());
+  if (Date.now() >= nextUpdate.getTime()) {
+    nextUpdate = computeNextUpdate();
+  }
+  el.textContent = formatCountdown(nextUpdate - new Date());
 }
 tickCountdown();
 setInterval(tickCountdown, 1000);
