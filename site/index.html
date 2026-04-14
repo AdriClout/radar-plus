@@ -1065,7 +1065,7 @@ function renderHot20() {
   var periodData = countryGraphs ? countryGraphs[period.key] : null;
 
   if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
-    grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour cette période</div>';
+    grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ce bloc horaire (4 h)</div>';
     return;
   }
 
@@ -1141,24 +1141,24 @@ function renderHot20() {
       var mediaCount = mediaIds.length;
       var mediaTip = mediaIds.length
         ? 'M&eacute;dias en cause: ' + escapeHtml(mediaIds.join(', '))
-        : 'Aucun m&eacute;dia identifi&eacute; pour cette p&eacute;riode.';
+        : 'Aucun m&eacute;dia identifi&eacute; pour ce bloc horaire (4 h).';
 
       /* Trend badge */
       var trendHtml = '';
       if (currentPeriodIdx > 0) {
         var prevRank = prevRanks[node.id];
         if (!prevRank && comebacks[node.id]) {
-          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="Retour dans le Top 20 apr&egrave;s au moins 2 p&eacute;riodes d\'absence.">&#128260; Retour</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="Retour dans le Top 20 apr&egrave;s au moins 2 blocs horaires (4 h) d\'absence.">&#128260; Retour</span>';
         } else if (!prevRank) {
-          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="Nouvelle entr&eacute;e dans le Top 20 pour la p&eacute;riode affich&eacute;e.">&#128293; Nouveau</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="Nouvelle entr&eacute;e dans le Top 20 pour ce bloc horaire (4 h).">&#128293; Nouveau</span>';
         } else {
           var diff = prevRank - (i + 1);
           if (diff > 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="Gagne ' + diff + ' rang' + (diff > 1 ? 's' : '') + ' depuis la p&eacute;riode pr&eacute;c&eacute;dente (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9650;' + diff + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="Gagne ' + diff + ' rang' + (diff > 1 ? 's' : '') + ' depuis le bloc horaire pr&eacute;c&eacute;dent (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9650;' + diff + '</span>';
           } else if (diff < 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="Perd ' + Math.abs(diff) + ' rang' + (Math.abs(diff) > 1 ? 's' : '') + ' depuis la p&eacute;riode pr&eacute;c&eacute;dente (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9660;' + Math.abs(diff) + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="Perd ' + Math.abs(diff) + ' rang' + (Math.abs(diff) > 1 ? 's' : '') + ' depuis le bloc horaire pr&eacute;c&eacute;dent (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9660;' + Math.abs(diff) + '</span>';
           } else {
-            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="Position inchang&eacute;e: rang ' + (i + 1) + ' comme &agrave; la p&eacute;riode pr&eacute;c&eacute;dente.">&mdash;</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="Position inchang&eacute;e: rang ' + (i + 1) + ' comme au bloc horaire pr&eacute;c&eacute;dent.">&mdash;</span>';
           }
         }
       }
@@ -1166,7 +1166,7 @@ function renderHot20() {
       /* Streak */
       var streak = streaks[node.id] || 0;
       var streakHtml = streak > 1
-        ? '<div class="hot20-row-streak hot20-hint" data-tip="Pr&eacute;sent dans le Top 20 depuis ' + streak + ' p&eacute;riodes cons&eacute;cutives.">&#128204; ' + streak + 'e p&eacute;riode cons&eacute;cutive</div>'
+        ? '<div class="hot20-row-streak hot20-hint" data-tip="Pr&eacute;sent dans le Top 20 depuis ' + streak + ' blocs horaires cons&eacute;cutifs (4 h chacun).">&#128204; ' + streak + ' blocs horaires de suite</div>'
         : '';
 
       /* Rank class */
@@ -1564,9 +1564,9 @@ document.getElementById('hot20-search-input').addEventListener('input', function
         : 'Derni&egrave;re apparition&nbsp;: n/a';
 
       var peakSeenText = peakSeen
-        ? 'P&eacute;riode la plus saillante&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(2) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
+        ? 'Bloc horaire le plus saillant (4 h)&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(2) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
           formatArticleCount(peakSeen.node.n) + ' &middot; ' + formatPeriodForSearch(peakSeen.period)
-        : 'P&eacute;riode la plus saillante&nbsp;: n/a';
+        : 'Bloc horaire le plus saillant (4 h)&nbsp;: n/a';
 
       var evolutionUrl = './evolution.html?country=' + encodeURIComponent(currentCountry) + '&node=' + encodeURIComponent(targetId);
 
