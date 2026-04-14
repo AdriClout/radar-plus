@@ -121,42 +121,45 @@
 
     .hero-sonar {
       position: absolute;
-      left: calc(100% + 18px);
-      top: 58%;
-      transform: translateY(-50%);
-      width: min(280px, 26vw);
-      max-width: 320px;
+      left: 50%;
+      top: 74%;
+      transform: translateX(-50%);
+      width: min(430px, 86vw);
+      max-width: 430px;
       z-index: 6;
       pointer-events: auto;
+      text-align: center;
     }
     .hero-sonar-toggle {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      border: 1px solid rgba(110,165,255,0.35);
-      background: rgba(8,14,40,0.78);
-      border-radius: 999px;
-      padding: 5px 10px;
+      border: none;
+      border-bottom: 1px solid rgba(110,165,255,0.45);
+      background: transparent;
+      padding: 0 0 4px;
       color: #dbe9ff;
       font-family: var(--orbitron);
       font-size: 9px;
-      letter-spacing: 1px;
+      letter-spacing: 1.1px;
       text-transform: uppercase;
       cursor: pointer;
-      transition: border-color 0.2s ease, color 0.2s ease;
+      transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+      opacity: 0.88;
     }
     .hero-sonar-toggle::before {
       content: '';
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
-      border: 1px solid rgba(130,190,255,0.65);
+      border: 1px solid rgba(130,190,255,0.8);
       box-shadow: 0 0 0 0 rgba(110,180,255,0.36);
       animation: sonarPing 2.4s ease-out infinite;
     }
     .hero-sonar-toggle:hover {
-      border-color: rgba(145,200,255,0.68);
+      border-color: rgba(145,200,255,0.8);
       color: #f3f8ff;
+      opacity: 1;
     }
     @keyframes sonarPing {
       0% { box-shadow: 0 0 0 0 rgba(110,180,255,0.36); }
@@ -165,20 +168,20 @@
     }
     .hero-sonar-fan {
       position: relative;
-      height: 130px;
-      margin-top: 8px;
+      height: 118px;
+      margin-top: 10px;
     }
     .hero-sonar-sweep {
       position: absolute;
       left: 50%;
-      top: 2px;
-      width: 240px;
-      height: 110px;
+      top: 8px;
+      width: 220px;
+      height: 100px;
       transform: translateX(-50%);
       overflow: hidden;
-      border-radius: 0 0 120px 120px / 0 0 110px 110px;
+      border-radius: 0 0 110px 110px / 0 0 100px 100px;
       pointer-events: none;
-      opacity: 0.45;
+      opacity: 0.4;
     }
     .hero-sonar-sweep::before {
       content: '';
@@ -194,57 +197,61 @@
     .hero-sonar-link {
       position: absolute;
       left: 50%;
-      top: 17px;
+      top: 20px;
       width: 1px;
-      height: 70px;
+      height: 58px;
       background: linear-gradient(to bottom, rgba(130,185,255,0.42), rgba(130,185,255,0.08));
       transform-origin: top center;
-      transition: height 0.2s ease;
       pointer-events: none;
     }
-    .hero-sonar-link.left { transform: rotate(-30deg); }
+    .hero-sonar-link.left { transform: rotate(-34deg); }
     .hero-sonar-link.center { transform: rotate(0deg); }
-    .hero-sonar-link.right { transform: rotate(30deg); }
+    .hero-sonar-link.right { transform: rotate(34deg); }
     .hero-sonar-node {
       position: absolute;
       transform: translate(-50%, -50%);
-      display: inline-flex;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 6px;
-      border: 1px solid rgba(105,160,255,0.35);
-      background: rgba(9,15,42,0.78);
-      color: #d5e6ff;
-      border-radius: 999px;
-      padding: 3px 8px;
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
+      border: none;
+      background: transparent;
+      color: #d3e5ff;
+      padding: 0;
       cursor: pointer;
-      transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      min-width: 60px;
+      transition: color 0.2s ease, transform 0.2s ease;
     }
     .hero-sonar-node:hover {
-      border-color: rgba(145,200,255,0.7);
       color: #f2f8ff;
       transform: translate(-50%, -50%) scale(1.05);
     }
     .hero-sonar-node.active {
-      border-color: rgba(145,200,255,0.78);
       color: #fff;
-      box-shadow: 0 0 12px rgba(100,170,255,0.28);
     }
     .hero-sonar-node-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 1px;
-      transform: rotate(45deg);
-      background: linear-gradient(135deg, #f4f9ff, #79b5ff);
-      box-shadow: 0 0 7px rgba(120,180,255,0.45);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(130,190,255,0.74);
+      background: radial-gradient(circle, rgba(228,244,255,0.92) 0 28%, rgba(130,190,255,0.24) 45%, rgba(130,190,255,0) 70%);
+      box-shadow: 0 0 8px rgba(120,180,255,0.34);
       flex: 0 0 auto;
     }
-    .hero-sonar-node[data-topic="radar"] { left: 18%; top: 90px; }
-    .hero-sonar-node[data-topic="saillance"] { left: 50%; top: 76px; }
-    .hero-sonar-node[data-topic="scores"] { left: 82%; top: 90px; }
+    .hero-sonar-node.active .hero-sonar-node-dot {
+      border-color: rgba(165,215,255,0.95);
+      box-shadow: 0 0 13px rgba(135,196,255,0.6);
+    }
+    .hero-sonar-node-label {
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .hero-sonar-node[data-topic="radar"] { left: 23%; top: 84px; }
+    .hero-sonar-node[data-topic="saillance"] { left: 50%; top: 68px; }
+    .hero-sonar-node[data-topic="scores"] { left: 77%; top: 84px; }
     .hero-sonar-panel {
       border: 1px solid rgba(110,165,255,0.28);
       background: rgba(8,14,40,0.86);
@@ -256,6 +263,9 @@
       transform: translateY(6px);
       transition: opacity 0.2s ease, transform 0.2s ease;
       min-height: 86px;
+      text-align: left;
+      max-width: 400px;
+      margin: 4px auto 0;
     }
     .hero-sonar-panel.visible {
       opacity: 1;
@@ -901,7 +911,7 @@
     @media (max-width: 1320px) {
       .hero-sonar {
         left: 50%;
-        top: 72%;
+        top: 75%;
         transform: translateX(-50%);
         width: min(430px, 86vw);
         max-width: none;
@@ -911,17 +921,17 @@
       .hero-robot { width: 95vw; }
       .hero-sonar {
         left: 50%;
-        top: 71%;
+        top: 77%;
         transform: translateX(-50%);
         width: min(360px, 92vw);
       }
-      .hero-sonar-fan { height: 118px; }
-      .hero-sonar-sweep { width: 205px; height: 96px; }
-      .hero-sonar-link { height: 64px; }
-      .hero-sonar-node { font-size: 8px; padding: 3px 7px; }
-      .hero-sonar-node[data-topic="radar"] { left: 14%; top: 86px; }
-      .hero-sonar-node[data-topic="saillance"] { left: 50%; top: 72px; }
-      .hero-sonar-node[data-topic="scores"] { left: 86%; top: 86px; }
+      .hero-sonar-fan { height: 104px; }
+      .hero-sonar-sweep { width: 190px; height: 86px; }
+      .hero-sonar-link { top: 17px; height: 50px; }
+      .hero-sonar-node-label { font-size: 7px; }
+      .hero-sonar-node[data-topic="radar"] { left: 18%; top: 78px; }
+      .hero-sonar-node[data-topic="saillance"] { left: 50%; top: 64px; }
+      .hero-sonar-node[data-topic="scores"] { left: 82%; top: 78px; }
       .hot20-header { flex-direction: column; align-items: flex-start; }
       .hot20-list-header { display: none; }
       .hot20-row { grid-template-columns: 56px 130px 1fr 160px; }
@@ -997,15 +1007,15 @@
 
         <button class="hero-sonar-node" data-topic="radar" aria-label="Ce qu'est Radar+">
           <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-          <span>Radar+</span>
+          <span class="hero-sonar-node-label">Radar+</span>
         </button>
         <button class="hero-sonar-node" data-topic="saillance" aria-label="Ce qu'est la saillance médiatique">
           <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-          <span>Saillance</span>
+          <span class="hero-sonar-node-label">Saillance</span>
         </button>
         <button class="hero-sonar-node" data-topic="scores" aria-label="Comment les scores sont calculés">
           <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-          <span>Scores</span>
+          <span class="hero-sonar-node-label">Scores</span>
         </button>
       </div>
       <div class="hero-sonar-panel" id="hero-sonar-panel" hidden>
