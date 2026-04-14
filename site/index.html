@@ -16,6 +16,7 @@
       --accent-glow: rgba(80,130,255,0.45);
       --card-bg: rgba(10,18,50,0.7);
       --border: rgba(90,140,255,0.22);
+      --ticker-height: 44px;
       --orbitron: 'Orbitron', 'Space Mono', monospace;
       --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
     }
@@ -114,7 +115,7 @@
 
     /* Scroll indicator */
     .scroll-hint {
-      position: absolute; bottom: 30px; left: 50%;
+      position: absolute; bottom: calc(var(--ticker-height) + 26px); left: 50%;
       transform: translateX(-50%); text-align: center;
       animation: float 2.5s ease-in-out infinite;
       z-index: 5;
@@ -530,11 +531,11 @@
     .ticker-section {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
       border-top: 1px solid var(--border);
-      height: 44px; display: flex; align-items: center;
+      height: var(--ticker-height); display: flex; align-items: center;
       overflow: hidden;
       background: linear-gradient(to right, rgba(5,12,36,0.98), rgba(9,18,52,0.98));
     }
-    body { padding-bottom: 44px; }
+    body { padding-bottom: var(--ticker-height); }
     .ticker-label {
       flex-shrink: 0; height: 100%; min-width: 220px;
       padding: 4px 14px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
