@@ -962,7 +962,9 @@
   window.addEventListener('resize', () => { Graph.width(window.innerWidth).height(window.innerHeight); if (currentMode === 'evolution') renderEvolutionChart(); });
 
   // ── État ──────────────────────────────────────────────────────────────────
-  let currentCountry = countries[0];
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCountry = (urlParams.get('country') || '').toUpperCase();
+  let currentCountry = countries.includes(urlCountry) ? urlCountry : countries[0];
   let currentIdx     = periods.length - 1;
   let focusedNode    = null;
   let lastNodeClickTs = 0;
@@ -1495,6 +1497,10 @@
     });
   });
 
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.country === currentCountry);
+  });
+
   document.getElementById('media-all').addEventListener('click', () => {
     selectedMediaByCountry[currentCountry] = new Set(getAvailableMediaIds(currentCountry));
     syncMediaButtons();
@@ -1524,7 +1530,7 @@
   setMode('evolution');
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
-  const urlNode = new URLSearchParams(window.location.search).get('node');
+  const urlNode = urlParams.get('node');
   if (urlNode) {
     const q = urlNode.toLowerCase();
     let foundId = null;

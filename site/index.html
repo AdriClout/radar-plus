@@ -330,6 +330,33 @@
     .hot20-search-result .sr-info {
       font-size: 12px; color: var(--text); line-height: 1.6;
     }
+    .hot20-search-result .sr-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .hot20-search-result .sr-evo-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(100,160,255,0.45);
+      background: rgba(25,45,110,0.35);
+      color: #dbe8ff;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: border-color 0.25s, transform 0.25s, background 0.25s;
+    }
+    .hot20-search-result .sr-evo-btn:hover {
+      border-color: var(--accent);
+      background: rgba(40,70,170,0.5);
+      transform: translateY(-1px);
+    }
     .hot20-search-result .sr-not-found {
       font-size: 13px; color: var(--muted); font-style: italic;
     }
@@ -1326,11 +1353,16 @@ document.getElementById('hot20-search-input').addEventListener('input', function
           (bestSeen.node.n || 0) + ' mentions &middot; ' + formatPeriodForSearch(bestSeen.period)
         : '&#11088; Meilleure position observ&eacute;e&nbsp;: n/a';
 
+      var evolutionUrl = './evolution.html?country=' + encodeURIComponent(currentCountry) + '&node=' + encodeURIComponent(targetId);
+
       resultDiv.innerHTML = '<div class="sr-name">' + escapeHtml(dName) + '</div>' +
         '<div class="sr-info">' +
           statusNow +
           '<br>' + lastSeenText +
           '<br>' + bestSeenText +
+          '<div class="sr-actions">' +
+            '<a class="sr-evo-btn" href="' + evolutionUrl + '">&#128200; Voir dans &Eacute;volution</a>' +
+          '</div>' +
         '</div>';
       resultDiv.classList.add('visible');
     } else {
