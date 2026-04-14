@@ -119,6 +119,61 @@
       z-index: 1; overflow: hidden;
     }
 
+    .hero-explainer {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      z-index: 6;
+      width: min(520px, 88vw);
+      background: rgba(10,18,50,0.52);
+      border: 1px solid rgba(90,140,255,0.2);
+      border-radius: 10px;
+      backdrop-filter: blur(8px);
+      padding: 10px;
+    }
+    .hero-explainer-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .hero-explainer-tab {
+      border: 1px solid rgba(90,140,255,0.24);
+      background: rgba(8,15,42,0.6);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-family: var(--orbitron);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .hero-explainer-tab:hover {
+      border-color: rgba(110,165,255,0.5);
+      color: #dbe9ff;
+    }
+    .hero-explainer-tab.active {
+      background: rgba(40,70,160,0.5);
+      border-color: rgba(110,165,255,0.68);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(85,136,255,0.22);
+    }
+    .hero-explainer-panel {
+      border-top: 1px solid rgba(90,140,255,0.18);
+      padding-top: 8px;
+      min-height: 78px;
+    }
+    .hero-explainer-text {
+      display: none;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #d7e6ff;
+    }
+    .hero-explainer-text.active { display: block; }
+    .hero-explainer-text strong { color: #f0f6ff; }
+
     .hero-robot {
       position: relative; width: min(720px, 90vw); margin: 0 auto;
     }
@@ -721,6 +776,11 @@
     /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
       .hero-robot { width: 95vw; }
+      .hero-explainer {
+        position: static;
+        width: 92vw;
+        margin: 8px auto 0;
+      }
       .hot20-header { flex-direction: column; align-items: flex-start; }
       .hot20-list-header { display: none; }
       .hot20-row { grid-template-columns: 56px 130px 1fr 160px; }
@@ -764,6 +824,24 @@
 
 <!-- ========== HERO ========== -->
 <section class="hero" id="hero">
+  <div class="hero-explainer" id="hero-explainer">
+    <div class="hero-explainer-tabs" role="tablist" aria-label="Comprendre Radar+">
+      <button class="hero-explainer-tab active" role="tab" aria-selected="true" aria-controls="explainer-radar" data-explainer="radar">Radar+</button>
+      <button class="hero-explainer-tab" role="tab" aria-selected="false" aria-controls="explainer-saillance" data-explainer="saillance">Saillance</button>
+      <button class="hero-explainer-tab" role="tab" aria-selected="false" aria-controls="explainer-scores" data-explainer="scores">Calcul des scores</button>
+    </div>
+    <div class="hero-explainer-panel">
+      <div class="hero-explainer-text active" id="explainer-radar" data-explainer="radar" role="tabpanel">
+        <strong>Radar+</strong> surveille en continu les m&eacute;dias et met en &eacute;vidence les sujets qui captent le plus l'attention publique, &eacute;dition par &eacute;dition (blocs de 4 h).
+      </div>
+      <div class="hero-explainer-text" id="explainer-saillance" data-explainer="saillance" role="tabpanel">
+        La <strong>saillance m&eacute;diatique</strong> mesure la visibilit&eacute; d'un sujet dans une &eacute;dition: plus un sujet est repris, central et soutenu dans les contenus, plus sa saillance est &eacute;lev&eacute;e.
+      </div>
+      <div class="hero-explainer-text" id="explainer-scores" data-explainer="scores" role="tabpanel">
+        <strong>Scores de saillance:</strong> score brut du sujet dans l'&eacute;dition, poids relatif (%) face aux autres sujets, et cumul historique pour suivre les sujets qui reviennent dans le temps.
+      </div>
+    </div>
+  </div>
   <div class="hero-robot">
     <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
     <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
@@ -1013,6 +1091,27 @@ if (menuDiscoverHint) {
     navToggle.click();
   });
 }
+
+const heroExplainer = document.getElementById('hero-explainer');
+if (heroExplainer) {
+  var explainerTabs = heroExplainer.querySelectorAll('.hero-explainer-tab');
+  var explainerPanels = heroExplainer.querySelectorAll('.hero-explainer-text');
+
+  explainerTabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var key = tab.dataset.explainer;
+      explainerTabs.forEach(function(btn) {
+        var active = btn.dataset.explainer === key;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      explainerPanels.forEach(function(panel) {
+        panel.classList.toggle('active', panel.dataset.explainer === key);
+      });
+    });
+  });
+}
+
 sideNav.querySelectorAll('a').forEach(function(a) {
   a.addEventListener('click', function() {
     navToggle.classList.remove('open');
