@@ -333,7 +333,7 @@
       left: -45%;
       width: 40%;
       height: 100%;
-      background: linear-gradient(90deg, rgba(100,160,255,0), rgba(100,160,255,0.08), rgba(100,160,255,0));
+      background: linear-gradient(90deg, rgba(84,255,165,0), rgba(84,255,165,0.16), rgba(84,255,165,0));
       opacity: 0;
       pointer-events: none;
     }
@@ -343,8 +343,8 @@
     }
     @keyframes radarSweep {
       0% { transform: translateX(0); opacity: 0; }
-      15% { opacity: 0.45; }
-      70% { opacity: 0.2; }
+      15% { opacity: 0.62; }
+      70% { opacity: 0.26; }
       100% { transform: translateX(360%); opacity: 0; }
     }
     .hot20-search-result .sr-name {
@@ -358,12 +358,12 @@
       line-height: 1.1;
     }
     .hot20-search-result .sr-radar-dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      background: #8fc0ff;
+      background: #44ff9a;
       position: relative;
-      box-shadow: 0 0 0 0 rgba(120,190,255,0.45);
+      box-shadow: 0 0 0 0 rgba(68,255,154,0.55), 0 0 8px rgba(68,255,154,0.55);
       flex: 0 0 auto;
     }
     .hot20-search-result .sr-radar-dot::after {
@@ -371,7 +371,7 @@
       position: absolute;
       inset: -4px;
       border-radius: 50%;
-      border: 1px solid rgba(120,190,255,0.5);
+      border: 1px solid rgba(68,255,154,0.65);
       opacity: 0;
       transform: scale(0.7);
     }
@@ -382,17 +382,17 @@
       animation: radarRing 2.2s ease-out infinite;
     }
     .hot20-search-result.radar-inactive .sr-radar-dot {
-      background: rgba(170,190,220,0.75);
-      box-shadow: 0 0 0 0 rgba(170,190,220,0.25);
+      background: rgba(116,206,164,0.78);
+      box-shadow: 0 0 0 0 rgba(116,206,164,0.35), 0 0 6px rgba(116,206,164,0.35);
     }
     .hot20-search-result.radar-inactive .sr-radar-dot::after {
-      border-color: rgba(170,190,220,0.4);
+      border-color: rgba(116,206,164,0.55);
       animation: radarRingSoft 3.4s ease-out infinite;
     }
     @keyframes radarDotPulse {
-      0% { box-shadow: 0 0 0 0 rgba(120,190,255,0.45); }
-      60% { box-shadow: 0 0 0 6px rgba(120,190,255,0); }
-      100% { box-shadow: 0 0 0 0 rgba(120,190,255,0); }
+      0% { box-shadow: 0 0 0 0 rgba(68,255,154,0.6), 0 0 10px rgba(68,255,154,0.5); }
+      60% { box-shadow: 0 0 0 8px rgba(68,255,154,0), 0 0 12px rgba(68,255,154,0.25); }
+      100% { box-shadow: 0 0 0 0 rgba(68,255,154,0), 0 0 8px rgba(68,255,154,0.18); }
     }
     @keyframes radarRing {
       0% { opacity: 0.65; transform: scale(0.75); }
