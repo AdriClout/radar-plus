@@ -124,75 +124,58 @@
       inset: 0;
       z-index: 6;
       pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.24s ease;
     }
-    .hero-orbit-track {
+    .hero-constellation.reveal,
+    .hero-constellation.open {
+      opacity: 1;
+    }
+    .hero-constellation-svg {
       position: absolute;
-      left: 50%;
-      top: 57%;
-      transform: translate(-50%, -50%);
-      border: 1px dashed rgba(120,170,255,0.22);
-      border-radius: 50%;
-      opacity: 0.45;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
     }
-    .hero-orbit-track.orbit-a {
-      width: 230px;
-      height: 92px;
+    .hero-constellation-svg line {
+      stroke: rgba(120,170,255,0.3);
+      stroke-width: 0.55;
+      stroke-dasharray: 1.8 1.6;
     }
-    .hero-orbit-track.orbit-b {
-      width: 304px;
-      height: 122px;
-      opacity: 0.26;
-      transform: translate(-50%, -50%) rotate(-10deg);
-    }
-    .hero-orbit-satellite {
-      position: absolute;
-      left: 50%;
-      top: 57%;
-      width: 0;
-      height: 0;
-      pointer-events: none;
-      transform: translate(-50%, -50%) rotate(var(--start-rot, 0deg));
-      animation: orbitSpin var(--orbit-duration, 26s) linear infinite;
-    }
-    .hero-orbit-satellite.reverse {
-      animation-direction: reverse;
-    }
-    @keyframes orbitSpin {
-      from { transform: translate(-50%, -50%) rotate(var(--start-rot, 0deg)); }
-      to { transform: translate(-50%, -50%) rotate(calc(var(--start-rot, 0deg) + 360deg)); }
+    .hero-constellation-svg circle {
+      fill: rgba(140,185,255,0.5);
     }
     .hero-constellation-node {
       position: absolute;
-      --radius: 112px;
-      transform: translateX(var(--radius));
-      width: 17px;
-      height: 17px;
-      border-radius: 50%;
-      border: 1px solid rgba(120,170,255,0.56);
-      background: radial-gradient(circle at 35% 35%, rgba(246,252,255,0.96), rgba(150,195,255,0.22));
-      box-shadow: 0 0 10px rgba(95,145,255,0.28);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #e8f2ff;
+      transform: translate(-50%, -50%);
+      width: 18px;
+      height: 18px;
+      border: none;
+      background: none;
+      color: rgba(220,236,255,0.9);
+      text-shadow: 0 0 8px rgba(115,175,255,0.38);
       cursor: pointer;
+      pointer-events: none;
+      transition: transform 0.2s ease, color 0.2s ease, text-shadow 0.2s ease;
+    }
+    .hero-constellation.reveal .hero-constellation-node,
+    .hero-constellation.open .hero-constellation-node {
       pointer-events: auto;
-      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     }
     .hero-constellation-node:hover {
-      transform: translateX(var(--radius)) scale(1.16);
-      border-color: rgba(165,210,255,0.85);
-      box-shadow: 0 0 14px rgba(130,190,255,0.42);
+      transform: translate(-50%, -50%) scale(1.16);
+      color: #f2f8ff;
+      text-shadow: 0 0 12px rgba(130,190,255,0.6);
     }
     .hero-constellation-node.active {
-      border-color: rgba(165,210,255,0.9);
-      box-shadow: 0 0 16px rgba(130,190,255,0.5);
+      color: #f2f8ff;
+      text-shadow: 0 0 12px rgba(130,190,255,0.65);
     }
     .hero-constellation-node .star {
-      font-size: 10px;
+      font-size: 14px;
       line-height: 1;
-      transform: translateY(-0.5px);
+      transform: translateY(-1px);
       pointer-events: none;
     }
     .hero-constellation-node::after {
@@ -219,16 +202,13 @@
     .hero-constellation-node.active::after {
       opacity: 1;
     }
-    .hero-orbit-satellite[data-topic="radar"] { --start-rot: -22deg; --orbit-duration: 21s; }
-    .hero-orbit-satellite[data-topic="saillance"] { --start-rot: 128deg; --orbit-duration: 25s; }
-    .hero-orbit-satellite[data-topic="scores"] { --start-rot: 248deg; --orbit-duration: 29s; }
-    .hero-orbit-satellite[data-topic="radar"] .hero-constellation-node { --radius: 102px; }
-    .hero-orbit-satellite[data-topic="saillance"] .hero-constellation-node { --radius: 118px; }
-    .hero-orbit-satellite[data-topic="scores"] .hero-constellation-node { --radius: 108px; }
+    .hero-constellation-node[data-topic="radar"] { left: 26%; top: 58%; }
+    .hero-constellation-node[data-topic="saillance"] { left: 50%; top: 50%; }
+    .hero-constellation-node[data-topic="scores"] { left: 74%; top: 58%; }
     .hero-constellation-panel {
       position: absolute;
       left: 50%;
-      top: 71%;
+      top: 68%;
       transform: translateX(-50%) translateY(6px);
       width: min(430px, 84vw);
       border: 1px solid rgba(110,165,255,0.28);
@@ -883,17 +863,14 @@
     /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
       .hero-robot { width: 95vw; }
-      .hero-orbit-track { top: 58%; }
-      .hero-orbit-track.orbit-a { width: 184px; height: 72px; }
-      .hero-orbit-track.orbit-b { width: 244px; height: 96px; }
-      .hero-orbit-satellite { top: 58%; }
-      .hero-constellation-node { width: 16px; height: 16px; }
-      .hero-constellation-node .star { font-size: 9px; }
-      .hero-orbit-satellite[data-topic="radar"] .hero-constellation-node { --radius: 84px; }
-      .hero-orbit-satellite[data-topic="saillance"] .hero-constellation-node { --radius: 96px; }
-      .hero-orbit-satellite[data-topic="scores"] .hero-constellation-node { --radius: 88px; }
+      .hero-constellation { opacity: 1; }
+      .hero-constellation-node { width: 16px; height: 16px; pointer-events: auto; }
+      .hero-constellation-node .star { font-size: 12px; }
+      .hero-constellation-node[data-topic="radar"] { left: 24%; top: 60%; }
+      .hero-constellation-node[data-topic="saillance"] { left: 50%; top: 52%; }
+      .hero-constellation-node[data-topic="scores"] { left: 76%; top: 60%; }
       .hero-constellation-panel {
-        top: 75%;
+        top: 72%;
         width: min(360px, 92vw);
       }
       .hot20-header { flex-direction: column; align-items: flex-start; }
@@ -962,23 +939,23 @@
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
     </div>
     <div class="hero-constellation" id="hero-constellation" aria-label="Rep&egrave;res d'explication">
-      <div class="hero-orbit-track orbit-a" aria-hidden="true"></div>
-      <div class="hero-orbit-track orbit-b" aria-hidden="true"></div>
-      <div class="hero-orbit-satellite" data-topic="radar">
-        <button class="hero-constellation-node" data-topic="radar" data-label="Radar+" aria-label="Ce qu'est Radar+">
-          <span class="star" aria-hidden="true">&#10022;</span>
-        </button>
-      </div>
-      <div class="hero-orbit-satellite reverse" data-topic="saillance">
-        <button class="hero-constellation-node" data-topic="saillance" data-label="Saillance" aria-label="Ce qu'est la saillance médiatique">
-          <span class="star" aria-hidden="true">&#10022;</span>
-        </button>
-      </div>
-      <div class="hero-orbit-satellite" data-topic="scores">
-        <button class="hero-constellation-node" data-topic="scores" data-label="Scores" aria-label="Comment les scores sont calculés">
-          <span class="star" aria-hidden="true">&#10022;</span>
-        </button>
-      </div>
+      <svg class="hero-constellation-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="26" y1="58" x2="50" y2="50"></line>
+        <line x1="50" y1="50" x2="74" y2="58"></line>
+        <line x1="26" y1="58" x2="74" y2="58"></line>
+        <circle cx="26" cy="58" r="0.7"></circle>
+        <circle cx="50" cy="50" r="0.7"></circle>
+        <circle cx="74" cy="58" r="0.7"></circle>
+      </svg>
+      <button class="hero-constellation-node" data-topic="radar" data-label="Radar+" aria-label="Ce qu'est Radar+">
+        <span class="star" aria-hidden="true">&#10022;</span>
+      </button>
+      <button class="hero-constellation-node" data-topic="saillance" data-label="Saillance" aria-label="Ce qu'est la saillance médiatique">
+        <span class="star" aria-hidden="true">&#10022;</span>
+      </button>
+      <button class="hero-constellation-node" data-topic="scores" data-label="Scores" aria-label="Comment les scores sont calculés">
+        <span class="star" aria-hidden="true">&#10022;</span>
+      </button>
       <div class="hero-constellation-panel" id="hero-constellation-panel" hidden>
         <button class="hero-constellation-panel-close" id="hero-constellation-panel-close" aria-label="Fermer">&times;</button>
         <div class="hero-constellation-panel-title" id="hero-constellation-title"></div>
@@ -1213,6 +1190,7 @@ if (menuDiscoverHint) {
   });
 }
 
+const heroRobot = document.querySelector('.hero-robot');
 const heroConstellation = document.getElementById('hero-constellation');
 if (heroConstellation) {
   var constellationNodes = heroConstellation.querySelectorAll('.hero-constellation-node');
@@ -1241,6 +1219,12 @@ if (heroConstellation) {
       constellationPanel.classList.remove('visible');
       constellationPanel.setAttribute('hidden', 'hidden');
     }
+    heroConstellation.classList.remove('open');
+    if (heroRobot && heroRobot.matches(':hover')) {
+      heroConstellation.classList.add('reveal');
+    } else {
+      heroConstellation.classList.remove('reveal');
+    }
   }
 
   function openConstellationTopic(topic, nodeEl) {
@@ -1250,6 +1234,8 @@ if (heroConstellation) {
     constellationNodes.forEach(function(node) { node.classList.toggle('active', node === nodeEl); });
     constellationTitle.textContent = content.title;
     constellationBody.innerHTML = content.body;
+    heroConstellation.classList.add('reveal');
+    heroConstellation.classList.add('open');
     constellationPanel.removeAttribute('hidden');
     constellationPanel.classList.add('visible');
   }
@@ -1270,6 +1256,17 @@ if (heroConstellation) {
     constellationClose.addEventListener('click', function(e) {
       e.stopPropagation();
       closeConstellationPanel();
+    });
+  }
+
+  if (heroRobot) {
+    heroRobot.addEventListener('mouseenter', function() {
+      heroConstellation.classList.add('reveal');
+    });
+    heroRobot.addEventListener('mouseleave', function() {
+      if (!heroConstellation.classList.contains('open')) {
+        heroConstellation.classList.remove('reveal');
+      }
     });
   }
 
