@@ -121,15 +121,16 @@
 
     .hero-sonar {
       position: absolute;
-      left: 50%;
+      left: auto;
+      right: clamp(14px, 3.2vw, 44px);
       top: auto;
-      bottom: calc(var(--ticker-height) + 64px);
-      transform: translateX(-50%);
-      width: min(430px, 86vw);
-      max-width: 430px;
+      bottom: calc(var(--ticker-height) + 10px);
+      transform: none;
+      width: min(300px, 30vw);
+      max-width: 320px;
       z-index: 6;
       pointer-events: auto;
-      text-align: center;
+      text-align: left;
     }
     .hero-sonar-toggle {
       display: inline-flex;
@@ -265,8 +266,8 @@
       transition: opacity 0.2s ease, transform 0.2s ease;
       min-height: 86px;
       text-align: left;
-      max-width: 400px;
-      margin: 4px auto 0;
+      max-width: none;
+      margin: 6px 0 0;
     }
     .hero-sonar-panel.visible {
       opacity: 1;
@@ -911,22 +912,26 @@
     /* ========== RESPONSIVE ========== */
     @media (max-width: 1320px) {
       .hero-sonar {
-        left: 50%;
+        left: auto;
+        right: clamp(10px, 2.2vw, 28px);
         top: auto;
-        bottom: calc(var(--ticker-height) + 58px);
-        transform: translateX(-50%);
-        width: min(430px, 86vw);
-        max-width: none;
+        bottom: calc(var(--ticker-height) + 8px);
+        transform: none;
+        width: min(280px, 34vw);
+        max-width: 300px;
       }
     }
     @media (max-width: 768px) {
       .hero-robot { width: 95vw; }
       .hero-sonar {
         left: 50%;
+        right: auto;
         top: auto;
-        bottom: calc(var(--ticker-height) + 54px);
+        bottom: calc(var(--ticker-height) + 8px);
         transform: translateX(-50%);
         width: min(360px, 92vw);
+        max-width: none;
+        text-align: center;
       }
       .hero-sonar-fan { height: 104px; }
       .hero-sonar-sweep { width: 190px; height: 86px; }
@@ -1000,32 +1005,32 @@
       <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:40%; left:6%;  width:13%; height:7%"><span class="media-tooltip">National Post</span></a>
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
     </div>
-    <div class="hero-sonar" id="hero-sonar" aria-label="Rep&egrave;res d'explication">
-      <button class="hero-sonar-toggle" id="hero-sonar-toggle" aria-expanded="true">Comprendre Radar+</button>
-      <div class="hero-sonar-fan">
-        <div class="hero-sonar-sweep" aria-hidden="true"></div>
-        <div class="hero-sonar-link left" aria-hidden="true"></div>
-        <div class="hero-sonar-link center" aria-hidden="true"></div>
-        <div class="hero-sonar-link right" aria-hidden="true"></div>
+  </div>
+  <div class="hero-sonar" id="hero-sonar" aria-label="Rep&egrave;res d'explication">
+    <button class="hero-sonar-toggle" id="hero-sonar-toggle" aria-expanded="true">Comprendre Radar+</button>
+    <div class="hero-sonar-fan">
+      <div class="hero-sonar-sweep" aria-hidden="true"></div>
+      <div class="hero-sonar-link left" aria-hidden="true"></div>
+      <div class="hero-sonar-link center" aria-hidden="true"></div>
+      <div class="hero-sonar-link right" aria-hidden="true"></div>
 
-        <button class="hero-sonar-node" data-topic="radar" aria-label="Ce qu'est Radar+">
-          <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-          <span class="hero-sonar-node-label">Radar+</span>
-        </button>
-        <button class="hero-sonar-node" data-topic="saillance" aria-label="Ce qu'est la saillance médiatique">
-          <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-          <span class="hero-sonar-node-label">Saillance</span>
-        </button>
-        <button class="hero-sonar-node" data-topic="scores" aria-label="Comment les scores sont calculés">
-          <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-          <span class="hero-sonar-node-label">Scores</span>
-        </button>
-      </div>
-      <div class="hero-sonar-panel" id="hero-sonar-panel" hidden>
-        <button class="hero-sonar-panel-close" id="hero-sonar-panel-close" aria-label="Fermer">&times;</button>
-        <div class="hero-sonar-panel-title" id="hero-sonar-title"></div>
-        <div class="hero-sonar-panel-body" id="hero-sonar-body"></div>
-      </div>
+      <button class="hero-sonar-node" data-topic="radar" aria-label="Ce qu'est Radar+">
+        <span class="hero-sonar-node-dot" aria-hidden="true"></span>
+        <span class="hero-sonar-node-label">Radar+</span>
+      </button>
+      <button class="hero-sonar-node" data-topic="saillance" aria-label="Ce qu'est la saillance médiatique">
+        <span class="hero-sonar-node-dot" aria-hidden="true"></span>
+        <span class="hero-sonar-node-label">Saillance</span>
+      </button>
+      <button class="hero-sonar-node" data-topic="scores" aria-label="Comment les scores sont calculés">
+        <span class="hero-sonar-node-dot" aria-hidden="true"></span>
+        <span class="hero-sonar-node-label">Scores</span>
+      </button>
+    </div>
+    <div class="hero-sonar-panel" id="hero-sonar-panel" hidden>
+      <button class="hero-sonar-panel-close" id="hero-sonar-panel-close" aria-label="Fermer">&times;</button>
+      <div class="hero-sonar-panel-title" id="hero-sonar-title"></div>
+      <div class="hero-sonar-panel-body" id="hero-sonar-body"></div>
     </div>
   </div>
   <div class="scroll-hint">
