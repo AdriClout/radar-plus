@@ -195,8 +195,19 @@
     .hot20-title {
       font-family: var(--orbitron); font-size: clamp(20px, 3vw, 32px);
       letter-spacing: 2px; color: #e0ecff;
+      line-height: 1.05;
     }
     .hot20-title .accent { color: var(--accent); }
+    .hot20-title .hot20-subtitle {
+      display: block;
+      margin-top: 7px;
+      font-family: var(--mono);
+      font-size: clamp(10px, 1.1vw, 13px);
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
 
     .hot20-controls {
       display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
@@ -803,7 +814,7 @@
 <!-- ========== HOT 20 ========== -->
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
-    <h2 class="hot20-title">HOT <span class="accent">20</span> &Eacute;dition (4h)</h2>
+    <h2 class="hot20-title">HOT <span class="accent">20</span><span class="hot20-subtitle">&Eacute;dition (4h)</span></h2>
     <div class="hot20-controls">
       <div class="country-tabs" id="country-tabs">
         <button class="country-tab active" data-country="QC">Québec</button>
