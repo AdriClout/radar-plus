@@ -322,11 +322,86 @@
       background: linear-gradient(135deg, rgba(40,70,160,0.3), rgba(20,30,80,0.4));
       border: 1px solid rgba(100,160,255,0.35); border-radius: 6px;
       display: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .hot20-search-result::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -45%;
+      width: 40%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(100,160,255,0), rgba(100,160,255,0.08), rgba(100,160,255,0));
+      opacity: 0;
+      pointer-events: none;
     }
     .hot20-search-result.visible { display: block; }
+    .hot20-search-result.visible::before {
+      animation: radarSweep 4.2s ease-in-out infinite;
+    }
+    @keyframes radarSweep {
+      0% { transform: translateX(0); opacity: 0; }
+      15% { opacity: 0.45; }
+      70% { opacity: 0.2; }
+      100% { transform: translateX(360%); opacity: 0; }
+    }
     .hot20-search-result .sr-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 18px; font-weight: 700; color: #e8f0ff;
       text-transform: capitalize; margin-bottom: 4px;
+    }
+    .hot20-search-result .sr-name-text {
+      line-height: 1.1;
+    }
+    .hot20-search-result .sr-radar-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #8fc0ff;
+      position: relative;
+      box-shadow: 0 0 0 0 rgba(120,190,255,0.45);
+      flex: 0 0 auto;
+    }
+    .hot20-search-result .sr-radar-dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid rgba(120,190,255,0.5);
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    .hot20-search-result.radar-active .sr-radar-dot {
+      animation: radarDotPulse 2.2s ease-out infinite;
+    }
+    .hot20-search-result.radar-active .sr-radar-dot::after {
+      animation: radarRing 2.2s ease-out infinite;
+    }
+    .hot20-search-result.radar-inactive .sr-radar-dot {
+      background: rgba(170,190,220,0.75);
+      box-shadow: 0 0 0 0 rgba(170,190,220,0.25);
+    }
+    .hot20-search-result.radar-inactive .sr-radar-dot::after {
+      border-color: rgba(170,190,220,0.4);
+      animation: radarRingSoft 3.4s ease-out infinite;
+    }
+    @keyframes radarDotPulse {
+      0% { box-shadow: 0 0 0 0 rgba(120,190,255,0.45); }
+      60% { box-shadow: 0 0 0 6px rgba(120,190,255,0); }
+      100% { box-shadow: 0 0 0 0 rgba(120,190,255,0); }
+    }
+    @keyframes radarRing {
+      0% { opacity: 0.65; transform: scale(0.75); }
+      70% { opacity: 0; transform: scale(1.8); }
+      100% { opacity: 0; transform: scale(1.8); }
+    }
+    @keyframes radarRingSoft {
+      0% { opacity: 0.5; transform: scale(0.75); }
+      70% { opacity: 0; transform: scale(1.5); }
+      100% { opacity: 0; transform: scale(1.5); }
     }
     .hot20-search-result .sr-info {
       font-size: 12px; color: var(--text); line-height: 1.6;
@@ -1246,6 +1321,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
   var resultDiv = document.getElementById('search-result');
 
   if (query.length < 2) {
+    resultDiv.classList.remove('radar-active', 'radar-inactive');
     resultDiv.classList.remove('visible');
     resultDiv.innerHTML = '';
     return;
@@ -1253,9 +1329,17 @@ document.getElementById('hot20-search-input').addEventListener('input', function
 
   searchTimeout = setTimeout(function() {
     var src = timeseriesData || graphData;
-    if (!src || !src.graphs) { resultDiv.classList.remove('visible'); return; }
+    if (!src || !src.graphs) {
+      resultDiv.classList.remove('radar-active', 'radar-inactive');
+      resultDiv.classList.remove('visible');
+      return;
+    }
     var countryGraphs = src.graphs[currentCountry];
-    if (!countryGraphs) { resultDiv.classList.remove('visible'); return; }
+    if (!countryGraphs) {
+      resultDiv.classList.remove('radar-active', 'radar-inactive');
+      resultDiv.classList.remove('visible');
+      return;
+    }
 
     var currentPeriod = allPeriods[currentPeriodIdx];
     function getSortedNodes(periodKey) {
@@ -1357,7 +1441,10 @@ document.getElementById('hot20-search-input').addEventListener('input', function
 
       var evolutionUrl = './evolution.html?country=' + encodeURIComponent(currentCountry) + '&node=' + encodeURIComponent(targetId);
 
-      resultDiv.innerHTML = '<div class="sr-name">' + escapeHtml(dName) + '</div>' +
+      resultDiv.classList.remove('radar-active', 'radar-inactive');
+      resultDiv.classList.add(currentNode ? 'radar-active' : 'radar-inactive');
+
+      resultDiv.innerHTML = '<div class="sr-name"><span class="sr-radar-dot" aria-hidden="true"></span><span class="sr-name-text">' + escapeHtml(dName) + '</span></div>' +
         '<div class="sr-info">' +
           statusNow +
           '<br>' + lastSeenText +
@@ -1368,6 +1455,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
         '</div>';
       resultDiv.classList.add('visible');
     } else {
+      resultDiv.classList.remove('radar-active', 'radar-inactive');
       resultDiv.innerHTML = '<div class="sr-not-found">« ' + escapeHtml(query) + ' » n\'est pas dans le radar pour le moment.</div>';
       resultDiv.classList.add('visible');
     }
