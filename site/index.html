@@ -121,12 +121,12 @@
 
     .hero-sonar {
       position: absolute;
-      left: auto;
-      right: clamp(14px, 3.2vw, 44px);
+      left: clamp(10px, 1.8vw, 26px);
+      right: auto;
       top: auto;
       bottom: calc(var(--ticker-height) + 28px);
       transform: none;
-      width: min(300px, 30vw);
+      width: min(300px, 28vw);
       max-width: 320px;
       z-index: 6;
       pointer-events: auto;
@@ -912,26 +912,26 @@
     /* ========== RESPONSIVE ========== */
     @media (max-width: 1320px) {
       .hero-sonar {
-        left: auto;
-        right: clamp(10px, 2.2vw, 28px);
+        left: clamp(8px, 1.2vw, 16px);
+        right: auto;
         top: auto;
         bottom: calc(var(--ticker-height) + 22px);
         transform: none;
-        width: min(280px, 34vw);
+        width: min(270px, 33vw);
         max-width: 300px;
       }
     }
     @media (max-width: 768px) {
       .hero-robot { width: 95vw; }
       .hero-sonar {
-        left: 50%;
+        left: 8px;
         right: auto;
         top: auto;
         bottom: calc(var(--ticker-height) + 18px);
-        transform: translateX(-50%);
-        width: min(360px, 92vw);
-        max-width: none;
-        text-align: center;
+        transform: none;
+        width: min(300px, 80vw);
+        max-width: 320px;
+        text-align: left;
       }
       .hero-sonar-fan { height: 104px; }
       .hero-sonar-sweep { width: 190px; height: 86px; }
