@@ -122,7 +122,8 @@
     .hero-sonar {
       position: absolute;
       left: 50%;
-      top: 74%;
+      top: auto;
+      bottom: calc(var(--ticker-height) + 64px);
       transform: translateX(-50%);
       width: min(430px, 86vw);
       max-width: 430px;
@@ -911,7 +912,8 @@
     @media (max-width: 1320px) {
       .hero-sonar {
         left: 50%;
-        top: 75%;
+        top: auto;
+        bottom: calc(var(--ticker-height) + 58px);
         transform: translateX(-50%);
         width: min(430px, 86vw);
         max-width: none;
@@ -921,7 +923,8 @@
       .hero-robot { width: 95vw; }
       .hero-sonar {
         left: 50%;
-        top: 77%;
+        top: auto;
+        bottom: calc(var(--ticker-height) + 54px);
         transform: translateX(-50%);
         width: min(360px, 92vw);
       }
