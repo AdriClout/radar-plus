@@ -1233,49 +1233,104 @@ document.getElementById('hot20-search-input').addEventListener('input', function
     var countryGraphs = src.graphs[currentCountry];
     if (!countryGraphs) { resultDiv.classList.remove('visible'); return; }
 
-    /* Search current period first, then scan all periods */
     var currentPeriod = allPeriods[currentPeriodIdx];
-    var found = null;
-    var foundRank = -1;
-    var foundPeriodLabel = '';
+    function getSortedNodes(periodKey) {
+      var pd = countryGraphs[periodKey];
+      if (!pd || !pd.nodes) return [];
+      return pd.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
+    }
 
-    /* Current period */
-    var pData = countryGraphs[currentPeriod.key];
-    if (pData && pData.nodes) {
-      var sorted = pData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-      for (var j = 0; j < sorted.length; j++) {
-        if (sorted[j].id.toLowerCase().indexOf(query) !== -1) {
-          found = sorted[j]; foundRank = j + 1;
-          foundPeriodLabel = currentPeriod.label || currentPeriod.key;
+    function findFirstQueryMatch(sortedNodes) {
+      for (var i = 0; i < sortedNodes.length; i++) {
+        if (sortedNodes[i].id.toLowerCase().indexOf(query) !== -1) {
+          return { node: sortedNodes[i], rank: i + 1 };
+        }
+      }
+      return null;
+    }
+
+    function findRankById(sortedNodes, nodeId) {
+      for (var i = 0; i < sortedNodes.length; i++) {
+        if (sortedNodes[i].id === nodeId) return i + 1;
+      }
+      return -1;
+    }
+
+    function formatPeriodForSearch(periodObj) {
+      var raw = periodObj.label || periodObj.key;
+      var parsed = parsePeriodLabel(raw);
+      if (!parsed || !parsed.date) return raw;
+      return parsed.date + (parsed.interval ? ' &middot; ' + parsed.interval.replace('Saillant entre ', '') : '');
+    }
+
+    var currentSorted = getSortedNodes(currentPeriod.key);
+    var currentQueryMatch = findFirstQueryMatch(currentSorted);
+
+    var targetId = currentQueryMatch ? currentQueryMatch.node.id : null;
+    var targetNodeName = currentQueryMatch ? currentQueryMatch.node.id : null;
+
+    if (!targetId) {
+      for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
+        var sortedAtPi = getSortedNodes(allPeriods[pi].key);
+        var queryMatchAtPi = findFirstQueryMatch(sortedAtPi);
+        if (queryMatchAtPi) {
+          targetId = queryMatchAtPi.node.id;
+          targetNodeName = queryMatchAtPi.node.id;
           break;
         }
       }
     }
 
-    /* If not found in current, scan backwards */
-    if (!found) {
-      for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
-        var pd = countryGraphs[allPeriods[pi].key];
-        if (!pd || !pd.nodes) continue;
-        var s = pd.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-        for (var k = 0; k < s.length; k++) {
-          if (s[k].id.toLowerCase().indexOf(query) !== -1) {
-            found = s[k]; foundRank = k + 1;
-            foundPeriodLabel = allPeriods[pi].label || allPeriods[pi].key;
-            break;
-          }
-        }
-        if (found) break;
-      }
-    }
+    if (targetId) {
+      var currentRank = findRankById(currentSorted, targetId);
+      var currentNode = currentRank > 0 ? currentSorted[currentRank - 1] : null;
 
-    if (found) {
-      var dName = found.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+      var lastSeen = null;
+      var bestSeen = null;
+
+      for (var p = allPeriods.length - 1; p >= 0; p--) {
+        var periodObj = allPeriods[p];
+        var sortedNodes = getSortedNodes(periodObj.key);
+        var rank = findRankById(sortedNodes, targetId);
+        if (rank < 0) continue;
+
+        var nodeAtPeriod = sortedNodes[rank - 1];
+        var seen = {
+          rank: rank,
+          node: nodeAtPeriod,
+          period: periodObj,
+          periodIdx: p
+        };
+
+        if (!lastSeen) lastSeen = seen;
+        if (!bestSeen || rank < bestSeen.rank || (rank === bestSeen.rank && p > bestSeen.periodIdx)) {
+          bestSeen = seen;
+        }
+      }
+
+      var dName = targetNodeName.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+
+      var statusNow = currentNode
+        ? '&#9989; P&eacute;riode affich&eacute;e&nbsp;: rang <strong>' + currentRank + '</strong>' +
+          (currentRank <= 20 ? ' (Top 20)' : ' (hors Top 20)') +
+          ' &middot; ' + (currentNode.n || 0) + ' mentions &middot; score ' + (currentNode.size || 0).toFixed(2)
+        : '&#9888;&#65039; P&eacute;riode affich&eacute;e&nbsp;: absent du radar';
+
+      var lastSeenText = lastSeen
+        ? '&#128339; Derni&egrave;re apparition&nbsp;: rang <strong>' + lastSeen.rank + '</strong> &middot; ' +
+          (lastSeen.node.n || 0) + ' mentions &middot; ' + formatPeriodForSearch(lastSeen.period)
+        : '&#128339; Derni&egrave;re apparition&nbsp;: n/a';
+
+      var bestSeenText = bestSeen
+        ? '&#11088; Meilleure position observ&eacute;e&nbsp;: rang <strong>' + bestSeen.rank + '</strong> &middot; ' +
+          (bestSeen.node.n || 0) + ' mentions &middot; ' + formatPeriodForSearch(bestSeen.period)
+        : '&#11088; Meilleure position observ&eacute;e&nbsp;: n/a';
+
       resultDiv.innerHTML = '<div class="sr-name">' + escapeHtml(dName) + '</div>' +
         '<div class="sr-info">' +
-          '&#127919; Rang <strong>' + foundRank + '</strong> &middot; ' +
-          (found.n || 0) + ' mentions &middot; score ' + (found.size || 0).toFixed(2) +
-          '<br>Période : ' + escapeHtml(foundPeriodLabel) +
+          statusNow +
+          '<br>' + lastSeenText +
+          '<br>' + bestSeenText +
         '</div>';
       resultDiv.classList.add('visible');
     } else {
