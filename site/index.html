@@ -119,60 +119,141 @@
       z-index: 1; overflow: hidden;
     }
 
-    .hero-explainer {
+    .hero-constellation {
       position: absolute;
-      top: 24px;
-      left: 24px;
+      inset: 0;
       z-index: 6;
-      width: min(520px, 88vw);
-      background: rgba(10,18,50,0.52);
-      border: 1px solid rgba(90,140,255,0.2);
-      border-radius: 10px;
-      backdrop-filter: blur(8px);
-      padding: 10px;
+      pointer-events: none;
     }
-    .hero-explainer-tabs {
+    .hero-constellation-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .hero-constellation-svg line {
+      stroke: rgba(120,170,255,0.3);
+      stroke-width: 0.55;
+      stroke-dasharray: 1.6 1.6;
+    }
+    .hero-constellation-svg circle {
+      fill: rgba(140,185,255,0.5);
+    }
+    .hero-constellation-node {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid rgba(120,170,255,0.5);
+      background: radial-gradient(circle at 35% 35%, rgba(230,242,255,0.9), rgba(120,170,255,0.25));
+      box-shadow: 0 0 10px rgba(100,150,255,0.28);
+      transform: translate(-50%, -50%);
       display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    .hero-explainer-tab {
-      border: 1px solid rgba(90,140,255,0.24);
-      background: rgba(8,15,42,0.6);
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-family: var(--orbitron);
-      font-size: 9px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      align-items: center;
+      justify-content: center;
+      color: #e8f2ff;
       cursor: pointer;
-      transition: all 0.2s ease;
+      pointer-events: auto;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     }
-    .hero-explainer-tab:hover {
-      border-color: rgba(110,165,255,0.5);
-      color: #dbe9ff;
+    .hero-constellation-node:hover {
+      transform: translate(-50%, -50%) scale(1.12);
+      border-color: rgba(165,210,255,0.85);
+      box-shadow: 0 0 14px rgba(130,190,255,0.42);
     }
-    .hero-explainer-tab.active {
-      background: rgba(40,70,160,0.5);
-      border-color: rgba(110,165,255,0.68);
-      color: #fff;
-      box-shadow: 0 0 10px rgba(85,136,255,0.22);
+    .hero-constellation-node.active {
+      border-color: rgba(165,210,255,0.9);
+      box-shadow: 0 0 16px rgba(130,190,255,0.5);
     }
-    .hero-explainer-panel {
-      border-top: 1px solid rgba(90,140,255,0.18);
-      padding-top: 8px;
-      min-height: 78px;
+    .hero-constellation-node .star {
+      font-size: 11px;
+      line-height: 1;
+      transform: translateY(-0.5px);
+      pointer-events: none;
     }
-    .hero-explainer-text {
-      display: none;
+    .hero-constellation-node::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(120,170,255,0.35);
+      background: rgba(8,14,40,0.9);
+      color: #cfe1ff;
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .hero-constellation-node:hover::after,
+    .hero-constellation-node.active::after {
+      opacity: 1;
+    }
+    .hero-constellation-node[data-topic="radar"] { left: 31%; top: 64%; }
+    .hero-constellation-node[data-topic="saillance"] { left: 50%; top: 56%; }
+    .hero-constellation-node[data-topic="scores"] { left: 69%; top: 64%; }
+    .hero-constellation-panel {
+      position: absolute;
+      left: 50%;
+      top: 69%;
+      transform: translateX(-50%) translateY(6px);
+      width: min(430px, 84vw);
+      border: 1px solid rgba(110,165,255,0.28);
+      background: rgba(8,14,40,0.86);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      padding: 10px 12px 11px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .hero-constellation-panel.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    .hero-constellation-panel-title {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #ecf4ff;
+      margin-bottom: 6px;
+      padding-right: 16px;
+    }
+    .hero-constellation-panel-body {
       font-size: 11px;
       line-height: 1.5;
       color: #d7e6ff;
     }
-    .hero-explainer-text.active { display: block; }
-    .hero-explainer-text strong { color: #f0f6ff; }
+    .hero-constellation-panel-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      border: 1px solid rgba(110,165,255,0.35);
+      background: rgba(16,28,70,0.65);
+      color: #cfe3ff;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      font-size: 12px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-constellation-panel-close:hover {
+      border-color: rgba(140,195,255,0.7);
+      color: #fff;
+    }
 
     .hero-robot {
       position: relative; width: min(720px, 90vw); margin: 0 auto;
@@ -776,10 +857,14 @@
     /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
       .hero-robot { width: 95vw; }
-      .hero-explainer {
-        position: static;
-        width: 92vw;
-        margin: 8px auto 0;
+      .hero-constellation-node { width: 18px; height: 18px; }
+      .hero-constellation-node .star { font-size: 10px; }
+      .hero-constellation-node[data-topic="radar"] { left: 27%; top: 66%; }
+      .hero-constellation-node[data-topic="saillance"] { left: 50%; top: 58%; }
+      .hero-constellation-node[data-topic="scores"] { left: 73%; top: 66%; }
+      .hero-constellation-panel {
+        top: 73%;
+        width: min(360px, 92vw);
       }
       .hot20-header { flex-direction: column; align-items: flex-start; }
       .hot20-list-header { display: none; }
@@ -824,24 +909,6 @@
 
 <!-- ========== HERO ========== -->
 <section class="hero" id="hero">
-  <div class="hero-explainer" id="hero-explainer">
-    <div class="hero-explainer-tabs" role="tablist" aria-label="Comprendre Radar+">
-      <button class="hero-explainer-tab active" role="tab" aria-selected="true" aria-controls="explainer-radar" data-explainer="radar">Radar+</button>
-      <button class="hero-explainer-tab" role="tab" aria-selected="false" aria-controls="explainer-saillance" data-explainer="saillance">Saillance</button>
-      <button class="hero-explainer-tab" role="tab" aria-selected="false" aria-controls="explainer-scores" data-explainer="scores">Calcul des scores</button>
-    </div>
-    <div class="hero-explainer-panel">
-      <div class="hero-explainer-text active" id="explainer-radar" data-explainer="radar" role="tabpanel">
-        <strong>Radar+</strong> surveille en continu les m&eacute;dias et met en &eacute;vidence les sujets qui captent le plus l'attention publique, &eacute;dition par &eacute;dition (blocs de 4 h).
-      </div>
-      <div class="hero-explainer-text" id="explainer-saillance" data-explainer="saillance" role="tabpanel">
-        La <strong>saillance m&eacute;diatique</strong> mesure la visibilit&eacute; d'un sujet dans une &eacute;dition: plus un sujet est repris, central et soutenu dans les contenus, plus sa saillance est &eacute;lev&eacute;e.
-      </div>
-      <div class="hero-explainer-text" id="explainer-scores" data-explainer="scores" role="tabpanel">
-        <strong>Scores de saillance:</strong> score brut du sujet dans l'&eacute;dition, poids relatif (%) face aux autres sujets, et cumul historique pour suivre les sujets qui reviennent dans le temps.
-      </div>
-    </div>
-  </div>
   <div class="hero-robot">
     <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
     <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
@@ -863,6 +930,30 @@
       <!-- Row 4: National Post · Vancouver Sun -->
       <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:40%; left:6%;  width:13%; height:7%"><span class="media-tooltip">National Post</span></a>
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
+    </div>
+    <div class="hero-constellation" id="hero-constellation" aria-label="Rep&egrave;res d'explication">
+      <svg class="hero-constellation-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="31" y1="64" x2="50" y2="56"></line>
+        <line x1="50" y1="56" x2="69" y2="64"></line>
+        <line x1="31" y1="64" x2="69" y2="64"></line>
+        <circle cx="31" cy="64" r="0.65"></circle>
+        <circle cx="50" cy="56" r="0.65"></circle>
+        <circle cx="69" cy="64" r="0.65"></circle>
+      </svg>
+      <button class="hero-constellation-node" data-topic="radar" data-label="Radar+" aria-label="Ce qu'est Radar+">
+        <span class="star" aria-hidden="true">&#10022;</span>
+      </button>
+      <button class="hero-constellation-node" data-topic="saillance" data-label="Saillance" aria-label="Ce qu'est la saillance médiatique">
+        <span class="star" aria-hidden="true">&#10022;</span>
+      </button>
+      <button class="hero-constellation-node" data-topic="scores" data-label="Scores" aria-label="Comment les scores sont calculés">
+        <span class="star" aria-hidden="true">&#10022;</span>
+      </button>
+      <div class="hero-constellation-panel" id="hero-constellation-panel" hidden>
+        <button class="hero-constellation-panel-close" id="hero-constellation-panel-close" aria-label="Fermer">&times;</button>
+        <div class="hero-constellation-panel-title" id="hero-constellation-title"></div>
+        <div class="hero-constellation-panel-body" id="hero-constellation-body"></div>
+      </div>
     </div>
   </div>
   <div class="scroll-hint">
@@ -1092,23 +1183,68 @@ if (menuDiscoverHint) {
   });
 }
 
-const heroExplainer = document.getElementById('hero-explainer');
-if (heroExplainer) {
-  var explainerTabs = heroExplainer.querySelectorAll('.hero-explainer-tab');
-  var explainerPanels = heroExplainer.querySelectorAll('.hero-explainer-text');
+const heroConstellation = document.getElementById('hero-constellation');
+if (heroConstellation) {
+  var constellationNodes = heroConstellation.querySelectorAll('.hero-constellation-node');
+  var constellationPanel = document.getElementById('hero-constellation-panel');
+  var constellationTitle = document.getElementById('hero-constellation-title');
+  var constellationBody = document.getElementById('hero-constellation-body');
+  var constellationClose = document.getElementById('hero-constellation-panel-close');
+  var constellationContent = {
+    radar: {
+      title: 'Radar+',
+      body: 'Radar+ surveille en continu les m&eacute;dias et met en &eacute;vidence les sujets qui captent le plus l\'attention publique, &eacute;dition par &eacute;dition (blocs de 4 h).'
+    },
+    saillance: {
+      title: 'Saillance m&eacute;diatique',
+      body: 'La saillance m&eacute;diatique mesure la visibilit&eacute; d\'un sujet dans une &eacute;dition: plus un sujet est repris, central et soutenu dans les contenus, plus sa saillance est &eacute;lev&eacute;e.'
+    },
+    scores: {
+      title: 'Calcul des scores',
+      body: 'Les scores combinent le volume de couverture, le poids relatif (%) d\'un sujet dans l\'&eacute;dition et le cumul historique pour rep&eacute;rer les sujets durables.'
+    }
+  };
 
-  explainerTabs.forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      var key = tab.dataset.explainer;
-      explainerTabs.forEach(function(btn) {
-        var active = btn.dataset.explainer === key;
-        btn.classList.toggle('active', active);
-        btn.setAttribute('aria-selected', active ? 'true' : 'false');
-      });
-      explainerPanels.forEach(function(panel) {
-        panel.classList.toggle('active', panel.dataset.explainer === key);
-      });
+  function closeConstellationPanel() {
+    constellationNodes.forEach(function(node) { node.classList.remove('active'); });
+    if (constellationPanel) {
+      constellationPanel.classList.remove('visible');
+      constellationPanel.setAttribute('hidden', 'hidden');
+    }
+  }
+
+  function openConstellationTopic(topic, nodeEl) {
+    var content = constellationContent[topic];
+    if (!content || !constellationPanel || !constellationTitle || !constellationBody) return;
+
+    constellationNodes.forEach(function(node) { node.classList.toggle('active', node === nodeEl); });
+    constellationTitle.textContent = content.title;
+    constellationBody.innerHTML = content.body;
+    constellationPanel.removeAttribute('hidden');
+    constellationPanel.classList.add('visible');
+  }
+
+  constellationNodes.forEach(function(node) {
+    node.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var topic = node.dataset.topic;
+      if (node.classList.contains('active') && constellationPanel && constellationPanel.classList.contains('visible')) {
+        closeConstellationPanel();
+        return;
+      }
+      openConstellationTopic(topic, node);
     });
+  });
+
+  if (constellationClose) {
+    constellationClose.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeConstellationPanel();
+    });
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!heroConstellation.contains(e.target)) closeConstellationPanel();
   });
 }
 
