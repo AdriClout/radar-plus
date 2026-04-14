@@ -2,9 +2,19 @@ name: Refresh Constellation Data
 
 on:
   schedule:
-    # Déclenchement tardif pour laisser le temps au segment Athena d'être disponible
-    - cron: '55 0,4,8,12,16,20 * * *'
-  workflow_dispatch: # Déclenchement manuel possible
+    # Les raffineurs RADAR_SALIENT_INDEX (:42) et RADAR_HEADLINE_OF_HEADLINES (:46) tournent
+    # à minuit, 4h, 8h, 12h, 16h, 20h heure locale Montréal (DST géré par EventBridge).
+    # On déclenche à :55 de ces mêmes heures pour les deux fuseaux :
+    #   Été  EDT (UTC-4) : minuit/4h/8h/12h/16h/20h Mtl → 04:55/08:55/12:55/16:55/20:55/00:55 UTC
+    #   Hiver EST (UTC-5) : minuit/4h/8h/12h/16h/20h Mtl → 05:55/09:55/13:55/17:55/21:55/01:55 UTC
+    # En dehors de la bonne saison, le run trouve des données déjà à jour → pas de commit → exit rapide.
+    - cron: '55 4,8,12,16,20,0 * * *'  # EDT (été, UTC-4)
+    - cron: '55 5,9,13,17,21,1 * * *'  # EST (hiver, UTC-5)
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-constellation
+  cancel-in-progress: true
 
 jobs:
   refresh:
