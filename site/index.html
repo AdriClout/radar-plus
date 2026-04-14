@@ -159,7 +159,7 @@
     .hot20-title .accent { color: var(--accent); }
 
     .hot20-controls {
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
     }
 
     .country-tabs { display: flex; gap: 6px; }
@@ -177,6 +177,7 @@
 
     .week-nav {
       display: flex; align-items: center; gap: 8px;
+      margin-left: 4px;
     }
     .week-btn {
       background: var(--card-bg); border: 1px solid var(--border);
@@ -331,31 +332,27 @@
       font-size: 12px; color: var(--text); line-height: 1.6;
     }
     .hot20-search-result .sr-actions {
-      margin-top: 10px;
+      margin-top: 8px;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
     .hot20-search-result .sr-evo-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border-radius: 6px;
-      border: 1px solid rgba(100,160,255,0.45);
-      background: rgba(25,45,110,0.35);
-      color: #dbe8ff;
-      text-decoration: none;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      transition: border-color 0.25s, transform 0.25s, background 0.25s;
+      display: inline;
+      padding: 0;
+      border: none;
+      background: none;
+      color: rgba(170, 210, 255, 0.95);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: none;
+      transition: color 0.25s;
     }
     .hot20-search-result .sr-evo-btn:hover {
-      border-color: var(--accent);
-      background: rgba(40,70,170,0.5);
-      transform: translateY(-1px);
+      color: #eaf3ff;
     }
     .hot20-search-result .sr-not-found {
       font-size: 13px; color: var(--muted); font-style: italic;
@@ -1366,7 +1363,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
           '<br>' + lastSeenText +
           '<br>' + bestSeenText +
           '<div class="sr-actions">' +
-            '<a class="sr-evo-btn" href="' + evolutionUrl + '">Voir dans &Eacute;volution</a>' +
+            '<a class="sr-evo-btn" href="' + evolutionUrl + '">Voir l&rsquo;&eacute;volution de la saillance</a>' +
           '</div>' +
         '</div>';
       resultDiv.classList.add('visible');
