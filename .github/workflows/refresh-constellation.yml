@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
 
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
@@ -83,7 +85,7 @@ jobs:
       - name: Trigger GitHub Pages deploy
         if: steps.commit_data.outputs.updated == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: gh workflow run deploy-github-pages.yml --ref main
 
       - name: Validate live site is updated
