@@ -15,6 +15,7 @@
       --panel: rgba(8, 16, 46, 0.72);
       --line: rgba(95, 140, 255, 0.28);
       --accent: rgba(142, 184, 255, 0.95);
+      --accent-strong: #8ab8ff;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,7 +37,7 @@
     .wrap {
       position: relative;
       z-index: 1;
-      width: min(1180px, calc(100vw - 32px));
+      width: min(980px, calc(100vw - 32px));
       margin: 20px auto 36px;
     }
 
@@ -83,36 +84,36 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
-      padding: 14px;
-      margin-bottom: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
     }
 
     .panel h2 {
       font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 13px;
-      letter-spacing: 1.1px;
+      font-size: 14px;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       color: rgba(206, 228, 255, 0.98);
     }
 
     .panel p,
     .panel li {
       color: rgba(174, 201, 247, 0.92);
-      line-height: 1.6;
-      font-size: 12px;
+      line-height: 1.75;
+      font-size: 14px;
     }
 
     .panel ul {
-      padding-left: 18px;
-      margin-top: 8px;
+      padding-left: 20px;
+      margin-top: 10px;
     }
 
     .actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
+      gap: 10px;
+      margin-top: 14px;
     }
 
     .btn {
@@ -120,11 +121,24 @@
       text-decoration: none;
       border: 1px solid rgba(95, 140, 255, 0.3);
       border-radius: 6px;
-      padding: 8px 12px;
-      font-size: 11px;
-      letter-spacing: 0.6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
       transition: all 0.18s ease;
       background: rgba(10, 20, 50, 0.58);
+    }
+
+    .btn-primary {
+      border-color: rgba(142, 184, 255, 0.8);
+      background: linear-gradient(180deg, rgba(32, 66, 140, 0.86), rgba(22, 48, 106, 0.92));
+      color: #f3f8ff;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 1px rgba(145, 182, 255, 0.35), 0 0 20px rgba(87, 135, 255, 0.22);
+      transform: translateY(-1px);
     }
 
     .btn:hover {
@@ -133,25 +147,48 @@
       transform: translateY(-1px);
     }
 
-    .form-wrap {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(8, 16, 46, 0.84);
-      overflow: hidden;
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
     }
 
-    .form-wrap iframe {
+    .step-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .step {
+      border: 1px solid rgba(95, 140, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(7, 14, 40, 0.62);
+      padding: 12px;
+    }
+
+    .step strong {
       display: block;
-      width: 100%;
-      height: 780px;
-      border: 0;
-      background: #0b1022;
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      color: rgba(207, 228, 255, 0.96);
+    }
+
+    .notice {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(8, 16, 46, 0.58);
+      padding: 14px;
+      margin-bottom: 14px;
     }
 
     .small {
-      margin-top: 10px;
-      font-size: 11px;
+      margin-top: 8px;
+      font-size: 12px;
       color: var(--muted);
+      line-height: 1.6;
     }
 
     @media (max-width: 860px) {
@@ -162,8 +199,8 @@
       .title {
         text-align: left;
       }
-      .form-wrap iframe {
-        height: 640px;
+      .grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -183,22 +220,66 @@
         Radar+ est un projet ouvert, scientifique et transparent. Le code est public, les resultats sont cites, et les liens
         renvoient vers les medias sources. Les donnees d'extraction sont cependant distribuees de maniere encadree.
       </p>
-      <ul>
-        <li>Respect des contenus editoriaux et des droits associes.</li>
-        <li>Usage scientifique et reproductibilite methodologique.</li>
-        <li>Aucune appropriation des contenus medias.</li>
-      </ul>
       <div class="actions">
-        <a class="btn" href="https://clessn.notion.site/2398cfa805498059a2b8f797f05867d0?pvs=105" target="_blank" rel="noopener">Ouvrir le formulaire Notion</a>
+        <a class="btn btn-primary" href="https://clessn.notion.site/2398cfa805498059a2b8f797f05867d0?pvs=105" target="_blank" rel="noopener">Demander l'acces aux donnees</a>
         <a class="btn" href="https://www.lavery.ca/fr/publications/nos-publications/3043-la-cour-superieure-du-quebec-analyse-lexception-permettant-lutilisation-dune-oeuvre-protegee-par-le-droit-dauteur-a-des-fins-de-communication-de-nouvelles.html" target="_blank" rel="noopener">Contexte juridique (Lavery)</a>
       </div>
       <p class="small">
-        Si le formulaire integre ne s'affiche pas dans votre navigateur, utilisez le bouton ci-dessus.
+        Le formulaire s'ouvre dans un nouvel onglet pour garantir une experience stable et lisible.
       </p>
     </section>
 
-    <section class="form-wrap" aria-label="Formulaire d'acces aux donnees">
-      <iframe src="https://clessn.notion.site/ebd//2398cfa805498059a2b8f797f05867d0" allowfullscreen></iframe>
+    <section class="grid" aria-label="Conditions et modalites d'acces">
+      <article class="panel">
+        <h2>Conditions d'usage</h2>
+        <ul>
+          <li>Usage scientifique, journalistique d'interet public ou pedagogique.</li>
+          <li>Interdiction de republication brute des corpus ou d'appropriation commerciale des contenus medias.</li>
+          <li>Citation de Radar+ et des medias sources dans toute publication derivee.</li>
+          <li>Respect des droits d'auteur et des conditions des plateformes sources.</li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <h2>Ce que nous evaluons</h2>
+        <ul>
+          <li>Clarte du projet et de la question de recherche.</li>
+          <li>Methodologie et perimetre temporel souhaites.</li>
+          <li>Mesures de protection des donnees et des contenus.</li>
+          <li>Adequation entre le besoin exprime et le niveau de granularite demande.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Parcours de traitement</h2>
+      <div class="step-list">
+        <div class="step">
+          <strong>1. Soumission</strong>
+          <p>Vous completez le formulaire avec le cadre d'usage, le perimetre et les livrables attendus.</p>
+        </div>
+        <div class="step">
+          <strong>2. Evaluation</strong>
+          <p>L'equipe verifie la conformite editoriale, juridique et methodologique de la demande.</p>
+        </div>
+        <div class="step">
+          <strong>3. Reponse</strong>
+          <p>Retour sous 5 a 10 jours ouvres selon la complexite et le volume des donnees sollicitees.</p>
+        </div>
+        <div class="step">
+          <strong>4. Transmission</strong>
+          <p>En cas d'accord, transmission d'un extrait adapte au besoin et accompagne de conditions d'utilisation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="notice">
+      <p>
+        Besoin d'un acces rapide pour un projet en cours? Utilisez le formulaire principal et indiquez votre echeance.
+      </p>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://clessn.notion.site/2398cfa805498059a2b8f797f05867d0?pvs=105" target="_blank" rel="noopener">Ouvrir le formulaire</a>
+      </div>
     </section>
   </main>
 
