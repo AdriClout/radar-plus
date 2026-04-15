@@ -78,7 +78,6 @@ def fetch_raw_csvs(s3_client):
     yesterday_str = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
 
     rows = []
-    seen = set()
 
     for media_id in MEDIA_IDS:
         csv_keys = []
@@ -121,10 +120,6 @@ def fetch_raw_csvs(s3_client):
                     mid = (row.get("media_id") or media_id).strip().upper()
                     if not url or not title:
                         continue
-                    key_pair = (mid, url)
-                    if key_pair in seen:
-                        continue
-                    seen.add(key_pair)
                     ts = parse_extraction_ts(row)
                     if not ts:
                         continue
@@ -196,7 +191,6 @@ def fetch_athena_warehouse(athena, s3_client, script_dir):
     s3_download(s3_client, loc, raw_path)
 
     rows = []
-    seen = set()
     with open(raw_path, newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f):
             url = (r.get("url") or "").strip()
@@ -204,10 +198,6 @@ def fetch_athena_warehouse(athena, s3_client, script_dir):
             mid = (r.get("media_id") or "").strip().upper()
             if not url or not title:
                 continue
-            key_pair = (mid, url)
-            if key_pair in seen:
-                continue
-            seen.add(key_pair)
             ext_date = (r.get("extraction_date") or "").strip()
             ext_time = (r.get("extraction_time") or "00:00:00").strip().split(".")[0].rstrip("Z")
             ts = f"{ext_date} {ext_time}" if ext_date else ""
@@ -217,7 +207,7 @@ def fetch_athena_warehouse(athena, s3_client, script_dir):
                 "extracted_objects": "", "title": title,
             })
     os.remove(raw_path)
-    print(f"  -> {len(rows)} unique headlines from Athena warehouse")
+    print(f"  -> {len(rows)} headlines from Athena warehouse")
     return rows
 
 

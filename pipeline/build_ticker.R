@@ -96,9 +96,11 @@ items_df <- df_objects |>
   dplyr::filter(headline_stop_ts >= cutoff_utc) |>
   dplyr::arrange(dplyr::desc(headline_stop_ts))
 
-# Deduplicate by URL — keep the most recent observation of each headline
+# Deduplicate by URL per hour bucket — keep one observation per headline per hour
 items_df <- items_df |>
-  dplyr::distinct(url, .keep_all = TRUE)
+  dplyr::mutate(hour_bucket = format(headline_stop_ts, "%Y-%m-%d %H", tz = "UTC")) |>
+  dplyr::distinct(url, hour_bucket, .keep_all = TRUE) |>
+  dplyr::select(-hour_bucket)
 
 items_df <- items_df |>
   dplyr::mutate(
