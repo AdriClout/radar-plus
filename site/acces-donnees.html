@@ -147,12 +147,6 @@
       transform: translateY(-1px);
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
     .step-list {
       display: grid;
       gap: 10px;
@@ -176,21 +170,6 @@
       color: rgba(207, 228, 255, 0.96);
     }
 
-    .notice {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(8, 16, 46, 0.58);
-      padding: 14px;
-      margin-bottom: 14px;
-    }
-
-    .small {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
     @media (max-width: 860px) {
       .top {
         flex-direction: column;
@@ -198,9 +177,6 @@
       }
       .title {
         text-align: left;
-      }
-      .grid {
-        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -215,70 +191,41 @@
     </header>
 
     <section class="panel">
-      <h2>Pourquoi un acces encadre?</h2>
+      <h2>Objectif</h2>
       <p>
-        Radar+ est un projet ouvert, scientifique et transparent. Le code est public, les resultats sont cites, et les liens
-        renvoient vers les medias sources. Les donnees d'extraction sont cependant distribuees de maniere encadree.
+        Radar+ partage une methode ouverte (code public, resultats cites), mais l'acces aux donnees est distribue de maniere
+        controlee pour proteger le site, les sources et les usages.
       </p>
       <div class="actions">
         <a class="btn btn-primary" href="https://clessn.notion.site/2398cfa805498059a2b8f797f05867d0?pvs=105" target="_blank" rel="noopener">Demander l'acces aux donnees</a>
-        <a class="btn" href="https://www.lavery.ca/fr/publications/nos-publications/3043-la-cour-superieure-du-quebec-analyse-lexception-permettant-lutilisation-dune-oeuvre-protegee-par-le-droit-dauteur-a-des-fins-de-communication-de-nouvelles.html" target="_blank" rel="noopener">Contexte juridique (Lavery)</a>
       </div>
-      <p class="small">
-        Le formulaire s'ouvre dans un nouvel onglet pour garantir une experience stable et lisible.
-      </p>
     </section>
 
-    <section class="grid" aria-label="Conditions et modalites d'acces">
-      <article class="panel">
-        <h2>Conditions d'usage</h2>
-        <ul>
-          <li>Usage scientifique, journalistique d'interet public ou pedagogique.</li>
-          <li>Interdiction de republication brute des corpus ou d'appropriation commerciale des contenus medias.</li>
-          <li>Citation de Radar+ et des medias sources dans toute publication derivee.</li>
-          <li>Respect des droits d'auteur et des conditions des plateformes sources.</li>
-        </ul>
-      </article>
-
-      <article class="panel">
-        <h2>Ce que nous evaluons</h2>
-        <ul>
-          <li>Clarte du projet et de la question de recherche.</li>
-          <li>Methodologie et perimetre temporel souhaites.</li>
-          <li>Mesures de protection des donnees et des contenus.</li>
-          <li>Adequation entre le besoin exprime et le niveau de granularite demande.</li>
-        </ul>
-      </article>
+    <section class="panel" aria-label="Conditions essentielles">
+      <h2>Conditions essentielles</h2>
+      <ul>
+        <li>Usage recherche, interet public ou pedagogique.</li>
+        <li>Pas de republication brute ni de redistribution des corpus.</li>
+        <li>Citation obligatoire de Radar+ et des medias sources.</li>
+        <li>Acces reserve au besoin justifie, avec possibilite de refus ou suspension.</li>
+      </ul>
     </section>
 
     <section class="panel">
-      <h2>Parcours de traitement</h2>
+      <h2>Processus minimal</h2>
       <div class="step-list">
         <div class="step">
-          <strong>1. Soumission</strong>
-          <p>Vous completez le formulaire avec le cadre d'usage, le perimetre et les livrables attendus.</p>
+          <strong>1. Demande</strong>
+          <p>Vous decrivez l'objectif, le perimetre et l'usage prevu.</p>
         </div>
         <div class="step">
-          <strong>2. Evaluation</strong>
-          <p>L'equipe verifie la conformite editoriale, juridique et methodologique de la demande.</p>
+          <strong>2. Verification</strong>
+          <p>Nous validons que la demande respecte les conditions essentielles.</p>
         </div>
         <div class="step">
           <strong>3. Reponse</strong>
-          <p>Retour sous 5 a 10 jours ouvres selon la complexite et le volume des donnees sollicitees.</p>
+          <p>Si accord, nous partageons un extrait adapte au besoin avec conditions d'utilisation.</p>
         </div>
-        <div class="step">
-          <strong>4. Transmission</strong>
-          <p>En cas d'accord, transmission d'un extrait adapte au besoin et accompagne de conditions d'utilisation.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="notice">
-      <p>
-        Besoin d'un acces rapide pour un projet en cours? Utilisez le formulaire principal et indiquez votre echeance.
-      </p>
-      <div class="actions">
-        <a class="btn btn-primary" href="https://clessn.notion.site/2398cfa805498059a2b8f797f05867d0?pvs=105" target="_blank" rel="noopener">Ouvrir le formulaire</a>
       </div>
     </section>
   </main>
