@@ -119,71 +119,6 @@
       z-index: 1; overflow: hidden;
     }
 
-    .hero-sonar {
-      position: absolute;
-      left: clamp(10px, 1.8vw, 26px);
-      bottom: calc(var(--ticker-height) + 20px);
-      width: min(340px, 30vw);
-      max-width: 360px;
-      z-index: 6;
-      pointer-events: none;
-      text-align: left;
-    }
-    .hero-sonar-list {
-      display: flex;
-      flex-direction: column;
-      gap: 11px;
-    }
-    .hero-sonar-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #dce9ff;
-      text-shadow: 0 0 10px rgba(70,120,220,0.22);
-    }
-    .hero-sonar-glyph {
-      position: relative;
-      width: 34px;
-      height: 22px;
-      flex: 0 0 34px;
-    }
-    .hero-sonar-glyph::before,
-    .hero-sonar-glyph::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      width: 14px;
-      border-top: 1px solid rgba(118,168,255,0.48);
-      transform-origin: center;
-    }
-    .hero-sonar-glyph::before {
-      left: 3px;
-      transform: rotate(-45deg);
-    }
-    .hero-sonar-glyph::after {
-      right: 3px;
-      transform: rotate(45deg);
-    }
-    .hero-sonar-star {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      border: 1px solid rgba(132,186,255,0.86);
-      background: radial-gradient(circle, rgba(245,250,255,0.95) 0 40%, rgba(135,193,255,0.32) 70%, rgba(135,193,255,0) 100%);
-      box-shadow: 0 0 9px rgba(120,185,255,0.48);
-    }
-    .hero-sonar-star.top { left: 14px; top: 0; }
-    .hero-sonar-star.left { left: 0; top: 14px; }
-    .hero-sonar-star.right { right: 0; top: 14px; }
-    .hero-sonar-item-label {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 0.8px;
-      line-height: 1.15;
-      text-transform: none;
-      color: #dbe9ff;
-    }
 
     .hero-robot {
       position: relative; width: min(720px, 90vw); margin: 0 auto;
@@ -825,24 +760,8 @@
     }
 
     /* ========== RESPONSIVE ========== */
-    @media (max-width: 1320px) {
-      .hero-sonar {
-        left: clamp(8px, 1.2vw, 16px);
-        bottom: calc(var(--ticker-height) + 16px);
-        width: min(300px, 34vw);
-        max-width: 300px;
-      }
-    }
     @media (max-width: 768px) {
       .hero-robot { width: 95vw; }
-      .hero-sonar {
-        left: 8px;
-        bottom: calc(var(--ticker-height) + 14px);
-        width: min(312px, calc(100vw - 16px));
-        max-width: calc(100vw - 16px);
-        text-align: left;
-      }
-      .hero-sonar-item-label { font-size: 9px; }
       .hot20-header { flex-direction: column; align-items: flex-start; }
       .hot20-list-header { display: none; }
       .hot20-row { grid-template-columns: 56px 130px 1fr 160px; }
@@ -907,42 +826,6 @@
       <!-- Row 4: National Post · Vancouver Sun -->
       <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:40%; left:6%;  width:13%; height:7%"><span class="media-tooltip">National Post</span></a>
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
-    </div>
-  </div>
-  <div class="hero-sonar" id="hero-sonar" aria-label="Rep&egrave;res d'explication">
-    <div class="hero-sonar-list">
-      <div class="hero-sonar-item">
-        <span class="hero-sonar-glyph" aria-hidden="true">
-          <span class="hero-sonar-star top"></span>
-          <span class="hero-sonar-star left"></span>
-          <span class="hero-sonar-star right"></span>
-        </span>
-        <span class="hero-sonar-item-label">Radar+</span>
-      </div>
-      <div class="hero-sonar-item">
-        <span class="hero-sonar-glyph" aria-hidden="true">
-          <span class="hero-sonar-star top"></span>
-          <span class="hero-sonar-star left"></span>
-          <span class="hero-sonar-star right"></span>
-        </span>
-        <span class="hero-sonar-item-label">Saillance m&eacute;diatique</span>
-      </div>
-      <div class="hero-sonar-item">
-        <span class="hero-sonar-glyph" aria-hidden="true">
-          <span class="hero-sonar-star top"></span>
-          <span class="hero-sonar-star left"></span>
-          <span class="hero-sonar-star right"></span>
-        </span>
-        <span class="hero-sonar-item-label">Indice de saillance</span>
-      </div>
-      <div class="hero-sonar-item">
-        <span class="hero-sonar-glyph" aria-hidden="true">
-          <span class="hero-sonar-star top"></span>
-          <span class="hero-sonar-star left"></span>
-          <span class="hero-sonar-star right"></span>
-        </span>
-        <span class="hero-sonar-item-label">Donn&eacute;es scientifiques</span>
-      </div>
     </div>
   </div>
   <div class="scroll-hint">
@@ -1115,6 +998,103 @@
     meteors = alive;
   }
 
+  /* ===== CONSTELLATIONS (fixed in viewport sky) ===== */
+  const constellationDefs = [
+    {
+      name: 'Radar+',
+      // Antenna / arrow shape — upper-left sky
+      stars: [
+        [0.08, 0.09], [0.06, 0.16], [0.11, 0.14], [0.15, 0.08],
+        [0.17, 0.15], [0.13, 0.21], [0.09, 0.23], [0.19, 0.22]
+      ],
+      lines: [[0,1],[0,2],[2,3],[2,4],[1,6],[4,5],[5,6],[4,7]],
+      labelPos: [0.065, 0.065]
+    },
+    {
+      name: 'Saillance médiatique',
+      // Cassiopeia-like W — upper-right sky
+      stars: [
+        [0.72, 0.11], [0.76, 0.19], [0.80, 0.09], [0.84, 0.18],
+        [0.88, 0.08], [0.92, 0.15]
+      ],
+      lines: [[0,1],[1,2],[2,3],[3,4],[4,5]],
+      labelPos: [0.72, 0.06]
+    },
+    {
+      name: 'Indices de saillance',
+      // Diamond / kite — left mid-sky
+      stars: [
+        [0.05, 0.44], [0.10, 0.37], [0.16, 0.42], [0.10, 0.52],
+        [0.10, 0.44], [0.04, 0.38]
+      ],
+      lines: [[0,1],[1,2],[2,3],[3,0],[1,4],[3,4],[0,5]],
+      labelPos: [0.04, 0.34]
+    },
+    {
+      name: 'Recherche scientifique',
+      // Hexagonal / molecular — right mid-sky
+      stars: [
+        [0.82, 0.40], [0.87, 0.36], [0.92, 0.40], [0.92, 0.48],
+        [0.87, 0.52], [0.82, 0.48], [0.87, 0.44]
+      ],
+      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,6],[2,6],[4,6]],
+      labelPos: [0.83, 0.33]
+    }
+  ];
+
+  function drawConstellations(time) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    for (const cst of constellationDefs) {
+      // — Lines —
+      ctx.lineWidth = 0.6;
+      ctx.strokeStyle = 'rgba(130,175,255,0.16)';
+      ctx.lineCap = 'round';
+      for (const [a, b] of cst.lines) {
+        const ax = cst.stars[a][0] * vw, ay = cst.stars[a][1] * vh;
+        const bx = cst.stars[b][0] * vw, by = cst.stars[b][1] * vh;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.stroke();
+      }
+
+      // — Stars —
+      for (let i = 0; i < cst.stars.length; i++) {
+        const x = cst.stars[i][0] * vw;
+        const y = cst.stars[i][1] * vh;
+        // Slight twinkle synced with background stars
+        const twinkle = 0.8 + Math.sin(time * 0.9 + i * 2.3 + cst.stars.length) * 0.2;
+
+        // Outer glow
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 8);
+        g.addColorStop(0, 'rgba(160,200,255,' + (0.28 * twinkle) + ')');
+        g.addColorStop(1, 'rgba(160,200,255,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Core dot
+        const r = (i === 0) ? 2.0 : 1.6; // first star slightly bigger
+        ctx.fillStyle = 'rgba(210,230,255,' + (0.82 * twinkle) + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // — Label —
+      ctx.save();
+      ctx.font = '500 10px Orbitron, monospace';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = 'rgba(150,185,230,0.28)';
+      ctx.letterSpacing = '1.5px';
+      ctx.fillText(cst.name, cst.labelPos[0] * vw, cst.labelPos[1] * vh);
+      ctx.restore();
+    }
+  }
+
   function resize() {
     c.width = window.innerWidth;
     c.height = document.documentElement.scrollHeight;
@@ -1143,6 +1123,9 @@
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
+
+    // Draw constellations (fixed in viewport)
+    drawConstellations(t);
 
     if (nowMs >= nextMeteorAt) {
       spawnMeteor(nowMs);
