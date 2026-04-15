@@ -11,13 +11,92 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #00000f; font-family: 'Space Mono', 'SF Mono', monospace; overflow: hidden; height: 100vh; width: 100vw; }
-    #graph { position: absolute; inset: 0; }
+    .nav-toggle {
+      position: fixed; top: 20px; right: 20px; z-index: 220;
+      background: rgba(10,18,50,0.85); border: 1px solid rgba(90,140,255,0.24);
+      border-radius: 4px; padding: 10px 13px; cursor: pointer;
+      display: flex; flex-direction: column; gap: 5px;
+      transition: all 0.3s; backdrop-filter: blur(6px);
+    }
+    .nav-toggle:hover { border-color: rgba(120,180,255,0.9); }
+    .nav-toggle span {
+      display: block; width: 22px; height: 2px;
+      background: rgba(208,224,255,0.95); transition: all 0.3s;
+    }
+    .nav-toggle.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+    .menu-discover-hint {
+      position: fixed; top: 27px; right: 74px; z-index: 219;
+      display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+      color: rgba(140,170,220,0.85); font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 9px; letter-spacing: 1.8px; text-transform: uppercase;
+      opacity: 0.9; transition: color 0.2s, opacity 0.2s;
+      animation: menuHintFloat 2.6s ease-in-out infinite;
+    }
+    .menu-discover-hint:hover { color: #e6f1ff; opacity: 1; }
+    .menu-discover-hint .menu-discover-arrow {
+      width: 10px; height: 10px;
+      border-top: 2px solid rgba(120,180,255,0.95);
+      border-right: 2px solid rgba(120,180,255,0.95);
+      transform: rotate(45deg);
+      opacity: 0.9;
+    }
+    .nav-toggle.open + .menu-discover-hint { opacity: 0; pointer-events: none; }
+    .side-nav {
+      position: fixed; top: 0; right: -320px; width: 320px; height: 100vh;
+      background: linear-gradient(175deg, rgba(6,12,38,0.97), rgba(3,6,20,0.99));
+      border-left: 1px solid rgba(90,140,255,0.24);
+      z-index: 210; padding: 80px 30px 40px;
+      transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      backdrop-filter: blur(20px); overflow-y: auto;
+    }
+    .side-nav.open { right: 0; }
+    .side-nav h3 {
+      font-family: 'Orbitron', 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px;
+      color: rgba(140,170,220,0.8); text-transform: uppercase; margin-bottom: 20px;
+    }
+    .side-nav a {
+      display: block; padding: 14px 0; border-bottom: 1px solid rgba(80,130,255,0.1);
+      text-decoration: none; color: rgba(208,224,255,0.95); font-size: 15px;
+      transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .side-nav a:hover,
+    .side-nav a.current { color: #ffffff; padding-left: 8px; }
+    .side-nav .nav-badge {
+      display: inline-block; font-size: 9px; padding: 2px 7px;
+      border: 1px solid rgba(90,140,255,0.24); border-radius: 3px;
+      margin-left: 8px; color: rgba(140,170,220,0.8); vertical-align: middle;
+    }
+    #constellation-bg {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 50% 40%, rgba(62,98,198,0.17), rgba(5,10,36,0.05) 52%, rgba(0,0,15,0) 72%);
+    }
+    #constellation-bg::before,
+    #constellation-bg::after {
+      content: ''; position: absolute; inset: 0;
+    }
+    #constellation-bg::before {
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(170,200,255,0.34) 0 1.2px, transparent 1.4px),
+        radial-gradient(circle at 28% 42%, rgba(150,188,255,0.28) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 62% 26%, rgba(160,196,255,0.3) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 79% 38%, rgba(140,180,255,0.26) 0 1px, transparent 1.2px),
+        radial-gradient(circle at 38% 74%, rgba(170,205,255,0.24) 0 0.9px, transparent 1.1px),
+        radial-gradient(circle at 86% 76%, rgba(170,205,255,0.2) 0 0.8px, transparent 1px);
+      opacity: 0.55;
+    }
+    #constellation-bg::after {
+      background: repeating-radial-gradient(circle at 50% 52%, rgba(85,135,255,0.12) 0 1px, rgba(85,135,255,0) 1px 11px);
+      opacity: 0.34;
+    }
+    #graph { position: absolute; inset: 0; z-index: 1; }
     #header {
       position: absolute; top: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px;
+      padding: 14px 94px 14px 20px;
       background: linear-gradient(to bottom, rgba(0,0,15,0.92) 70%, transparent);
-      z-index: 10; pointer-events: none;
+      z-index: 20; pointer-events: none;
     }
     #country-tabs { display: flex; gap: 6px; pointer-events: all; }
     .tab {
@@ -383,6 +462,16 @@
     #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #00000f; z-index: 100; }
     #loading-text { font-size: 11px; letter-spacing: 3px; color: rgba(80,120,255,0.5); text-transform: uppercase; animation: pulse 1.8s ease-in-out infinite; }
     @media (max-width: 900px) {
+      #header {
+        padding-right: 72px;
+      }
+      .side-nav {
+        width: 280px;
+        right: -280px;
+      }
+      .menu-discover-hint {
+        display: none;
+      }
       #title {
         font-size: 14px;
         letter-spacing: 3px;
@@ -427,6 +516,10 @@
       .ticker-item {
         font-size: 10px;
       }
+    }
+    @keyframes menuHintFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
     }
     /* Mode tabs */
     #mode-tabs { display: flex; gap: 4px; pointer-events: all; }
@@ -487,6 +580,22 @@
   </style>
 </head>
 <body>
+  <button class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu">
+    <span></span><span></span><span></span>
+  </button>
+  <a href="#" class="menu-discover-hint" id="menuDiscoverHint" aria-label="Ouvrir le menu">
+    Ouvrir menu
+    <span class="menu-discover-arrow"></span>
+  </a>
+  <nav class="side-nav" id="sideNav" aria-label="Navigation principale">
+    <h3>Navigation RADAR+</h3>
+    <a href="./index.html">Accueil <span class="nav-badge">Home</span></a>
+    <a href="./constellation.html" class="current">Constellation <span class="nav-badge">Graph</span></a>
+    <a href="./evolution.html">Évolution <span class="nav-badge">Trends</span></a>
+    <a href="./unes.html">Dans le radar <span class="nav-badge">Live</span></a>
+    <a href="./sonar.html">SONAR <span class="nav-badge">Ops</span></a>
+  </nav>
+  <div id="constellation-bg" aria-hidden="true"></div>
   <div id="loading"><div id="loading-text">initialisation · constellation</div></div>
   <div id="graph"></div>
   <div id="evolution-view">
@@ -1518,6 +1627,38 @@
     e.stopPropagation();
     setMediaPanelCollapsed(!mediaPanelCollapsed);
   });
+
+    const navToggle = document.getElementById('navToggle');
+    const sideNav = document.getElementById('sideNav');
+    const menuDiscoverHint = document.getElementById('menuDiscoverHint');
+
+    function setNavOpen(open) {
+      navToggle.classList.toggle('open', open);
+      sideNav.classList.toggle('open', open);
+      navToggle.setAttribute('aria-expanded', String(open));
+    }
+
+    navToggle.addEventListener('click', () => {
+      const willOpen = !sideNav.classList.contains('open');
+      setNavOpen(willOpen);
+    });
+
+    menuDiscoverHint.addEventListener('click', (e) => {
+      e.preventDefault();
+      setNavOpen(true);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && sideNav.classList.contains('open')) {
+        setNavOpen(false);
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!sideNav.classList.contains('open')) return;
+      if (sideNav.contains(e.target) || navToggle.contains(e.target) || menuDiscoverHint.contains(e.target)) return;
+      setNavOpen(false);
+    });
 
   document.getElementById('loading').style.display = 'none';
   renderMediaFilters();
