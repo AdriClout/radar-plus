@@ -111,6 +111,34 @@ Pour SONAR:
 
 Le backup GitHub Pages est déployé automatiquement via `.github/workflows/deploy-github-pages.yml`.
 
+## Gouvernance, CI et Sécurité
+
+### Gouvernance des merges
+
+- La branche `main` est protégée par ruleset GitHub.
+- Les contributions passent par Pull Request (pas de push direct humain sur `main`).
+- 1 approbation est requise, avec revue Code Owners et conversations résolues.
+- Le check CI `quality-gate` est obligatoire avant fusion.
+
+### Quality Gate (PR)
+
+Le workflow `.github/workflows/pr-quality-gate.yml` exécute automatiquement:
+
+- Validation JSON sur `site/*.json`.
+- Vérification des liens internes statiques dans `site/*.html`.
+- Lint des workflows GitHub Actions avec `actionlint`.
+
+### Sécurité
+
+- Politique de divulgation: voir `SECURITY.md`.
+- Dépendances Actions surveillées par Dependabot: `.github/dependabot.yml`.
+- Guide contribution (incluant règles sécurité): `CONTRIBUTING.md`.
+
+### Politique d'accès aux données
+
+- Principe: accès contrôlé, usage scientifique, pas de redistribution brute.
+- Point d'entrée public: `site/acces-donnees.html`.
+
 Le dossier `templates/` contient **4 templates essentiels** pour démarrer rapidement:
 
 | Template | Description | Quand l'utiliser? |
