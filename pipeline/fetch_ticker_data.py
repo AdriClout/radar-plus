@@ -246,50 +246,45 @@ def main():
     s3_client = boto3.client("s3", region_name=REGION)
     athena = boto3.client("athena", region_name=REGION)
 
+    all_rows = []
+
     # Step 1: raw CSVs from PROD warehouse (real-time, ~10 min lag)
     print(f"Fetching raw CSVs from s3://{PROD_WAREHOUSE_BUCKET}/{RAW_PREFIX}/...")
     try:
-        rows = fetch_raw_csvs(s3_client)
+        raw_rows = fetch_raw_csvs(s3_client)
+        all_rows.extend(raw_rows)
+        print(f"  -> {len(raw_rows)} rows from raw CSVs")
     except Exception as e:
         print(f"  WARN: raw CSV fetch failed: {e}", file=sys.stderr)
-        rows = []
 
-    if rows:
-        out_path = os.path.join(script_dir, "ticker_objects.csv")
-        with open(out_path, "w", newline="", encoding="utf-8") as f:
-            w = csv.DictWriter(f, fieldnames=OUT_FIELDS)
-            w.writeheader()
-            w.writerows(rows)
-        idx_path = os.path.join(script_dir, "ticker_index.csv")
-        with open(idx_path, "w", newline="", encoding="utf-8") as f:
-            csv.DictWriter(f, fieldnames=["date_utc", "time_interval_utc", "urls", "titles"]).writeheader()
-        print(f"  -> saved ticker_objects.csv — {len(rows)} unique headlines (raw CSV source)")
-        return
-
-    # Step 2: Athena warehouse Parquet fallback (~4h lag)
-    print("  WARN: no raw CSV rows found, trying Athena warehouse...", file=sys.stderr)
+    # Step 2: Athena warehouse Parquet for historical depth (~4h lag)
+    print("Fetching Athena warehouse for historical depth...")
     try:
-        rows = fetch_athena_warehouse(athena, s3_client, script_dir)
-        if rows:
-            out_path = os.path.join(script_dir, "ticker_objects.csv")
-            with open(out_path, "w", newline="", encoding="utf-8") as f:
-                w = csv.DictWriter(f, fieldnames=OUT_FIELDS)
-                w.writeheader()
-                w.writerows(rows)
-            with open(os.path.join(script_dir, "ticker_index.csv"), "w", newline="", encoding="utf-8") as f:
-                csv.DictWriter(f, fieldnames=["date_utc", "time_interval_utc", "urls", "titles"]).writeheader()
-            print(f"  -> saved ticker_objects.csv — {len(rows)} unique headlines (Athena warehouse)")
-            return
+        wh_rows = fetch_athena_warehouse(athena, s3_client, script_dir)
+        all_rows.extend(wh_rows)
     except Exception as e:
         print(f"  WARN: Athena warehouse failed: {e}", file=sys.stderr)
 
-    # Step 3: datamart fallback (last resort)
-    print("  WARN: falling back to datamart...", file=sys.stderr)
-    try:
-        fetch_athena_datamart(athena, s3_client, script_dir)
-    except Exception as e:
-        print(f"  ERROR: all sources failed: {e}", file=sys.stderr)
-        sys.exit(1)
+    # Step 3: datamart fallback if nothing so far
+    if not all_rows:
+        print("  WARN: no rows yet, falling back to datamart...", file=sys.stderr)
+        try:
+            fetch_athena_datamart(athena, s3_client, script_dir)
+            return  # datamart writes files directly
+        except Exception as e:
+            print(f"  ERROR: all sources failed: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    # Write combined results
+    out_path = os.path.join(script_dir, "ticker_objects.csv")
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=OUT_FIELDS)
+        w.writeheader()
+        w.writerows(all_rows)
+    idx_path = os.path.join(script_dir, "ticker_index.csv")
+    with open(idx_path, "w", newline="", encoding="utf-8") as f:
+        csv.DictWriter(f, fieldnames=["date_utc", "time_interval_utc", "urls", "titles"]).writeheader()
+    print(f"  -> saved ticker_objects.csv — {len(all_rows)} total rows (raw + Athena)")
 
 
 if __name__ == "__main__":
