@@ -30,7 +30,8 @@ PROD_WAREHOUSE_BUCKET = "bucket-stack-datawarehousebucketa0f23e27-ogdtukqdpusx"
 RAW_PREFIX = "r-media-headlines"
 
 # Max CSVs per media to download (each CSV = one 10-min scrape snapshot).
-MAX_CSV_PER_MEDIA = 20
+# 150 ≈ 25h of snapshots; combined with today+yesterday listing = ~48h coverage.
+MAX_CSV_PER_MEDIA = 150
 
 MEDIA_IDS = [
     "TVA", "RCI", "NP", "JDM", "CBC", "LAP", "VS",

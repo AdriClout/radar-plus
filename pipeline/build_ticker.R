@@ -17,8 +17,8 @@ OUT_DIR <- tryCatch({
 SITE_DIR <- file.path(dirname(OUT_DIR), "site")
 
 TICKER_FILE <- file.path(SITE_DIR, "ticker.json")
-LOOKBACK_HOURS <- 12
-MAX_ITEMS <- 120
+LOOKBACK_HOURS <- 48
+MAX_ITEMS <- 1500
 
 parse_json_chr <- function(x) {
   if (is.na(x) || !nzchar(x)) return(character(0))
@@ -96,12 +96,9 @@ items_df <- df_objects |>
   dplyr::filter(headline_stop_ts >= cutoff_utc) |>
   dplyr::arrange(dplyr::desc(headline_stop_ts))
 
-# We always keep the latest scraped headline per media.
+# Deduplicate by URL — keep the most recent observation of each headline
 items_df <- items_df |>
-  dplyr::distinct(url, .keep_all = TRUE) |>
-  dplyr::group_by(media_id) |>
-  dplyr::slice_max(headline_stop_ts, n = 1, with_ties = FALSE) |>
-  dplyr::ungroup()
+  dplyr::distinct(url, .keep_all = TRUE)
 
 items_df <- items_df |>
   dplyr::mutate(
