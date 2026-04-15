@@ -29,6 +29,41 @@
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
     }
 
+    /* ========== CONSTELLATION HIT-ZONES ========== */
+    .cst-zone {
+      position: fixed;
+      z-index: 3;
+      cursor: default;
+    }
+    .cst-zone .cst-tooltip {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+      max-width: 280px;
+      padding: 14px 18px;
+      background: rgba(4,10,32,0.88);
+      border: 1px solid rgba(100,160,255,0.18);
+      border-radius: 6px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .cst-zone:hover .cst-tooltip { opacity: 1; }
+    .cst-tooltip .cst-tooltip-name {
+      font-family: var(--orbitron);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      color: #b8d4ff;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .cst-tooltip .cst-tooltip-desc {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.55;
+      color: rgba(190,215,255,0.78);
+    }
+
     /* ========== SIDE NAV ========== */
     .nav-toggle {
       position: fixed; top: 20px; right: 20px; z-index: 200;
@@ -212,6 +247,19 @@
 
     .hot20-controls {
       display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+
+    .granularity-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+    .granularity-tab {
+      padding: 5px 12px; border: 1px solid var(--border); border-radius: 3px;
+      background: transparent; color: var(--muted); font-family: var(--orbitron);
+      font-size: 10px; letter-spacing: 1.2px; cursor: pointer;
+      transition: all 0.25s; text-transform: uppercase;
+    }
+    .granularity-tab:hover { border-color: rgba(100,150,255,0.4); color: var(--text); }
+    .granularity-tab.active {
+      background: rgba(40,70,160,0.45); border-color: rgba(100,160,255,0.6);
+      color: #fff;
     }
 
     .country-tabs { display: flex; gap: 6px; }
@@ -781,6 +829,32 @@
 <!-- Starfield -->
 <canvas id="stars-canvas"></canvas>
 
+<!-- Constellation hover zones -->
+<div class="cst-zone" id="cst-zone-0" style="left:3%;top:4%;width:20%;height:22%">
+  <div class="cst-tooltip" style="left:60%;top:70%">
+    <div class="cst-tooltip-name">Radar+</div>
+    <div class="cst-tooltip-desc">Un outil d&eacute;velopp&eacute; &agrave; l'Universit&eacute; Laval qui archive les pages d'accueil de grands m&eacute;dias canadiens et am&eacute;ricains toutes les 15&nbsp;minutes depuis 2019. Il permet de retracer quelles nouvelles &eacute;taient mises de l'avant, &agrave; quel moment et pendant combien de temps.</div>
+  </div>
+</div>
+<div class="cst-zone" id="cst-zone-1" style="right:2%;top:2%;width:24%;height:20%">
+  <div class="cst-tooltip" style="right:0;top:80%">
+    <div class="cst-tooltip-name">Saillance m&eacute;diatique</div>
+    <div class="cst-tooltip-desc">La visibilit&eacute; qu'un m&eacute;dia accorde &agrave; un sujet&nbsp;: sa position sur la page, l'espace qu'il occupe, la dur&eacute;e pendant laquelle il y reste. C'est ce qui distingue une nouvelle trait&eacute;e en priorit&eacute; d'une autre rel&eacute;gu&eacute;e en p&eacute;riph&eacute;rie.</div>
+  </div>
+</div>
+<div class="cst-zone" id="cst-zone-2" style="left:1%;top:28%;width:20%;height:28%">
+  <div class="cst-tooltip" style="left:60%;top:20%">
+    <div class="cst-tooltip-name">Indices de saillance</div>
+    <div class="cst-tooltip-desc">Un indice &eacute;lev&eacute; indique qu'un sujet occupe une place pro&eacute;minente sur la page d'accueil d'un m&eacute;dia, tant par son positionnement que par sa persistance dans le temps. Un indice faible signale un traitement plus discret ou &eacute;ph&eacute;m&egrave;re.</div>
+  </div>
+</div>
+<div class="cst-zone" id="cst-zone-3" style="right:1%;top:28%;width:23%;height:28%">
+  <div class="cst-tooltip" style="right:0;top:20%">
+    <div class="cst-tooltip-name">Recherche scientifique</div>
+    <div class="cst-tooltip-desc">On sait que les choix &eacute;ditoriaux des m&eacute;dias influencent les priorit&eacute;s du public, mais ces choix sont rarement document&eacute;s de fa&ccedil;on syst&eacute;matique. Radar+ offre les donn&eacute;es n&eacute;cessaires pour &eacute;tudier rigoureusement ce ph&eacute;nom&egrave;ne &agrave; l'&egrave;re num&eacute;rique.</div>
+  </div>
+</div>
+
 <!-- Side Navigation -->
 <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
   <span></span><span></span><span></span>
@@ -855,8 +929,15 @@
 <!-- ========== HOT 20 ========== -->
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
-    <h2 class="hot20-title">HOT <span class="accent">20</span><span class="hot20-subtitle">&Eacute;dition (4h)</span></h2>
+    <h2 class="hot20-title">HOT <span class="accent">20</span><span class="hot20-subtitle" id="hot20-subtitle">&Eacute;dition (4h)</span></h2>
     <div class="hot20-controls">
+      <div class="granularity-tabs" id="granularity-tabs">
+        <button class="granularity-tab active" data-gran="4h">4 h</button>
+        <button class="granularity-tab" data-gran="day">Jour</button>
+        <button class="granularity-tab" data-gran="week">Semaine</button>
+        <button class="granularity-tab" data-gran="month">Mois</button>
+        <button class="granularity-tab" data-gran="quarter">3 mois</button>
+      </div>
       <div class="country-tabs" id="country-tabs">
         <button class="country-tab active" data-country="QC">Québec</button>
         <button class="country-tab" data-country="CAN">Canada</button>
@@ -1002,54 +1083,75 @@
   const constellationDefs = [
     {
       name: 'Radar+',
-      // Antenna / arrow shape — upper-left sky
       stars: [
-        [0.08, 0.09], [0.06, 0.16], [0.11, 0.14], [0.15, 0.08],
-        [0.17, 0.15], [0.13, 0.21], [0.09, 0.23], [0.19, 0.22]
+        [0.07, 0.10], [0.04, 0.18], [0.10, 0.14], [0.14, 0.07],
+        [0.16, 0.16], [0.12, 0.22], [0.07, 0.24], [0.18, 0.24],
+        [0.03, 0.12]
       ],
-      lines: [[0,1],[0,2],[2,3],[2,4],[1,6],[4,5],[5,6],[4,7]],
-      labelPos: [0.065, 0.065]
+      lines: [[0,1],[0,2],[2,3],[2,4],[1,6],[4,5],[5,6],[4,7],[0,8],[8,1]],
     },
     {
       name: 'Saillance médiatique',
-      // Cassiopeia-like W — upper-right sky
       stars: [
-        [0.72, 0.11], [0.76, 0.19], [0.80, 0.09], [0.84, 0.18],
-        [0.88, 0.08], [0.92, 0.15]
+        [0.74, 0.06], [0.78, 0.15], [0.82, 0.05], [0.86, 0.14],
+        [0.90, 0.04], [0.94, 0.12], [0.76, 0.11], [0.88, 0.09]
       ],
-      lines: [[0,1],[1,2],[2,3],[3,4],[4,5]],
-      labelPos: [0.72, 0.06]
+      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[0,6],[6,1],[4,7],[7,3]],
     },
     {
       name: 'Indices de saillance',
-      // Diamond / kite — left mid-sky
       stars: [
-        [0.05, 0.44], [0.10, 0.37], [0.16, 0.42], [0.10, 0.52],
-        [0.10, 0.44], [0.04, 0.38]
+        [0.05, 0.42], [0.11, 0.34], [0.17, 0.40], [0.11, 0.52],
+        [0.11, 0.43], [0.03, 0.36], [0.19, 0.47], [0.11, 0.30]
       ],
-      lines: [[0,1],[1,2],[2,3],[3,0],[1,4],[3,4],[0,5]],
-      labelPos: [0.04, 0.34]
+      lines: [[0,1],[1,2],[2,3],[3,0],[1,4],[3,4],[0,5],[2,6],[1,7]],
     },
     {
       name: 'Recherche scientifique',
-      // Hexagonal / molecular — right mid-sky
       stars: [
-        [0.82, 0.40], [0.87, 0.36], [0.92, 0.40], [0.92, 0.48],
-        [0.87, 0.52], [0.82, 0.48], [0.87, 0.44]
+        [0.82, 0.38], [0.87, 0.33], [0.93, 0.38], [0.93, 0.47],
+        [0.87, 0.52], [0.82, 0.47], [0.87, 0.42], [0.96, 0.42],
+        [0.87, 0.28]
       ],
-      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,6],[2,6],[4,6]],
-      labelPos: [0.83, 0.33]
+      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,6],[2,6],[4,6],[2,7],[1,8]],
     }
   ];
 
-  function drawConstellations(time) {
+  // Hover state per constellation (smooth 0→1)
+  const cstHover = constellationDefs.map(() => 0);
+  const cstZones = constellationDefs.map((_, i) => document.getElementById('cst-zone-' + i));
+  cstZones.forEach((zone, i) => {
+    if (!zone) return;
+    zone.addEventListener('mouseenter', () => { cstZones[i]._hovered = true; });
+    zone.addEventListener('mouseleave', () => { cstZones[i]._hovered = false; });
+  });
+
+  function drawConstellations(time, dt) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    for (const cst of constellationDefs) {
+    for (let ci = 0; ci < constellationDefs.length; ci++) {
+      const cst = constellationDefs[ci];
+      const zone = cstZones[ci];
+      const hovered = zone && zone._hovered;
+
+      // Smooth lerp hover value
+      const target = hovered ? 1 : 0;
+      cstHover[ci] += (target - cstHover[ci]) * Math.min(1, dt * 4.5);
+      const h = cstHover[ci];
+
+      // Intensity based on hover
+      const lineAlpha = 0.14 + h * 0.38;
+      const lineWidth = 0.7 + h * 0.6;
+      const starAlpha = 0.65 + h * 0.35;
+      const glowRadius = 8 + h * 10;
+      const glowAlpha = 0.20 + h * 0.35;
+      const labelAlpha = 0.12 + h * 0.55;
+      const coreSize = 1.6 + h * 0.8;
+
       // — Lines —
-      ctx.lineWidth = 0.6;
-      ctx.strokeStyle = 'rgba(130,175,255,0.16)';
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = 'rgba(130,175,255,' + lineAlpha.toFixed(3) + ')';
       ctx.lineCap = 'round';
       for (const [a, b] of cst.lines) {
         const ax = cst.stars[a][0] * vw, ay = cst.stars[a][1] * vh;
@@ -1064,33 +1166,38 @@
       for (let i = 0; i < cst.stars.length; i++) {
         const x = cst.stars[i][0] * vw;
         const y = cst.stars[i][1] * vh;
-        // Slight twinkle synced with background stars
-        const twinkle = 0.8 + Math.sin(time * 0.9 + i * 2.3 + cst.stars.length) * 0.2;
+        const twinkle = 0.85 + Math.sin(time * 0.8 + i * 2.1 + ci * 5.7) * 0.15;
 
         // Outer glow
-        const g = ctx.createRadialGradient(x, y, 0, x, y, 8);
-        g.addColorStop(0, 'rgba(160,200,255,' + (0.28 * twinkle) + ')');
-        g.addColorStop(1, 'rgba(160,200,255,0)');
+        const g = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+        g.addColorStop(0, 'rgba(150,195,255,' + (glowAlpha * twinkle).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(150,195,255,0)');
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
         ctx.fill();
 
         // Core dot
-        const r = (i === 0) ? 2.0 : 1.6; // first star slightly bigger
-        ctx.fillStyle = 'rgba(210,230,255,' + (0.82 * twinkle) + ')';
+        const r = (i === 0) ? coreSize * 1.2 : coreSize;
+        ctx.fillStyle = 'rgba(220,235,255,' + (starAlpha * twinkle).toFixed(3) + ')';
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // — Label —
+      // — Label (only visible when NOT hovered — tooltip replaces it) —
       ctx.save();
-      ctx.font = '500 10px Orbitron, monospace';
-      ctx.textBaseline = 'bottom';
-      ctx.fillStyle = 'rgba(150,185,230,0.28)';
-      ctx.letterSpacing = '1.5px';
-      ctx.fillText(cst.name, cst.labelPos[0] * vw, cst.labelPos[1] * vh);
+      ctx.font = '500 9px Orbitron, monospace';
+      ctx.textBaseline = 'top';
+      // Compute label position: below centre of constellation
+      let cx = 0, cy = 0;
+      for (const s of cst.stars) { cx += s[0]; cy += s[1]; }
+      cx = (cx / cst.stars.length) * vw;
+      cy = (cy / cst.stars.length) * vh;
+      const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + 12;
+      ctx.fillStyle = 'rgba(140,180,230,' + ((1 - h) * labelAlpha).toFixed(3) + ')';
+      ctx.textAlign = 'center';
+      ctx.fillText(cst.name.toUpperCase(), cx, labelY);
       ctx.restore();
     }
   }
@@ -1112,8 +1219,11 @@
     }));
   }
   let t = 0;
+  let lastTime = performance.now();
   function draw() {
     const nowMs = performance.now();
+    const dt = Math.min((nowMs - lastTime) / 1000, 0.1);
+    lastTime = nowMs;
     ctx.clearRect(0, 0, c.width, c.height);
     t += 0.016;
     for (const s of stars) {
@@ -1125,7 +1235,7 @@
     }
 
     // Draw constellations (fixed in viewport)
-    drawConstellations(t);
+    drawConstellations(t, dt);
 
     if (nowMs >= nextMeteorAt) {
       spawnMeteor(nowMs);
@@ -1169,6 +1279,9 @@ var timeseriesData = null;
 var allPeriods = [];
 var currentCountry = 'QC';
 var currentPeriodIdx = 0;
+var currentGranularity = '4h'; // '4h','day','week','month','quarter'
+var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
+var currentSlotIdx = 0;
 
 function escapeHtml(str) {
   var d = document.createElement('div');
@@ -1194,6 +1307,156 @@ function buildPeriods() {
   if (!src || !src.meta || !src.meta.periods) return;
   allPeriods = src.meta.periods.slice().sort(function(a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
   currentPeriodIdx = allPeriods.length - 1;
+  buildSlots();
+}
+
+/* ===== AGGREGATION HELPERS ===== */
+
+var FR_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+var FR_MONTHS_SHORT_MAP = { Jan:'jan.', Feb:'fév.', Mar:'mars', Apr:'avr.', May:'mai', Jun:'juin', Jul:'juil.', Aug:'août', Sep:'sept.', Oct:'oct.', Nov:'nov.', Dec:'déc.' };
+var FR_DAYS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+
+function periodKeyToDate(key) {
+  // "2026-04-14_16-20" → "2026-04-14"
+  return key.split('_')[0];
+}
+
+function dateToWeekKey(dateStr) {
+  // ISO week: Monday-based. Returns "2026-W15"
+  var d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7)); // Thursday of same week
+  var yearStart = new Date(d.getFullYear(), 0, 4);
+  var weekNum = Math.round(((d - yearStart) / 86400000 + yearStart.getDay() + 6) / 7);
+  return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
+}
+
+function dateToMonthKey(dateStr) {
+  return dateStr.slice(0, 7); // "2026-04"
+}
+
+function weekKeyToLabel(weekKey) {
+  // "2026-W15" → "Semaine du 7 avril 2026"
+  var parts = weekKey.split('-W');
+  var year = parseInt(parts[0]);
+  var week = parseInt(parts[1]);
+  // Find Monday of that ISO week
+  var jan4 = new Date(year, 0, 4);
+  var d = new Date(jan4.getTime());
+  d.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (week - 1) * 7);
+  var day = d.getDate();
+  var month = FR_MONTHS[d.getMonth()];
+  return 'Semaine du ' + day + ' ' + month + ' ' + year;
+}
+
+function monthKeyToLabel(monthKey) {
+  var parts = monthKey.split('-');
+  return FR_MONTHS[parseInt(parts[1]) - 1].charAt(0).toUpperCase() + FR_MONTHS[parseInt(parts[1]) - 1].slice(1) + ' ' + parts[0];
+}
+
+function buildSlots() {
+  var src = timeseriesData || graphData;
+  if (!src || !allPeriods.length) { aggregatedSlots = []; return; }
+
+  if (currentGranularity === '4h') {
+    // Direct mapping — each period is a slot
+    aggregatedSlots = allPeriods.map(function(p) {
+      return { periodKeys: [p.key], label: p.label || p.key, raw: p };
+    });
+    currentSlotIdx = aggregatedSlots.length - 1;
+    return;
+  }
+
+  // Group period keys by granularity bucket
+  var buckets = {};
+  var bucketOrder = [];
+  allPeriods.forEach(function(p) {
+    var dateStr = periodKeyToDate(p.key);
+    var bucketKey;
+    if (currentGranularity === 'day') {
+      bucketKey = dateStr;
+    } else if (currentGranularity === 'week') {
+      bucketKey = dateToWeekKey(dateStr);
+    } else if (currentGranularity === 'month') {
+      bucketKey = dateToMonthKey(dateStr);
+    } else { // quarter
+      bucketKey = 'all';
+    }
+    if (!buckets[bucketKey]) {
+      buckets[bucketKey] = [];
+      bucketOrder.push(bucketKey);
+    }
+    buckets[bucketKey].push(p.key);
+  });
+
+  aggregatedSlots = bucketOrder.map(function(bk) {
+    var keys = buckets[bk];
+    var label, dateLabel, interval;
+    if (currentGranularity === 'day') {
+      var d = new Date(bk + 'T00:00:00');
+      var day = d.getDate();
+      var month = FR_MONTHS[d.getMonth()];
+      dateLabel = day + ' ' + month + ' ' + d.getFullYear();
+      interval = 'Saillance cumulée de la journée';
+    } else if (currentGranularity === 'week') {
+      dateLabel = weekKeyToLabel(bk);
+      interval = 'Saillance cumulée de la semaine';
+    } else if (currentGranularity === 'month') {
+      dateLabel = monthKeyToLabel(bk);
+      interval = 'Saillance cumulée du mois';
+    } else {
+      dateLabel = '3 derniers mois';
+      interval = 'Saillance cumulée (90 jours)';
+    }
+    return { periodKeys: keys, dateLabel: dateLabel, interval: interval, bucketKey: bk };
+  });
+
+  currentSlotIdx = aggregatedSlots.length - 1;
+}
+
+function aggregateNodes(countryGraphs, periodKeys) {
+  // Sum size across periods, collect unique articles
+  var nodeMap = {}; // id → {id, totalSize, articles: Map<url, article>, mediaSet}
+  for (var i = 0; i < periodKeys.length; i++) {
+    var pd = countryGraphs[periodKeys[i]];
+    if (!pd || !pd.nodes) continue;
+    for (var j = 0; j < pd.nodes.length; j++) {
+      var n = pd.nodes[j];
+      if (!nodeMap[n.id]) {
+        nodeMap[n.id] = { id: n.id, totalSize: 0, articlesMap: {}, mediaSet: {} };
+      }
+      var entry = nodeMap[n.id];
+      entry.totalSize += (n.size || 0);
+      if (n.articles) {
+        for (var k = 0; k < n.articles.length; k++) {
+          var a = n.articles[k];
+          if (a.url && !entry.articlesMap[a.url]) {
+            entry.articlesMap[a.url] = a;
+          }
+          if (a.media_id) entry.mediaSet[a.media_id] = true;
+        }
+      }
+      if (n.media_ids) {
+        for (var m = 0; m < n.media_ids.length; m++) {
+          entry.mediaSet[n.media_ids[m]] = true;
+        }
+      }
+    }
+  }
+  // Convert to array
+  var result = [];
+  for (var id in nodeMap) {
+    var e = nodeMap[id];
+    var articles = [];
+    for (var url in e.articlesMap) { articles.push(e.articlesMap[url]); }
+    result.push({
+      id: e.id,
+      size: e.totalSize,
+      articles: articles.slice(0, 15),
+      media_ids: Object.keys(e.mediaSet)
+    });
+  }
+  result.sort(function(a, b) { return b.size - a.size; });
+  return result;
 }
 
 function renderHot20() {
@@ -1201,66 +1464,110 @@ function renderHot20() {
   var label = document.getElementById('week-label');
   var prevBtn = document.getElementById('week-prev');
   var nextBtn = document.getElementById('week-next');
+  var subtitleEl = document.getElementById('hot20-subtitle');
 
-  if (!allPeriods.length) {
+  // Update subtitle
+  var subtitleMap = { '4h': 'Édition (4h)', day: 'Aujourd\'hui', week: 'Cette semaine', month: 'Ce mois-ci', quarter: '3 derniers mois' };
+  subtitleEl.textContent = subtitleMap[currentGranularity] || '';
+
+  if (!aggregatedSlots.length) {
     grid.innerHTML = '<div class="hot20-empty">Données non disponibles</div>';
     return;
   }
 
-  var period = allPeriods[currentPeriodIdx];
-  var pf = parsePeriodLabel(period.label || period.key);
-  document.getElementById('wl-date').textContent = pf.date;
-  document.getElementById('wl-interval').textContent = pf.interval;
-  prevBtn.disabled = currentPeriodIdx === 0;
-  nextBtn.disabled = currentPeriodIdx === allPeriods.length - 1;
+  var slot = aggregatedSlots[currentSlotIdx];
+
+  // Update date label
+  if (currentGranularity === '4h') {
+    var pf = parsePeriodLabel(slot.label || slot.raw.key);
+    document.getElementById('wl-date').textContent = pf.date;
+    document.getElementById('wl-interval').textContent = pf.interval;
+  } else {
+    document.getElementById('wl-date').textContent = slot.dateLabel;
+    document.getElementById('wl-interval').textContent = slot.interval;
+  }
+
+  prevBtn.disabled = currentSlotIdx === 0;
+  nextBtn.disabled = currentSlotIdx === aggregatedSlots.length - 1;
 
   var src = timeseriesData || graphData;
   var countryGraphs = src.graphs ? src.graphs[currentCountry] : null;
-  var periodData = countryGraphs ? countryGraphs[period.key] : null;
 
-  if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
-    grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ce bloc horaire (4 h)</div>';
+  if (!countryGraphs) {
+    grid.innerHTML = '<div class="hot20-empty">Aucune donnée disponible</div>';
     return;
   }
 
-  var allNodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-  var nodes = allNodes.slice(0, 20);
-  var totalSize = allNodes.reduce(function(acc, n) { return acc + (n.size || 0); }, 0) || 1;
-
-  /* Trend: compare with previous period */
-  var prevRanks = {};
-  var prevIds = {};
-  if (currentPeriodIdx > 0) {
-    var prevPeriod = allPeriods[currentPeriodIdx - 1];
-    var prevData = countryGraphs ? countryGraphs[prevPeriod.key] : null;
-    if (prevData && prevData.nodes) {
-      var prevSorted = prevData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-      prevSorted.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; prevIds[n.id] = true; });
+  // Get nodes — either single period or aggregated
+  var allNodes;
+  if (currentGranularity === '4h') {
+    var periodData = countryGraphs[slot.periodKeys[0]];
+    if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
+      grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ce bloc horaire (4 h)</div>';
+      return;
+    }
+    allNodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
+  } else {
+    allNodes = aggregateNodes(countryGraphs, slot.periodKeys);
+    if (!allNodes.length) {
+      var emptyMsg = { day: 'cette journée', week: 'cette semaine', month: 'ce mois', quarter: 'cette période' };
+      grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période') + '</div>';
+      return;
     }
   }
 
-  /* Consecutive periods: count how many recent periods each entity appears in */
+  var nodes = allNodes.slice(0, 20);
+  var totalSize = allNodes.reduce(function(acc, n) { return acc + (n.size || 0); }, 0) || 1;
+
+  /* Trend: compare with previous slot */
+  var prevRanks = {};
+  var prevIds = {};
+  if (currentSlotIdx > 0) {
+    var prevSlot = aggregatedSlots[currentSlotIdx - 1];
+    var prevNodes;
+    if (currentGranularity === '4h') {
+      var prevData = countryGraphs[prevSlot.periodKeys[0]];
+      prevNodes = prevData && prevData.nodes ? prevData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }) : [];
+    } else {
+      prevNodes = aggregateNodes(countryGraphs, prevSlot.periodKeys);
+    }
+    prevNodes.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; prevIds[n.id] = true; });
+  }
+
+  /* Consecutive slots: count how many recent slots each entity appears in top 20 */
   var streaks = {};
   nodes.forEach(function(node) {
     var count = 0;
-    for (var pi = currentPeriodIdx; pi >= 0; pi--) {
-      var pd = countryGraphs[allPeriods[pi].key];
-      if (!pd || !pd.nodes) break;
-      var found = pd.nodes.some(function(n) { return n.id === node.id; });
+    for (var si = currentSlotIdx; si >= 0; si--) {
+      var s = aggregatedSlots[si];
+      var sNodes;
+      if (currentGranularity === '4h') {
+        var pd = countryGraphs[s.periodKeys[0]];
+        sNodes = pd && pd.nodes ? pd.nodes : [];
+      } else {
+        sNodes = aggregateNodes(countryGraphs, s.periodKeys);
+      }
+      var found = sNodes.some(function(n) { return n.id === node.id; });
       if (found) count++;
       else break;
     }
     streaks[node.id] = count;
   });
 
-  /* Comeback detection: was absent for 2+ periods before reappearing */
+  /* Comeback detection */
   var comebacks = {};
   nodes.forEach(function(node) {
-    if (prevIds[node.id]) return; /* was in previous period — not a comeback */
-    /* Check if it appeared 2-10 periods ago */
-    for (var pi = currentPeriodIdx - 2; pi >= Math.max(0, currentPeriodIdx - 10); pi--) {
-      var pd = countryGraphs[allPeriods[pi].key];
-      if (pd && pd.nodes && pd.nodes.some(function(n) { return n.id === node.id; })) {
+    if (prevIds[node.id]) return;
+    for (var si = currentSlotIdx - 2; si >= Math.max(0, currentSlotIdx - 10); si--) {
+      var s = aggregatedSlots[si];
+      var sNodes;
+      if (currentGranularity === '4h') {
+        var pd = countryGraphs[s.periodKeys[0]];
+        sNodes = pd && pd.nodes ? pd.nodes : [];
+      } else {
+        sNodes = aggregateNodes(countryGraphs, s.periodKeys);
+      }
+      if (sNodes.some(function(n) { return n.id === node.id; })) {
         comebacks[node.id] = true;
         return;
       }
@@ -1269,6 +1576,12 @@ function renderHot20() {
 
   /* Store nodes for click handler */
   window._hot20Nodes = nodes;
+
+  /* Granularity-specific labels for tooltips */
+  var granLabel = { '4h': 'bloc horaire (4 h)', day: 'journée', week: 'semaine', month: 'mois', quarter: 'période de 3 mois' };
+  var granLabelPlural = { '4h': 'blocs horaires', day: 'jours', week: 'semaines', month: 'mois', quarter: 'trimestres' };
+  var gl = granLabel[currentGranularity] || 'période';
+  var glp = granLabelPlural[currentGranularity] || 'périodes';
 
   /* FLIP — capture old row positions before re-render */
   var oldPos = {};
@@ -1295,24 +1608,24 @@ function renderHot20() {
       var mediaCount = mediaIds.length;
       var mediaTip = mediaIds.length
         ? 'M&eacute;dias en cause: ' + escapeHtml(mediaIds.join(', '))
-        : 'Aucun m&eacute;dia identifi&eacute; pour ce bloc horaire (4 h).';
+        : 'Aucun m&eacute;dia identifi&eacute;.';
 
       /* Trend badge */
       var trendHtml = '';
-      if (currentPeriodIdx > 0) {
+      if (currentSlotIdx > 0) {
         var prevRank = prevRanks[node.id];
         if (!prevRank && comebacks[node.id]) {
-          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="Retour dans le Top 20 apr&egrave;s au moins 2 blocs horaires (4 h) d\'absence.">&#128260; Retour</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="Retour dans le Top 20 apr&egrave;s au moins 2 ' + glp + ' d\'absence.">&#128260; Retour</span>';
         } else if (!prevRank) {
-          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="Nouvelle entr&eacute;e dans le Top 20 pour ce bloc horaire (4 h).">&#128293; Nouveau</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="Nouvelle entr&eacute;e dans le Top 20 pour cette ' + gl + '.">&#128293; Nouveau</span>';
         } else {
           var diff = prevRank - (i + 1);
           if (diff > 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="Gagne ' + diff + ' rang' + (diff > 1 ? 's' : '') + ' depuis le bloc horaire pr&eacute;c&eacute;dent (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9650;' + diff + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="Gagne ' + diff + ' rang' + (diff > 1 ? 's' : '') + ' par rapport &agrave; la ' + gl + ' pr&eacute;c&eacute;dente (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9650;' + diff + '</span>';
           } else if (diff < 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="Perd ' + Math.abs(diff) + ' rang' + (Math.abs(diff) > 1 ? 's' : '') + ' depuis le bloc horaire pr&eacute;c&eacute;dent (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9660;' + Math.abs(diff) + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="Perd ' + Math.abs(diff) + ' rang' + (Math.abs(diff) > 1 ? 's' : '') + ' par rapport &agrave; la ' + gl + ' pr&eacute;c&eacute;dente (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9660;' + Math.abs(diff) + '</span>';
           } else {
-            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="Position inchang&eacute;e: rang ' + (i + 1) + ' comme au bloc horaire pr&eacute;c&eacute;dent.">&mdash;</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="Position inchang&eacute;e: rang ' + (i + 1) + ' comme &agrave; la ' + gl + ' pr&eacute;c&eacute;dente.">&mdash;</span>';
           }
         }
       }
@@ -1320,7 +1633,7 @@ function renderHot20() {
       /* Streak */
       var streak = streaks[node.id] || 0;
       var streakHtml = streak > 1
-        ? '<div class="hot20-row-streak hot20-hint" data-tip="Pr&eacute;sent dans le Top 20 depuis ' + streak + ' blocs horaires cons&eacute;cutifs (4 h chacun).">&#128204; ' + streak + ' blocs horaires de suite</div>'
+        ? '<div class="hot20-row-streak hot20-hint" data-tip="Pr&eacute;sent dans le Top 20 depuis ' + streak + ' ' + glp + ' cons&eacute;cutifs.">&#128204; ' + streak + ' ' + glp + ' de suite</div>'
         : '';
 
       /* Rank class */
@@ -1417,16 +1730,29 @@ document.getElementById('country-tabs').addEventListener('click', function(e) {
   document.querySelectorAll('.country-tab').forEach(function(t) { t.classList.remove('active'); });
   tab.classList.add('active');
   currentCountry = tab.dataset.country;
-  currentPeriodIdx = allPeriods.length - 1;
+  buildSlots();
+  currentSlotIdx = aggregatedSlots.length - 1;
+  renderHot20();
+});
+
+/* Granularity tabs */
+document.getElementById('granularity-tabs').addEventListener('click', function(e) {
+  var tab = e.target.closest('.granularity-tab');
+  if (!tab) return;
+  document.querySelectorAll('.granularity-tab').forEach(function(t) { t.classList.remove('active'); });
+  tab.classList.add('active');
+  currentGranularity = tab.dataset.gran;
+  buildSlots();
+  currentSlotIdx = aggregatedSlots.length - 1;
   renderHot20();
 });
 
 /* Week nav */
 document.getElementById('week-prev').addEventListener('click', function() {
-  if (currentPeriodIdx > 0) { currentPeriodIdx--; renderHot20(); }
+  if (currentSlotIdx > 0) { currentSlotIdx--; renderHot20(); }
 });
 document.getElementById('week-next').addEventListener('click', function() {
-  if (currentPeriodIdx < allPeriods.length - 1) { currentPeriodIdx++; renderHot20(); }
+  if (currentSlotIdx < aggregatedSlots.length - 1) { currentSlotIdx++; renderHot20(); }
 });
 
 /* ===== TICKER ===== */
@@ -1538,7 +1864,13 @@ function openArticlePanel(node) {
   var countryGraphs = src && src.graphs ? src.graphs[currentCountry] : null;
   var prevGroups = [];
   if (countryGraphs) {
-    for (var pi = currentPeriodIdx - 1; pi >= 0; pi--) {
+    /* Skip period keys belonging to the current slot */
+    var currentSlotKeys = {};
+    if (aggregatedSlots.length && aggregatedSlots[currentSlotIdx]) {
+      aggregatedSlots[currentSlotIdx].periodKeys.forEach(function(k) { currentSlotKeys[k] = true; });
+    }
+    for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
+      if (currentSlotKeys[allPeriods[pi].key]) continue;
       var pd = countryGraphs[allPeriods[pi].key];
       if (!pd || !pd.nodes) continue;
       var pnode = null;
@@ -1614,7 +1946,8 @@ document.getElementById('hot20-search-input').addEventListener('input', function
       return;
     }
 
-    var currentPeriod = allPeriods[currentPeriodIdx];
+    var currentSlot = aggregatedSlots.length ? aggregatedSlots[currentSlotIdx] : null;
+    var currentPeriodKey = currentSlot ? currentSlot.periodKeys[currentSlot.periodKeys.length - 1] : (allPeriods.length ? allPeriods[allPeriods.length - 1].key : null);
     function getSortedNodes(periodKey) {
       var pd = countryGraphs[periodKey];
       if (!pd || !pd.nodes) return [];
@@ -1644,7 +1977,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
       return parsed.date + (parsed.interval ? ' &middot; ' + parsed.interval.replace('Saillant entre ', '') : '');
     }
 
-    var currentSorted = getSortedNodes(currentPeriod.key);
+    var currentSorted = currentPeriodKey ? getSortedNodes(currentPeriodKey) : [];
     var currentQueryMatch = findFirstQueryMatch(currentSorted);
 
     var targetId = currentQueryMatch ? currentQueryMatch.node.id : null;
@@ -1747,7 +2080,6 @@ document.getElementById('hot20-search-input').addEventListener('input', function
 
 /* ===== INIT ===== */
 /* ===== PÉRIODE LABEL ===== */
-var FR_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 var FR_MONTHS_SHORT = {Jan:'janvier',Feb:'février',Mar:'mars',Apr:'avril',May:'mai',Jun:'juin',Jul:'juillet',Aug:'août',Sep:'septembre',Oct:'octobre',Nov:'novembre',Dec:'décembre'};
 
 /* Parse JSON label: "Apr 11 · 12-16 EDT" → {date, interval} en français */
