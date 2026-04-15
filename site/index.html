@@ -122,192 +122,67 @@
     .hero-sonar {
       position: absolute;
       left: clamp(10px, 1.8vw, 26px);
-      right: auto;
-      top: auto;
-      bottom: calc(var(--ticker-height) + 28px);
-      transform: none;
-      width: min(300px, 28vw);
-      max-width: 320px;
+      bottom: calc(var(--ticker-height) + 20px);
+      width: min(340px, 30vw);
+      max-width: 360px;
       z-index: 6;
-      pointer-events: auto;
+      pointer-events: none;
       text-align: left;
     }
-    .hero-sonar-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: none;
-      border-bottom: 1px solid rgba(110,165,255,0.45);
-      background: transparent;
-      padding: 0 0 4px;
-      color: #dbe9ff;
-      font-family: var(--orbitron);
-      font-size: 9px;
-      letter-spacing: 1.1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
-      opacity: 0.88;
-    }
-    .hero-sonar-toggle::before {
-      content: '';
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      border: 1px solid rgba(130,190,255,0.8);
-      box-shadow: 0 0 0 0 rgba(110,180,255,0.36);
-      animation: sonarPing 2.4s ease-out infinite;
-    }
-    .hero-sonar-toggle:hover {
-      border-color: rgba(145,200,255,0.8);
-      color: #f3f8ff;
-      opacity: 1;
-    }
-    @keyframes sonarPing {
-      0% { box-shadow: 0 0 0 0 rgba(110,180,255,0.36); }
-      70% { box-shadow: 0 0 0 7px rgba(110,180,255,0); }
-      100% { box-shadow: 0 0 0 0 rgba(110,180,255,0); }
-    }
-    .hero-sonar-fan {
-      position: relative;
-      height: 118px;
-      margin-top: 10px;
-    }
-    .hero-sonar-sweep {
-      position: absolute;
-      left: 50%;
-      top: 8px;
-      width: 220px;
-      height: 100px;
-      transform: translateX(-50%);
-      overflow: hidden;
-      border-radius: 0 0 110px 110px / 0 0 100px 100px;
-      pointer-events: none;
-      opacity: 0.4;
-    }
-    .hero-sonar-sweep::before {
-      content: '';
-      position: absolute;
-      inset: -48%;
-      background: conic-gradient(from 200deg, rgba(90,165,255,0) 0deg, rgba(90,165,255,0.25) 22deg, rgba(90,165,255,0) 44deg);
-      animation: sonarSweep 4.8s linear infinite;
-    }
-    @keyframes sonarSweep {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .hero-sonar-link {
-      position: absolute;
-      left: 50%;
-      top: 20px;
-      width: 1px;
-      height: 58px;
-      background: linear-gradient(to bottom, rgba(130,185,255,0.42), rgba(130,185,255,0.08));
-      transform-origin: top center;
-      pointer-events: none;
-    }
-    .hero-sonar-link.left { transform: rotate(-34deg); }
-    .hero-sonar-link.center { transform: rotate(0deg); }
-    .hero-sonar-link.right { transform: rotate(34deg); }
-    .hero-sonar-node {
-      position: absolute;
-      transform: translate(-50%, -50%);
+    .hero-sonar-list {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      border: none;
-      background: transparent;
-      color: #d3e5ff;
-      padding: 0;
-      cursor: pointer;
-      min-width: 60px;
-      transition: color 0.2s ease, transform 0.2s ease;
+      gap: 11px;
     }
-    .hero-sonar-node:hover {
-      color: #f2f8ff;
-      transform: translate(-50%, -50%) scale(1.05);
-    }
-    .hero-sonar-node.active {
-      color: #fff;
-    }
-    .hero-sonar-node-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 1px solid rgba(130,190,255,0.74);
-      background: radial-gradient(circle, rgba(228,244,255,0.92) 0 28%, rgba(130,190,255,0.24) 45%, rgba(130,190,255,0) 70%);
-      box-shadow: 0 0 8px rgba(120,180,255,0.34);
-      flex: 0 0 auto;
-    }
-    .hero-sonar-node.active .hero-sonar-node-dot {
-      border-color: rgba(165,215,255,0.95);
-      box-shadow: 0 0 13px rgba(135,196,255,0.6);
-    }
-    .hero-sonar-node-label {
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 0.9px;
-      text-transform: uppercase;
-      line-height: 1;
-    }
-    .hero-sonar-node[data-topic="radar"] { left: 23%; top: 84px; }
-    .hero-sonar-node[data-topic="saillance"] { left: 50%; top: 68px; }
-    .hero-sonar-node[data-topic="scores"] { left: 77%; top: 84px; }
-    .hero-sonar-panel {
-      border: 1px solid rgba(110,165,255,0.28);
-      background: rgba(8,14,40,0.86);
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
-      padding: 10px 12px 11px;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(6px);
-      transition: opacity 0.2s ease, transform 0.2s ease;
-      min-height: 86px;
-      text-align: left;
-      max-width: none;
-      margin: 6px 0 0;
-    }
-    .hero-sonar-panel.visible {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0);
-    }
-    .hero-sonar-panel-title {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: #ecf4ff;
-      margin-bottom: 6px;
-      padding-right: 16px;
-    }
-    .hero-sonar-panel-body {
-      font-size: 11px;
-      line-height: 1.5;
-      color: #d7e6ff;
-    }
-    .hero-sonar-panel-close {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      border: 1px solid rgba(110,165,255,0.35);
-      background: rgba(16,28,70,0.65);
-      color: #cfe3ff;
-      width: 18px;
-      height: 18px;
-      border-radius: 4px;
-      font-size: 12px;
-      line-height: 1;
-      cursor: pointer;
+    .hero-sonar-item {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 10px;
+      color: #dce9ff;
+      text-shadow: 0 0 10px rgba(70,120,220,0.22);
     }
-    .hero-sonar-panel-close:hover {
-      border-color: rgba(140,195,255,0.7);
-      color: #fff;
+    .hero-sonar-glyph {
+      position: relative;
+      width: 34px;
+      height: 22px;
+      flex: 0 0 34px;
+    }
+    .hero-sonar-glyph::before,
+    .hero-sonar-glyph::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      width: 14px;
+      border-top: 1px solid rgba(118,168,255,0.48);
+      transform-origin: center;
+    }
+    .hero-sonar-glyph::before {
+      left: 3px;
+      transform: rotate(-45deg);
+    }
+    .hero-sonar-glyph::after {
+      right: 3px;
+      transform: rotate(45deg);
+    }
+    .hero-sonar-star {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1px solid rgba(132,186,255,0.86);
+      background: radial-gradient(circle, rgba(245,250,255,0.95) 0 40%, rgba(135,193,255,0.32) 70%, rgba(135,193,255,0) 100%);
+      box-shadow: 0 0 9px rgba(120,185,255,0.48);
+    }
+    .hero-sonar-star.top { left: 14px; top: 0; }
+    .hero-sonar-star.left { left: 0; top: 14px; }
+    .hero-sonar-star.right { right: 0; top: 14px; }
+    .hero-sonar-item-label {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      line-height: 1.15;
+      text-transform: none;
+      color: #dbe9ff;
     }
 
     .hero-robot {
@@ -840,12 +715,14 @@
     }
     body { padding-bottom: var(--ticker-height); }
     .ticker-label {
+      position: relative;
       flex-shrink: 0; height: 100%; min-width: 220px;
-      padding: 4px 14px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+      padding: 4px 48px 4px 14px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
       font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.5px;
       color: rgba(215,234,255,0.95); text-transform: uppercase;
       background: linear-gradient(to right, rgba(28,60,140,0.75), rgba(22,48,112,0.62));
       border-right: 1px solid rgba(95,140,255,0.30);
+      overflow: hidden;
     }
     .ticker-label-link {
       text-decoration: none;
@@ -856,6 +733,44 @@
       box-shadow: inset 0 0 0 1px rgba(120,170,255,0.35);
     }
     .ticker-label-title { line-height: 1.1; }
+    .ticker-radar {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(118,175,255,0.44);
+      box-shadow: inset 0 0 10px rgba(56,105,200,0.18), 0 0 9px rgba(70,130,240,0.24);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .ticker-radar::before {
+      content: '';
+      position: absolute;
+      inset: -36%;
+      border-radius: 50%;
+      background: conic-gradient(from 10deg, rgba(106,174,255,0) 0deg, rgba(106,174,255,0.36) 24deg, rgba(106,174,255,0) 56deg);
+      animation: tickerRadarSpin 3.9s linear infinite;
+      mix-blend-mode: screen;
+    }
+    .ticker-radar::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(175,218,255,0.92);
+      background: rgba(235,248,255,0.95);
+      box-shadow: 0 0 7px rgba(130,194,255,0.62);
+    }
+    @keyframes tickerRadarSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
     .ticker-updated {
       margin-top: 3px;
       font-family: var(--mono);
@@ -913,11 +828,8 @@
     @media (max-width: 1320px) {
       .hero-sonar {
         left: clamp(8px, 1.2vw, 16px);
-        right: auto;
-        top: auto;
-        bottom: calc(var(--ticker-height) + 22px);
-        transform: none;
-        width: min(270px, 33vw);
+        bottom: calc(var(--ticker-height) + 16px);
+        width: min(300px, 34vw);
         max-width: 300px;
       }
     }
@@ -925,21 +837,12 @@
       .hero-robot { width: 95vw; }
       .hero-sonar {
         left: 8px;
-        right: auto;
-        top: auto;
-        bottom: calc(var(--ticker-height) + 18px);
-        transform: none;
-        width: min(300px, 80vw);
-        max-width: 320px;
+        bottom: calc(var(--ticker-height) + 14px);
+        width: min(312px, calc(100vw - 16px));
+        max-width: calc(100vw - 16px);
         text-align: left;
       }
-      .hero-sonar-fan { height: 104px; }
-      .hero-sonar-sweep { width: 190px; height: 86px; }
-      .hero-sonar-link { top: 17px; height: 50px; }
-      .hero-sonar-node-label { font-size: 7px; }
-      .hero-sonar-node[data-topic="radar"] { left: 18%; top: 78px; }
-      .hero-sonar-node[data-topic="saillance"] { left: 50%; top: 64px; }
-      .hero-sonar-node[data-topic="scores"] { left: 82%; top: 78px; }
+      .hero-sonar-item-label { font-size: 9px; }
       .hot20-header { flex-direction: column; align-items: flex-start; }
       .hot20-list-header { display: none; }
       .hot20-row { grid-template-columns: 56px 130px 1fr 160px; }
@@ -1007,30 +910,39 @@
     </div>
   </div>
   <div class="hero-sonar" id="hero-sonar" aria-label="Rep&egrave;res d'explication">
-    <button class="hero-sonar-toggle" id="hero-sonar-toggle" aria-expanded="true">Comprendre Radar+</button>
-    <div class="hero-sonar-fan">
-      <div class="hero-sonar-sweep" aria-hidden="true"></div>
-      <div class="hero-sonar-link left" aria-hidden="true"></div>
-      <div class="hero-sonar-link center" aria-hidden="true"></div>
-      <div class="hero-sonar-link right" aria-hidden="true"></div>
-
-      <button class="hero-sonar-node" data-topic="radar" aria-label="Ce qu'est Radar+">
-        <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-        <span class="hero-sonar-node-label">Radar+</span>
-      </button>
-      <button class="hero-sonar-node" data-topic="saillance" aria-label="Ce qu'est la saillance médiatique">
-        <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-        <span class="hero-sonar-node-label">Saillance</span>
-      </button>
-      <button class="hero-sonar-node" data-topic="scores" aria-label="Comment les scores sont calculés">
-        <span class="hero-sonar-node-dot" aria-hidden="true"></span>
-        <span class="hero-sonar-node-label">Scores</span>
-      </button>
-    </div>
-    <div class="hero-sonar-panel" id="hero-sonar-panel" hidden>
-      <button class="hero-sonar-panel-close" id="hero-sonar-panel-close" aria-label="Fermer">&times;</button>
-      <div class="hero-sonar-panel-title" id="hero-sonar-title"></div>
-      <div class="hero-sonar-panel-body" id="hero-sonar-body"></div>
+    <div class="hero-sonar-list">
+      <div class="hero-sonar-item">
+        <span class="hero-sonar-glyph" aria-hidden="true">
+          <span class="hero-sonar-star top"></span>
+          <span class="hero-sonar-star left"></span>
+          <span class="hero-sonar-star right"></span>
+        </span>
+        <span class="hero-sonar-item-label">Radar+</span>
+      </div>
+      <div class="hero-sonar-item">
+        <span class="hero-sonar-glyph" aria-hidden="true">
+          <span class="hero-sonar-star top"></span>
+          <span class="hero-sonar-star left"></span>
+          <span class="hero-sonar-star right"></span>
+        </span>
+        <span class="hero-sonar-item-label">Saillance m&eacute;diatique</span>
+      </div>
+      <div class="hero-sonar-item">
+        <span class="hero-sonar-glyph" aria-hidden="true">
+          <span class="hero-sonar-star top"></span>
+          <span class="hero-sonar-star left"></span>
+          <span class="hero-sonar-star right"></span>
+        </span>
+        <span class="hero-sonar-item-label">Indice de saillance</span>
+      </div>
+      <div class="hero-sonar-item">
+        <span class="hero-sonar-glyph" aria-hidden="true">
+          <span class="hero-sonar-star top"></span>
+          <span class="hero-sonar-star left"></span>
+          <span class="hero-sonar-star right"></span>
+        </span>
+        <span class="hero-sonar-item-label">Donn&eacute;es scientifiques</span>
+      </div>
     </div>
   </div>
   <div class="scroll-hint">
@@ -1093,6 +1005,7 @@
   <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir toutes les dernières Unes">
     <span class="ticker-label-title">Dans le radar ↗</span>
     <span class="ticker-updated" id="ticker-updated">Les Unes de --:--</span>
+    <span class="ticker-radar" aria-hidden="true"></span>
   </a>
   <div class="ticker-viewport">
     <div class="ticker-track" id="ticker-track">
@@ -1257,86 +1170,6 @@ if (menuDiscoverHint) {
   menuDiscoverHint.addEventListener('click', function(e) {
     e.preventDefault();
     navToggle.click();
-  });
-}
-
-const heroSonar = document.getElementById('hero-sonar');
-if (heroSonar) {
-  var sonarToggle = document.getElementById('hero-sonar-toggle');
-  var sonarNodes = heroSonar.querySelectorAll('.hero-sonar-node');
-  var sonarPanel = document.getElementById('hero-sonar-panel');
-  var sonarTitle = document.getElementById('hero-sonar-title');
-  var sonarBody = document.getElementById('hero-sonar-body');
-  var sonarClose = document.getElementById('hero-sonar-panel-close');
-  var sonarContent = {
-    radar: {
-      title: 'Radar+',
-      body: 'Radar+ surveille en continu les m&eacute;dias et met en &eacute;vidence les sujets qui captent le plus l\'attention publique, &eacute;dition par &eacute;dition (blocs de 4 h).'
-    },
-    saillance: {
-      title: 'Saillance m&eacute;diatique',
-      body: 'La saillance m&eacute;diatique mesure la visibilit&eacute; d\'un sujet dans une &eacute;dition: plus un sujet est repris, central et soutenu dans les contenus, plus sa saillance est &eacute;lev&eacute;e.'
-    },
-    scores: {
-      title: 'Calcul des scores',
-      body: 'Les scores combinent le volume de couverture, le poids relatif (%) d\'un sujet dans l\'&eacute;dition et le cumul historique pour rep&eacute;rer les sujets durables.'
-    }
-  };
-
-  function closeSonarPanel() {
-    sonarNodes.forEach(function(node) { node.classList.remove('active'); });
-    if (sonarPanel) {
-      sonarPanel.classList.remove('visible');
-      sonarPanel.setAttribute('hidden', 'hidden');
-    }
-    if (sonarToggle) sonarToggle.setAttribute('aria-expanded', 'false');
-  }
-
-  function openSonarTopic(topic, nodeEl) {
-    var content = sonarContent[topic];
-    if (!content || !sonarPanel || !sonarTitle || !sonarBody) return;
-
-    sonarNodes.forEach(function(node) { node.classList.toggle('active', node === nodeEl); });
-    sonarTitle.textContent = content.title;
-    sonarBody.innerHTML = content.body;
-    sonarPanel.removeAttribute('hidden');
-    sonarPanel.classList.add('visible');
-    if (sonarToggle) sonarToggle.setAttribute('aria-expanded', 'true');
-  }
-
-  sonarNodes.forEach(function(node) {
-    node.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var topic = node.dataset.topic;
-      if (node.classList.contains('active') && sonarPanel && sonarPanel.classList.contains('visible')) {
-        closeSonarPanel();
-        return;
-      }
-      openSonarTopic(topic, node);
-    });
-  });
-
-  if (sonarToggle) {
-    sonarToggle.addEventListener('click', function(e) {
-      e.stopPropagation();
-      if (sonarPanel && sonarPanel.classList.contains('visible')) {
-        closeSonarPanel();
-        return;
-      }
-      var firstNode = sonarNodes[0];
-      if (firstNode) openSonarTopic(firstNode.dataset.topic, firstNode);
-    });
-  }
-
-  if (sonarClose) {
-    sonarClose.addEventListener('click', function(e) {
-      e.stopPropagation();
-      closeSonarPanel();
-    });
-  }
-
-  document.addEventListener('click', function(e) {
-    if (!heroSonar.contains(e.target)) closeSonarPanel();
   });
 }
 
