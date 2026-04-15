@@ -877,7 +877,7 @@
     <div class="cst-tooltip-desc">Un indice &eacute;lev&eacute; indique qu'un sujet occupe une place pro&eacute;minente sur la page d'accueil d'un m&eacute;dia, tant par son positionnement que par sa persistance dans le temps. Un indice faible signale un traitement plus discret ou &eacute;ph&eacute;m&egrave;re.</div>
   </div>
 </div>
-<div class="cst-zone" id="cst-zone-3" style="right:2%;top:52%;width:22%;height:24%">
+<div class="cst-zone" id="cst-zone-3" style="right:8%;top:56%;width:24%;height:25%">
   <div class="cst-tooltip" style="right:2%;bottom:calc(100% + 8px)">
     <div class="cst-tooltip-name">Recherche scientifique</div>
     <div class="cst-tooltip-desc">On sait que les choix &eacute;ditoriaux des m&eacute;dias influencent les priorit&eacute;s du public, mais ces choix sont rarement document&eacute;s de fa&ccedil;on syst&eacute;matique. Radar+ offre les donn&eacute;es n&eacute;cessaires pour &eacute;tudier rigoureusement ce ph&eacute;nom&egrave;ne &agrave; l'&egrave;re num&eacute;rique.</div>
@@ -960,12 +960,12 @@
 <!-- ========== HOT 20 ========== -->
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
-    <h2 class="hot20-title">HOT <span class="accent">20</span><span class="hot20-subtitle" id="hot20-subtitle">&Eacute;dition (4h)</span></h2>
+    <h2 class="hot20-title">HOT <span class="accent">20</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
     <div class="hot20-controls">
       <div class="controls-left">
         <div class="granularity-tabs" id="granularity-tabs">
-          <button class="granularity-tab active" data-gran="4h">4 h</button>
-          <button class="granularity-tab" data-gran="day">Jour</button>
+          <button class="granularity-tab" data-gran="4h">4 h</button>
+          <button class="granularity-tab active" data-gran="day">Jour</button>
           <button class="granularity-tab" data-gran="week">Semaine</button>
           <button class="granularity-tab" data-gran="month">Mois</button>
           <button class="granularity-tab" data-gran="quarter">3 mois</button>
@@ -1182,16 +1182,16 @@
       weight: 0.82,
       labelOffsetY: 10,
       stars: [
-        [0.87, 0.65],
-        [0.84, 0.62],
-        [0.84, 0.57],
-        [0.87, 0.54],
-        [0.91, 0.54],
-        [0.94, 0.57],
-        [0.94, 0.62],
-        [0.91, 0.65],
-        [0.95, 0.68],
-        [0.98, 0.72]
+        [0.82, 0.69],
+        [0.79, 0.66],
+        [0.79, 0.61],
+        [0.82, 0.58],
+        [0.86, 0.58],
+        [0.89, 0.61],
+        [0.89, 0.66],
+        [0.86, 0.69],
+        [0.90, 0.72],
+        [0.93, 0.76]
       ],
       lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[7,8],[8,9]],
     }
@@ -1365,7 +1365,7 @@ var timeseriesData = null;
 var allPeriods = [];
 var currentCountry = 'QC';
 var currentPeriodIdx = 0;
-var currentGranularity = '4h'; // '4h','day','week','month','quarter'
+var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
 var currentSlotIdx = 0;
 
