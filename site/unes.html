@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RADAR+ • Les Unes</title>
+  <title>RADAR+ • Dans le radar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -33,6 +33,59 @@
       inset: 0;
       z-index: 0;
       pointer-events: none;
+    }
+
+    .radar-field {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.58;
+    }
+    .radar-grid {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(90,140,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(90,140,255,0.06) 1px, transparent 1px);
+      background-size: 140px 140px;
+      opacity: 0.14;
+    }
+    .radar-core {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      width: 170vmax;
+      height: 170vmax;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(90,150,255,0.14) 0%, rgba(90,150,255,0.035) 32%, rgba(90,150,255,0) 68%),
+        repeating-radial-gradient(circle, rgba(95,145,255,0.13) 0 1px, rgba(95,145,255,0) 1px 8px);
+      opacity: 0.52;
+    }
+    .radar-sweep {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      width: 170vmax;
+      height: 170vmax;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        rgba(90,165,255,0) 0deg,
+        rgba(90,165,255,0.22) 20deg,
+        rgba(90,165,255,0.06) 42deg,
+        rgba(90,165,255,0) 70deg
+      );
+      animation: radarSpin 8.8s linear infinite;
+      mix-blend-mode: screen;
+    }
+    @keyframes radarSpin {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
     .page {
@@ -238,12 +291,17 @@
 </head>
 <body>
   <canvas id="stars-canvas"></canvas>
+  <div class="radar-field" aria-hidden="true">
+    <div class="radar-grid"></div>
+    <div class="radar-core"></div>
+    <div class="radar-sweep"></div>
+  </div>
 
   <main class="page">
     <div class="topbar">
       <a class="back-link" href="./index.html">← Retour Accueil</a>
       <div class="title-wrap">
-        <h1>Dernière heure</h1>
+        <h1>Dans le radar</h1>
         <p>Les Unes en direct, triées par pays, avec navigation temporelle.</p>
       </div>
     </div>
