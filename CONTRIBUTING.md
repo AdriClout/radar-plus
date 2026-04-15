@@ -39,3 +39,9 @@ Format simple:
 ## Questions
 
 Ouvrir une issue ou contacter le mainteneur principal: `@AdriClout`.
+
+## Securite
+
+- Ne pas publier de faille securite en issue publique.
+- Utiliser le canal de signalement prive (GitHub vulnerability reporting) ou contacter `@AdriClout`.
+- Voir aussi `SECURITY.md` pour le processus complet.
