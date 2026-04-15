@@ -1090,34 +1090,34 @@
     {
       name: 'Radar+',
       stars: [
-        [0.07, 0.10], [0.04, 0.18], [0.10, 0.14], [0.14, 0.07],
-        [0.16, 0.16], [0.12, 0.22], [0.07, 0.24], [0.18, 0.24],
-        [0.03, 0.12]
+        [0.06, 0.08], [0.02, 0.18], [0.11, 0.13], [0.15, 0.05],
+        [0.17, 0.17], [0.12, 0.25], [0.06, 0.27], [0.20, 0.26],
+        [0.01, 0.11]
       ],
       lines: [[0,1],[0,2],[2,3],[2,4],[1,6],[4,5],[5,6],[4,7],[0,8],[8,1]],
     },
     {
       name: 'Saillance médiatique',
       stars: [
-        [0.74, 0.06], [0.78, 0.15], [0.82, 0.05], [0.86, 0.14],
-        [0.90, 0.04], [0.94, 0.12], [0.76, 0.11], [0.88, 0.09]
+        [0.74, 0.05], [0.79, 0.16], [0.84, 0.04], [0.89, 0.14],
+        [0.94, 0.03], [0.97, 0.13], [0.76, 0.11], [0.90, 0.08]
       ],
       lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[0,6],[6,1],[4,7],[7,3]],
     },
     {
       name: 'Indices de saillance',
       stars: [
-        [0.05, 0.42], [0.11, 0.34], [0.17, 0.40], [0.11, 0.52],
-        [0.11, 0.43], [0.03, 0.36], [0.19, 0.47], [0.11, 0.30]
+        [0.04, 0.42], [0.11, 0.33], [0.18, 0.40], [0.11, 0.54],
+        [0.11, 0.44], [0.01, 0.35], [0.21, 0.48], [0.11, 0.28]
       ],
       lines: [[0,1],[1,2],[2,3],[3,0],[1,4],[3,4],[0,5],[2,6],[1,7]],
     },
     {
       name: 'Recherche scientifique',
       stars: [
-        [0.82, 0.38], [0.87, 0.33], [0.93, 0.38], [0.93, 0.47],
-        [0.87, 0.52], [0.82, 0.47], [0.87, 0.42], [0.96, 0.42],
-        [0.87, 0.28]
+        [0.80, 0.36], [0.86, 0.30], [0.93, 0.36], [0.94, 0.47],
+        [0.87, 0.53], [0.80, 0.47], [0.87, 0.41], [0.98, 0.41],
+        [0.86, 0.24]
       ],
       lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,0],[0,6],[2,6],[4,6],[2,7],[1,8]],
     }
@@ -1147,13 +1147,13 @@
       const h = cstHover[ci];
 
       // Intensity based on hover
-      const lineAlpha = 0.14 + h * 0.38;
-      const lineWidth = 0.7 + h * 0.6;
-      const starAlpha = 0.65 + h * 0.35;
-      const glowRadius = 8 + h * 10;
-      const glowAlpha = 0.20 + h * 0.35;
-      const labelAlpha = 0.12 + h * 0.55;
-      const coreSize = 1.6 + h * 0.8;
+      const lineAlpha = 0.38 + h * 0.38;
+      const lineWidth = 1.2 + h * 0.8;
+      const starAlpha = 0.80 + h * 0.20;
+      const glowRadius = 10 + h * 10;
+      const glowAlpha = 0.38 + h * 0.30;
+      const labelAlpha = 0.55 + h * 0.30;
+      const coreSize = 2.0 + h * 0.8;
 
       // — Lines —
       ctx.lineWidth = lineWidth;
@@ -1193,7 +1193,7 @@
 
       // — Label (only visible when NOT hovered — tooltip replaces it) —
       ctx.save();
-      ctx.font = '500 9px Orbitron, monospace';
+      ctx.font = '500 10px Orbitron, monospace';
       ctx.textBaseline = 'top';
       // Compute label position: below centre of constellation
       let cx = 0, cy = 0;
@@ -1201,7 +1201,7 @@
       cx = (cx / cst.stars.length) * vw;
       cy = (cy / cst.stars.length) * vh;
       const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + 12;
-      ctx.fillStyle = 'rgba(140,180,230,' + ((1 - h) * labelAlpha).toFixed(3) + ')';
+      ctx.fillStyle = 'rgba(160,200,255,' + ((1 - h * 0.6) * labelAlpha).toFixed(3) + ')';
       ctx.textAlign = 'center';
       ctx.fillText(cst.name.toUpperCase(), cx, labelY);
       ctx.restore();
