@@ -247,11 +247,8 @@
 
     .hot20-controls {
       display: flex; align-items: center; gap: 6px;
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
-      scrollbar-width: none; /* Firefox */
-      padding-bottom: 2px;
+      flex-wrap: wrap;
     }
-    .hot20-controls::-webkit-scrollbar { display: none; }
     .hot20-controls .tab-sep {
       width: 1px; height: 20px; background: var(--border); flex-shrink: 0;
       margin: 0 6px;
@@ -285,7 +282,7 @@
 
     .week-nav {
       display: flex; align-items: center; gap: 6px;
-      margin-left: 16px;
+      width: 100%; margin-top: 6px;
     }
     .week-btn {
       background: var(--card-bg); border: 1px solid var(--border);
