@@ -841,19 +841,19 @@
     <div class="cst-tooltip-desc">Un outil d&eacute;velopp&eacute; &agrave; l'Universit&eacute; Laval qui archive les pages d'accueil de grands m&eacute;dias canadiens et am&eacute;ricains toutes les 15&nbsp;minutes depuis 2019. Il permet de retracer quelles nouvelles &eacute;taient mises de l'avant, &agrave; quel moment et pendant combien de temps.</div>
   </div>
 </div>
-<div class="cst-zone" id="cst-zone-1" style="right:1%;top:19%;width:24%;height:27%">
+<div class="cst-zone" id="cst-zone-1" style="right:4%;top:24%;width:24%;height:24%">
   <div class="cst-tooltip" style="right:0;top:80%">
     <div class="cst-tooltip-name">Saillance m&eacute;diatique</div>
     <div class="cst-tooltip-desc">La visibilit&eacute; qu'un m&eacute;dia accorde &agrave; un sujet&nbsp;: sa position sur la page, l'espace qu'il occupe, la dur&eacute;e pendant laquelle il y reste. C'est ce qui distingue une nouvelle trait&eacute;e en priorit&eacute; d'une autre rel&eacute;gu&eacute;e en p&eacute;riph&eacute;rie.</div>
   </div>
 </div>
-<div class="cst-zone" id="cst-zone-2" style="left:1%;top:52%;width:22%;height:32%">
+<div class="cst-zone" id="cst-zone-2" style="left:1%;top:56%;width:24%;height:28%">
   <div class="cst-tooltip" style="left:60%;top:20%">
     <div class="cst-tooltip-name">Indices de saillance</div>
     <div class="cst-tooltip-desc">Un indice &eacute;lev&eacute; indique qu'un sujet occupe une place pro&eacute;minente sur la page d'accueil d'un m&eacute;dia, tant par son positionnement que par sa persistance dans le temps. Un indice faible signale un traitement plus discret ou &eacute;ph&eacute;m&egrave;re.</div>
   </div>
 </div>
-<div class="cst-zone" id="cst-zone-3" style="right:1%;top:50%;width:22%;height:28%">
+<div class="cst-zone" id="cst-zone-3" style="right:3%;top:55%;width:23%;height:26%">
   <div class="cst-tooltip" style="right:0;top:20%">
     <div class="cst-tooltip-name">Recherche scientifique</div>
     <div class="cst-tooltip-desc">On sait que les choix &eacute;ditoriaux des m&eacute;dias influencent les priorit&eacute;s du public, mais ces choix sont rarement document&eacute;s de fa&ccedil;on syst&eacute;matique. Radar+ offre les donn&eacute;es n&eacute;cessaires pour &eacute;tudier rigoureusement ce ph&eacute;nom&egrave;ne &agrave; l'&egrave;re num&eacute;rique.</div>
@@ -1088,70 +1088,78 @@
   /* ===== CONSTELLATIONS (fixed in viewport sky) ===== */
   const constellationDefs = [
     {
-      // Arc de balayage radar — forme en demi-cercle ouvert
+      // Arc de balayage radar — forme maîtresse, plus ample et plus basse
       name: 'Radar+',
-      anchor: 0,  // étoile principale pulsante
+      anchor: 0,
+      weight: 1.22,
+      labelOffsetY: 14,
       stars: [
-        [0.13, 0.26],  // 0 centre (anchor)
-        [0.04, 0.18],  // 1 arc haut-gauche
-        [0.08, 0.13],  // 2
-        [0.14, 0.11],  // 3
-        [0.20, 0.14],  // 4
-        [0.23, 0.21],  // 5
-        [0.19, 0.30],  // 6
-        [0.10, 0.33],  // 7
-        [0.04, 0.26],  // 8
+        [0.12, 0.30],
+        [0.03, 0.22],
+        [0.08, 0.16],
+        [0.14, 0.14],
+        [0.21, 0.18],
+        [0.25, 0.26],
+        [0.21, 0.35],
+        [0.12, 0.39],
+        [0.04, 0.31]
       ],
       lines: [[0,2],[0,5],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,1]],
     },
     {
-      // Courbe montante — suggère la montée de saillance
+      // Onde avec pic — suggère la montée puis la retombée d'attention
       name: 'Saillance médiatique',
-      anchor: 3,
+      anchor: 4,
+      weight: 0.92,
+      labelOffsetY: 12,
       stars: [
-        [0.76, 0.44],  // 0 bas-gauche
-        [0.80, 0.36],  // 1
-        [0.85, 0.28],  // 2
-        [0.90, 0.22],  // 3 sommet (anchor)
-        [0.95, 0.27],  // 4
-        [0.97, 0.36],  // 5 dip droite
-        [0.78, 0.40],  // 6
-        [0.88, 0.30],  // 7
+        [0.72, 0.50],
+        [0.77, 0.42],
+        [0.81, 0.47],
+        [0.86, 0.38],
+        [0.90, 0.29],
+        [0.95, 0.34],
+        [0.98, 0.43],
+        [0.84, 0.43]
       ],
-      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[0,6],[6,1],[2,7],[7,3]],
+      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[2,7],[7,3]],
     },
     {
-      // Escalier montant — suggère un indice/graphique
+      // Escalier montant — suggère un indice / un graphe de progression
       name: 'Indices de saillance',
-      anchor: 3,
+      anchor: 6,
+      weight: 0.98,
+      labelOffsetY: 14,
       stars: [
-        [0.04, 0.80],  // 0 bas
-        [0.09, 0.72],  // 1
-        [0.15, 0.64],  // 2
-        [0.20, 0.55],  // 3 haut (anchor)
-        [0.04, 0.72],  // 4 marche 1
-        [0.09, 0.64],  // 5 marche 2
-        [0.15, 0.55],  // 6 marche 3
-        [0.07, 0.77],  // 7
+        [0.03, 0.83],
+        [0.08, 0.75],
+        [0.12, 0.75],
+        [0.12, 0.67],
+        [0.17, 0.67],
+        [0.17, 0.58],
+        [0.22, 0.58],
+        [0.07, 0.80]
       ],
-      lines: [[0,1],[1,2],[2,3],[0,4],[4,1],[1,5],[5,2],[2,6],[6,3],[0,7],[7,1]],
+      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[0,7],[7,1]],
     },
     {
-      // Croix / loupe — suggère analyse et recherche
+      // Loupe asymétrique — plus lisible comme outil d'analyse
       name: 'Recherche scientifique',
-      anchor: 1,
+      anchor: 0,
+      weight: 0.90,
+      labelOffsetY: 14,
       stars: [
-        [0.87, 0.54],  // 0 haut
-        [0.87, 0.63],  // 1 centre (anchor)
-        [0.87, 0.73],  // 2 bas
-        [0.79, 0.63],  // 3 gauche
-        [0.95, 0.63],  // 4 droite
-        [0.82, 0.58],  // 5 diag haut-gauche
-        [0.92, 0.58],  // 6 diag haut-droit
-        [0.82, 0.68],  // 7 diag bas-gauche
-        [0.92, 0.68],  // 8 diag bas-droit
+        [0.84, 0.64],
+        [0.80, 0.58],
+        [0.84, 0.52],
+        [0.91, 0.53],
+        [0.95, 0.59],
+        [0.93, 0.66],
+        [0.87, 0.69],
+        [0.96, 0.72],
+        [0.99, 0.76]
       ],
-      lines: [[0,1],[1,2],[3,1],[1,4],[0,5],[0,6],[5,3],[6,4],[3,7],[4,8],[7,2],[8,2]],
+      lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,0],[5,7],[7,8]],
     }
   ];
 
@@ -1178,14 +1186,15 @@
       cstHover[ci] += (target - cstHover[ci]) * Math.min(1, dt * 4.5);
       const h = cstHover[ci];
 
-      // Intensity based on hover
-      const lineAlpha = 0.38 + h * 0.38;
-      const lineWidth = 1.2 + h * 0.8;
-      const starAlpha = 0.80 + h * 0.20;
-      const glowRadius = 10 + h * 10;
-      const glowAlpha = 0.38 + h * 0.30;
-      const labelAlpha = 0.55 + h * 0.30;
-      const coreSize = 2.0 + h * 0.8;
+      // Intensity based on hover + hierarchy between constellations
+      const weight = cst.weight || 1;
+      const lineAlpha = (0.28 + h * 0.34) * weight;
+      const lineWidth = 0.95 + weight * 0.35 + h * 0.7;
+      const starAlpha = Math.min(1, 0.74 + weight * 0.10 + h * 0.18);
+      const glowRadius = 8 + weight * 2.5 + h * 9;
+      const glowAlpha = Math.min(0.9, 0.24 + weight * 0.12 + h * 0.28);
+      const labelAlpha = Math.min(0.95, 0.40 + weight * 0.14 + h * 0.24);
+      const coreSize = 1.7 + weight * 0.45 + h * 0.7;
 
       // — Lines —
       ctx.lineWidth = lineWidth;
@@ -1205,16 +1214,17 @@
         const x = cst.stars[i][0] * vw;
         const y = cst.stars[i][1] * vh;
         const isAnchor = (cst.anchor === i);
-        const pulse = isAnchor ? 1 + Math.sin(time * 1.8 + ci * 2.3) * 0.25 : 1;
+        const pulse = isAnchor ? 1 + Math.sin(time * 1.8 + ci * 2.3) * 0.22 : 1;
         const twinkle = 0.85 + Math.sin(time * 0.8 + i * 2.1 + ci * 5.7) * 0.15;
 
         // Outer glow
-        const g = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+        const starGlowRadius = isAnchor ? glowRadius * 1.18 : glowRadius;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, starGlowRadius);
         g.addColorStop(0, 'rgba(150,195,255,' + (glowAlpha * twinkle * pulse).toFixed(3) + ')');
         g.addColorStop(1, 'rgba(150,195,255,0)');
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+        ctx.arc(x, y, starGlowRadius, 0, Math.PI * 2);
         ctx.fill();
 
         // Core dot
@@ -1227,15 +1237,17 @@
 
       // — Label (only visible when NOT hovered — tooltip replaces it) —
       ctx.save();
-      ctx.font = '500 10px Orbitron, monospace';
+      ctx.font = (cst.name === 'Radar+' ? '600 11px Orbitron, monospace' : '500 10px Orbitron, monospace');
       ctx.textBaseline = 'top';
       // Compute label position: below centre of constellation
       let cx = 0, cy = 0;
       for (const s of cst.stars) { cx += s[0]; cy += s[1]; }
       cx = (cx / cst.stars.length) * vw;
       cy = (cy / cst.stars.length) * vh;
-      const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + 12;
-      ctx.fillStyle = 'rgba(160,200,255,' + ((1 - h * 0.6) * labelAlpha).toFixed(3) + ')';
+      const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + (cst.labelOffsetY || 12);
+      ctx.shadowColor = 'rgba(18,34,82,0.65)';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = 'rgba(164,205,255,' + ((1 - h * 0.55) * labelAlpha).toFixed(3) + ')';
       ctx.textAlign = 'center';
       ctx.fillText(cst.name.toUpperCase(), cx, labelY);
       ctx.restore();
