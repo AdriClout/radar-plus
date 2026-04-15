@@ -1,0 +1,72 @@
+name: PR Quality Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-quality-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: quality-gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate public JSON files
+        run: |
+          set -euo pipefail
+          for f in site/*.json; do
+            echo "Checking JSON: ${f}"
+            jq empty "${f}"
+          done
+
+      - name: Validate internal links in HTML
+        run: |
+          set -euo pipefail
+          missing=0
+
+          while IFS= read -r html; do
+            base_dir="$(dirname "${html}")"
+
+            while IFS= read -r link; do
+              [ -z "${link}" ] && continue
+
+              case "${link}" in
+                http://*|https://*|mailto:*|tel:*|javascript:*|data:*|\#*)
+                  continue
+                  ;;
+              esac
+
+              clean="${link%%\#*}"
+              clean="${clean%%\?*}"
+              [ -z "${clean}" ] && continue
+
+              if [[ "${clean}" = /* ]]; then
+                target=".${clean}"
+              else
+                target="${base_dir}/${clean}"
+              fi
+
+              if [ ! -e "${target}" ]; then
+                echo "::error file=${html}::Broken local reference '${link}' -> '${target}'"
+                missing=1
+              fi
+            done < <(grep -oE '(href|src)="[^"]+"' "${html}" | sed -E 's/^[^=]+="(.*)"$/\1/' || true)
+          done < <(find site -maxdepth 1 -type f -name '*.html' | sort)
+
+          if [ "${missing}" -ne 0 ]; then
+            echo "Broken internal references found"
+            exit 1
+          fi
+
+      - name: Lint workflow files (actionlint)
+        uses: docker://rhysd/actionlint:1.7.7
