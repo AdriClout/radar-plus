@@ -40,8 +40,11 @@ jobs:
             while IFS= read -r link; do
               [ -z "${link}" ] && continue
 
+              # Decode common HTML entity found in attributes.
+              link="${link//&amp;/&}"
+
               case "${link}" in
-                http://*|https://*|mailto:*|tel:*|javascript:*|data:*|\#*)
+                http://*|https://*|mailto:*|tel:*|javascript:*|data:*|\#*|//*)
                   continue
                   ;;
               esac
@@ -60,7 +63,11 @@ jobs:
                 echo "::error file=${html}::Broken local reference '${link}' -> '${target}'"
                 missing=1
               fi
-            done < <(grep -oE '(href|src)="[^"]+"' "${html}" | sed -E 's/^[^=]+="(.*)"$/\1/' || true)
+            done < <(
+              xmllint --html --xpath '//@href | //@src' "${html}" 2>/dev/null \
+                | sed -nE 's/^[[:space:]]*(href|src)="([^"]+)"[[:space:]]*$/\2/p' \
+                || true
+            )
           done < <(find site -maxdepth 1 -type f -name '*.html' | sort)
 
           if [ "${missing}" -ne 0 ]; then
