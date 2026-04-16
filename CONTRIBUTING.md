@@ -27,6 +27,14 @@ Merci de contribuer.
 - Ne pas ajouter de dumps ou exports non autorises.
 - Toujours privilegier des references vers les sources originales.
 
+Formats explicitement interdits dans le git history: `csv`, `tsv`, `parquet`, `feather`, `arrow`, `rds`, `sqlite`, `db`, `xls`, `xlsx`.
+
+Le workflow CI `quality-gate` bloque automatiquement:
+
+- les fichiers de donnees brutes/exports,
+- les fichiers locaux d'environnement et secrets (`.env*`, `.Renviron`, `*.pem`, `*.key`, `*.p12`),
+- tout fichier ajoute sous `data/` sauf `data/.gitkeep` et `data/README.md`.
+
 ## Message de commit recommande
 
 Format simple:
