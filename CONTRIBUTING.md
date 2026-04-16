@@ -35,6 +35,8 @@ Le workflow CI `quality-gate` bloque automatiquement:
 - les fichiers locaux d'environnement et secrets (`.env*`, `.Renviron`, `*.pem`, `*.key`, `*.p12`),
 - tout fichier ajoute sous `data/` sauf `data/.gitkeep` et `data/README.md`.
 
+Le controle se fait sur toute la plage de commits de la PR (pas seulement l'etat final des fichiers).
+
 ## Message de commit recommande
 
 Format simple:
@@ -92,6 +94,8 @@ The `quality-gate` CI workflow automatically blocks:
 - raw data/export files,
 - local environment and secret files (`.env*`, `.Renviron`, `*.pem`, `*.key`, `*.p12`),
 - any file under `data/` except `data/.gitkeep` and `data/README.md`.
+
+The gate scans the full commit range of the PR (not only the final file tree state).
 
 ## Recommended commit message prefixes
 
