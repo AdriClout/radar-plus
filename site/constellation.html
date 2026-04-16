@@ -992,7 +992,10 @@
   setIfFn('onNodeHover', handleHover);
   setIfFn('onNodeClick', handleClick);
   setIfFn('onEngineStop', () => {
-    if (typeof Graph.zoomToFit === 'function') Graph.zoomToFit(400, 60);
+    if (!hasAppliedInitialCenter && currentMode === 'constellation') {
+      hasAppliedInitialCenter = true;
+      centerMostSalientNode();
+    }
   });
 
   Graph.d3Force('charge').strength(-220);
@@ -1017,6 +1020,17 @@
   let trackColorSeq = 0;
   let currentMode = 'constellation';
   let evoMaxVal = 1;
+  let hasAppliedInitialCenter = false;
+
+  function centerMostSalientNode() {
+    const nodes = (Graph.graphData().nodes || []).filter(n => Number.isFinite(n.x) && Number.isFinite(n.y));
+    if (!nodes.length) return;
+
+    const topNode = nodes.reduce((best, n) => ((Number(n.size) || 0) > (Number(best.size) || 0) ? n : best), nodes[0]);
+    if (!topNode || typeof Graph.centerAt !== 'function') return;
+
+    Graph.centerAt(topNode.x, topNode.y, 700);
+  }
 
   function clearFocusAndRecenter() {
     const gd = Graph.graphData();
