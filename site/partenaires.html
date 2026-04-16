@@ -177,6 +177,17 @@
       justify-content: center;
     }
 
+    .logo-box.logo-box-dark {
+      background: linear-gradient(180deg, rgba(15, 34, 92, 0.96), rgba(10, 24, 68, 0.96));
+    }
+
+    .logo-box picture {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .logo-box img {
       max-width: 100%;
       max-height: 62px;
@@ -314,7 +325,7 @@
           <span class="partner-role">Porteur du projet</span>
           <h3 class="partner-name">CLESSN</h3>
         </div>
-        <div class="logo-box">
+        <div class="logo-box logo-box-dark">
           <img src="./assets/img/clessn.svg" alt="Logo du CLESSN" loading="lazy" />
         </div>
         <p class="partner-desc">
@@ -330,7 +341,7 @@
           <h3 class="partner-name">CAPP ULaval</h3>
         </div>
         <div class="logo-box">
-          <img src="./assets/img/logo_capp.png" alt="Logo du CAPP de l'Université Laval" loading="lazy" />
+          <img src="./assets/img/logo_capp.jpg" alt="Logo du CAPP de l'Université Laval" loading="lazy" />
         </div>
         <p class="partner-desc">
           Le CAPP ULaval appuie la dimension académique du projet et son ancrage
@@ -375,7 +386,10 @@
           <h3 class="partner-name">Infoscope</h3>
         </div>
         <div class="logo-box">
-          <img src="./assets/img/logo_infoscope.avif" alt="Logo d'Infoscope" loading="lazy" />
+          <picture>
+            <source srcset="./assets/img/logo_infoscope.avif" type="image/avif" />
+            <img src="./assets/img/logo_infoscope.jpg" alt="Logo d'Infoscope" loading="lazy" />
+          </picture>
         </div>
         <p class="partner-desc">
           Infoscope participe au développement de Radar+ afin d'assurer une
