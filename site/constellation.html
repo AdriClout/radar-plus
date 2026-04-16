@@ -993,8 +993,9 @@
   setIfFn('onNodeClick', handleClick);
   setIfFn('onEngineStop', () => {
     if (!hasAppliedInitialCenter && currentMode === 'constellation') {
-      hasAppliedInitialCenter = true;
-      centerMostSalientNode();
+      if (centerMostSalientNode(250)) {
+        hasAppliedInitialCenter = true;
+      }
     }
   });
 
@@ -1022,14 +1023,31 @@
   let evoMaxVal = 1;
   let hasAppliedInitialCenter = false;
 
-  function centerMostSalientNode() {
-    const nodes = (Graph.graphData().nodes || []).filter(n => Number.isFinite(n.x) && Number.isFinite(n.y));
-    if (!nodes.length) return;
+  function centerMostSalientNode(durationMs = 0) {
+    const nodes = Graph.graphData().nodes || [];
+    if (!nodes.length || typeof Graph.centerAt !== 'function') return false;
 
     const topNode = nodes.reduce((best, n) => ((Number(n.size) || 0) > (Number(best.size) || 0) ? n : best), nodes[0]);
-    if (!topNode || typeof Graph.centerAt !== 'function') return;
+    if (!topNode || !Number.isFinite(topNode.x) || !Number.isFinite(topNode.y)) return false;
 
-    Graph.centerAt(topNode.x, topNode.y, 700);
+    Graph.centerAt(topNode.x, topNode.y, durationMs);
+    return true;
+  }
+
+  function scheduleInitialCenter(maxAttempts = 120) {
+    let attempts = 0;
+
+    function tryCenter() {
+      if (hasAppliedInitialCenter || currentMode !== 'constellation') return;
+      if (centerMostSalientNode(0)) {
+        hasAppliedInitialCenter = true;
+        return;
+      }
+      attempts += 1;
+      if (attempts < maxAttempts) requestAnimationFrame(tryCenter);
+    }
+
+    requestAnimationFrame(tryCenter);
   }
 
   function clearFocusAndRecenter() {
@@ -1053,6 +1071,9 @@
     gd.nodes.forEach(n => { n._highlighted = true; });
     gd.links.forEach(l => { l._highlighted = true; });
     Graph.graphData(gd);
+    if (!hasAppliedInitialCenter && currentMode === 'constellation') {
+      scheduleInitialCenter();
+    }
     const conv = periodConvergenceScore(country, period.key);
     document.getElementById('period-label').innerHTML =
       `<span>${period.label}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${conv.toFixed(1)}`;
