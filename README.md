@@ -1,8 +1,8 @@
 # RADAR+
 
-RADAR+ est un projet web public de suivi de saillance mediatique au Quebec et au Canada.
+RADAR+ est un projet web public de suivi de saillance médiatique au Québec et au Canada.
 
-## Francais
+## Français
 
 ### Site en ligne
 
@@ -15,24 +15,24 @@ Pages principales:
 - Constellation: /constellation.html
 - Sonar: /sonar.html
 - Unes: /unes.html
-- Acces aux donnees: /acces-donnees.html
+- Accès aux données: /acces-donnees.html
 
-### Perimetre
+### Périmètre
 
-- Depot de code open source.
+- Dépôt de code open source.
 - Contenu web public et visualisations.
-- Politique d'acces controle aux donnees brutes.
+- Politique d'accès contrôlé aux données brutes.
 
 ### Stack technique
 
 - Frontend: HTML, CSS, JavaScript statiques
-- Artefacts de donnees: JSON publics dans site/
+- Artefacts de données: JSON publics dans site/
 - Automatisation: GitHub Actions
-- Hebergement de secours: GitHub Pages
+- Hébergement de secours: GitHub Pages
 
-### Demarrage rapide
+### Démarrage rapide
 
-1. Cloner le depot.
+1. Cloner le dépôt.
 2. Ouvrir site/index.html directement, ou lancer un serveur local:
 
 ```bash
@@ -41,26 +41,26 @@ python3 -m http.server 8000
 
 Puis ouvrir http://localhost:8000/site/
 
-### Structure du depot
+### Structure du dépôt
 
-- site/: pages web de production et JSON publies
-- pipeline/: scripts ETL temporaires de rafraichissement
-- analyses/: scripts d'analyse et resultats d'etudes
-- .github/workflows/: workflows CI, refresh et deploiement
+- site/: pages web de production et JSON publiés
+- pipeline/: scripts ETL temporaires de rafraîchissement
+- analyses/: scripts d'analyse et résultats d'études
+- .github/workflows/: workflows CI, refresh et déploiement
 
-### Gouvernance et protection des donnees
+### Gouvernance et protection des données
 
-- La branche main est protegee par des regles de branche.
+- La branche main est protégée par des règles de branche.
 - Les contributions passent par Pull Request.
 - Le check quality-gate est obligatoire sur PR.
-- quality-gate bloque les donnees brutes/export et les fichiers de secret local.
-- Le deploiement GitHub Pages est automatise.
+- quality-gate bloque les données brutes/export et les fichiers de secret local.
+- Le déploiement GitHub Pages est automatisé.
 
 ### Documentation
 
 - Contribution: CONTRIBUTING.md
-- Securite: SECURITY.md
-- Politique d'acces: site/acces-donnees.html
+- Sécurité: SECURITY.md
+- Politique d'accès: site/acces-donnees.html
 
 ## English
 
