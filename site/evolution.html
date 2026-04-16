@@ -1215,6 +1215,24 @@
     });
   }
 
+  function getEvolutionChartLayout(rect) {
+    const panelW = Math.min(310, rect.width * 0.30) + 30;
+    let bottomPad = 72;
+    const controls = document.getElementById('controls');
+    if (controls) {
+      const controlsRect = controls.getBoundingClientRect();
+      const controlsTop = controlsRect.top - rect.top;
+      if (Number.isFinite(controlsTop)) {
+        // Garder l'axe X et les points bas au-dessus de la zone des contrôles.
+        bottomPad = Math.max(bottomPad, rect.height - controlsTop + 12);
+      }
+    }
+    const PAD = { top: 88, right: panelW, bottom: bottomPad, left: 72 };
+    const chartW = Math.max(100, rect.width - PAD.left - PAD.right);
+    const chartH = Math.max(80, rect.height - PAD.top - PAD.bottom);
+    return { PAD, panelW, chartW, chartH };
+  }
+
   function renderEvolutionChart(hoverIdx = null) {
     const canvas = document.getElementById('evo-canvas');
     if (!canvas || currentMode !== 'evolution') return;
@@ -1230,10 +1248,7 @@
       ctx.fillStyle = `rgba(180,205,255,${(s.a * 0.35).toFixed(2)})`; ctx.fill();
     });
 
-    const panelW = Math.min(310, W * 0.30) + 30;
-    const PAD = { top: 88, right: panelW, bottom: 72, left: 72 };
-    const chartW = Math.max(100, W - PAD.left - PAD.right);
-    const chartH = Math.max(80, H - PAD.top - PAD.bottom);
+    const { PAD, chartW, chartH } = getEvolutionChartLayout(rect);
     const n = periods.length;
 
     if (!trackedObjects.size) {
@@ -1338,15 +1353,14 @@
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const panelW = Math.min(310, rect.width * 0.30) + 30;
-    const PAD_LEFT = 72, chartW = Math.max(100, rect.width - PAD_LEFT - panelW);
+    const { PAD, chartW } = getEvolutionChartLayout(rect);
     const n = periods.length;
     const canvasX = clientX - rect.left;
-    if (canvasX < PAD_LEFT || canvasX > PAD_LEFT + chartW) {
+    if (canvasX < PAD.left || canvasX > PAD.left + chartW) {
       renderEvolutionChart(null);
       document.getElementById('evo-tooltip').style.display = 'none'; return;
     }
-    const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD_LEFT) / chartW) * (n - 1))));
+    const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))));
     renderEvolutionChart(idx);
 
     const tt = document.getElementById('evo-tooltip');
@@ -1412,19 +1426,16 @@
   evoCanvas.addEventListener('mouseleave', () => { renderEvolutionChart(null); document.getElementById('evo-tooltip').style.display = 'none'; });
   evoCanvas.addEventListener('click', e => {
     const rect = evoCanvas.getBoundingClientRect();
-    const panelW = Math.min(310, rect.width * 0.30) + 30;
-    const PAD_LEFT = 72, PAD_TOP = 88, PAD_BOTTOM = 72;
-    const chartW = Math.max(100, rect.width - PAD_LEFT - panelW);
-    const chartH = Math.max(80, rect.height - PAD_TOP - PAD_BOTTOM);
+    const { PAD, chartW, chartH } = getEvolutionChartLayout(rect);
     const n = periods.length;
     const canvasX = e.clientX - rect.left;
     const canvasY = e.clientY - rect.top;
-    if (canvasX < PAD_LEFT || canvasX > PAD_LEFT + chartW) { renderArticlesPanel(null); return; }
-    const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD_LEFT) / chartW) * (n - 1))));
+    if (canvasX < PAD.left || canvasX > PAD.left + chartW) { renderArticlesPanel(null); return; }
+    const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))));
 
     // Cherche un point proche du clic (rayon 20px, on teste ±1 période)
-    const xOf = i => PAD_LEFT + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
-    const yOf = v => PAD_TOP + chartH - (v / Math.max(evoMaxVal, 0.1)) * chartH;
+    const xOf = i => PAD.left + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
+    const yOf = v => PAD.top + chartH - (v / Math.max(evoMaxVal, 0.1)) * chartH;
     const HIT_R = 20;
     let hitNode = null;
     outer: for (const id of trackedObjects) {
