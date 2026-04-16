@@ -53,3 +53,59 @@ Ouvrir une issue ou contacter le mainteneur principal: `@AdriClout`.
 - Ne pas publier de faille securite en issue publique.
 - Utiliser le canal de signalement prive (GitHub vulnerability reporting) ou contacter `@AdriClout`.
 - Voir aussi `SECURITY.md` pour le processus complet.
+
+---
+
+# Contributing to RADAR+
+
+Thank you for contributing.
+
+## Project principles
+
+- Open, transparent, scientific project.
+- Respect media sources and their rights.
+- Code is open; data access is controlled.
+
+## Required workflow
+
+1. Create a branch from `main`.
+2. Make changes on that branch.
+3. Open a Pull Request to `main`.
+4. Wait for required approval before merge.
+
+## Ground rules
+
+- No direct push to `main` (except authorized maintainer).
+- A PR must be clear, tested, and documented.
+- Add screenshots for UI changes.
+
+## Data policy
+
+- Do not version raw media data.
+- Do not add unauthorized dumps or exports.
+- Prefer references to original sources.
+
+Explicitly blocked formats in git history: `csv`, `tsv`, `parquet`, `feather`, `arrow`, `rds`, `sqlite`, `db`, `xls`, `xlsx`.
+
+The `quality-gate` CI workflow automatically blocks:
+
+- raw data/export files,
+- local environment and secret files (`.env*`, `.Renviron`, `*.pem`, `*.key`, `*.p12`),
+- any file under `data/` except `data/.gitkeep` and `data/README.md`.
+
+## Recommended commit message prefixes
+
+- `feat: ...`
+- `fix: ...`
+- `docs: ...`
+- `chore: ...`
+
+## Questions
+
+Open an issue or contact the main maintainer: `@AdriClout`.
+
+## Security
+
+- Do not publish security vulnerabilities in public issues.
+- Use private reporting (GitHub vulnerability reporting) or contact `@AdriClout`.
+- See `SECURITY.md` for the full process.

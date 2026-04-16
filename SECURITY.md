@@ -1,6 +1,51 @@
+# Politique de securite
+
+## Portee
+
+Ce depot est maintenu activement.
+
+## Signaler une vulnerabilite
+
+Ne pas ouvrir d'issue publique pour une vulnerabilite de securite.
+
+Utiliser un de ces canaux:
+
+- Signalement prive de vulnerabilite GitHub (recommande)
+- Contact direct du mainteneur: @AdriClout
+
+Inclure dans le signalement:
+
+- une description courte du probleme
+- l'impact et les fichiers/workflows touches
+- des etapes de reproduction ou une preuve de concept
+- des pistes de mitigation si disponibles
+
+## Delais cibles
+
+- Accuse de reception initial: sous 72 heures
+- Decision de triage: sous 7 jours
+- Delai de correction: selon severite et impact operationnel
+
+## Divulgation
+
+Nous suivons une divulgation coordonnee:
+
+1. Reception et validation du signalement
+2. Preparation et tests du correctif
+3. Deploiement du correctif
+4. Publication d'un resume et des mesures de mitigation, si pertinent
+
+## Notes operationnelles
+
+- main est protegee par des regles PR.
+- L'automatisation planifiee utilise des credentials dedies et des permissions minimales.
+- Eviter de stocker des secrets ou des dumps de donnees brutes medias dans le depot.
+
+---
+
 # Security Policy
 
-## Supported scope
+## Scope
 
 This repository is actively maintained.
 
@@ -37,6 +82,6 @@ We follow coordinated disclosure:
 
 ## Operational notes
 
-- `main` is protected by PR rules.
+- main is protected by PR rules.
 - Scheduled automation uses dedicated credentials and least required permissions.
 - Avoid storing secrets or raw media dumps in the repository.
