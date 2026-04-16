@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partenaires et contributeurs | Radar+</title>
+  <meta name="description" content="Partenaires et contributeurs de Radar+ : CLESSN, CAPP ULaval, GRCP, CSDC-CECD et Infoscope." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #00000f;
+      --text: rgba(216, 232, 255, 0.97);
+      --muted: rgba(155, 184, 228, 0.9);
+      --line: rgba(104, 151, 255, 0.32);
+      --panel: rgba(8, 16, 46, 0.76);
+      --panel-strong: rgba(8, 16, 46, 0.9);
+      --accent: #8fb7ff;
+      --accent-soft: rgba(143, 183, 255, 0.22);
+      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 500px at 12% -10%, rgba(87, 132, 255, 0.18), transparent 58%),
+        radial-gradient(900px 420px at 90% 0%, rgba(60, 100, 210, 0.16), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      overflow-x: hidden;
+    }
+
+    #stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: min(1120px, calc(100vw - 30px));
+      margin: 20px auto 42px;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(to right, rgba(9, 18, 54, 0.8), rgba(5, 10, 30, 0.68));
+      backdrop-filter: blur(6px);
+    }
+
+    .back {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+      background: rgba(10, 18, 50, 0.45);
+    }
+
+    .back:hover {
+      border-color: var(--accent);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .title {
+      font-family: var(--orbitron);
+      font-size: clamp(20px, 3.4vw, 40px);
+      letter-spacing: clamp(1.8px, 0.5vw, 6px);
+      text-transform: uppercase;
+      text-align: right;
+      line-height: 1.05;
+      color: rgba(214, 231, 255, 0.98);
+      text-shadow: 0 0 14px rgba(78, 125, 245, 0.32);
+    }
+
+    .intro {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      background: var(--panel);
+      line-height: 1.75;
+      color: rgba(193, 214, 250, 0.95);
+      font-size: 14px;
+    }
+
+    .intro strong {
+      color: rgba(233, 243, 255, 0.98);
+      font-weight: 700;
+    }
+
+    .section-title {
+      margin: 20px 0 10px;
+      font-family: var(--orbitron);
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(177, 208, 255, 0.98);
+    }
+
+    .partners-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .partner-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background:
+        linear-gradient(165deg, rgba(18, 32, 84, 0.34), rgba(8, 16, 46, 0.9)),
+        var(--panel-strong);
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(1, 4, 14, 0.36);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.45s ease, transform 0.45s ease, border-color 0.25s ease;
+    }
+
+    .partner-card.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .partner-card:hover {
+      border-color: rgba(143, 183, 255, 0.72);
+    }
+
+    .partner-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .partner-role {
+      font-size: 10px;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      color: rgba(224, 236, 255, 0.94);
+      border: 1px solid rgba(143, 183, 255, 0.42);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: var(--accent-soft);
+      white-space: nowrap;
+    }
+
+    .logo-box {
+      min-height: 78px;
+      border: 1px solid rgba(130, 173, 255, 0.22);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.98);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-box img {
+      max-width: 100%;
+      max-height: 62px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .partner-name {
+      font-family: var(--orbitron);
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: rgba(230, 241, 255, 0.98);
+      text-transform: uppercase;
+      line-height: 1.25;
+    }
+
+    .partner-desc {
+      font-size: 13px;
+      line-height: 1.7;
+      color: rgba(184, 208, 248, 0.95);
+    }
+
+    .partner-link {
+      justify-self: start;
+      text-decoration: none;
+      color: rgba(214, 231, 255, 0.98);
+      border: 1px solid rgba(104, 151, 255, 0.42);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      transition: border-color 0.2s, transform 0.2s, color 0.2s;
+      background: rgba(10, 20, 50, 0.48);
+    }
+
+    .partner-link:hover {
+      border-color: var(--accent);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .thanks {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      padding: 16px 18px;
+      color: rgba(191, 213, 249, 0.95);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .thanks strong {
+      color: rgba(233, 243, 255, 0.98);
+    }
+
+    .links {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(8, 16, 46, 0.86);
+      padding: 12px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .link {
+      color: rgba(196, 221, 255, 0.98);
+      text-decoration: none;
+      border: 1px solid rgba(95, 140, 255, 0.32);
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      transition: all 0.18s ease;
+      background: rgba(10, 20, 50, 0.58);
+    }
+
+    .link:hover {
+      border-color: rgba(145, 182, 255, 0.75);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 900px) {
+      .top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .title {
+        text-align: left;
+      }
+
+      .partners-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .partner-card {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+
+  <main class="wrap">
+    <header class="top">
+      <a class="back" href="./index.html">Retour accueil</a>
+      <h1 class="title">Partenaires et contributeurs</h1>
+    </header>
+
+    <section class="intro" aria-label="Présentation des partenaires">
+      <p>
+        Radar+ est un projet de <strong>CLESSN</strong> et du <strong>CAPP ULaval</strong>,
+        appuyé par le <strong>GRCP</strong> et le <strong>CSDC-CECD</strong>,
+        avec la participation de <strong>Infoscope</strong> pour le développement.
+      </p>
+      <p>
+        Cette page souligne la contribution de chaque organisation qui soutient la recherche,
+        l'infrastructure et la diffusion du projet.
+      </p>
+    </section>
+
+    <h2 class="section-title">Organisations partenaires</h2>
+    <section class="partners-grid" aria-label="Organisations partenaires de Radar+">
+      <article class="partner-card">
+        <div class="partner-head">
+          <span class="partner-role">Porteur du projet</span>
+          <h3 class="partner-name">CLESSN</h3>
+        </div>
+        <div class="logo-box">
+          <img src="./assets/img/clessn.svg" alt="Logo du CLESSN" loading="lazy" />
+        </div>
+        <p class="partner-desc">
+          Le CLESSN contribue à la vision de Radar+ et au positionnement du projet
+          dans un cadre de recherche appliquée sur les médias numériques.
+        </p>
+        <a class="partner-link" href="https://www.clessn.com/" target="_blank" rel="noopener">Visiter le site</a>
+      </article>
+
+      <article class="partner-card">
+        <div class="partner-head">
+          <span class="partner-role">Porteur du projet</span>
+          <h3 class="partner-name">CAPP ULaval</h3>
+        </div>
+        <div class="logo-box">
+          <img src="./assets/img/logo_capp.png" alt="Logo du CAPP de l'Université Laval" loading="lazy" />
+        </div>
+        <p class="partner-desc">
+          Le CAPP ULaval appuie la dimension académique du projet et son ancrage
+          dans les travaux de recherche en communication politique.
+        </p>
+        <a class="partner-link" href="https://capp-ulaval.ca/" target="_blank" rel="noopener">Visiter le site</a>
+      </article>
+
+      <article class="partner-card">
+        <div class="partner-head">
+          <span class="partner-role">Appui</span>
+          <h3 class="partner-name">GRCP</h3>
+        </div>
+        <div class="logo-box">
+          <img src="./assets/img/GRCP-Logo.png" alt="Logo du GRCP" loading="lazy" />
+        </div>
+        <p class="partner-desc">
+          Le GRCP soutient Radar+ en renforçant l'écosystème de collaboration
+          autour des méthodes et des usages de la saillance médiatique.
+        </p>
+        <a class="partner-link" href="https://grcp.info/" target="_blank" rel="noopener">Visiter le site</a>
+      </article>
+
+      <article class="partner-card">
+        <div class="partner-head">
+          <span class="partner-role">Appui</span>
+          <h3 class="partner-name">CSDC-CECD</h3>
+        </div>
+        <div class="logo-box">
+          <img src="./assets/img/CSDC_logo.jpg" alt="Logo du CSDC-CECD" loading="lazy" />
+        </div>
+        <p class="partner-desc">
+          Le CSDC-CECD appuie le développement du projet et la mise en valeur
+          d'outils utiles à la communauté de recherche et au public.
+        </p>
+        <a class="partner-link" href="https://csdc-cecd.ca/" target="_blank" rel="noopener">Visiter le site</a>
+      </article>
+
+      <article class="partner-card">
+        <div class="partner-head">
+          <span class="partner-role">Participation au développement</span>
+          <h3 class="partner-name">Infoscope</h3>
+        </div>
+        <div class="logo-box">
+          <img src="./assets/img/logo_infoscope.avif" alt="Logo d'Infoscope" loading="lazy" />
+        </div>
+        <p class="partner-desc">
+          Infoscope participe au développement de Radar+ afin d'assurer une
+          expérience robuste, lisible et adaptée aux usages de suivi en continu.
+        </p>
+        <a class="partner-link" href="https://www.infoscope.ca/" target="_blank" rel="noopener">Visiter le site</a>
+      </article>
+    </section>
+
+    <section class="thanks" aria-label="Remerciements">
+      <p>
+        <strong>Merci</strong> à l'ensemble des partenaires et contributeurs pour leur confiance et leur
+        engagement. Radar+ existe grâce à ce travail collectif, à la fois scientifique,
+        technique et institutionnel.
+      </p>
+    </section>
+
+    <h2 class="section-title">Explorer Radar+</h2>
+    <nav class="links" aria-label="Liens Radar+">
+      <a class="link" href="./constellation.html">Constellation</a>
+      <a class="link" href="./evolution.html">Évolution</a>
+      <a class="link" href="./unes.html">Dans le radar</a>
+      <a class="link" href="./radarplus.html">Radar+</a>
+      <a class="link" href="./acces-donnees.html">Accès aux données</a>
+    </nav>
+  </main>
+
+  <script>
+    (function() {
+      const canvas = document.getElementById('stars');
+      const ctx = canvas.getContext('2d');
+      let stars = [];
+      let tick = 0;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const count = Math.floor((canvas.width * canvas.height) / 3200);
+        stars = Array.from({ length: count }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.1 + 0.25,
+          a: Math.random() * 0.5 + 0.18,
+          s: Math.random() * 0.03 + 0.004,
+          p: Math.random() * Math.PI * 2,
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        tick += 0.016;
+        for (const star of stars) {
+          const alpha = star.a + Math.sin(tick * star.s + star.p) * 0.14;
+          ctx.fillStyle = 'rgba(180, 205, 255, ' + Math.max(0, alpha) + ')';
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+      draw();
+    })();
+
+    (function() {
+      const cards = Array.from(document.querySelectorAll('.partner-card'));
+      if (!cards.length) return;
+
+      if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        cards.forEach((card) => card.classList.add('is-visible'));
+        return;
+      }
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.18 });
+
+      cards.forEach((card, index) => {
+        card.style.transitionDelay = (index * 55) + 'ms';
+        observer.observe(card);
+      });
+    })();
+  </script>
+</body>
+</html>

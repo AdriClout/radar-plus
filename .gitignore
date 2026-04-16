@@ -13,6 +13,7 @@
 *.html
 !site/radarplus.html
 !site/acces-donnees.html
+!site/partenaires.html
 *.png
 *.pdf
 *.xlsx
