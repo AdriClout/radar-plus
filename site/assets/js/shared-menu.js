@@ -24,12 +24,14 @@
     sideNav.id = 'sideNav';
     sideNav.setAttribute('aria-label', 'Navigation principale');
     sideNav.innerHTML = [
-      '<h3>Navigation RADAR+</h3>',
-      '<a href="./index.html" data-page="index.html">Accueil <span class="nav-badge">Home</span></a>',
-      '<a href="./constellation.html" data-page="constellation.html">Constellation <span class="nav-badge">Graph</span></a>',
-      '<a href="./evolution.html" data-page="evolution.html">Évolution <span class="nav-badge">Trends</span></a>',
-      '<a href="./unes.html" data-page="unes.html">Dans le radar <span class="nav-badge">Live</span></a>',
-      '<a href="./sonar.html" data-page="sonar.html">SONAR <span class="nav-badge">Ops</span></a>',
+      '<h3>Navigation</h3>',
+      '<a href="./index.html" data-page="index.html">Accueil</a>',
+      '<a href="./constellation.html" data-page="constellation.html">Constellation <span class="nav-badge">LIVE</span></a>',
+      '<a href="./evolution.html" data-page="evolution.html">Évolution <span class="nav-badge">TIMELINE</span></a>',
+      '<a href="./sonar.html" data-page="sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>',
+      '<a href="./index.html#hot20">Hot 20</a>',
+      '<a href="./unes.html" data-page="unes.html">Dans le radar</a>',
+      '<a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>',
       '<h3 style="margin-top: 30px;">À propos</h3>',
       '<a href="./radarplus.html" data-page="radarplus.html">Radar+</a>',
       '<a href="./partenaires.html" data-page="partenaires.html">Partenaires &amp; contributeurs</a>',
