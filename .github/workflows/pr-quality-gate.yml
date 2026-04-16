@@ -20,6 +20,51 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Block raw datasets and local secret files
+        run: |
+          set -euo pipefail
+          blocked=0
+          shopt -s nocasematch
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            file_list_cmd=(git log --name-only --pretty=format: "${{ github.event.pull_request.base.sha }}..${{ github.sha }}")
+          else
+            file_list_cmd=(git ls-files)
+          fi
+
+          while IFS= read -r file; do
+            [ -z "${file}" ] && continue
+
+            # Keep placeholder files allowed in data/ while blocking real payloads.
+            if [[ "${file}" = data/* ]] \
+              && [[ "${file}" != "data/.gitkeep" ]] \
+              && [[ "${file}" != "data/README.md" ]]; then
+              echo "::error file=${file}::Tracked file under data/ is not allowed"
+              blocked=1
+              continue
+            fi
+
+            if [[ "${file}" =~ \.(csv|tsv|parquet|feather|arrow|rds|sqlite|db|xls|xlsx)$ ]]; then
+              echo "::error file=${file}::Raw or export data files are not allowed in git history"
+              blocked=1
+              continue
+            fi
+
+            if [[ "${file}" =~ (^|/)\.env[^/]*$ ]] \
+              || [[ "${file}" =~ (^|/)\.Renviron$ ]] \
+              || [[ "${file}" =~ \.(pem|key|p12)$ ]]; then
+              echo "::error file=${file}::Local environment or secret material must not be versioned"
+              blocked=1
+            fi
+          done < <("${file_list_cmd[@]}" | sed '/^$/d' | sort -u)
+
+          if [ "${blocked}" -ne 0 ]; then
+            echo "Blocked tracked files detected (raw datasets and/or secret files)."
+            exit 1
+          fi
 
       - name: Validate public JSON files
         run: |
