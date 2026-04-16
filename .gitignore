@@ -15,6 +15,7 @@
 !site/acces-donnees.html
 !site/partenaires.html
 *.png
+!site/assets/img/GRCP-Logo.png
 *.pdf
 *.xlsx
 
