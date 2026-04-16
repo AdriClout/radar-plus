@@ -24,6 +24,16 @@ jobs:
       actions: write
 
     steps:
+      - name: Validate GH_PAT secret
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_PAT" ]; then
+            echo "::error::GH_PAT secret is missing or empty. Push will fail due to branch protection."
+            exit 1
+          fi
+          echo "GH_PAT secret is set."
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -69,9 +79,12 @@ jobs:
 
       - name: Commit & push updated data
         id: commit_data
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
           git add site/graph.json site/timeseries.json site/monitor_input.json
           if git diff --staged --quiet; then
             echo "updated=false" >> "$GITHUB_OUTPUT"
