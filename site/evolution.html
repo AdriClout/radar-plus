@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
   <script src="./assets/js/force-graph.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -138,7 +139,7 @@
     #tooltip .s { color: #6090e0; }
     #tooltip .m { color: #408060; }
     #controls {
-      position: absolute; bottom: 34px; left: 0; right: 0;
+      position: absolute; bottom: calc(var(--ticker-height, 44px) + 4px); left: 0; right: 0;
       padding: 16px 24px 20px;
       background: linear-gradient(to top, rgba(0,0,15,0.96) 70%, transparent);
       z-index: 10;
@@ -359,7 +360,7 @@
     }
     #media-empty { color: rgba(104,130,182,0.9); font-size: 11px; padding: 6px 2px; }
     #object-panel {
-      position: absolute; right: 20px; bottom: 126px; width: min(360px, 35vw); max-height: 38vh;
+      position: absolute; right: 20px; bottom: calc(var(--ticker-height, 44px) + 92px); width: min(360px, 35vw); max-height: 38vh;
       overflow: auto; padding: 12px 14px; border: 1px solid rgba(80,120,255,0.35);
       border-radius: 6px; background: rgba(3,6,26,0.93); z-index: 12; display: none;
       box-shadow: 0 0 24px rgba(40,70,180,0.15);
@@ -376,100 +377,6 @@
     #object-panel .it:hover { border-color: rgba(140,180,255,0.72); color: #e3efff; }
     #object-panel .it-media { display: block; color: #4a7aaa; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
     #object-panel .empty { color: #5872a8; font-size: 11px; }
-    #ticker {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      border-top: 1px solid rgba(90, 140, 255, 0.25);
-      background: linear-gradient(to right, rgba(5,12,36,0.96), rgba(9,18,52,0.96));
-      z-index: 14;
-      overflow: hidden;
-    }
-    #ticker-label {
-      flex-shrink: 0;
-      height: 100%;
-      min-width: 84px;
-      padding: 0 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 1.3px;
-      text-transform: uppercase;
-      color: rgba(215, 234, 255, 0.95);
-      text-decoration: none;
-      background: linear-gradient(to right, rgba(28,60,140,0.75), rgba(22,48,112,0.62));
-      border-right: 1px solid rgba(95, 140, 255, 0.30);
-      transition: filter 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
-    }
-    #ticker-label:hover {
-      filter: brightness(1.08);
-      box-shadow: inset 0 0 0 1px rgba(120,170,255,0.35);
-      color: #ffffff;
-    }
-    #ticker-viewport {
-      position: relative;
-      flex: 1;
-      height: 100%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-    }
-    #ticker-track {
-      --ticker-duration: 65s;
-      display: flex;
-      align-items: center;
-      width: max-content;
-      animation: ticker-scroll var(--ticker-duration) linear infinite;
-      will-change: transform;
-    }
-    #ticker:hover #ticker-track {
-      animation-play-state: paused;
-    }
-    #ticker:not(.ready) #ticker-track {
-      animation: none;
-    }
-    .ticker-strip {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      padding-right: 18px;
-      white-space: nowrap;
-    }
-    .ticker-item {
-      color: rgba(192, 221, 255, 0.93);
-      text-decoration: none;
-      font-size: 11px;
-      letter-spacing: 0.2px;
-    }
-    .ticker-item:hover {
-      color: rgba(235, 245, 255, 1);
-      text-decoration: underline;
-    }
-    .ticker-media {
-      color: rgba(106, 176, 255, 0.95);
-      text-transform: uppercase;
-      margin-right: 7px;
-      font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 10px;
-      letter-spacing: 0.8px;
-    }
-    .ticker-sep {
-      color: rgba(110, 150, 220, 0.55);
-      font-size: 10px;
-    }
-    .ticker-empty {
-      color: rgba(120, 155, 210, 0.78);
-      font-size: 10px;
-      letter-spacing: 0.5px;
-      padding-left: 14px;
-      white-space: nowrap;
-    }
     #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #00000f; z-index: 100; }
     #loading-text { font-size: 11px; letter-spacing: 3px; color: rgba(80,120,255,0.5); text-transform: uppercase; animation: pulse 1.8s ease-in-out infinite; }
     @media (max-width: 1500px) {
@@ -554,19 +461,9 @@
         right: 10px;
         width: auto;
         max-height: 30vh;
-        bottom: 122px;
+        bottom: calc(var(--ticker-height, 44px) + 92px);
       }
-      #controls { bottom: 30px; }
-      #ticker {
-        height: 30px;
-      }
-      #ticker-label {
-        min-width: 72px;
-        font-size: 9px;
-      }
-      .ticker-item {
-        font-size: 10px;
-      }
+      #controls { bottom: calc(var(--ticker-height, 44px) + 2px); }
       #search-wrap {
         width: 100%;
       }
@@ -617,10 +514,6 @@
     .evo-tt-name { color: rgba(175,205,255,0.9); flex: 1; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
     .evo-tt-val { color: rgba(160,200,255,0.8); font-size: 10px; }
     @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
-    @keyframes ticker-scroll {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
     #search-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: all; grid-area: search; }
     #search-input {
       background: rgba(5,10,35,0.75); border: 1px solid rgba(100,150,255,0.3);
@@ -725,12 +618,18 @@
       <button id="speed-btn">1×</button>
     </div>
   </div>
-  <div id="ticker" aria-live="polite">
-    <a id="ticker-label" href="./unes.html" aria-label="Voir toutes les dernières Unes">Dans le radar ↗</a>
-    <div id="ticker-viewport">
-      <div id="ticker-track"><span class="ticker-empty">Chargement des manchettes...</span></div>
+  <section class="ticker-section" id="ticker-section" aria-live="polite">
+    <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir toutes les dernières Unes">
+      <span class="ticker-label-title">Dans le radar ↗</span>
+      <span class="ticker-updated" id="ticker-updated">Les Unes de --:--</span>
+      <span class="ticker-radar" aria-hidden="true"></span>
+    </a>
+    <div class="ticker-viewport">
+      <div class="ticker-track" id="ticker-track">
+        <span class="ticker-empty">Chargement des manchettes...</span>
+      </div>
     </div>
-  </div>
+  </section>
 
 <script>
 (async () => {
@@ -965,47 +864,6 @@
       '"': '&quot;',
       "'": '&#39;'
     }[c]));
-  }
-
-  function renderTicker(items) {
-    const ticker = document.getElementById('ticker');
-    const track = document.getElementById('ticker-track');
-    if (!ticker || !track) return;
-
-    if (!Array.isArray(items) || !items.length) {
-      track.innerHTML = '<span class="ticker-empty">Aucune manchette récente disponible.</span>';
-      ticker.classList.add('ready');
-      return;
-    }
-
-    const payload = items.map((it) => {
-      const media = escapeHtml(it.media_id || 'MÉDIA');
-      const title = escapeHtml(it.title || it.url || 'Article');
-      const url = escapeHtml(it.url || '#');
-      return `<a class="ticker-item" href="${url}" target="_blank" rel="noopener noreferrer"><span class="ticker-media">${media}</span>${title}</a>`;
-    }).join('<span class="ticker-sep">•</span>');
-
-    track.innerHTML = `<div class="ticker-strip">${payload}</div><div class="ticker-strip" aria-hidden="true">${payload}</div>`;
-
-    requestAnimationFrame(() => {
-      const firstStrip = track.querySelector('.ticker-strip');
-      const px = firstStrip ? firstStrip.scrollWidth : 1600;
-      const duration = Math.max(35, Math.round(px / 70));
-      track.style.setProperty('--ticker-duration', `${duration}s`);
-      ticker.classList.add('ready');
-    });
-  }
-
-  async function refreshTicker() {
-    try {
-      const res = await fetch(`./ticker.json?t=${Date.now()}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error('ticker.json: ' + res.statusText);
-      const data = await res.json();
-      renderTicker(Array.isArray(data.items) ? data.items : []);
-    } catch (e) {
-      console.warn('Ticker indisponible:', e);
-      renderTicker([]);
-    }
   }
 
   function renderArticlesPanel(node) {
@@ -1733,8 +1591,6 @@
   setMediaPanelCollapsed(false);
   applyTimelineHeat(currentCountry);
   loadPeriod(currentCountry, currentIdx);
-  refreshTicker();
-  setInterval(refreshTicker, 120000);
 
   // Auto-start en mode évolution
   setMode('evolution');
@@ -1760,5 +1616,6 @@
   }
 })();
 </script>
+<script src="./assets/js/shared-ticker.js"></script>
 </body>
 </html>

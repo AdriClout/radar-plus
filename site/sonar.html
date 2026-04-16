@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SONAR - Monitoring Data Radar+</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
   <style>
     :root {
       --bg: #070b18;
@@ -396,6 +400,19 @@
       </div>
     </section>
   </div>
+
+  <section class="ticker-section" id="ticker-section" aria-live="polite">
+    <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir toutes les dernières Unes">
+      <span class="ticker-label-title">Dans le radar ↗</span>
+      <span class="ticker-updated" id="ticker-updated">Les Unes de --:--</span>
+      <span class="ticker-radar" aria-hidden="true"></span>
+    </a>
+    <div class="ticker-viewport">
+      <div class="ticker-track" id="ticker-track">
+        <span class="ticker-empty">Chargement des manchettes...</span>
+      </div>
+    </div>
+  </section>
 
   <script>
     const SOURCES = { graph: './graph.json', timeseries: './timeseries.json', input: './monitor_input.json' };
@@ -817,5 +834,6 @@
 
     run();
   </script>
+  <script src="./assets/js/shared-ticker.js"></script>
 </body>
 </html>

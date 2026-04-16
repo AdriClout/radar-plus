@@ -1,0 +1,199 @@
+:root {
+  --ticker-height: 44px;
+}
+
+body {
+  padding-bottom: var(--ticker-height);
+}
+
+.ticker-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  border-top: 1px solid rgba(95, 140, 255, 0.3);
+  height: var(--ticker-height);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: linear-gradient(to right, rgba(5, 12, 36, 0.98), rgba(9, 18, 52, 0.98));
+}
+
+.ticker-label {
+  position: relative;
+  flex-shrink: 0;
+  height: 100%;
+  min-width: 220px;
+  padding: 4px 48px 4px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: rgba(215, 234, 255, 0.95);
+  text-transform: uppercase;
+  background: linear-gradient(to right, rgba(28, 60, 140, 0.75), rgba(22, 48, 112, 0.62));
+  border-right: 1px solid rgba(95, 140, 255, 0.3);
+  overflow: hidden;
+}
+
+.ticker-label-link {
+  text-decoration: none;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ticker-label-link:hover {
+  filter: brightness(1.08);
+  box-shadow: inset 0 0 0 1px rgba(120, 170, 255, 0.35);
+}
+
+.ticker-label-title {
+  line-height: 1.1;
+}
+
+.ticker-radar {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(118, 175, 255, 0.44);
+  box-shadow: inset 0 0 10px rgba(56, 105, 200, 0.18), 0 0 9px rgba(70, 130, 240, 0.24);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.ticker-radar::before {
+  content: '';
+  position: absolute;
+  inset: -36%;
+  border-radius: 50%;
+  background: conic-gradient(from 10deg, rgba(106, 174, 255, 0) 0deg, rgba(106, 174, 255, 0.36) 24deg, rgba(106, 174, 255, 0) 56deg);
+  animation: tickerRadarSpin 3.9s linear infinite;
+  mix-blend-mode: screen;
+}
+
+.ticker-radar::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(175, 218, 255, 0.92);
+  background: rgba(235, 248, 255, 0.95);
+  box-shadow: 0 0 7px rgba(130, 194, 255, 0.62);
+}
+
+.ticker-updated {
+  margin-top: 3px;
+  font-family: 'Space Mono', 'SF Mono', Consolas, monospace;
+  font-size: 9px;
+  text-transform: none;
+  letter-spacing: 0.2px;
+  color: rgba(182, 208, 245, 0.86);
+  white-space: nowrap;
+}
+
+.ticker-viewport {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.ticker-track {
+  --ticker-duration: 65s;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: ticker-scroll var(--ticker-duration) linear infinite;
+  will-change: transform;
+}
+
+.ticker-section:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+.ticker-section:not(.ready) .ticker-track {
+  animation: none;
+}
+
+.ticker-strip {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-right: 18px;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  color: rgba(192, 221, 255, 0.93);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+}
+
+.ticker-item:hover {
+  color: rgba(235, 245, 255, 1);
+  text-decoration: underline;
+}
+
+.ticker-media {
+  color: rgba(106, 176, 255, 0.95);
+  text-transform: uppercase;
+  margin-right: 7px;
+  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.8px;
+}
+
+.ticker-sep {
+  color: rgba(110, 150, 220, 0.55);
+  font-size: 10px;
+}
+
+.ticker-empty {
+  color: rgba(120, 155, 210, 0.78);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding-left: 14px;
+  white-space: nowrap;
+}
+
+@keyframes tickerRadarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (max-width: 768px) {
+  .ticker-label {
+    min-width: 182px;
+    padding-right: 42px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ticker-label {
+    min-width: 164px;
+    font-size: 9px;
+    letter-spacing: 1.1px;
+  }
+
+  .ticker-item {
+    font-size: 10px;
+  }
+}
