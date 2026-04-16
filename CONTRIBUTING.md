@@ -1,43 +1,43 @@
-# Contributing to RADAR+
+# Contribution à RADAR+
 
 Merci de contribuer.
 
 ## Principes du projet
 
 - Projet open source, transparent et scientifique.
-- Respect des sources medias et de leurs droits.
-- Le code est ouvert; l'acces aux donnees est encadre.
+- Respect des sources médias et de leurs droits.
+- Le code est ouvert; l'accès aux données est encadré.
 
 ## Workflow obligatoire
 
-1. Creer une branche depuis `main`.
+1. Créer une branche depuis `main`.
 2. Faire les changements sur cette branche.
 3. Ouvrir une Pull Request vers `main`.
 4. Attendre l'approbation requise avant merge.
 
-## Regles de base
+## Règles de base
 
-- Pas de push direct sur `main` (sauf mainteneur autorise).
-- Une PR doit etre claire, testee et documentee.
+- Pas de push direct sur `main` (sauf mainteneur autorisé).
+- Une PR doit être claire, testée et documentée.
 - Ajouter des captures pour les changements UI.
 
-## Politique donnees
+## Politique données
 
-- Ne pas versionner de donnees brutes de medias.
-- Ne pas ajouter de dumps ou exports non autorises.
-- Toujours privilegier des references vers les sources originales.
+- Ne pas versionner de données brutes de médias.
+- Ne pas ajouter de dumps ou exports non autorisés.
+- Toujours privilégier des références vers les sources originales.
 
 Formats explicitement interdits dans le git history: `csv`, `tsv`, `parquet`, `feather`, `arrow`, `rds`, `sqlite`, `db`, `xls`, `xlsx`.
 
 Le workflow CI `quality-gate` bloque automatiquement:
 
-- les fichiers de donnees brutes/exports,
+- les fichiers de données brutes/exports,
 - les fichiers locaux d'environnement et secrets (`.env*`, `.Renviron`, `*.pem`, `*.key`, `*.p12`),
-- tout fichier ajoute sous `data/` sauf `data/.gitkeep` et `data/README.md`.
+- tout fichier ajouté sous `data/` sauf `data/.gitkeep` et `data/README.md`.
 
-Le controle se fait sur toute la plage de commits de la PR (pas seulement l'etat final des fichiers).
+Le contrôle se fait sur toute la plage de commits de la PR (pas seulement l'état final des fichiers).
 
-## Message de commit recommande
+## Message de commit recommandé
 
 Format simple:
 
@@ -50,10 +50,10 @@ Format simple:
 
 Ouvrir une issue ou contacter le mainteneur principal: `@AdriClout`.
 
-## Securite
+## Sécurité
 
-- Ne pas publier de faille securite en issue publique.
-- Utiliser le canal de signalement prive (GitHub vulnerability reporting) ou contacter `@AdriClout`.
+- Ne pas publier de faille sécurité en issue publique.
+- Utiliser le canal de signalement privé (GitHub vulnerability reporting) ou contacter `@AdriClout`.
 - Voir aussi `SECURITY.md` pour le processus complet.
 
 ---

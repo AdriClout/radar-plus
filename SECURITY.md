@@ -1,45 +1,45 @@
-# Politique de securite
+# Politique de sécurité
 
-## Portee
+## Portée
 
-Ce depot est maintenu activement.
+Ce dépôt est maintenu activement.
 
-## Signaler une vulnerabilite
+## Signaler une vulnérabilité
 
-Ne pas ouvrir d'issue publique pour une vulnerabilite de securite.
+Ne pas ouvrir d'issue publique pour une vulnérabilité de sécurité.
 
 Utiliser un de ces canaux:
 
-- Signalement prive de vulnerabilite GitHub (recommande)
+- Signalement privé de vulnérabilité GitHub (recommandé)
 - Contact direct du mainteneur: @AdriClout
 
 Inclure dans le signalement:
 
-- une description courte du probleme
-- l'impact et les fichiers/workflows touches
-- des etapes de reproduction ou une preuve de concept
+- une description courte du problème
+- l'impact et les fichiers/workflows touchés
+- des étapes de reproduction ou une preuve de concept
 - des pistes de mitigation si disponibles
 
-## Delais cibles
+## Délais cibles
 
-- Accuse de reception initial: sous 72 heures
-- Decision de triage: sous 7 jours
-- Delai de correction: selon severite et impact operationnel
+- Accusé de réception initial: sous 72 heures
+- Décision de triage: sous 7 jours
+- Délai de correction: selon sévérité et impact opérationnel
 
 ## Divulgation
 
-Nous suivons une divulgation coordonnee:
+Nous suivons une divulgation coordonnée:
 
-1. Reception et validation du signalement
-2. Preparation et tests du correctif
-3. Deploiement du correctif
-4. Publication d'un resume et des mesures de mitigation, si pertinent
+1. Réception et validation du signalement
+2. Préparation et tests du correctif
+3. Déploiement du correctif
+4. Publication d'un résumé et des mesures de mitigation, si pertinent
 
-## Notes operationnelles
+## Notes opérationnelles
 
-- main est protegee par des regles PR.
-- L'automatisation planifiee utilise des credentials dedies et des permissions minimales.
-- Eviter de stocker des secrets ou des dumps de donnees brutes medias dans le depot.
+- main est protégée par des règles PR.
+- L'automatisation planifiée utilise des credentials dédiés et des permissions minimales.
+- Éviter de stocker des secrets ou des dumps de données brutes médias dans le dépôt.
 
 ---
 
