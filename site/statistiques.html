@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistiques | Radar+</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/shared-menu.css" />
+  <style>
+    :root {
+      --bg: #00000f;
+      --text: rgba(210, 228, 255, 0.95);
+      --muted: rgba(132, 164, 215, 0.82);
+      --panel: rgba(8, 16, 46, 0.72);
+      --panel-strong: rgba(8, 16, 46, 0.9);
+      --line: rgba(95, 140, 255, 0.28);
+      --accent: rgba(142, 184, 255, 0.95);
+      --accent-strong: #b5d5ff;
+      --good: #7fd0a4;
+      --warn: #f0c46d;
+      --danger: #ff8c8c;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, rgba(29, 54, 116, 0.18), transparent 32%), var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', 'SF Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    #stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: min(1220px, calc(100vw - 32px));
+      margin: 20px auto 40px;
+      padding-bottom: 20px;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(to right, rgba(9, 18, 54, 0.8), rgba(5, 10, 30, 0.68));
+      backdrop-filter: blur(6px);
+    }
+
+    .top-copy {
+      max-width: 720px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .title {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: clamp(24px, 3.6vw, 42px);
+      letter-spacing: clamp(2px, 0.45vw, 8px);
+      text-transform: uppercase;
+      line-height: 1.04;
+      color: rgba(215, 231, 255, 0.98);
+      text-shadow: 0 0 14px rgba(78, 125, 245, 0.25);
+    }
+
+    .lead {
+      margin-top: 10px;
+      color: rgba(184, 209, 247, 0.9);
+      line-height: 1.7;
+      font-size: 14px;
+      max-width: 760px;
+    }
+
+    .back {
+      flex-shrink: 0;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 13px;
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+      background: rgba(10, 18, 50, 0.36);
+    }
+
+    .back:hover {
+      border-color: var(--accent);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.85fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      padding: 18px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 30px rgba(25, 42, 93, 0.12);
+    }
+
+    .panel + .panel {
+      margin-top: 16px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title h2,
+    .panel-title h3 {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(206, 228, 255, 0.98);
+    }
+
+    .panel-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .search-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(100, 150, 255, 0.3);
+      background: rgba(6, 12, 36, 0.86);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: rgba(145, 190, 255, 0.75);
+      box-shadow: 0 0 0 1px rgba(120, 170, 255, 0.2), 0 0 20px rgba(72, 115, 210, 0.2);
+    }
+
+    .search-input::placeholder {
+      color: rgba(102, 132, 184, 0.72);
+    }
+
+    .search-results {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 8px;
+      max-height: 210px;
+      overflow-y: auto;
+    }
+
+    .search-result {
+      border: 1px solid rgba(90, 130, 250, 0.18);
+      border-radius: 7px;
+      background: rgba(8, 18, 48, 0.66);
+      color: rgba(205, 226, 255, 0.95);
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.16s, background 0.16s, transform 0.16s;
+      font-family: inherit;
+      font-size: 12px;
+    }
+
+    .search-result:hover,
+    .search-result.active {
+      border-color: rgba(145, 182, 255, 0.78);
+      background: rgba(20, 36, 86, 0.74);
+      transform: translateX(2px);
+    }
+
+    .search-result strong {
+      display: block;
+      font-size: 13px;
+      color: #f3f8ff;
+      margin-bottom: 3px;
+      font-weight: 700;
+    }
+
+    .search-result span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .country-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .country-tab {
+      border: 1px solid rgba(100, 150, 255, 0.3);
+      border-radius: 999px;
+      background: rgba(10, 20, 50, 0.62);
+      color: rgba(176, 206, 255, 0.95);
+      padding: 9px 14px;
+      cursor: pointer;
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.18s ease;
+    }
+
+    .country-tab:hover,
+    .country-tab.active {
+      border-color: rgba(142, 184, 255, 0.8);
+      color: #ffffff;
+      background: rgba(31, 62, 136, 0.72);
+      box-shadow: 0 0 16px rgba(68, 110, 215, 0.18);
+    }
+
+    .selected-object {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(95, 140, 255, 0.14);
+    }
+
+    .selected-object h2 {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: clamp(18px, 2.4vw, 30px);
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: #f4f8ff;
+      line-height: 1.15;
+    }
+
+    .selected-object .sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .country-badge {
+      border: 1px solid rgba(100, 150, 255, 0.3);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: rgba(190, 215, 255, 0.95);
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .metric {
+      border: 1px solid rgba(95, 140, 255, 0.18);
+      border-radius: 9px;
+      background: rgba(6, 12, 36, 0.66);
+      padding: 13px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: clamp(18px, 2vw, 26px);
+      color: #f3f8ff;
+      line-height: 1.08;
+    }
+
+    .metric-meta {
+      margin-top: 6px;
+      font-size: 11px;
+      color: rgba(173, 200, 247, 0.85);
+      min-height: 16px;
+    }
+
+    .metric-meta.good { color: var(--good); }
+    .metric-meta.warn { color: var(--warn); }
+    .metric-meta.bad { color: var(--danger); }
+
+    .chart-wrap {
+      border: 1px solid rgba(95, 140, 255, 0.18);
+      border-radius: 10px;
+      background: rgba(4, 10, 32, 0.58);
+      padding: 12px;
+    }
+
+    #chart {
+      width: 100%;
+      height: 320px;
+      display: block;
+    }
+
+    .chart-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .list-item {
+      border: 1px solid rgba(95, 140, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(7, 14, 40, 0.58);
+      padding: 11px 12px;
+    }
+
+    .list-item strong {
+      display: block;
+      margin-bottom: 4px;
+      color: rgba(230, 239, 255, 0.98);
+      font-size: 13px;
+    }
+
+    .list-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .article-card {
+      border: 1px solid rgba(95, 140, 255, 0.18);
+      border-radius: 8px;
+      background: rgba(7, 14, 40, 0.58);
+      padding: 12px;
+    }
+
+    .article-card + .article-card {
+      margin-top: 8px;
+    }
+
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+    }
+
+    .article-card a {
+      color: #f4f8ff;
+      text-decoration: none;
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .article-card a:hover {
+      color: var(--accent-strong);
+    }
+
+    .inline-stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(95, 140, 255, 0.12);
+      font-size: 12px;
+      color: rgba(184, 209, 247, 0.92);
+    }
+
+    .inline-stat:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .inline-stat strong {
+      color: #f3f8ff;
+      font-weight: 700;
+    }
+
+    .empty {
+      border: 1px dashed rgba(95, 140, 255, 0.22);
+      border-radius: 10px;
+      background: rgba(5, 10, 30, 0.48);
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    .status {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      min-height: 18px;
+    }
+
+    .status.error { color: var(--danger); }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .country-tabs {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .search-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .selected-object {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      #chart {
+        height: 260px;
+      }
+
+      .chart-footer {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+
+  <main class="wrap">
+    <header class="top">
+      <div class="top-copy">
+        <span class="eyebrow">Module analytique</span>
+        <h1 class="title">Statistiques par objet saillant</h1>
+        <p class="lead">
+          Choisissez un objet et obtenez son score courant, son rang, son évolution temporelle,
+          ses périodes fortes et les articles qui l’alimentent dans Radar+.
+        </p>
+      </div>
+      <a class="back" href="./index.html">Retour accueil</a>
+    </header>
+
+    <section class="panel">
+      <div class="search-grid">
+        <div class="search-stack">
+          <div>
+            <div class="panel-title">
+              <h2>Recherche</h2>
+              <span class="panel-meta">Entrée libre, suggestion en direct</span>
+            </div>
+            <div class="search-box">
+              <input id="object-search" class="search-input" type="text" placeholder="Rechercher un objet saillant…" autocomplete="off" spellcheck="false" />
+            </div>
+            <div id="search-results" class="search-results" aria-live="polite"></div>
+            <div id="status" class="status"></div>
+          </div>
+          <p class="hint">
+            Exemples: Quebec, united states, Donald Trump, Hydro-Québec. Les données proviennent des JSON publics déjà publiés dans le site.
+          </p>
+        </div>
+        <div>
+          <div class="panel-title">
+            <h2>Pays</h2>
+            <span class="panel-meta">Édition observée</span>
+          </div>
+          <div id="country-tabs" class="country-tabs" aria-label="Choix du pays"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section>
+        <div class="panel" id="summary-panel">
+          <div id="summary-empty" class="empty">
+            Commencez par rechercher un objet. La page affichera ensuite ses métriques essentielles,
+            sa trajectoire dans le temps et ses périodes de saillance les plus fortes.
+          </div>
+          <div id="summary-content" hidden>
+            <div class="selected-object">
+              <div>
+                <h2 id="object-title">—</h2>
+                <div class="sub" id="object-subtitle">—</div>
+              </div>
+              <div class="country-badge" id="country-badge">—</div>
+            </div>
+
+            <div class="metrics" id="metrics"></div>
+
+            <div class="chart-wrap">
+              <canvas id="chart"></canvas>
+              <div class="chart-footer">
+                <span id="chart-caption-left">—</span>
+                <span id="chart-caption-right">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside>
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Repères rapides</h3>
+            <span class="panel-meta">Lecture instantanée</span>
+          </div>
+          <div id="quick-stats">
+            <div class="empty">Aucun objet sélectionné.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Périodes fortes</h3>
+            <span class="panel-meta">Top 5</span>
+          </div>
+          <div id="peak-list" class="list">
+            <div class="empty">Aucune donnée à afficher.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Articles liés</h3>
+            <span class="panel-meta">Dernière période active</span>
+          </div>
+          <div id="articles-list">
+            <div class="empty">Les articles liés apparaîtront ici.</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      const COUNTRY_LABELS = {
+        QC: 'Québec',
+        CAN: 'Canada',
+        USA: 'États-Unis'
+      };
+
+      const numberFormat = new Intl.NumberFormat('fr-CA', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 0
+      });
+
+      const percentFormat = new Intl.NumberFormat('fr-CA', {
+        maximumFractionDigits: 1,
+        minimumFractionDigits: 1,
+        signDisplay: 'always'
+      });
+
+      const state = {
+        graphData: null,
+        timeseriesData: null,
+        countries: [],
+        activeCountry: 'QC',
+        searchResults: [],
+        selectedObject: null
+      };
+
+      const starsCanvas = document.getElementById('stars');
+      const starsCtx = starsCanvas.getContext('2d');
+      const chartCanvas = document.getElementById('chart');
+      const chartCtx = chartCanvas.getContext('2d');
+      const searchInput = document.getElementById('object-search');
+      const searchResultsEl = document.getElementById('search-results');
+      const statusEl = document.getElementById('status');
+      const countryTabsEl = document.getElementById('country-tabs');
+      const summaryEmptyEl = document.getElementById('summary-empty');
+      const summaryContentEl = document.getElementById('summary-content');
+      const metricsEl = document.getElementById('metrics');
+      const quickStatsEl = document.getElementById('quick-stats');
+      const peakListEl = document.getElementById('peak-list');
+      const articlesListEl = document.getElementById('articles-list');
+
+      let stars = [];
+
+      function setupStars() {
+        resizeStars();
+        stars = Array.from({ length: 180 }, function() {
+          return {
+            x: Math.random(),
+            y: Math.random(),
+            r: Math.random() * 1.4 + 0.2,
+            a: Math.random() * 0.7 + 0.1
+          };
+        });
+        renderStars();
+      }
+
+      function resizeStars() {
+        starsCanvas.width = window.innerWidth;
+        starsCanvas.height = window.innerHeight;
+      }
+
+      function renderStars() {
+        starsCtx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+        stars.forEach(function(star) {
+          starsCtx.beginPath();
+          starsCtx.arc(star.x * starsCanvas.width, star.y * starsCanvas.height, star.r, 0, Math.PI * 2);
+          starsCtx.fillStyle = 'rgba(190, 214, 255, ' + star.a.toFixed(2) + ')';
+          starsCtx.fill();
+        });
+      }
+
+      function normalizeObjectId(value) {
+        return String(value || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, ' ')
+          .trim();
+      }
+
+      function getPeriods() {
+        return state.timeseriesData?.meta?.periods || [];
+      }
+
+      function getCountryGraphPeriods(country) {
+        return state.graphData?.graphs?.[country] || {};
+      }
+
+      function getCountryTimePeriods(country) {
+        return state.timeseriesData?.graphs?.[country] || {};
+      }
+
+      function getAllObjects(country) {
+        const ids = new Map();
+        const periods = getCountryTimePeriods(country);
+        Object.values(periods).forEach(function(graph) {
+          (graph.nodes || []).forEach(function(node) {
+            const normalized = normalizeObjectId(node.id);
+            if (!ids.has(normalized)) {
+              ids.set(normalized, node.id);
+            }
+          });
+        });
+        return Array.from(ids.values()).sort(function(a, b) {
+          return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+        });
+      }
+
+      function findObjectInCountry(country, query) {
+        const normalizedQuery = normalizeObjectId(query);
+        if (!normalizedQuery) {
+          return [];
+        }
+        return getAllObjects(country)
+          .map(function(id) {
+            return {
+              id: id,
+              normalized: normalizeObjectId(id)
+            };
+          })
+          .filter(function(entry) {
+            return entry.normalized.indexOf(normalizedQuery) !== -1;
+          })
+          .slice(0, 10)
+          .map(function(entry) {
+            return entry.id;
+          });
+      }
+
+      function getObjectSeries(country, objectId) {
+        const normalized = normalizeObjectId(objectId);
+        const periodsMeta = getPeriods();
+        const timePeriods = getCountryTimePeriods(country);
+        return periodsMeta.map(function(period, index) {
+          const graph = timePeriods[period.key] || { nodes: [] };
+          const rankedNodes = (graph.nodes || []).slice().sort(function(a, b) {
+            return (b.size || 0) - (a.size || 0);
+          });
+          const node = rankedNodes.find(function(item) {
+            return normalizeObjectId(item.id) === normalized;
+          }) || null;
+          const rank = node
+            ? rankedNodes.findIndex(function(item) {
+                return normalizeObjectId(item.id) === normalized;
+              }) + 1
+            : null;
+
+          return {
+            index: index,
+            key: period.key,
+            label: period.label,
+            date: period.date,
+            interval: period.interval,
+            score: node ? Number(node.size || 0) : 0,
+            mentions: node ? Number(node.n || 0) : 0,
+            articles: node ? (node.articles || []) : [],
+            rank: rank
+          };
+        });
+      }
+
+      function getCurrentGraphNode(country, objectId, preferredKey) {
+        const graphPeriods = getCountryGraphPeriods(country);
+        const normalized = normalizeObjectId(objectId);
+        const candidateKeys = [];
+
+        if (preferredKey && graphPeriods[preferredKey]) {
+          candidateKeys.push(preferredKey);
+        }
+
+        Object.keys(graphPeriods).sort().reverse().forEach(function(key) {
+          if (candidateKeys.indexOf(key) === -1) {
+            candidateKeys.push(key);
+          }
+        });
+
+        if (!candidateKeys.length) {
+          return null;
+        }
+
+        for (let index = 0; index < candidateKeys.length; index += 1) {
+          const key = candidateKeys[index];
+          const graph = graphPeriods[key] || { nodes: [] };
+          const nodes = (graph.nodes || []).slice().sort(function(a, b) {
+            return (b.size || 0) - (a.size || 0);
+          });
+          const node = nodes.find(function(item) {
+            return normalizeObjectId(item.id) === normalized;
+          }) || null;
+
+          if (node) {
+            return {
+              latestKey: key,
+              node: node,
+              rank: nodes.findIndex(function(item) {
+                return normalizeObjectId(item.id) === normalized;
+              }) + 1,
+              totalNodes: nodes.length
+            };
+          }
+        }
+
+        return null;
+      }
+
+      function computeStats(country, objectId) {
+        const series = getObjectSeries(country, objectId);
+        const populated = series.filter(function(item) {
+          return item.score > 0;
+        });
+        const current = populated.length ? populated[populated.length - 1] : null;
+        if (!populated.length || !current) {
+          return null;
+        }
+
+        const graphNode = getCurrentGraphNode(country, objectId, current.key);
+
+        const peak = populated.reduce(function(best, item) {
+          return item.score > best.score ? item : best;
+        }, populated[0]);
+
+        const totalScore = populated.reduce(function(sum, item) {
+          return sum + item.score;
+        }, 0);
+
+        const average = totalScore / populated.length;
+        const previous = populated.length > 1 ? populated[populated.length - 2] : null;
+        const delta = previous && previous.score > 0
+          ? ((current.score - previous.score) / previous.score) * 100
+          : null;
+        const first = populated[0];
+        const recentMentions = current.mentions;
+        const latestArticles = ((graphNode?.node?.articles && graphNode.node.articles.length)
+          ? graphNode.node.articles
+          : current.articles || []).slice(0, 6);
+        const uniqueMedia = (graphNode?.node?.media_ids && graphNode.node.media_ids.length)
+          ? graphNode.node.media_ids
+          : Array.from(new Set(latestArticles.map(function(article) {
+              return article.media_id;
+            }).filter(Boolean)));
+        const coverageRatio = (populated.length / series.length) * 100;
+
+        return {
+          country: country,
+          objectId: graphNode?.node?.id || current.id || objectId,
+          currentScore: current.score,
+          currentMentions: recentMentions,
+          currentRank: graphNode?.rank || current.rank,
+          totalNodes: graphNode?.totalNodes || null,
+          firstSeen: first,
+          peak: peak,
+          average: average,
+          delta: delta,
+          coverageRatio: coverageRatio,
+          activePeriods: populated.length,
+          totalPeriods: series.length,
+          latestArticles: latestArticles,
+          uniqueMedia: uniqueMedia,
+          series: series
+        };
+      }
+
+      function formatNumber(value) {
+        return numberFormat.format(value);
+      }
+
+      function formatDelta(value) {
+        return value === null ? 'n/d' : percentFormat.format(value / 100);
+      }
+
+      function setStatus(message, isError) {
+        statusEl.textContent = message || '';
+        statusEl.className = isError ? 'status error' : 'status';
+      }
+
+      function renderCountryTabs() {
+        countryTabsEl.innerHTML = '';
+        state.countries.forEach(function(country) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'country-tab' + (country === state.activeCountry ? ' active' : '');
+          button.textContent = country;
+          button.setAttribute('aria-label', COUNTRY_LABELS[country] || country);
+          button.addEventListener('click', function() {
+            state.activeCountry = country;
+            renderCountryTabs();
+            renderSearchResults(searchInput.value);
+            if (state.selectedObject) {
+              const stats = computeStats(country, state.selectedObject);
+              if (stats) {
+                renderStats(stats);
+                setStatus('Objet rechargé pour ' + (COUNTRY_LABELS[country] || country) + '.', false);
+              } else {
+                renderEmptyState('Cet objet n’apparaît pas dans cette édition actuellement.');
+                setStatus('Objet absent pour ' + (COUNTRY_LABELS[country] || country) + '.', true);
+              }
+            }
+          });
+          countryTabsEl.appendChild(button);
+        });
+      }
+
+      function renderSearchResults(query) {
+        searchResultsEl.innerHTML = '';
+        if (!query.trim()) {
+          return;
+        }
+
+        const matches = findObjectInCountry(state.activeCountry, query);
+        state.searchResults = matches;
+
+        if (!matches.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = 'Aucun objet correspondant dans cette édition.';
+          searchResultsEl.appendChild(empty);
+          return;
+        }
+
+        matches.forEach(function(id, index) {
+          const stats = computeStats(state.activeCountry, id);
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'search-result' + (index === 0 ? ' active' : '');
+          button.innerHTML = '<strong>' + escapeHtml(id) + '</strong><span>' + buildSearchMeta(stats) + '</span>';
+          button.addEventListener('click', function() {
+            selectObject(id);
+          });
+          searchResultsEl.appendChild(button);
+        });
+      }
+
+      function buildSearchMeta(stats) {
+        if (!stats) {
+          return 'Aucune série exploitable';
+        }
+        return 'dernier score ' + formatNumber(stats.currentScore) + ' · rang #' + (stats.currentRank || '—') + ' · ' + stats.activePeriods + ' périodes actives';
+      }
+
+      function renderEmptyState(message) {
+        summaryEmptyEl.hidden = false;
+        summaryEmptyEl.textContent = message;
+        summaryContentEl.hidden = true;
+        quickStatsEl.innerHTML = '<div class="empty">Aucun objet sélectionné.</div>';
+        peakListEl.innerHTML = '<div class="empty">Aucune donnée à afficher.</div>';
+        articlesListEl.innerHTML = '<div class="empty">Les articles liés apparaîtront ici.</div>';
+        chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+      }
+
+      function selectObject(objectId) {
+        const stats = computeStats(state.activeCountry, objectId);
+        if (!stats) {
+          state.selectedObject = null;
+          renderEmptyState('Impossible de calculer des statistiques pour cet objet.');
+          setStatus('Objet trouvé mais inexploitable dans les périodes publiées.', true);
+          return;
+        }
+        state.selectedObject = stats.objectId;
+        renderStats(stats);
+        setStatus('Objet sélectionné: ' + stats.objectId + '.', false);
+      }
+
+      function renderStats(stats) {
+        summaryEmptyEl.hidden = true;
+        summaryContentEl.hidden = false;
+
+        document.getElementById('object-title').textContent = stats.objectId;
+        document.getElementById('object-subtitle').textContent =
+          'Suivi sur ' + stats.activePeriods + ' périodes actives sur ' + stats.totalPeriods + ' publiées.';
+        document.getElementById('country-badge').textContent = COUNTRY_LABELS[stats.country] || stats.country;
+
+        renderMetrics(stats);
+        renderQuickStats(stats);
+        renderPeakList(stats);
+        renderArticles(stats.latestArticles, stats.country);
+        renderChart(stats);
+
+        document.getElementById('chart-caption-left').textContent =
+          'Première apparition: ' + stats.firstSeen.label + ' · pic: ' + stats.peak.label;
+        document.getElementById('chart-caption-right').textContent =
+          'Dernière période active: ' + stats.series.filter(function(item) { return item.score > 0; }).slice(-1)[0].label;
+      }
+
+      function renderMetrics(stats) {
+        const deltaClass = stats.delta === null ? '' : stats.delta >= 0 ? 'good' : 'bad';
+        const cards = [
+          {
+            label: 'Dernier score',
+            value: formatNumber(stats.currentScore),
+            meta: stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '')
+          },
+          {
+            label: 'Dernier rang',
+            value: stats.currentRank ? '#' + stats.currentRank : '—',
+            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets' : ''
+          },
+          {
+            label: 'Variation récente',
+            value: stats.delta === null ? 'n/d' : formatDelta(stats.delta),
+            meta: stats.delta === null ? 'une seule période active' : 'vs période active précédente',
+            metaClass: deltaClass
+          },
+          {
+            label: 'Pic maximal',
+            value: formatNumber(stats.peak.score),
+            meta: stats.peak.label
+          },
+          {
+            label: 'Moyenne active',
+            value: formatNumber(stats.average),
+            meta: 'sur ' + stats.activePeriods + ' périodes'
+          },
+          {
+            label: 'Persistance',
+            value: numberFormat.format(stats.coverageRatio) + '%',
+            meta: stats.activePeriods + ' périodes avec présence'
+          }
+        ];
+
+        metricsEl.innerHTML = cards.map(function(card) {
+          return [
+            '<article class="metric">',
+            '<div class="metric-label">' + escapeHtml(card.label) + '</div>',
+            '<div class="metric-value">' + escapeHtml(card.value) + '</div>',
+            '<div class="metric-meta ' + (card.metaClass || '') + '">' + escapeHtml(card.meta || '') + '</div>',
+            '</article>'
+          ].join('');
+        }).join('');
+      }
+
+      function renderQuickStats(stats) {
+        const items = [
+          ['Première apparition', stats.firstSeen.label],
+          ['Période du pic', stats.peak.label],
+          ['Médias actifs', String(stats.uniqueMedia.length)],
+          ['Articles visibles', String(stats.latestArticles.length)],
+          ['Mentions au pic', String(stats.peak.mentions)],
+          ['Mentions actuelles', String(stats.currentMentions)]
+        ];
+
+        quickStatsEl.innerHTML = items.map(function(item) {
+          return '<div class="inline-stat"><span>' + escapeHtml(item[0]) + '</span><strong>' + escapeHtml(item[1]) + '</strong></div>';
+        }).join('');
+      }
+
+      function renderPeakList(stats) {
+        const peaks = stats.series
+          .filter(function(item) { return item.score > 0; })
+          .sort(function(a, b) { return b.score - a.score; })
+          .slice(0, 5);
+
+        if (!peaks.length) {
+          peakListEl.innerHTML = '<div class="empty">Aucune période active.</div>';
+          return;
+        }
+
+        peakListEl.innerHTML = peaks.map(function(item, index) {
+          return [
+            '<div class="list-item">',
+            '<strong>#' + (index + 1) + ' · ' + escapeHtml(item.label) + '</strong>',
+            '<span>Score ' + escapeHtml(formatNumber(item.score)) + ' · rang #' + escapeHtml(String(item.rank || '—')) + ' · ' + escapeHtml(String(item.mentions)) + ' manchettes</span>',
+            '</div>'
+          ].join('');
+        }).join('');
+      }
+
+      function renderArticles(articles, country) {
+        if (!articles.length) {
+          articlesListEl.innerHTML = '<div class="empty">Aucun article lié dans la dernière période active.</div>';
+          return;
+        }
+
+        articlesListEl.innerHTML = articles.map(function(article) {
+          return [
+            '<article class="article-card">',
+            '<div class="article-meta"><span>' + escapeHtml(country) + '</span><span>' + escapeHtml(article.media_id || 'média inconnu') + '</span></div>',
+            '<a href="' + escapeAttribute(article.url || '#') + '" target="_blank" rel="noopener">' + escapeHtml(article.title || article.url || 'Article sans titre') + '</a>',
+            '</article>'
+          ].join('');
+        }).join('');
+      }
+
+      function renderChart(stats) {
+        const rect = chartCanvas.getBoundingClientRect();
+        chartCanvas.width = rect.width;
+        chartCanvas.height = rect.height;
+        const width = chartCanvas.width;
+        const height = chartCanvas.height;
+        chartCtx.clearRect(0, 0, width, height);
+
+        const series = stats.series;
+        const activeScores = series.map(function(item) { return item.score; });
+        const maxValue = Math.max.apply(null, activeScores.concat([1]));
+        const pad = { top: 18, right: 12, bottom: 34, left: 48 };
+        const chartWidth = Math.max(40, width - pad.left - pad.right);
+        const chartHeight = Math.max(40, height - pad.top - pad.bottom);
+
+        function xOf(index) {
+          return pad.left + (series.length > 1 ? (index / (series.length - 1)) * chartWidth : chartWidth / 2);
+        }
+
+        function yOf(value) {
+          return pad.top + chartHeight - (value / maxValue) * chartHeight;
+        }
+
+        chartCtx.strokeStyle = 'rgba(70, 108, 193, 0.2)';
+        chartCtx.lineWidth = 1;
+        chartCtx.font = '10px "Space Mono", monospace';
+        chartCtx.fillStyle = 'rgba(135, 166, 220, 0.64)';
+
+        for (let step = 0; step <= 4; step += 1) {
+          const value = (maxValue / 4) * step;
+          const y = yOf(value);
+          chartCtx.beginPath();
+          chartCtx.moveTo(pad.left, y);
+          chartCtx.lineTo(pad.left + chartWidth, y);
+          chartCtx.stroke();
+          chartCtx.fillText(formatNumber(value), 4, y + 3);
+        }
+
+        chartCtx.beginPath();
+        let started = false;
+        series.forEach(function(item, index) {
+          const x = xOf(index);
+          const y = yOf(item.score);
+          if (!started) {
+            chartCtx.moveTo(x, y);
+            started = true;
+          } else {
+            chartCtx.lineTo(x, y);
+          }
+        });
+        chartCtx.strokeStyle = 'rgba(154, 196, 255, 0.98)';
+        chartCtx.lineWidth = 2;
+        chartCtx.shadowColor = 'rgba(83, 138, 255, 0.42)';
+        chartCtx.shadowBlur = 10;
+        chartCtx.stroke();
+        chartCtx.shadowBlur = 0;
+
+        chartCtx.beginPath();
+        chartCtx.moveTo(xOf(0), yOf(0));
+        series.forEach(function(item, index) {
+          chartCtx.lineTo(xOf(index), yOf(item.score));
+        });
+        chartCtx.lineTo(xOf(series.length - 1), yOf(0));
+        chartCtx.closePath();
+        chartCtx.fillStyle = 'rgba(88, 140, 255, 0.12)';
+        chartCtx.fill();
+
+        series.forEach(function(item, index) {
+          const x = xOf(index);
+          const y = yOf(item.score);
+          chartCtx.beginPath();
+          chartCtx.arc(x, y, item.score === stats.peak.score && item.label === stats.peak.label ? 4 : 2.5, 0, Math.PI * 2);
+          chartCtx.fillStyle = item.score === stats.peak.score && item.label === stats.peak.label
+            ? 'rgba(255, 212, 120, 0.98)'
+            : 'rgba(188, 216, 255, 0.92)';
+          chartCtx.fill();
+        });
+
+        const tickStep = Math.max(1, Math.floor(series.length / 6));
+        chartCtx.fillStyle = 'rgba(120, 153, 212, 0.62)';
+        chartCtx.textAlign = 'center';
+        series.forEach(function(item, index) {
+          if (index % tickStep !== 0 && index !== series.length - 1) {
+            return;
+          }
+          const parts = item.label.split('·');
+          chartCtx.fillText((parts[0] || '').trim(), xOf(index), height - 16);
+        });
+        chartCtx.textAlign = 'left';
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value);
+      }
+
+      function applyUrlSelection() {
+        const params = new URLSearchParams(window.location.search);
+        const objectParam = params.get('objet') || params.get('object');
+        const countryParam = (params.get('pays') || params.get('country') || '').toUpperCase();
+
+        if (countryParam && state.countries.indexOf(countryParam) !== -1) {
+          state.activeCountry = countryParam;
+        }
+
+        renderCountryTabs();
+
+        if (objectParam) {
+          searchInput.value = objectParam;
+          renderSearchResults(objectParam);
+          selectObject(objectParam);
+        }
+      }
+
+      async function loadData() {
+        try {
+          setStatus('Chargement des statistiques…', false);
+          const responses = await Promise.all([
+            fetch('./graph.json'),
+            fetch('./timeseries.json')
+          ]);
+          if (!responses[0].ok) {
+            throw new Error('graph.json introuvable');
+          }
+          if (!responses[1].ok) {
+            throw new Error('timeseries.json introuvable');
+          }
+          state.graphData = await responses[0].json();
+          state.timeseriesData = await responses[1].json();
+          state.countries = state.timeseriesData?.meta?.countries || Object.keys(state.timeseriesData?.graphs || {});
+          if (state.countries.indexOf(state.activeCountry) === -1) {
+            state.activeCountry = state.countries[0] || 'QC';
+          }
+          applyUrlSelection();
+          setStatus('Données chargées. Recherchez un objet pour commencer.', false);
+        } catch (error) {
+          renderEmptyState('Impossible de charger les données statistiques pour le moment.');
+          setStatus(error.message || 'Erreur de chargement.', true);
+        }
+      }
+
+      searchInput.addEventListener('input', function() {
+        renderSearchResults(searchInput.value);
+      });
+
+      searchInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          if (state.searchResults.length) {
+            selectObject(state.searchResults[0]);
+          } else if (searchInput.value.trim()) {
+            selectObject(searchInput.value.trim());
+          }
+        }
+        if (event.key === 'Escape') {
+          searchInput.value = '';
+          searchResultsEl.innerHTML = '';
+          setStatus('', false);
+        }
+      });
+
+      window.addEventListener('resize', function() {
+        resizeStars();
+        renderStars();
+        if (state.selectedObject) {
+          const stats = computeStats(state.activeCountry, state.selectedObject);
+          if (stats) {
+            renderChart(stats);
+          }
+        }
+      });
+
+      setupStars();
+      renderEmptyState('Commencez par rechercher un objet. La page affichera ensuite ses métriques essentielles, sa trajectoire dans le temps et ses périodes de saillance les plus fortes.');
+      loadData();
+    })();
+  </script>
+  <script src="./assets/js/shared-menu.js"></script>
+</body>
+</html>

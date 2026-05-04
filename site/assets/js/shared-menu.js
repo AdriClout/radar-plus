@@ -28,6 +28,7 @@
       '<a href="./index.html" data-page="index.html">Accueil</a>',
       '<a href="./constellation.html" data-page="constellation.html">Constellation <span class="nav-badge">LIVE</span></a>',
       '<a href="./evolution.html" data-page="evolution.html">Évolution <span class="nav-badge">TIMELINE</span></a>',
+      '<a href="./statistiques.html" data-page="statistiques.html">Statistiques <span class="nav-badge">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>',
       '<a href="./index.html#hot20">Hot 20</a>',
       '<a href="./unes.html" data-page="unes.html">Dans le radar</a>',
