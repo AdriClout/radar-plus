@@ -603,8 +603,7 @@
         <span class="eyebrow">Module analytique</span>
         <h1 class="title">Statistiques par objet saillant</h1>
         <p class="lead">
-          Choisissez un objet et lisez séparément son instantané le plus récent,
-          sa trajectoire dans le temps et son bilan historique cumulé dans Radar+.
+          Recherchez un objet pour afficher ses statistiques.
         </p>
       </div>
       <a class="back" href="./index.html">Retour accueil</a>
@@ -625,7 +624,7 @@
             <div id="status" class="status"></div>
           </div>
           <p class="hint">
-            Exemples: Quebec, united states, Donald Trump, Hydro-Québec. Les données proviennent des JSON publics déjà publiés dans le site.
+            Exemples: Quebec, united states, Donald Trump, Hydro-Québec.
           </p>
         </div>
         <div>
@@ -642,8 +641,7 @@
       <section>
         <div class="panel" id="summary-panel">
           <div id="summary-empty" class="empty">
-            Commencez par rechercher un objet. La page séparera ensuite clairement son instantané
-            courant, sa trajectoire et son bilan historique.
+            Commencez par rechercher un objet.
           </div>
           <div id="summary-content" hidden>
             <div class="selected-object">
@@ -663,16 +661,11 @@
                 <div class="scope-label">Périmètre historique</div>
                 <div class="scope-value" id="scope-history">—</div>
               </div>
-              <div class="scope-card">
-                <div class="scope-label">Lecture de la page</div>
-                <div class="scope-value" id="scope-reading">—</div>
-              </div>
             </div>
 
             <section class="section-block">
               <div class="section-heading">
                 <h3>Maintenant</h3>
-                <p>Ce bloc décrit uniquement la dernière période active où l’objet apparaît dans Radar+.</p>
               </div>
               <div class="metrics" id="now-metrics"></div>
             </section>
@@ -680,7 +673,6 @@
             <section class="section-block">
               <div class="section-heading">
                 <h3>Trajectoire</h3>
-                <p>Courbe complète de l’objet dans toutes les périodes publiées pour cette édition.</p>
               </div>
               <div class="chart-wrap">
                 <canvas id="chart"></canvas>
@@ -1182,7 +1174,6 @@
         document.getElementById('country-badge').textContent = COUNTRY_LABELS[stats.country] || stats.country;
         document.getElementById('scope-current').textContent = stats.currentLabel;
         document.getElementById('scope-history').textContent = stats.activePeriods + ' périodes actives sur ' + stats.totalPeriods + ' publiées';
-        document.getElementById('scope-reading').textContent = 'En haut: instantané courant. Plus bas: évolution et bilan cumulé.';
 
         renderNowMetrics(stats);
         renderHistoryStats(stats);
@@ -1516,7 +1507,7 @@
       });
 
       setupStars();
-      renderEmptyState('Commencez par rechercher un objet. La page séparera ensuite clairement son instantané courant, sa trajectoire et son bilan historique.');
+      renderEmptyState('Commencez par rechercher un objet.');
       loadData();
     })();
   </script>
