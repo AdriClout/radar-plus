@@ -27,7 +27,7 @@
 
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at top, rgba(29, 54, 116, 0.18), transparent 32%), var(--bg);
+      background: var(--bg);
       color: var(--text);
       font-family: 'Space Mono', 'SF Mono', monospace;
       overflow-x: hidden;
@@ -38,6 +38,7 @@
       inset: 0;
       z-index: 0;
       pointer-events: none;
+      opacity: 0.15;
     }
 
     .wrap {
@@ -53,12 +54,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 16px;
-      padding: 16px 18px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: linear-gradient(to right, rgba(9, 18, 54, 0.8), rgba(5, 10, 30, 0.68));
-      backdrop-filter: blur(6px);
+      margin-bottom: 24px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: transparent;
+      backdrop-filter: none;
     }
 
     .top-copy {
@@ -78,11 +79,11 @@
     .title {
       font-family: 'Orbitron', 'Space Mono', monospace;
       font-size: clamp(24px, 3.6vw, 42px);
-      letter-spacing: clamp(2px, 0.45vw, 8px);
+      letter-spacing: 2px;
       text-transform: uppercase;
       line-height: 1.04;
       color: rgba(215, 231, 255, 0.98);
-      text-shadow: 0 0 14px rgba(78, 125, 245, 0.25);
+      text-shadow: none;
     }
 
     .lead {
@@ -95,21 +96,20 @@
 
     .back {
       flex-shrink: 0;
-      color: var(--text);
+      color: var(--muted);
       text-decoration: none;
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 9px 13px;
+      padding: 8px 12px;
       font-size: 12px;
-      letter-spacing: 0.6px;
-      transition: border-color 0.2s, color 0.2s, transform 0.2s;
-      background: rgba(10, 18, 50, 0.36);
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+      background: transparent;
     }
 
     .back:hover {
       border-color: var(--accent);
       color: #ffffff;
-      transform: translateY(-1px);
     }
 
     .layout {
@@ -121,11 +121,11 @@
 
     .panel {
       border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--panel);
+      border-radius: 8px;
+      background: rgba(8, 16, 46, 0.5);
       padding: 18px;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 0 30px rgba(25, 42, 93, 0.12);
+      backdrop-filter: none;
+      box-shadow: none;
     }
 
     .panel + .panel {
@@ -202,23 +202,22 @@
     }
 
     .search-result {
-      border: 1px solid rgba(90, 130, 250, 0.18);
-      border-radius: 7px;
-      background: rgba(8, 18, 48, 0.66);
+      border: 1px solid rgba(90, 130, 250, 0.12);
+      border-radius: 6px;
+      background: rgba(8, 18, 48, 0.5);
       color: rgba(205, 226, 255, 0.95);
       padding: 10px 12px;
       text-align: left;
       cursor: pointer;
-      transition: border-color 0.16s, background 0.16s, transform 0.16s;
+      transition: border-color 0.16s, background 0.16s;
       font-family: inherit;
       font-size: 12px;
     }
 
     .search-result:hover,
     .search-result.active {
-      border-color: rgba(145, 182, 255, 0.78);
-      background: rgba(20, 36, 86, 0.74);
-      transform: translateX(2px);
+      border-color: rgba(145, 182, 255, 0.5);
+      background: rgba(20, 36, 86, 0.55);
     }
 
     .search-result strong {
@@ -307,38 +306,38 @@
 
     .metrics {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
     }
 
     .metric {
-      border: 1px solid rgba(95, 140, 255, 0.18);
-      border-radius: 9px;
-      background: rgba(6, 12, 36, 0.66);
-      padding: 13px;
+      border: 1px solid rgba(95, 140, 255, 0.12);
+      border-radius: 6px;
+      background: rgba(6, 12, 36, 0.4);
+      padding: 14px;
     }
 
     .metric-label {
-      font-size: 10px;
-      letter-spacing: 1px;
+      font-size: 11px;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
+      color: rgba(132, 164, 215, 0.75);
+      margin-bottom: 6px;
     }
 
     .metric-value {
       font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: clamp(18px, 2vw, 26px);
+      font-size: 22px;
       color: #f3f8ff;
-      line-height: 1.08;
+      line-height: 1.2;
+      margin-bottom: 4px;
     }
 
     .metric-meta {
-      margin-top: 6px;
       font-size: 11px;
-      color: rgba(173, 200, 247, 0.85);
-      min-height: 16px;
+      color: rgba(173, 200, 247, 0.7);
+      min-height: 14px;
     }
 
     .metric-meta.good { color: var(--good); }
@@ -346,10 +345,10 @@
     .metric-meta.bad { color: var(--danger); }
 
     .chart-wrap {
-      border: 1px solid rgba(95, 140, 255, 0.18);
-      border-radius: 10px;
-      background: rgba(4, 10, 32, 0.58);
-      padding: 12px;
+      border: 1px solid rgba(95, 140, 255, 0.12);
+      border-radius: 8px;
+      background: rgba(4, 10, 32, 0.4);
+      padding: 14px;
     }
 
     #chart {
@@ -373,30 +372,30 @@
     }
 
     .list-item {
-      border: 1px solid rgba(95, 140, 255, 0.16);
-      border-radius: 8px;
-      background: rgba(7, 14, 40, 0.58);
+      border: 1px solid rgba(95, 140, 255, 0.12);
+      border-radius: 6px;
+      background: rgba(7, 14, 40, 0.4);
       padding: 11px 12px;
     }
 
     .list-item strong {
       display: block;
       margin-bottom: 4px;
-      color: rgba(230, 239, 255, 0.98);
-      font-size: 13px;
+      color: rgba(230, 239, 255, 0.95);
+      font-size: 12px;
     }
 
     .list-item span {
       display: block;
       color: var(--muted);
       font-size: 11px;
-      line-height: 1.55;
+      line-height: 1.5;
     }
 
     .article-card {
-      border: 1px solid rgba(95, 140, 255, 0.18);
-      border-radius: 8px;
-      background: rgba(7, 14, 40, 0.58);
+      border: 1px solid rgba(95, 140, 255, 0.12);
+      border-radius: 6px;
+      background: rgba(7, 14, 40, 0.4);
       padding: 12px;
     }
 
@@ -844,10 +843,27 @@
         }, 0);
 
         const average = totalScore / populated.length;
+        const cumulativeScore = totalScore;
         const previous = populated.length > 1 ? populated[populated.length - 2] : null;
         const delta = previous && previous.score > 0
           ? ((current.score - previous.score) / previous.score) * 100
           : null;
+
+        // Indice relatif: % du score pic
+        const relativeIndex = peak.score > 0 ? (current.score / peak.score) * 100 : 0;
+
+        // Semaines consécutives actives (fin)
+        let consecutiveWeeks = 1;
+        for (let i = populated.length - 2; i >= 0; i--) {
+          const currIdx = series.indexOf(populated[i]);
+          const nextIdx = series.indexOf(populated[i + 1]);
+          if (currIdx !== -1 && nextIdx !== -1 && currIdx === nextIdx - 1) {
+            consecutiveWeeks++;
+          } else {
+            break;
+          }
+        }
+
         const first = populated[0];
         const recentMentions = current.mentions;
         const latestArticles = ((graphNode?.node?.articles && graphNode.node.articles.length)
@@ -871,6 +887,9 @@
           peak: peak,
           average: average,
           delta: delta,
+          relativeIndex: relativeIndex,
+          cumulativeScore: cumulativeScore,
+          consecutiveWeeks: consecutiveWeeks,
           coverageRatio: coverageRatio,
           activePeriods: populated.length,
           totalPeriods: series.length,
@@ -1002,38 +1021,36 @@
       }
 
       function renderMetrics(stats) {
-        const deltaClass = stats.delta === null ? '' : stats.delta >= 0 ? 'good' : 'bad';
         const cards = [
           {
-            label: 'Dernier score',
+            label: 'Indice absolu',
             value: formatNumber(stats.currentScore),
             meta: stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '')
           },
           {
-            label: 'Dernier rang',
-            value: stats.currentRank ? '#' + stats.currentRank : '—',
-            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets' : ''
+            label: 'Indice relatif',
+            value: numberFormat.format(stats.relativeIndex) + '%',
+            meta: 'vs pic maximal'
           },
           {
-            label: 'Variation récente',
-            value: stats.delta === null ? 'n/d' : formatDelta(stats.delta),
-            meta: stats.delta === null ? 'une seule période active' : 'vs période active précédente',
-            metaClass: deltaClass
-          },
-          {
-            label: 'Pic maximal',
-            value: formatNumber(stats.peak.score),
-            meta: stats.peak.label
-          },
-          {
-            label: 'Moyenne active',
-            value: formatNumber(stats.average),
+            label: 'Indice cumulatif',
+            value: formatNumber(stats.cumulativeScore),
             meta: 'sur ' + stats.activePeriods + ' périodes'
           },
           {
-            label: 'Persistance',
-            value: numberFormat.format(stats.coverageRatio) + '%',
-            meta: stats.activePeriods + ' périodes avec présence'
+            label: 'Périodes consécutives',
+            value: String(stats.consecutiveWeeks),
+            meta: 'actives en fin'
+          },
+          {
+            label: 'Périodes actives',
+            value: stats.activePeriods + '/' + stats.totalPeriods,
+            meta: numberFormat.format(stats.coverageRatio) + '% couverture'
+          },
+          {
+            label: 'Classement',
+            value: stats.currentRank ? '#' + stats.currentRank : '—',
+            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets' : '—'
           }
         ];
 
@@ -1042,7 +1059,7 @@
             '<article class="metric">',
             '<div class="metric-label">' + escapeHtml(card.label) + '</div>',
             '<div class="metric-value">' + escapeHtml(card.value) + '</div>',
-            '<div class="metric-meta ' + (card.metaClass || '') + '">' + escapeHtml(card.meta || '') + '</div>',
+            '<div class="metric-meta">' + escapeHtml(card.meta || '') + '</div>',
             '</article>'
           ].join('');
         }).join('');
