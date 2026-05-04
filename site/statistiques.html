@@ -304,6 +304,62 @@
       white-space: nowrap;
     }
 
+    .scope-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .scope-card {
+      border: 1px solid rgba(95, 140, 255, 0.12);
+      border-radius: 6px;
+      background: rgba(6, 12, 36, 0.32);
+      padding: 12px 13px;
+    }
+
+    .scope-label {
+      font-size: 10px;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .scope-value {
+      color: #f3f8ff;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .section-block + .section-block {
+      margin-top: 18px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-heading h3 {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: rgba(230, 239, 255, 0.98);
+    }
+
+    .section-heading p {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+      text-align: right;
+      max-width: 340px;
+    }
+
     .metrics {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -338,6 +394,10 @@
       font-size: 11px;
       color: rgba(173, 200, 247, 0.7);
       min-height: 14px;
+    }
+
+    .metric-meta.neutral {
+      color: rgba(173, 200, 247, 0.7);
     }
 
     .metric-meta.good { color: var(--good); }
@@ -443,6 +503,19 @@
     .inline-stat strong {
       color: #f3f8ff;
       font-weight: 700;
+      text-align: right;
+    }
+
+    .article-group + .article-group {
+      margin-top: 14px;
+    }
+
+    .article-group-title {
+      margin-bottom: 8px;
+      color: rgba(230, 239, 255, 0.96);
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
     }
 
     .empty {
@@ -467,6 +540,10 @@
 
     @media (max-width: 1080px) {
       .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .scope-strip {
         grid-template-columns: 1fr;
       }
 
@@ -498,6 +575,15 @@
         align-items: flex-start;
       }
 
+      .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .section-heading p {
+        text-align: left;
+      }
+
       #chart {
         height: 260px;
       }
@@ -517,8 +603,8 @@
         <span class="eyebrow">Module analytique</span>
         <h1 class="title">Statistiques par objet saillant</h1>
         <p class="lead">
-          Choisissez un objet et obtenez son score courant, son rang, son évolution temporelle,
-          ses périodes fortes et les articles qui l’alimentent dans Radar+.
+          Choisissez un objet et lisez séparément son instantané le plus récent,
+          sa trajectoire dans le temps et son bilan historique cumulé dans Radar+.
         </p>
       </div>
       <a class="back" href="./index.html">Retour accueil</a>
@@ -556,8 +642,8 @@
       <section>
         <div class="panel" id="summary-panel">
           <div id="summary-empty" class="empty">
-            Commencez par rechercher un objet. La page affichera ensuite ses métriques essentielles,
-            sa trajectoire dans le temps et ses périodes de saillance les plus fortes.
+            Commencez par rechercher un objet. La page séparera ensuite clairement son instantané
+            courant, sa trajectoire et son bilan historique.
           </div>
           <div id="summary-content" hidden>
             <div class="selected-object">
@@ -568,15 +654,42 @@
               <div class="country-badge" id="country-badge">—</div>
             </div>
 
-            <div class="metrics" id="metrics"></div>
-
-            <div class="chart-wrap">
-              <canvas id="chart"></canvas>
-              <div class="chart-footer">
-                <span id="chart-caption-left">—</span>
-                <span id="chart-caption-right">—</span>
+            <div class="scope-strip">
+              <div class="scope-card">
+                <div class="scope-label">Dernière période active</div>
+                <div class="scope-value" id="scope-current">—</div>
+              </div>
+              <div class="scope-card">
+                <div class="scope-label">Périmètre historique</div>
+                <div class="scope-value" id="scope-history">—</div>
+              </div>
+              <div class="scope-card">
+                <div class="scope-label">Lecture de la page</div>
+                <div class="scope-value" id="scope-reading">—</div>
               </div>
             </div>
+
+            <section class="section-block">
+              <div class="section-heading">
+                <h3>Maintenant</h3>
+                <p>Ce bloc décrit uniquement la dernière période active où l’objet apparaît dans Radar+.</p>
+              </div>
+              <div class="metrics" id="now-metrics"></div>
+            </section>
+
+            <section class="section-block">
+              <div class="section-heading">
+                <h3>Trajectoire</h3>
+                <p>Courbe complète de l’objet dans toutes les périodes publiées pour cette édition.</p>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="chart"></canvas>
+                <div class="chart-footer">
+                  <span id="chart-caption-left">—</span>
+                  <span id="chart-caption-right">—</span>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       </section>
@@ -584,18 +697,18 @@
       <aside>
         <div class="panel">
           <div class="panel-title">
-            <h3>Repères rapides</h3>
-            <span class="panel-meta">Lecture instantanée</span>
+            <h3>Bilan historique</h3>
+            <span class="panel-meta">Toutes les périodes publiées</span>
           </div>
-          <div id="quick-stats">
+          <div id="history-stats">
             <div class="empty">Aucun objet sélectionné.</div>
           </div>
         </div>
 
         <div class="panel">
           <div class="panel-title">
-            <h3>Périodes fortes</h3>
-            <span class="panel-meta">Top 5</span>
+            <h3>Moments marquants</h3>
+            <span class="panel-meta">Pics et records</span>
           </div>
           <div id="peak-list" class="list">
             <div class="empty">Aucune donnée à afficher.</div>
@@ -605,7 +718,7 @@
         <div class="panel">
           <div class="panel-title">
             <h3>Articles liés</h3>
-            <span class="panel-meta">Dernière période active</span>
+            <span class="panel-meta">Courant et pic</span>
           </div>
           <div id="articles-list">
             <div class="empty">Les articles liés apparaîtront ici.</div>
@@ -653,8 +766,8 @@
       const countryTabsEl = document.getElementById('country-tabs');
       const summaryEmptyEl = document.getElementById('summary-empty');
       const summaryContentEl = document.getElementById('summary-content');
-      const metricsEl = document.getElementById('metrics');
-      const quickStatsEl = document.getElementById('quick-stats');
+      const nowMetricsEl = document.getElementById('now-metrics');
+      const historyStatsEl = document.getElementById('history-stats');
       const peakListEl = document.getElementById('peak-list');
       const articlesListEl = document.getElementById('articles-list');
 
@@ -808,13 +921,18 @@
           }) || null;
 
           if (node) {
+            const totalScore = nodes.reduce(function(sum, item) {
+              return sum + Number(item.size || 0);
+            }, 0);
+
             return {
               latestKey: key,
               node: node,
               rank: nodes.findIndex(function(item) {
                 return normalizeObjectId(item.id) === normalized;
               }) + 1,
-              totalNodes: nodes.length
+              totalNodes: nodes.length,
+              totalScore: totalScore
             };
           }
         }
@@ -848,33 +966,74 @@
         const delta = previous && previous.score > 0
           ? ((current.score - previous.score) / previous.score) * 100
           : null;
+        const currentShare = graphNode?.totalScore
+          ? (current.score / graphNode.totalScore) * 100
+          : null;
 
         // Indice relatif: % du score pic
         const relativeIndex = peak.score > 0 ? (current.score / peak.score) * 100 : 0;
 
-        // Semaines consécutives actives (fin)
-        let consecutiveWeeks = 1;
+        let consecutivePeriods = 1;
         for (let i = populated.length - 2; i >= 0; i--) {
           const currIdx = series.indexOf(populated[i]);
           const nextIdx = series.indexOf(populated[i + 1]);
           if (currIdx !== -1 && nextIdx !== -1 && currIdx === nextIdx - 1) {
-            consecutiveWeeks++;
+            consecutivePeriods++;
           } else {
             break;
           }
         }
+
+        let longestStreak = 0;
+        let runningStreak = 0;
+        series.forEach(function(item) {
+          if (item.score > 0) {
+            runningStreak += 1;
+            longestStreak = Math.max(longestStreak, runningStreak);
+          } else {
+            runningStreak = 0;
+          }
+        });
 
         const first = populated[0];
         const recentMentions = current.mentions;
         const latestArticles = ((graphNode?.node?.articles && graphNode.node.articles.length)
           ? graphNode.node.articles
           : current.articles || []).slice(0, 6);
+        const peakArticles = (peak.articles || []).slice(0, 4);
         const uniqueMedia = (graphNode?.node?.media_ids && graphNode.node.media_ids.length)
           ? graphNode.node.media_ids
           : Array.from(new Set(latestArticles.map(function(article) {
               return article.media_id;
             }).filter(Boolean)));
+        const allArticles = [];
+        populated.forEach(function(item) {
+          (item.articles || []).forEach(function(article) {
+            allArticles.push(article);
+          });
+        });
+        const uniqueArticleUrls = Array.from(new Set(allArticles.map(function(article) {
+          return article.url;
+        }).filter(Boolean)));
+        const uniqueHistoricalMedia = Array.from(new Set(allArticles.map(function(article) {
+          return article.media_id;
+        }).filter(Boolean)));
         const coverageRatio = (populated.length / series.length) * 100;
+        const totalMentions = populated.reduce(function(sum, item) {
+          return sum + Number(item.mentions || 0);
+        }, 0);
+        const bestRank = populated.reduce(function(best, item) {
+          if (!item.rank) return best;
+          if (best === null) return item.rank;
+          return Math.min(best, item.rank);
+        }, null);
+        const top10Count = populated.filter(function(item) { return item.rank && item.rank <= 10; }).length;
+        const top5Count = populated.filter(function(item) { return item.rank && item.rank <= 5; }).length;
+        const numberOneCount = populated.filter(function(item) { return item.rank === 1; }).length;
+        const rankDelta = previous && current.rank && previous.rank ? previous.rank - current.rank : null;
+        const currentLabel = current.label;
+        const previousLabel = previous ? previous.label : null;
+        const lastSeen = populated[populated.length - 1];
 
         return {
           country: country,
@@ -887,13 +1046,27 @@
           peak: peak,
           average: average,
           delta: delta,
+          currentShare: currentShare,
           relativeIndex: relativeIndex,
           cumulativeScore: cumulativeScore,
-          consecutiveWeeks: consecutiveWeeks,
+          consecutivePeriods: consecutivePeriods,
+          longestStreak: longestStreak,
           coverageRatio: coverageRatio,
           activePeriods: populated.length,
           totalPeriods: series.length,
+          totalMentions: totalMentions,
+          uniqueHistoricalMedia: uniqueHistoricalMedia,
+          uniqueArticleCount: uniqueArticleUrls.length,
+          bestRank: bestRank,
+          top10Count: top10Count,
+          top5Count: top5Count,
+          numberOneCount: numberOneCount,
+          rankDelta: rankDelta,
+          currentLabel: currentLabel,
+          previousLabel: previousLabel,
+          lastSeen: lastSeen,
           latestArticles: latestArticles,
+          peakArticles: peakArticles,
           uniqueMedia: uniqueMedia,
           series: series
         };
@@ -980,7 +1153,7 @@
         summaryEmptyEl.hidden = false;
         summaryEmptyEl.textContent = message;
         summaryContentEl.hidden = true;
-        quickStatsEl.innerHTML = '<div class="empty">Aucun objet sélectionné.</div>';
+        historyStatsEl.innerHTML = '<div class="empty">Aucun objet sélectionné.</div>';
         peakListEl.innerHTML = '<div class="empty">Aucune donnée à afficher.</div>';
         articlesListEl.innerHTML = '<div class="empty">Les articles liés apparaîtront ici.</div>';
         chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
@@ -1005,116 +1178,161 @@
 
         document.getElementById('object-title').textContent = stats.objectId;
         document.getElementById('object-subtitle').textContent =
-          'Suivi sur ' + stats.activePeriods + ' périodes actives sur ' + stats.totalPeriods + ' publiées.';
+          'Objet observé sur ' + stats.activePeriods + ' périodes actives sur ' + stats.totalPeriods + ' publiées.';
         document.getElementById('country-badge').textContent = COUNTRY_LABELS[stats.country] || stats.country;
+        document.getElementById('scope-current').textContent = stats.currentLabel;
+        document.getElementById('scope-history').textContent = stats.activePeriods + ' périodes actives sur ' + stats.totalPeriods + ' publiées';
+        document.getElementById('scope-reading').textContent = 'En haut: instantané courant. Plus bas: évolution et bilan cumulé.';
 
-        renderMetrics(stats);
-        renderQuickStats(stats);
+        renderNowMetrics(stats);
+        renderHistoryStats(stats);
         renderPeakList(stats);
-        renderArticles(stats.latestArticles, stats.country);
+        renderArticles(stats);
         renderChart(stats);
 
         document.getElementById('chart-caption-left').textContent =
           'Première apparition: ' + stats.firstSeen.label + ' · pic: ' + stats.peak.label;
         document.getElementById('chart-caption-right').textContent =
-          'Dernière période active: ' + stats.series.filter(function(item) { return item.score > 0; }).slice(-1)[0].label;
+          'Dernière période active: ' + stats.lastSeen.label;
       }
 
-      function renderMetrics(stats) {
+      function renderNowMetrics(stats) {
+        const movementMeta = stats.rankDelta === null
+          ? 'pas de comparaison disponible'
+          : stats.rankDelta > 0
+            ? 'gagne ' + stats.rankDelta + ' rang' + (stats.rankDelta > 1 ? 's' : '') + ' depuis ' + stats.previousLabel
+            : stats.rankDelta < 0
+              ? 'perd ' + Math.abs(stats.rankDelta) + ' rang' + (Math.abs(stats.rankDelta) > 1 ? 's' : '') + ' depuis ' + stats.previousLabel
+              : 'rang inchangé depuis ' + stats.previousLabel;
+
         const cards = [
           {
-            label: 'Indice absolu',
-            value: formatNumber(stats.currentScore),
-            meta: stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '')
-          },
-          {
-            label: 'Indice relatif',
-            value: numberFormat.format(stats.relativeIndex) + '%',
-            meta: 'vs pic maximal'
-          },
-          {
-            label: 'Indice cumulatif',
-            value: formatNumber(stats.cumulativeScore),
-            meta: 'sur ' + stats.activePeriods + ' périodes'
-          },
-          {
-            label: 'Périodes consécutives',
-            value: String(stats.consecutiveWeeks),
-            meta: 'actives en fin'
-          },
-          {
-            label: 'Périodes actives',
-            value: stats.activePeriods + '/' + stats.totalPeriods,
-            meta: numberFormat.format(stats.coverageRatio) + '% couverture'
-          },
-          {
-            label: 'Classement',
+            label: 'Rang actuel',
             value: stats.currentRank ? '#' + stats.currentRank : '—',
-            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets' : '—'
+            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets dans ce bloc' : 'rang indisponible'
+          },
+          {
+            label: 'Score actuel',
+            value: formatNumber(stats.currentScore),
+            meta: stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '') + ' dans la dernière période active'
+          },
+          {
+            label: 'Part du radar',
+            value: stats.currentShare === null ? 'n/d' : numberFormat.format(stats.currentShare) + '%',
+            meta: 'poids de l’objet dans le bloc courant'
+          },
+          {
+            label: 'Mouvement récent',
+            value: stats.rankDelta === null ? 'n/d' : stats.rankDelta > 0 ? '↗' : stats.rankDelta < 0 ? '↘' : '→',
+            meta: movementMeta,
+            metaClass: stats.rankDelta === null ? 'neutral' : stats.rankDelta > 0 ? 'good' : stats.rankDelta < 0 ? 'bad' : 'neutral'
           }
         ];
 
-        metricsEl.innerHTML = cards.map(function(card) {
+        nowMetricsEl.innerHTML = cards.map(function(card) {
           return [
             '<article class="metric">',
             '<div class="metric-label">' + escapeHtml(card.label) + '</div>',
             '<div class="metric-value">' + escapeHtml(card.value) + '</div>',
-            '<div class="metric-meta">' + escapeHtml(card.meta || '') + '</div>',
+            '<div class="metric-meta ' + (card.metaClass || '') + '">' + escapeHtml(card.meta || '') + '</div>',
             '</article>'
           ].join('');
         }).join('');
       }
 
-      function renderQuickStats(stats) {
+      function renderHistoryStats(stats) {
         const items = [
-          ['Première apparition', stats.firstSeen.label],
-          ['Période du pic', stats.peak.label],
-          ['Médias actifs', String(stats.uniqueMedia.length)],
-          ['Articles visibles', String(stats.latestArticles.length)],
-          ['Mentions au pic', String(stats.peak.mentions)],
-          ['Mentions actuelles', String(stats.currentMentions)]
+          ['Indice cumulatif', formatNumber(stats.cumulativeScore)],
+          ['Meilleur rang atteint', stats.bestRank ? '#' + stats.bestRank : '—'],
+          ['Part du pic personnel', numberFormat.format(stats.relativeIndex) + '%'],
+          ['Périodes actives', stats.activePeriods + ' / ' + stats.totalPeriods],
+          ['Série continue actuelle', String(stats.consecutivePeriods)],
+          ['Plus longue série', String(stats.longestStreak)],
+          ['Mentions cumulées', String(stats.totalMentions)],
+          ['Médias distincts', String(stats.uniqueHistoricalMedia.length)],
+          ['Articles distincts', String(stats.uniqueArticleCount)],
+          ['Présences top 10', String(stats.top10Count)],
+          ['Présences top 5', String(stats.top5Count)],
+          ['Présences #1', String(stats.numberOneCount)]
         ];
 
-        quickStatsEl.innerHTML = items.map(function(item) {
+        historyStatsEl.innerHTML = items.map(function(item) {
           return '<div class="inline-stat"><span>' + escapeHtml(item[0]) + '</span><strong>' + escapeHtml(item[1]) + '</strong></div>';
         }).join('');
       }
 
       function renderPeakList(stats) {
-        const peaks = stats.series
-          .filter(function(item) { return item.score > 0; })
-          .sort(function(a, b) { return b.score - a.score; })
-          .slice(0, 5);
+        const highlights = [
+          {
+            title: 'Pic absolu',
+            body: stats.peak.label + ' · score ' + formatNumber(stats.peak.score) + ' · rang #' + (stats.peak.rank || '—')
+          },
+          {
+            title: 'Première apparition',
+            body: stats.firstSeen.label + ' · ' + stats.firstSeen.mentions + ' manchette' + (stats.firstSeen.mentions > 1 ? 's' : '')
+          },
+          {
+            title: 'Dernière période active',
+            body: stats.lastSeen.label + ' · score ' + formatNumber(stats.lastSeen.score) + ' · rang #' + (stats.lastSeen.rank || '—')
+          },
+          {
+            title: 'Présence continue',
+            body: stats.consecutivePeriods + ' périodes de suite actuellement · record de ' + stats.longestStreak
+          },
+          {
+            title: 'Empreinte historique',
+            body: stats.top10Count + ' présences dans le top 10 · ' + stats.numberOneCount + ' fois au rang #1'
+          }
+        ];
 
-        if (!peaks.length) {
+        if (!highlights.length) {
           peakListEl.innerHTML = '<div class="empty">Aucune période active.</div>';
           return;
         }
 
-        peakListEl.innerHTML = peaks.map(function(item, index) {
+        peakListEl.innerHTML = highlights.map(function(item, index) {
           return [
             '<div class="list-item">',
-            '<strong>#' + (index + 1) + ' · ' + escapeHtml(item.label) + '</strong>',
-            '<span>Score ' + escapeHtml(formatNumber(item.score)) + ' · rang #' + escapeHtml(String(item.rank || '—')) + ' · ' + escapeHtml(String(item.mentions)) + ' manchettes</span>',
+            '<strong>#' + (index + 1) + ' · ' + escapeHtml(item.title) + '</strong>',
+            '<span>' + escapeHtml(item.body) + '</span>',
             '</div>'
           ].join('');
         }).join('');
       }
 
-      function renderArticles(articles, country) {
-        if (!articles.length) {
+      function renderArticles(stats) {
+        const latestArticles = stats.latestArticles || [];
+        const peakArticles = stats.peakArticles || [];
+
+        if (!latestArticles.length && !peakArticles.length) {
           articlesListEl.innerHTML = '<div class="empty">Aucun article lié dans la dernière période active.</div>';
           return;
         }
 
-        articlesListEl.innerHTML = articles.map(function(article) {
+        function renderArticleGroup(title, articles) {
+          if (!articles.length) {
+            return '';
+          }
+
           return [
-            '<article class="article-card">',
-            '<div class="article-meta"><span>' + escapeHtml(country) + '</span><span>' + escapeHtml(article.media_id || 'média inconnu') + '</span></div>',
-            '<a href="' + escapeAttribute(article.url || '#') + '" target="_blank" rel="noopener">' + escapeHtml(article.title || article.url || 'Article sans titre') + '</a>',
-            '</article>'
+            '<div class="article-group">',
+            '<div class="article-group-title">' + escapeHtml(title) + '</div>',
+            articles.map(function(article) {
+              return [
+                '<article class="article-card">',
+                '<div class="article-meta"><span>' + escapeHtml(stats.country) + '</span><span>' + escapeHtml(article.media_id || 'média inconnu') + '</span></div>',
+                '<a href="' + escapeAttribute(article.url || '#') + '" target="_blank" rel="noopener">' + escapeHtml(article.title || article.url || 'Article sans titre') + '</a>',
+                '</article>'
+              ].join('');
+            }).join(''),
+            '</div>'
           ].join('');
-        }).join('');
+        }
+
+        articlesListEl.innerHTML = [
+          renderArticleGroup('Dernière période active', latestArticles),
+          renderArticleGroup('Période du pic', peakArticles)
+        ].join('');
       }
 
       function renderChart(stats) {
@@ -1298,7 +1516,7 @@
       });
 
       setupStars();
-      renderEmptyState('Commencez par rechercher un objet. La page affichera ensuite ses métriques essentielles, sa trajectoire dans le temps et ses périodes de saillance les plus fortes.');
+      renderEmptyState('Commencez par rechercher un objet. La page séparera ensuite clairement son instantané courant, sa trajectoire et son bilan historique.');
       loadData();
     })();
   </script>
