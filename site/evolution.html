@@ -7,68 +7,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/shared-menu.css" />
   <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
   <script src="./assets/js/force-graph.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #00000f; font-family: 'Space Mono', 'SF Mono', monospace; overflow: hidden; height: 100vh; width: 100vw; }
-    .nav-toggle {
-      position: fixed; top: 20px; right: 20px; z-index: 220;
-      background: rgba(10,18,50,0.85); border: 1px solid rgba(90,140,255,0.24);
-      border-radius: 4px; padding: 10px 13px; cursor: pointer;
-      display: flex; flex-direction: column; gap: 5px;
-      transition: all 0.3s; backdrop-filter: blur(6px);
-    }
-    .nav-toggle:hover { border-color: rgba(120,180,255,0.9); }
-    .nav-toggle span {
-      display: block; width: 22px; height: 2px;
-      background: rgba(208,224,255,0.95); transition: all 0.3s;
-    }
-    .nav-toggle.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-    .nav-toggle.open span:nth-child(2) { opacity: 0; }
-    .nav-toggle.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
-    .menu-discover-hint {
-      position: fixed; top: 27px; right: 74px; z-index: 219;
-      display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
-      color: rgba(140,170,220,0.85); font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 9px; letter-spacing: 1.8px; text-transform: uppercase;
-      opacity: 0.9; transition: color 0.2s, opacity 0.2s;
-      animation: menuHintFloat 2.6s ease-in-out infinite;
-    }
-    .menu-discover-hint:hover { color: #e6f1ff; opacity: 1; }
-    .menu-discover-hint .menu-discover-arrow {
-      width: 10px; height: 10px;
-      border-top: 2px solid rgba(120,180,255,0.95);
-      border-right: 2px solid rgba(120,180,255,0.95);
-      transform: rotate(45deg);
-      opacity: 0.9;
-    }
-    .nav-toggle.open + .menu-discover-hint { opacity: 0; pointer-events: none; }
-    .side-nav {
-      position: fixed; top: 0; right: -320px; width: 320px; height: 100vh;
-      background: linear-gradient(175deg, rgba(6,12,38,0.97), rgba(3,6,20,0.99));
-      border-left: 1px solid rgba(90,140,255,0.24);
-      z-index: 210; padding: 80px 30px 40px;
-      transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-      backdrop-filter: blur(20px); overflow-y: auto;
-    }
-    .side-nav.open { right: 0; }
-    .side-nav h3 {
-      font-family: 'Orbitron', 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px;
-      color: rgba(140,170,220,0.8); text-transform: uppercase; margin-bottom: 20px;
-    }
-    .side-nav a {
-      display: block; padding: 14px 0; border-bottom: 1px solid rgba(80,130,255,0.1);
-      text-decoration: none; color: rgba(208,224,255,0.95); font-size: 15px;
-      transition: all 0.2s; letter-spacing: 0.5px;
-    }
-    .side-nav a:hover,
-    .side-nav a.current { color: #ffffff; padding-left: 8px; }
-    .side-nav .nav-badge {
-      display: inline-block; font-size: 9px; padding: 2px 7px;
-      border: 1px solid rgba(90,140,255,0.24); border-radius: 3px;
-      margin-left: 8px; color: rgba(140,170,220,0.8); vertical-align: middle;
-    }
     #constellation-bg {
       position: absolute; inset: 0; z-index: 0; pointer-events: none;
       background: radial-gradient(ellipse at 50% 40%, rgba(62,98,198,0.17), rgba(5,10,36,0.05) 52%, rgba(0,0,15,0) 72%);
@@ -530,29 +474,6 @@
   </style>
 </head>
 <body>
-  <button class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu">
-    <span></span><span></span><span></span>
-  </button>
-  <a href="#" class="menu-discover-hint" id="menuDiscoverHint" aria-label="Ouvrir le menu">
-    Ouvrir menu
-    <span class="menu-discover-arrow"></span>
-  </a>
-  <nav class="side-nav" id="sideNav" aria-label="Navigation principale">
-    <h3>Navigation</h3>
-    <a href="./index.html">Accueil</a>
-    <a href="./constellation.html">Constellation <span class="nav-badge">LIVE</span></a>
-    <a href="./evolution.html" class="current">Évolution <span class="nav-badge">TIMELINE</span></a>
-    <a href="./statistiques.html">Statistiques <span class="nav-badge">OBJET</span></a>
-    <a href="./sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>
-    <a href="./index.html#hot20">Hot 20</a>
-    <a href="./unes.html">Dans le radar</a>
-    <a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>
-    <h3 style="margin-top: 30px;">À propos</h3>
-    <a href="./radarplus.html">Radar+</a>
-    <a href="./partenaires.html">Partenaires &amp; contributeurs</a>
-    <a href="./acces-donnees.html">Acc&egrave;s aux donn&eacute;es</a>
-    <a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>
-  </nav>
   <div id="constellation-bg" aria-hidden="true"></div>
   <div id="loading"><div id="loading-text">initialisation · évolution</div></div>
   <div id="graph"></div>
@@ -1568,38 +1489,6 @@
     setMediaPanelCollapsed(!mediaPanelCollapsed);
   });
 
-    const navToggle = document.getElementById('navToggle');
-    const sideNav = document.getElementById('sideNav');
-    const menuDiscoverHint = document.getElementById('menuDiscoverHint');
-
-    function setNavOpen(open) {
-      navToggle.classList.toggle('open', open);
-      sideNav.classList.toggle('open', open);
-      navToggle.setAttribute('aria-expanded', String(open));
-    }
-
-    navToggle.addEventListener('click', () => {
-      const willOpen = !sideNav.classList.contains('open');
-      setNavOpen(willOpen);
-    });
-
-    menuDiscoverHint.addEventListener('click', (e) => {
-      e.preventDefault();
-      setNavOpen(true);
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && sideNav.classList.contains('open')) {
-        setNavOpen(false);
-      }
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!sideNav.classList.contains('open')) return;
-      if (sideNav.contains(e.target) || navToggle.contains(e.target) || menuDiscoverHint.contains(e.target)) return;
-      setNavOpen(false);
-    });
-
   document.getElementById('loading').style.display = 'none';
   renderMediaFilters();
   setMediaPanelCollapsed(false);
@@ -1631,5 +1520,6 @@
 })();
 </script>
 <script src="./assets/js/shared-ticker.js"></script>
+<script src="./assets/js/shared-menu.js"></script>
 </body>
 </html>
