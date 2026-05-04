@@ -306,7 +306,7 @@
 
     .scope-strip {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 18px;
     }
@@ -374,6 +374,28 @@
       padding: 14px;
     }
 
+    .metric.stat-link {
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      color: inherit;
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+
+    .metric.stat-link:hover {
+      border-color: rgba(145, 182, 255, 0.45);
+      background: rgba(20, 36, 86, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .metric.stat-link:focus-visible,
+    .inline-stat.stat-link:focus-visible,
+    .list-item.stat-link:focus-visible {
+      outline: 2px solid rgba(145, 182, 255, 0.9);
+      outline-offset: 2px;
+    }
+
     .metric-label {
       font-size: 11px;
       letter-spacing: 0.8px;
@@ -438,6 +460,20 @@
       padding: 11px 12px;
     }
 
+    .list-item.stat-link {
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      color: inherit;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .list-item.stat-link:hover {
+      border-color: rgba(145, 182, 255, 0.42);
+      background: rgba(20, 36, 86, 0.42);
+    }
+
     .list-item strong {
       display: block;
       margin-bottom: 4px;
@@ -495,6 +531,23 @@
       color: rgba(184, 209, 247, 0.92);
     }
 
+    .inline-stat.stat-link {
+      width: 100%;
+      cursor: pointer;
+      background: transparent;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      border-bottom: 1px solid rgba(95, 140, 255, 0.12);
+      font-family: inherit;
+      text-align: left;
+      transition: color 0.2s;
+    }
+
+    .inline-stat.stat-link:hover {
+      color: #ffffff;
+    }
+
     .inline-stat:last-child {
       border-bottom: none;
       padding-bottom: 0;
@@ -516,6 +569,127 @@
       font-size: 11px;
       letter-spacing: 0.8px;
       text-transform: uppercase;
+    }
+
+    .detail-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 18, 0.62);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 245;
+    }
+
+    .detail-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .detail-panel {
+      position: fixed;
+      top: 0;
+      right: -460px;
+      width: min(440px, 100vw);
+      height: 100vh;
+      z-index: 250;
+      background: rgba(6, 12, 34, 0.97);
+      border-left: 1px solid rgba(95, 140, 255, 0.22);
+      padding: 18px;
+      transition: right 0.24s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+
+    .detail-panel.open {
+      right: 0;
+    }
+
+    .detail-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .detail-head h3 {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(230, 239, 255, 0.98);
+      margin-bottom: 6px;
+    }
+
+    .detail-value {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 21px;
+      color: #f3f8ff;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+
+    .detail-definition,
+    .detail-scope {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .detail-close {
+      border: 1px solid rgba(95, 140, 255, 0.32);
+      background: transparent;
+      color: rgba(210, 228, 255, 0.95);
+      border-radius: 6px;
+      padding: 6px 9px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+    }
+
+    .detail-close:hover {
+      border-color: rgba(145, 182, 255, 0.8);
+      color: #ffffff;
+    }
+
+    .detail-section {
+      border: 1px solid rgba(95, 140, 255, 0.14);
+      border-radius: 6px;
+      background: rgba(7, 14, 40, 0.42);
+      padding: 11px;
+    }
+
+    .detail-section-title {
+      color: rgba(230, 239, 255, 0.96);
+      font-size: 11px;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .detail-period-item {
+      border-bottom: 1px solid rgba(95, 140, 255, 0.12);
+      padding: 8px 0;
+    }
+
+    .detail-period-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .detail-period-item strong {
+      display: block;
+      color: #f3f8ff;
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .detail-period-item span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
     }
 
     .empty {
@@ -590,6 +764,11 @@
 
       .chart-footer {
         flex-direction: column;
+      }
+
+      .detail-panel {
+        width: 100vw;
+        right: -100vw;
       }
     }
   </style>
@@ -720,6 +899,27 @@
     </div>
   </main>
 
+  <div id="detail-overlay" class="detail-overlay" hidden></div>
+  <aside id="detail-panel" class="detail-panel" hidden aria-live="polite" aria-label="Détails de la statistique">
+    <div class="detail-head">
+      <div>
+        <h3 id="detail-title">Détail</h3>
+        <div id="detail-value" class="detail-value">—</div>
+        <p id="detail-definition" class="detail-definition">—</p>
+        <p id="detail-scope" class="detail-scope">—</p>
+      </div>
+      <button id="detail-close" class="detail-close" type="button" aria-label="Fermer le détail">Fermer</button>
+    </div>
+    <section class="detail-section">
+      <div class="detail-section-title">Périodes concernées</div>
+      <div id="detail-periods"></div>
+    </section>
+    <section class="detail-section">
+      <div class="detail-section-title">Articles liés</div>
+      <div id="detail-articles"></div>
+    </section>
+  </aside>
+
   <script>
     (function() {
       const COUNTRY_LABELS = {
@@ -745,7 +945,8 @@
         countries: [],
         activeCountry: 'QC',
         searchResults: [],
-        selectedObject: null
+        selectedObject: null,
+        currentStats: null
       };
 
       const starsCanvas = document.getElementById('stars');
@@ -762,6 +963,15 @@
       const historyStatsEl = document.getElementById('history-stats');
       const peakListEl = document.getElementById('peak-list');
       const articlesListEl = document.getElementById('articles-list');
+      const detailOverlayEl = document.getElementById('detail-overlay');
+      const detailPanelEl = document.getElementById('detail-panel');
+      const detailCloseEl = document.getElementById('detail-close');
+      const detailTitleEl = document.getElementById('detail-title');
+      const detailValueEl = document.getElementById('detail-value');
+      const detailDefinitionEl = document.getElementById('detail-definition');
+      const detailScopeEl = document.getElementById('detail-scope');
+      const detailPeriodsEl = document.getElementById('detail-periods');
+      const detailArticlesEl = document.getElementById('detail-articles');
 
       let stars = [];
 
@@ -1072,6 +1282,426 @@
         return value === null ? 'n/d' : percentFormat.format(value / 100);
       }
 
+      function getActiveSeries(stats) {
+        return stats.series.filter(function(item) {
+          return item.score > 0;
+        });
+      }
+
+      function getCurrentStreakPeriods(stats) {
+        const streak = [];
+        for (let i = stats.series.length - 1; i >= 0; i -= 1) {
+          const item = stats.series[i];
+          if (item.score > 0) {
+            streak.unshift(item);
+          } else if (streak.length) {
+            break;
+          }
+        }
+        return streak;
+      }
+
+      function getLongestStreakPeriods(stats) {
+        let bestStart = -1;
+        let bestEnd = -1;
+        let currentStart = -1;
+
+        stats.series.forEach(function(item, index) {
+          if (item.score > 0) {
+            if (currentStart === -1) {
+              currentStart = index;
+            }
+            if (bestStart === -1 || (index - currentStart) > (bestEnd - bestStart)) {
+              bestStart = currentStart;
+              bestEnd = index;
+            }
+          } else {
+            currentStart = -1;
+          }
+        });
+
+        if (bestStart === -1) {
+          return [];
+        }
+        return stats.series.slice(bestStart, bestEnd + 1);
+      }
+
+      function collectArticlesFromPeriods(periods, limit) {
+        const seen = new Set();
+        const results = [];
+        periods.forEach(function(period) {
+          (period.articles || []).forEach(function(article) {
+            const key = article.url || (article.title + '|' + article.media_id);
+            if (!key || seen.has(key)) {
+              return;
+            }
+            seen.add(key);
+            results.push(article);
+          });
+        });
+        return results.slice(0, limit || 8);
+      }
+
+      function buildMetricDetail(metricKey, stats) {
+        const active = getActiveSeries(stats);
+        const current = active[active.length - 1] || null;
+        const previous = active.length > 1 ? active[active.length - 2] : null;
+        const topByScore = active.slice().sort(function(a, b) { return b.score - a.score; }).slice(0, 8);
+        const top10Periods = active.filter(function(item) { return item.rank && item.rank <= 10; }).slice(0, 8);
+        const top5Periods = active.filter(function(item) { return item.rank && item.rank <= 5; }).slice(0, 8);
+        const firstRankPeriods = active.filter(function(item) { return item.rank === 1; }).slice(0, 8);
+        const currentStreakPeriods = getCurrentStreakPeriods(stats);
+        const longestStreakPeriods = getLongestStreakPeriods(stats);
+
+        const base = {
+          title: 'Détail statistique',
+          value: '—',
+          definition: 'Aucun détail disponible.',
+          scope: 'Périmètre: historique publié.',
+          periods: [],
+          articles: []
+        };
+
+        if (metricKey === 'current_rank') {
+          base.title = 'Rang actuel';
+          base.value = stats.currentRank ? '#' + stats.currentRank : '—';
+          base.definition = 'Position de l’objet dans la dernière période active.';
+          base.scope = 'Périmètre: dernière période active.';
+          if (current) {
+            base.periods.push({
+              label: current.label,
+              detail: 'Rang #' + (current.rank || '—') + ' · score ' + formatNumber(current.score)
+            });
+          }
+          if (previous) {
+            base.periods.push({
+              label: previous.label,
+              detail: 'Période précédente · rang #' + (previous.rank || '—') + ' · score ' + formatNumber(previous.score)
+            });
+          }
+          base.articles = stats.latestArticles.slice(0, 6);
+          return base;
+        }
+
+        if (metricKey === 'current_score') {
+          base.title = 'Score actuel';
+          base.value = formatNumber(stats.currentScore);
+          base.definition = 'Score de saillance de l’objet dans la dernière période active.';
+          base.scope = 'Périmètre: dernière période active.';
+          if (current) {
+            base.periods.push({
+              label: current.label,
+              detail: 'Score ' + formatNumber(current.score) + ' · ' + current.mentions + ' manchettes'
+            });
+          }
+          if (previous) {
+            base.periods.push({
+              label: previous.label,
+              detail: 'Comparaison: score précédent ' + formatNumber(previous.score)
+            });
+          }
+          base.articles = stats.latestArticles.slice(0, 6);
+          return base;
+        }
+
+        if (metricKey === 'current_share') {
+          base.title = 'Part du radar';
+          base.value = stats.currentShare === null ? 'n/d' : numberFormat.format(stats.currentShare) + '%';
+          base.definition = 'Poids du score de cet objet dans la somme des scores du bloc courant.';
+          base.scope = 'Périmètre: dernière période active.';
+          if (current) {
+            base.periods.push({
+              label: current.label,
+              detail: 'Score objet ' + formatNumber(current.score) + ' · part ' + (stats.currentShare === null ? 'n/d' : numberFormat.format(stats.currentShare) + '%')
+            });
+          }
+          base.articles = stats.latestArticles.slice(0, 6);
+          return base;
+        }
+
+        if (metricKey === 'recent_movement') {
+          base.title = 'Mouvement récent';
+          base.value = stats.rankDelta === null ? 'n/d' : (stats.rankDelta > 0 ? '↗ +' + stats.rankDelta : stats.rankDelta < 0 ? '↘ ' + stats.rankDelta : '→ 0');
+          base.definition = 'Variation de rang entre les deux dernières périodes actives.';
+          base.scope = 'Périmètre: comparaison de court terme.';
+          if (current) {
+            base.periods.push({
+              label: current.label,
+              detail: 'Rang actuel #' + (current.rank || '—') + ' · score ' + formatNumber(current.score)
+            });
+          }
+          if (previous) {
+            base.periods.push({
+              label: previous.label,
+              detail: 'Rang précédent #' + (previous.rank || '—') + ' · score ' + formatNumber(previous.score)
+            });
+          }
+          base.articles = collectArticlesFromPeriods([current, previous].filter(Boolean), 8);
+          return base;
+        }
+
+        if (metricKey === 'cumulative_score') {
+          base.title = 'Indice cumulatif';
+          base.value = formatNumber(stats.cumulativeScore);
+          base.definition = 'Somme des scores de l’objet sur toutes les périodes où il est actif.';
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = topByScore.map(function(item) {
+            return {
+              label: item.label,
+              detail: 'Contribution forte · score ' + formatNumber(item.score) + ' · rang #' + (item.rank || '—')
+            };
+          });
+          base.articles = collectArticlesFromPeriods(topByScore, 10);
+          return base;
+        }
+
+        if (metricKey === 'best_rank') {
+          base.title = 'Meilleur rang atteint';
+          base.value = stats.bestRank ? '#' + stats.bestRank : '—';
+          base.definition = 'Meilleure position observée historiquement pour cet objet.';
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = active.filter(function(item) { return item.rank === stats.bestRank; }).slice(0, 8).map(function(item) {
+            return {
+              label: item.label,
+              detail: 'Rang #' + item.rank + ' · score ' + formatNumber(item.score)
+            };
+          });
+          base.articles = collectArticlesFromPeriods(active.filter(function(item) { return item.rank === stats.bestRank; }), 10);
+          return base;
+        }
+
+        if (metricKey === 'relative_peak') {
+          base.title = 'Part du pic personnel';
+          base.value = numberFormat.format(stats.relativeIndex) + '%';
+          base.definition = 'Rapport entre le score actuel et le score maximal historique (pic = 100%).';
+          base.scope = 'Périmètre: courant vs historique.';
+          if (current) {
+            base.periods.push({ label: current.label, detail: 'Actuel · score ' + formatNumber(current.score) });
+          }
+          base.periods.push({ label: stats.peak.label, detail: 'Pic historique · score ' + formatNumber(stats.peak.score) });
+          base.articles = stats.peakArticles.slice(0, 6);
+          return base;
+        }
+
+        if (metricKey === 'active_periods') {
+          base.title = 'Périodes actives';
+          base.value = stats.activePeriods + ' / ' + stats.totalPeriods;
+          base.definition = 'Nombre de périodes où l’objet apparaît avec un score non nul.';
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = [
+            { label: stats.firstSeen.label, detail: 'Première apparition' },
+            { label: stats.lastSeen.label, detail: 'Dernière apparition' }
+          ];
+          base.articles = collectArticlesFromPeriods([stats.firstSeen, stats.lastSeen], 8);
+          return base;
+        }
+
+        if (metricKey === 'current_streak') {
+          base.title = 'Série continue actuelle';
+          base.value = String(stats.consecutivePeriods);
+          base.definition = 'Nombre de périodes actives d’affilée jusqu’à la période actuelle.';
+          base.scope = 'Périmètre: fin de série récente.';
+          base.periods = currentStreakPeriods.slice(-8).map(function(item) {
+            return { label: item.label, detail: 'Score ' + formatNumber(item.score) + ' · rang #' + (item.rank || '—') };
+          });
+          base.articles = collectArticlesFromPeriods(currentStreakPeriods, 8);
+          return base;
+        }
+
+        if (metricKey === 'longest_streak') {
+          base.title = 'Plus longue série';
+          base.value = String(stats.longestStreak);
+          base.definition = 'Plus longue suite de périodes consécutives où l’objet est actif.';
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = longestStreakPeriods.slice(0, 8).map(function(item) {
+            return { label: item.label, detail: 'Score ' + formatNumber(item.score) + ' · rang #' + (item.rank || '—') };
+          });
+          base.articles = collectArticlesFromPeriods(longestStreakPeriods, 8);
+          return base;
+        }
+
+        if (metricKey === 'total_mentions') {
+          base.title = 'Mentions cumulées';
+          base.value = String(stats.totalMentions);
+          base.definition = 'Somme des mentions (n) observées dans toutes les périodes actives.';
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = topByScore.map(function(item) {
+            return { label: item.label, detail: item.mentions + ' mentions · score ' + formatNumber(item.score) };
+          });
+          base.articles = collectArticlesFromPeriods(topByScore, 10);
+          return base;
+        }
+
+        if (metricKey === 'unique_media') {
+          base.title = 'Médias distincts';
+          base.value = String(stats.uniqueHistoricalMedia.length);
+          base.definition = 'Nombre de médias uniques ayant porté l’objet sur la période observée.';
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = topByScore.map(function(item) {
+            const mediaSet = new Set((item.articles || []).map(function(article) { return article.media_id; }).filter(Boolean));
+            return { label: item.label, detail: mediaSet.size + ' médias dans cette période' };
+          });
+          base.articles = collectArticlesFromPeriods(topByScore, 10);
+          return base;
+        }
+
+        if (metricKey === 'unique_articles') {
+          base.title = 'Articles distincts';
+          base.value = String(stats.uniqueArticleCount);
+          base.definition = 'Nombre d’articles uniques (URL distinctes) associés à l’objet.';
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = topByScore.map(function(item) {
+            return { label: item.label, detail: (item.articles || []).length + ' articles listés dans cette période' };
+          });
+          base.articles = collectArticlesFromPeriods(topByScore, 10);
+          return base;
+        }
+
+        if (metricKey === 'top10_count' || metricKey === 'top5_count' || metricKey === 'number1_count') {
+          const map = {
+            top10_count: {
+              title: 'Présences top 10',
+              value: String(stats.top10Count),
+              definition: 'Nombre de périodes où l’objet est classé dans le top 10.',
+              periods: top10Periods
+            },
+            top5_count: {
+              title: 'Présences top 5',
+              value: String(stats.top5Count),
+              definition: 'Nombre de périodes où l’objet est classé dans le top 5.',
+              periods: top5Periods
+            },
+            number1_count: {
+              title: 'Présences #1',
+              value: String(stats.numberOneCount),
+              definition: 'Nombre de périodes où l’objet atteint le rang #1.',
+              periods: firstRankPeriods
+            }
+          };
+          const item = map[metricKey];
+          base.title = item.title;
+          base.value = item.value;
+          base.definition = item.definition;
+          base.scope = 'Périmètre: historique complet publié.';
+          base.periods = item.periods.map(function(period) {
+            return {
+              label: period.label,
+              detail: 'Rang #' + (period.rank || '—') + ' · score ' + formatNumber(period.score)
+            };
+          });
+          base.articles = collectArticlesFromPeriods(item.periods, 10);
+          return base;
+        }
+
+        const highlightMap = {
+          highlight_peak: {
+            title: 'Pic absolu',
+            value: formatNumber(stats.peak.score),
+            definition: 'Période où l’objet a obtenu son score maximal.',
+            periods: [stats.peak],
+            articles: stats.peakArticles
+          },
+          highlight_first: {
+            title: 'Première apparition',
+            value: stats.firstSeen.label,
+            definition: 'Première période où l’objet apparaît dans les données publiées.',
+            periods: [stats.firstSeen],
+            articles: stats.firstSeen.articles || []
+          },
+          highlight_last: {
+            title: 'Dernière période active',
+            value: stats.lastSeen.label,
+            definition: 'Dernière période active observée pour cet objet.',
+            periods: [stats.lastSeen],
+            articles: stats.latestArticles
+          },
+          highlight_continuity: {
+            title: 'Présence continue',
+            value: stats.consecutivePeriods + ' / ' + stats.longestStreak,
+            definition: 'Série actuelle et record de continuité historique.',
+            periods: currentStreakPeriods.slice(-8),
+            articles: collectArticlesFromPeriods(currentStreakPeriods, 8)
+          },
+          highlight_footprint: {
+            title: 'Empreinte historique',
+            value: stats.top10Count + ' top 10 · ' + stats.numberOneCount + ' fois #1',
+            definition: 'Fréquence d’apparition dans les rangs dominants.',
+            periods: top10Periods,
+            articles: collectArticlesFromPeriods(top10Periods, 8)
+          }
+        };
+
+        if (highlightMap[metricKey]) {
+          const item = highlightMap[metricKey];
+          base.title = item.title;
+          base.value = item.value;
+          base.definition = item.definition;
+          base.scope = 'Périmètre: périodes marquantes de l’historique.';
+          base.periods = (item.periods || []).map(function(period) {
+            return {
+              label: period.label,
+              detail: 'Score ' + formatNumber(period.score || 0) + ' · rang #' + (period.rank || '—')
+            };
+          });
+          base.articles = (item.articles || []).slice(0, 10);
+          return base;
+        }
+
+        return base;
+      }
+
+      function renderDetailPanel(detail) {
+        detailTitleEl.textContent = detail.title;
+        detailValueEl.textContent = detail.value;
+        detailDefinitionEl.textContent = detail.definition;
+        detailScopeEl.textContent = detail.scope;
+
+        if (!detail.periods.length) {
+          detailPeriodsEl.innerHTML = '<div class="empty">Aucune période spécifique à afficher.</div>';
+        } else {
+          detailPeriodsEl.innerHTML = detail.periods.map(function(period) {
+            return [
+              '<div class="detail-period-item">',
+              '<strong>' + escapeHtml(period.label || 'Période') + '</strong>',
+              '<span>' + escapeHtml(period.detail || '') + '</span>',
+              '</div>'
+            ].join('');
+          }).join('');
+        }
+
+        if (!detail.articles.length) {
+          detailArticlesEl.innerHTML = '<div class="empty">Aucun article lié à afficher.</div>';
+        } else {
+          detailArticlesEl.innerHTML = detail.articles.map(function(article) {
+            return [
+              '<article class="article-card">',
+              '<div class="article-meta"><span>' + escapeHtml(state.activeCountry) + '</span><span>' + escapeHtml(article.media_id || 'média inconnu') + '</span></div>',
+              '<a href="' + escapeAttribute(article.url || '#') + '" target="_blank" rel="noopener">' + escapeHtml(article.title || article.url || 'Article sans titre') + '</a>',
+              '</article>'
+            ].join('');
+          }).join('');
+        }
+      }
+
+      function closeDetailPanel() {
+        detailPanelEl.classList.remove('open');
+        detailOverlayEl.classList.remove('open');
+        detailPanelEl.hidden = true;
+        detailOverlayEl.hidden = true;
+      }
+
+      function openDetailPanel(metricKey) {
+        if (!state.currentStats) {
+          return;
+        }
+        const detail = buildMetricDetail(metricKey, state.currentStats);
+        renderDetailPanel(detail);
+        detailPanelEl.hidden = false;
+        detailOverlayEl.hidden = false;
+        detailPanelEl.classList.add('open');
+        detailOverlayEl.classList.add('open');
+      }
+
       function setStatus(message, isError) {
         statusEl.textContent = message || '';
         statusEl.className = isError ? 'status error' : 'status';
@@ -1145,9 +1775,11 @@
         summaryEmptyEl.hidden = false;
         summaryEmptyEl.textContent = message;
         summaryContentEl.hidden = true;
+        state.currentStats = null;
         historyStatsEl.innerHTML = '<div class="empty">Aucun objet sélectionné.</div>';
         peakListEl.innerHTML = '<div class="empty">Aucune donnée à afficher.</div>';
         articlesListEl.innerHTML = '<div class="empty">Les articles liés apparaîtront ici.</div>';
+        closeDetailPanel();
         chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
       }
 
@@ -1167,6 +1799,8 @@
       function renderStats(stats) {
         summaryEmptyEl.hidden = true;
         summaryContentEl.hidden = false;
+        closeDetailPanel();
+        state.currentStats = stats;
 
         document.getElementById('object-title').textContent = stats.objectId;
         document.getElementById('object-subtitle').textContent =
@@ -1200,55 +1834,59 @@
           {
             label: 'Rang actuel',
             value: stats.currentRank ? '#' + stats.currentRank : '—',
-            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets dans ce bloc' : 'rang indisponible'
+            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets dans ce bloc' : 'rang indisponible',
+            key: 'current_rank'
           },
           {
             label: 'Score actuel',
             value: formatNumber(stats.currentScore),
-            meta: stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '') + ' dans la dernière période active'
+            meta: stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '') + ' dans la dernière période active',
+            key: 'current_score'
           },
           {
             label: 'Part du radar',
             value: stats.currentShare === null ? 'n/d' : numberFormat.format(stats.currentShare) + '%',
-            meta: 'poids de l’objet dans le bloc courant'
+            meta: 'poids de l’objet dans le bloc courant',
+            key: 'current_share'
           },
           {
             label: 'Mouvement récent',
             value: stats.rankDelta === null ? 'n/d' : stats.rankDelta > 0 ? '↗' : stats.rankDelta < 0 ? '↘' : '→',
             meta: movementMeta,
-            metaClass: stats.rankDelta === null ? 'neutral' : stats.rankDelta > 0 ? 'good' : stats.rankDelta < 0 ? 'bad' : 'neutral'
+            metaClass: stats.rankDelta === null ? 'neutral' : stats.rankDelta > 0 ? 'good' : stats.rankDelta < 0 ? 'bad' : 'neutral',
+            key: 'recent_movement'
           }
         ];
 
         nowMetricsEl.innerHTML = cards.map(function(card) {
           return [
-            '<article class="metric">',
+            '<button type="button" class="metric stat-link" data-metric="' + escapeAttribute(card.key) + '">',
             '<div class="metric-label">' + escapeHtml(card.label) + '</div>',
             '<div class="metric-value">' + escapeHtml(card.value) + '</div>',
             '<div class="metric-meta ' + (card.metaClass || '') + '">' + escapeHtml(card.meta || '') + '</div>',
-            '</article>'
+            '</button>'
           ].join('');
         }).join('');
       }
 
       function renderHistoryStats(stats) {
         const items = [
-          ['Indice cumulatif', formatNumber(stats.cumulativeScore)],
-          ['Meilleur rang atteint', stats.bestRank ? '#' + stats.bestRank : '—'],
-          ['Part du pic personnel', numberFormat.format(stats.relativeIndex) + '%'],
-          ['Périodes actives', stats.activePeriods + ' / ' + stats.totalPeriods],
-          ['Série continue actuelle', String(stats.consecutivePeriods)],
-          ['Plus longue série', String(stats.longestStreak)],
-          ['Mentions cumulées', String(stats.totalMentions)],
-          ['Médias distincts', String(stats.uniqueHistoricalMedia.length)],
-          ['Articles distincts', String(stats.uniqueArticleCount)],
-          ['Présences top 10', String(stats.top10Count)],
-          ['Présences top 5', String(stats.top5Count)],
-          ['Présences #1', String(stats.numberOneCount)]
+          ['Indice cumulatif', formatNumber(stats.cumulativeScore), 'cumulative_score'],
+          ['Meilleur rang atteint', stats.bestRank ? '#' + stats.bestRank : '—', 'best_rank'],
+          ['Part du pic personnel', numberFormat.format(stats.relativeIndex) + '%', 'relative_peak'],
+          ['Périodes actives', stats.activePeriods + ' / ' + stats.totalPeriods, 'active_periods'],
+          ['Série continue actuelle', String(stats.consecutivePeriods), 'current_streak'],
+          ['Plus longue série', String(stats.longestStreak), 'longest_streak'],
+          ['Mentions cumulées', String(stats.totalMentions), 'total_mentions'],
+          ['Médias distincts', String(stats.uniqueHistoricalMedia.length), 'unique_media'],
+          ['Articles distincts', String(stats.uniqueArticleCount), 'unique_articles'],
+          ['Présences top 10', String(stats.top10Count), 'top10_count'],
+          ['Présences top 5', String(stats.top5Count), 'top5_count'],
+          ['Présences #1', String(stats.numberOneCount), 'number1_count']
         ];
 
         historyStatsEl.innerHTML = items.map(function(item) {
-          return '<div class="inline-stat"><span>' + escapeHtml(item[0]) + '</span><strong>' + escapeHtml(item[1]) + '</strong></div>';
+          return '<button type="button" class="inline-stat stat-link" data-metric="' + escapeAttribute(item[2]) + '"><span>' + escapeHtml(item[0]) + '</span><strong>' + escapeHtml(item[1]) + '</strong></button>';
         }).join('');
       }
 
@@ -1256,23 +1894,28 @@
         const highlights = [
           {
             title: 'Pic absolu',
-            body: stats.peak.label + ' · score ' + formatNumber(stats.peak.score) + ' · rang #' + (stats.peak.rank || '—')
+            body: stats.peak.label + ' · score ' + formatNumber(stats.peak.score) + ' · rang #' + (stats.peak.rank || '—'),
+            key: 'highlight_peak'
           },
           {
             title: 'Première apparition',
-            body: stats.firstSeen.label + ' · ' + stats.firstSeen.mentions + ' manchette' + (stats.firstSeen.mentions > 1 ? 's' : '')
+            body: stats.firstSeen.label + ' · ' + stats.firstSeen.mentions + ' manchette' + (stats.firstSeen.mentions > 1 ? 's' : ''),
+            key: 'highlight_first'
           },
           {
             title: 'Dernière période active',
-            body: stats.lastSeen.label + ' · score ' + formatNumber(stats.lastSeen.score) + ' · rang #' + (stats.lastSeen.rank || '—')
+            body: stats.lastSeen.label + ' · score ' + formatNumber(stats.lastSeen.score) + ' · rang #' + (stats.lastSeen.rank || '—'),
+            key: 'highlight_last'
           },
           {
             title: 'Présence continue',
-            body: stats.consecutivePeriods + ' périodes de suite actuellement · record de ' + stats.longestStreak
+            body: stats.consecutivePeriods + ' périodes de suite actuellement · record de ' + stats.longestStreak,
+            key: 'highlight_continuity'
           },
           {
             title: 'Empreinte historique',
-            body: stats.top10Count + ' présences dans le top 10 · ' + stats.numberOneCount + ' fois au rang #1'
+            body: stats.top10Count + ' présences dans le top 10 · ' + stats.numberOneCount + ' fois au rang #1',
+            key: 'highlight_footprint'
           }
         ];
 
@@ -1283,10 +1926,10 @@
 
         peakListEl.innerHTML = highlights.map(function(item, index) {
           return [
-            '<div class="list-item">',
+            '<button type="button" class="list-item stat-link" data-metric="' + escapeAttribute(item.key) + '">',
             '<strong>#' + (index + 1) + ' · ' + escapeHtml(item.title) + '</strong>',
             '<span>' + escapeHtml(item.body) + '</span>',
-            '</div>'
+            '</button>'
           ].join('');
         }).join('');
       }
@@ -1492,6 +2135,23 @@
           searchInput.value = '';
           searchResultsEl.innerHTML = '';
           setStatus('', false);
+        }
+      });
+
+      document.addEventListener('click', function(event) {
+        const trigger = event.target.closest('[data-metric]');
+        if (trigger) {
+          openDetailPanel(trigger.getAttribute('data-metric'));
+          return;
+        }
+      });
+
+      detailCloseEl.addEventListener('click', closeDetailPanel);
+      detailOverlayEl.addEventListener('click', closeDetailPanel);
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !detailPanelEl.hidden) {
+          closeDetailPanel();
         }
       });
 
