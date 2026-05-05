@@ -946,7 +946,12 @@
     const period = periods[idx];
     if (!period) return;
     const gd = getGD(country, period.key);
-    focusedNode = null;
+    
+    // Ne pas réinitialiser focusedNode si c'est un objet tracké - garde la lumière sur les objets suivi
+    if (!trackedObjects.has(focusedNode)) {
+      focusedNode = null;
+    }
+    
     updatePeriodSummary(country, idx);
     const countryEl = document.getElementById('top10-country');
     if (countryEl) countryEl.textContent = country;
