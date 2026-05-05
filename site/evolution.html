@@ -124,7 +124,7 @@
     }
     #speed-btn:hover { color: #7090b0; }
     #top10-panel {
-      position: absolute; top: 20px; right: 20px;
+      position: absolute; top: 44px; right: 24px;
       font-family: 'Orbitron', 'Space Mono', monospace;
       z-index: 11;
       width: min(360px, 35vw);
@@ -138,7 +138,10 @@
     }
     body.has-shared-menu #top10-panel,
     body.has-shared-menu #tracked-panel {
-      right: 98px;
+      right: 136px;
+    }
+    body.has-shared-menu .menu-discover-hint {
+      display: none;
     }
     #top10-title {
       font-size: 13px;
@@ -194,7 +197,7 @@
       #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
       .side-nav { width: 280px; right: -280px; }
       body.has-shared-menu #top10-panel,
-      body.has-shared-menu #tracked-panel { right: 90px; }
+      body.has-shared-menu #tracked-panel { right: 116px; }
       #object-panel {
         left: 10px;
         right: 10px;
@@ -232,7 +235,7 @@
     #evolution-view { position: absolute; inset: 0; display: none; z-index: 5; }
     #evolution-view.visible { display: block; }
     #evo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-    #tracked-panel { position: absolute; top: 20px; right: 20px; width: min(290px, 30vw); max-height: calc(100vh - 160px); overflow: hidden; border: 1px solid rgba(95,140,255,0.28); border-radius: 7px; background: linear-gradient(to left, rgba(8,14,40,0.88), rgba(6,10,30,0.70)); box-shadow: 0 0 20px rgba(60,100,210,0.14); padding: 10px; z-index: 11; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(2px); }
+    #tracked-panel { position: absolute; top: 44px; right: 24px; width: min(290px, 30vw); max-height: calc(100vh - 160px); overflow: hidden; border: 1px solid rgba(95,140,255,0.28); border-radius: 7px; background: linear-gradient(to left, rgba(8,14,40,0.88), rgba(6,10,30,0.70)); box-shadow: 0 0 20px rgba(60,100,210,0.14); padding: 10px; z-index: 11; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(2px); }
     #tracked-title { font-family: 'Orbitron','Space Mono',monospace; font-size: 12px; color: rgba(182,208,255,0.98); text-transform: uppercase; letter-spacing: 1px; }
     #tracked-head { display: flex; align-items: center; justify-content: space-between; }
     #tracked-clear { border: 1px solid rgba(90,130,250,0.25); border-radius: 5px; background: rgba(8,18,48,0.62); color: rgba(176,206,255,0.95); font-family: 'Space Mono',monospace; font-size: 10px; padding: 4px 8px; cursor: pointer; }
