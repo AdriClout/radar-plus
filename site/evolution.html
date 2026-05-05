@@ -205,10 +205,10 @@
       #period-current { font-size: 11px; letter-spacing: 0.9px; }
       #period-stats { max-width: calc(100vw - 36px); gap: 6px; }
       .period-chip { font-size: 9px; padding: 4px 8px; }
-      #search-wrap {
+      #ranked-search-wrap {
         width: 100%;
       }
-      #search-input {
+      #ranked-search-input {
         width: 100%;
       }
     }
@@ -329,19 +329,16 @@
     }
 
     @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
-    #search-wrap { display: flex; flex-direction: column; gap: 4px; pointer-events: all; width: 100%; }
-    #search-input {
+    #ranked-search-wrap { display: flex; flex-direction: column; gap: 4px; pointer-events: all; width: 100%; margin: 8px 0 6px; }
+    #ranked-search-input {
       background: rgba(5,10,35,0.75); border: 1px solid rgba(100,150,255,0.3);
       border-radius: 3px; color: #a0c8f0; font-family: 'Space Mono','SF Mono',monospace;
       font-size: 11px; letter-spacing: 0.8px; outline: none; padding: 5px 10px;
       width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
     }
-    #search-input::placeholder { color: rgba(90,120,180,0.55); }
-    #search-input:focus { border-color: rgba(140,190,255,0.75); box-shadow: 0 0 10px rgba(80,130,255,0.25); color: #d0e8ff; }
-    #search-status { font-size: 10px; letter-spacing: 0.8px; height: 14px; text-align: center; transition: color 0.2s; }
-    #search-status.found    { color: #70d090; }
-    #search-status.jumped   { color: #f0b050; }
-    #search-status.notfound { color: rgba(200,80,80,0.85); }
+    #ranked-search-input::placeholder { color: rgba(90,120,180,0.55); }
+    #ranked-search-input:focus { border-color: rgba(140,190,255,0.75); box-shadow: 0 0 10px rgba(80,130,255,0.25); color: #d0e8ff; }
+    #ranked-search-results { display: flex; flex-direction: column; gap: 3px; max-height: 120px; overflow-y: auto; }
   </style>
 </head>
 <body>
@@ -391,19 +388,16 @@
       </div>
       <div id="window-granularity"></div>
     </div>
-    <div class="lpanel-section">
-      <div class="lpanel-label">Recherche</div>
-      <div id="search-wrap">
-        <input type="text" id="search-input" placeholder="rechercher un objet…" autocomplete="off" spellcheck="false" />
-        <div id="search-status"></div>
-      </div>
-    </div>
   </div>
   <div id="top10-panel">
     <!-- Mode classement : légende dynamique -->
     <div id="ranked-legend-head">
       <div id="top10-title">Top Saillants</div>
       <div id="top10-country">CAN</div>
+    </div>
+    <div id="ranked-search-wrap">
+      <input type="text" id="ranked-search-input" placeholder="suivre un objet…" autocomplete="off" spellcheck="false" />
+      <div id="ranked-search-results"></div>
     </div>
     <div id="ranked-legend-period"></div>
     <div id="ranked-legend-list"></div>
@@ -912,6 +906,35 @@
         addTracked(id);
         document.getElementById('evo-search').value = '';
         renderEvoSearchResults('');
+      });
+      resultsEl.appendChild(div);
+    });
+  }
+
+  function addTrackedAndSwitch(id) {
+    if (!id) return;
+    addTracked(id);
+    setMode('tracking');
+  }
+
+  function renderRankedSearchResults(q) {
+    const resultsEl = document.getElementById('ranked-search-results');
+    if (!resultsEl) return;
+    resultsEl.innerHTML = '';
+    if (!q.trim()) return;
+    const ql = q.toLowerCase();
+    const matches = getAllObjectIds()
+      .filter(id => id.toLowerCase().includes(ql))
+      .slice(0, 7);
+    matches.forEach(id => {
+      const div = document.createElement('div');
+      div.className = 'evo-result';
+      div.textContent = id;
+      div.addEventListener('click', () => {
+        addTrackedAndSwitch(id);
+        const input = document.getElementById('ranked-search-input');
+        if (input) input.value = '';
+        renderRankedSearchResults('');
       });
       resultsEl.appendChild(div);
     });
@@ -1496,6 +1519,15 @@
     slider.value = rankedSlotIdx;
   }
 
+  function getTrackingPeriodsForCurrentFilters() {
+    const allTsPeriods = (tsData?.meta?.periods || []).slice();
+    const slot = rankedSlots[rankedSlotIdx];
+    if (!slot || !slot.periodKeys?.length) return allTsPeriods;
+    const keySet = new Set(slot.periodKeys);
+    const filtered = allTsPeriods.filter(p => keySet.has(p.key));
+    return filtered.length ? filtered : allTsPeriods;
+  }
+
   function setMode(mode) {
     // Sauvegarder l'index courant avant de changer de mode
     if (currentMode === 'ranked') graphIdx = currentIdx;
@@ -1508,8 +1540,8 @@
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
       graphs  = tsData.graphs;
-      periods = tsData.meta.periods;
-      currentIdx = Math.min(tsIdx, periods.length - 1);
+      periods = getTrackingPeriodsForCurrentFilters();
+      currentIdx = Math.min(tsIdx, Math.max(0, periods.length - 1));
       slider.max = periods.length - 1;
       slider.value = currentIdx;
     } else {
@@ -1704,63 +1736,29 @@
     document.getElementById('speed-btn').textContent=SPEED_LABELS[speedIdx];
     if (playInterval) { clearInterval(playInterval); playInterval=setInterval(advance,playSpeed); }
   });
-  // ── Recherche ─────────────────────────────────────────────────────────────
-  const searchInput  = document.getElementById('search-input');
-  const searchStatus = document.getElementById('search-status');
-
-  function handleSearch(raw) {
-    const q = raw.trim().toLowerCase();
-    searchStatus.textContent = '';
-    searchStatus.className   = '';
-    if (!q) { clearFocusAndRecenter(); return; }
-
-    // Cherche dans la période courante
-    const gd = getGD(currentCountry, periods[currentIdx]?.key);
-    const matchNow = (gd.nodes || []).find(n => n.id.toLowerCase().includes(q));
-    if (matchNow) {
-      focusNodeById(matchNow.id);
-      searchStatus.textContent = matchNow.id;
-      searchStatus.className   = 'found';
-      return;
-    }
-
-    // Cherche dans toutes les périodes (plus récente en premier)
-    let foundIdx = -1, foundId = null;
-    for (let i = periods.length - 1; i >= 0; i--) {
-      const g = graphs[currentCountry]?.[periods[i].key];
-      if (!g) continue;
-      const m = (g.nodes || []).find(n => n.id.toLowerCase().includes(q));
-      if (m) { foundIdx = i; foundId = m.id; break; }
-    }
-
-    if (foundIdx !== -1) {
-      currentIdx = foundIdx;
-      if (currentMode === 'ranked') {
-        syncRankedSlotToCurrentPeriod();
-        slider.value = rankedSlotIdx;
-      } else {
-        slider.value = currentIdx;
+  // ── Recherche dédiée (panneau droit) ─────────────────────────────────────
+  const rankedSearchInput = document.getElementById('ranked-search-input');
+  rankedSearchInput.addEventListener('input', () => renderRankedSearchResults(rankedSearchInput.value));
+  rankedSearchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      rankedSearchInput.value = '';
+      renderRankedSearchResults('');
+      rankedSearchInput.blur();
+    } else if (e.key === 'Enter') {
+      const q = rankedSearchInput.value.trim().toLowerCase();
+      const id = getAllObjectIds().find(v => v.toLowerCase().includes(q));
+      if (id) {
+        addTrackedAndSwitch(id);
+        rankedSearchInput.value = '';
+        renderRankedSearchResults('');
       }
-      loadPeriod(currentCountry, currentIdx);
-      focusNodeById(foundId);
-      searchStatus.textContent = '↳ ' + periods[foundIdx].label;
-      searchStatus.className   = 'jumped';
-    } else {
-      clearFocusAndRecenter();
-      searchStatus.textContent = '— non trouvé';
-      searchStatus.className   = 'notfound';
     }
-  }
-
-  searchInput.addEventListener('input', () => handleSearch(searchInput.value));
-  searchInput.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { searchInput.value = ''; handleSearch(''); searchInput.blur(); }
     e.stopPropagation();
   });
 
   document.addEventListener('keydown', e => {
-    if (document.activeElement === searchInput) return;
-    if (e.key === '/') { e.preventDefault(); searchInput.focus(); searchInput.select(); return; }
+    if (document.activeElement === rankedSearchInput || document.activeElement === document.getElementById('evo-search')) return;
+    if (e.key === '/') { e.preventDefault(); rankedSearchInput.focus(); rankedSearchInput.select(); return; }
     if (e.key === 'ArrowRight') {
       if (currentMode === 'ranked') {
         rankedSlotIdx = Math.min(rankedSlotIdx + 1, Math.max(0, rankedSlots.length - 1));
@@ -1785,7 +1783,7 @@
     }
     else if (e.key===' ')         {e.preventDefault();togglePlay();}
     else if ((e.key==='t'||e.key==='T') && focusedNode) { addTracked(focusedNode); }
-    else if (e.key==='Escape')    { if(searchInput.value){searchInput.value='';handleSearch('');} }
+    else if (e.key==='Escape')    { if(rankedSearchInput.value){rankedSearchInput.value='';renderRankedSearchResults('');} }
   });
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
