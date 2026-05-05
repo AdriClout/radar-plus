@@ -1186,7 +1186,19 @@
 
   function getRankedSeries(gd, limit = 10, winPeriods = null) {
     const wp = winPeriods || getRankedWindowPeriods();
-    const topIds = (gd?.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, limit).map(n => n.id);
+    // Score = saillance max de l'objet sur toute la fenêtre (pas juste la période courante)
+    const scoreMap = new Map();
+    for (const p of wp) {
+      const g = graphs[currentCountry]?.[p.key];
+      if (!g) continue;
+      for (const nd of g.nodes) {
+        scoreMap.set(nd.id, Math.max(scoreMap.get(nd.id) ?? 0, nd.size));
+      }
+    }
+    const topIds = [...scoreMap.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(e => e[0]);
     return topIds.map((id, i) => ({
       id,
       color: TRACK_COLORS[i % TRACK_COLORS.length],
@@ -1329,7 +1341,7 @@
         if (v === null) return;
         const x = xOf(i);
         const y = yOf(v);
-        const isCurrent = i === currentIdx;
+        const isCurrent = i === winCurrentIdx;
         const radius = isCurrent ? (isActive ? 5 : 4) : 2.2;
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
