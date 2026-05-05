@@ -782,6 +782,26 @@
   function setCurrentPeriodFromRankedSlot() {
     const slot = rankedSlots[rankedSlotIdx];
     if (!slot || !slot.periodKeys.length) return;
+    if (rankedGranularity === 'day') {
+      const now = new Date();
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const isToday = slot.key === todayKey;
+      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
+
+      const eligibleKeys = slot.periodKeys.filter(key => {
+        if (!isToday) return true;
+        const timePart = String(key || '').split('_')[1] || '';
+        const startRaw = Number(timePart.split('-')[0]);
+        return Number.isFinite(startRaw) && startRaw < currentBlockStart;
+      });
+
+      const fallbackKey = slot.periodKeys[slot.periodKeys.length - 1];
+      const pickedKey = eligibleKeys.length ? eligibleKeys[eligibleKeys.length - 1] : fallbackKey;
+      const idx = periods.findIndex(p => p.key === pickedKey);
+      if (idx >= 0) currentIdx = idx;
+      return;
+    }
+
     const lastKey = slot.periodKeys[slot.periodKeys.length - 1];
     const idx = periods.findIndex(p => p.key === lastKey);
     if (idx >= 0) currentIdx = idx;
@@ -801,23 +821,42 @@
       return fallback ? [fallback] : [];
     }
     if (rankedGranularity === 'day') {
+      const now = new Date();
+      const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const isToday = slot.key === todayKey;
+      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
       const starts = [0, 4, 8, 12, 16, 20];
       const byStart = new Map();
       slot.periods.forEach(p => {
         const timePart = String(p.key || '').split('_')[1] || '';
         const startRaw = Number(timePart.split('-')[0]);
-        if (Number.isFinite(startRaw)) byStart.set(startRaw, { ...p, blockStart: startRaw, isFuture: false });
+        if (!Number.isFinite(startRaw)) return;
+        const isFuture = isToday ? startRaw >= currentBlockStart : false;
+        byStart.set(startRaw, { ...p, blockStart: startRaw, isFuture });
       });
 
       return starts.map(start => {
-        if (byStart.has(start)) return byStart.get(start);
+        if (byStart.has(start)) {
+          const existing = byStart.get(start);
+          if (existing.isFuture) {
+            const end = (start + 4) % 24;
+            return {
+              key: `${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
+              label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
+              blockStart: start,
+              isFuture: true
+            };
+          }
+          return existing;
+        }
         const end = (start + 4) % 24;
         const fakeKey = `${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`;
+        const isFuture = isToday ? start >= currentBlockStart : true;
         return {
           key: fakeKey,
           label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
           blockStart: start,
-          isFuture: true
+          isFuture
         };
       });
     }
@@ -839,7 +878,9 @@
       const slot = rankedSlots[rankedSlotIdx];
       const wp = getRankedWindowPeriods();
       const head = slot?.label || (RANKED_GRANULARITIES[rankedGranularity] || RANKED_GRANULARITIES.day).emptyLabel;
-      granEl.textContent = `${head} · ${wp.length} blocs`;
+      const completed = wp.filter(p => !p.isFuture).length;
+      if (rankedGranularity === 'day') granEl.textContent = `${head} · ${completed} blocs complétés`;
+      else granEl.textContent = `${head} · ${wp.length} blocs`;
     }
   }
 
@@ -1087,7 +1128,14 @@
     const safeIdx = idx >= 0 ? idx : winPeriods.length - 1;
     const period = winPeriods[safeIdx];
     const slotLabel = rankedSlots[rankedSlotIdx]?.label || '';
-    if (periodEl) periodEl.textContent = isHoverBlock ? `${period?.label || ''} · Bloc survole` : `${slotLabel} · Cumul fenetre`;
+    if (periodEl) {
+      if (isHoverBlock) {
+        if (rankedGranularity === 'day') periodEl.textContent = `${blockRangeLabelFromPeriod(period)} · Bloc survolé`;
+        else periodEl.textContent = `${period?.label || ''} · Bloc survolé`;
+      } else {
+        periodEl.textContent = `${slotLabel} · Cumul fenêtre`;
+      }
+    }
 
     let rows = [];
     if (isHoverBlock) {
