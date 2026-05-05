@@ -1760,6 +1760,10 @@
     if (currentMode === 'ranked') graphIdx = currentIdx;
     else tsIdx = currentIdx;
 
+    // Réinitialiser les états de focus/hover pour éviter que les objets restent illuminés
+    focusedNode = null;
+    hoveredNode = null;
+
     currentMode = mode;
     clearRankedSeriesCache();
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
