@@ -1946,6 +1946,7 @@
       });
       if (hitId && bestDist <= 18) {
         focusedNode = hitId;
+        addTracked(hitId);
         const clickedPeriod = winPeriods[idx];
         const periodGraph = getGD(currentCountry, clickedPeriod?.key);
         const node = (periodGraph.nodes || []).find(n2 => n2.id === hitId);
