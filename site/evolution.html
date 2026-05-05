@@ -500,6 +500,7 @@
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .rleg-val { font-size: 10px; color: rgba(140,180,255,0.78); flex-shrink: 0; min-width: 36px; text-align: right; }
+    .rleg-val.null-val { color: rgba(100,130,180,0.38); }
     .rleg-delta {
       font-size: 9px; flex-shrink: 0; min-width: 44px; text-align: right; letter-spacing: 0.3px;
     }
@@ -1110,21 +1111,25 @@
     const period = winPeriods[safeIdx];
     if (periodEl) periodEl.textContent = period?.label || '';
 
-    // Trier par valeur au point courant
+    // Trier par valeur au point courant, ou par score max si null
     const rows = series
       .slice(0, limit)
       .map(s => {
         const val = s.data[safeIdx] ?? null;
         const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
         const delta = (val !== null && prev !== null) ? val - prev : null;
-        return { id: s.id, color: s.color, val, delta };
+        return { id: s.id, color: s.color, val, delta, maxVal: s.maxVal ?? 0 };
       })
-      .sort((a, b) => (b.val ?? -Infinity) - (a.val ?? -Infinity));
+      .sort((a, b) => {
+        if (b.val !== null && a.val !== null) return b.val - a.val;
+        if (b.val !== null) return 1;
+        if (a.val !== null) return -1;
+        return b.maxVal - a.maxVal;
+      });
 
     const hasHover = hoveredNode !== null || focusedNode !== null;
     list.innerHTML = '';
     rows.forEach((r, i) => {
-      if (r.val === null) return;
       const isFocused  = focusedNode  === r.id;
       const isHovered  = hoveredNode  === r.id;
       const isDimmed   = hasHover && !isFocused && !isHovered;
@@ -1147,7 +1152,7 @@
         <div class="rleg-swatch" style="background:${r.color};box-shadow:0 0 5px ${r.color}88"></div>
         <span class="rleg-rank">${i + 1}.</span>
         <span class="rleg-name" title="${escapeHtml(r.id)}">${escapeHtml(r.id)}</span>
-        <span class="rleg-val">${r.val.toFixed(1)}</span>
+        <span class="rleg-val${r.val === null ? ' null-val' : ''}">${r.val !== null ? r.val.toFixed(1) : '—'}</span>
         <span class="rleg-delta ${deltaClass}">${deltaTxt}</span>
       `;
 
@@ -1186,11 +1191,10 @@
 
   function getRankedSeries(gd, limit = 10, winPeriods = null) {
     const wp = winPeriods || getRankedWindowPeriods();
-    // Score = saillance max de l'objet sur toute la fenêtre (pas juste la période courante)
+    // Score = saillance max de l'objet sur toute la fenêtre, en respectant les filtres médias
     const scoreMap = new Map();
     for (const p of wp) {
-      const g = graphs[currentCountry]?.[p.key];
-      if (!g) continue;
+      const g = getGD(currentCountry, p.key);
       for (const nd of g.nodes) {
         scoreMap.set(nd.id, Math.max(scoreMap.get(nd.id) ?? 0, nd.size));
       }
@@ -1202,9 +1206,10 @@
     return topIds.map((id, i) => ({
       id,
       color: TRACK_COLORS[i % TRACK_COLORS.length],
+      maxVal: scoreMap.get(id) ?? 0,
       data: wp.map(p => {
-        const g = graphs[currentCountry]?.[p.key];
-        return g?.nodes.find(nd => nd.id === id)?.size ?? null;
+        const g = getGD(currentCountry, p.key);
+        return g.nodes.find(nd => nd.id === id)?.size ?? null;
       })
     }));
   }
