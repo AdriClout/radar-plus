@@ -447,6 +447,53 @@
     .evo-tt-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .evo-tt-name { color: rgba(175,205,255,0.9); flex: 1; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
     .evo-tt-val { color: rgba(160,200,255,0.8); font-size: 10px; }
+    /* ── Légende classement évolutif ──────────────────────────────────────── */
+    #ranked-legend-head {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 6px;
+    }
+    #ranked-legend-period {
+      font-size: 9px; letter-spacing: 0.7px; color: rgba(120,160,220,0.55); text-transform: uppercase; flex: 1;
+    }
+    #ranked-legend-more {
+      border: 1px solid rgba(90,130,250,0.25); border-radius: 5px;
+      background: rgba(8,18,48,0.62); color: rgba(140,180,255,0.8);
+      font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.5px;
+      padding: 3px 7px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    #ranked-legend-more:hover { border-color: rgba(145,182,255,0.75); color: #d0e8ff; }
+    #ranked-legend-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 46vh; }
+    .rleg-item {
+      display: flex; align-items: center; gap: 7px;
+      border: 1px solid rgba(90,130,250,0.14); border-radius: 5px;
+      background: rgba(8,18,48,0.50); padding: 5px 8px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .rleg-item:hover, .rleg-item.hovered {
+      border-color: rgba(145,182,255,0.55); background: rgba(20,36,86,0.65);
+    }
+    .rleg-item.focused {
+      border-color: rgba(186,211,255,0.88); background: rgba(40,70,150,0.40);
+      box-shadow: 0 0 8px rgba(90,135,255,0.28);
+    }
+    .rleg-item.dimmed { opacity: 0.40; }
+    .rleg-swatch {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    }
+    .rleg-rank {
+      font-size: 9px; color: rgba(110,150,210,0.65); flex-shrink: 0; min-width: 14px; text-align: right;
+    }
+    .rleg-name {
+      flex: 1; font-size: 10px; color: rgba(185,215,255,0.92);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .rleg-val { font-size: 10px; color: rgba(140,180,255,0.78); flex-shrink: 0; min-width: 36px; text-align: right; }
+    .rleg-delta {
+      font-size: 9px; flex-shrink: 0; min-width: 44px; text-align: right; letter-spacing: 0.3px;
+    }
+    .rleg-delta.up   { color: rgba(80,220,140,0.85); }
+    .rleg-delta.down { color: rgba(255,100,100,0.80); }
+    .rleg-delta.flat { color: rgba(110,150,200,0.50); }
+
     @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
     #search-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: all; grid-area: search; }
     #search-input {
@@ -515,11 +562,14 @@
     </div>
   </div>
   <div id="top10-panel">
-    <div id="top10-head">
-      <div id="top10-title">Top 10 Objets Saillants</div>
+    <!-- Mode classement : légende dynamique -->
+    <div id="ranked-legend-head">
+      <div id="top10-title">Top Saillants</div>
       <div id="top10-country">CAN</div>
     </div>
-    <div id="top10-list"></div>
+    <div id="ranked-legend-period"></div>
+    <div id="ranked-legend-list"></div>
+    <button id="ranked-legend-more" type="button">+ Voir plus</button>
   </div>
   <div id="stats"></div>
   <div id="object-panel"></div>
@@ -832,6 +882,8 @@
   let currentMode = 'ranked';
   let evoMaxVal = 1;
   let rankedHoverIdx = null;
+  let hoveredNode = null;   // survol temporaire (légende ou canvas)
+  let rankedShowMore = false;
 
   function clearFocusAndRecenter() {
     focusedNode = null;
@@ -979,6 +1031,90 @@
     });
   }
 
+  function renderRankedLegend(series, hoverIdx) {
+    const list = document.getElementById('ranked-legend-list');
+    const periodEl = document.getElementById('ranked-legend-period');
+    if (!list) return;
+
+    const limit = rankedShowMore ? 20 : 10;
+    const idx = (hoverIdx !== null && hoverIdx >= 0) ? hoverIdx : currentIdx;
+    const period = periods[idx];
+    if (periodEl) periodEl.textContent = period?.label || '';
+
+    // Trier par valeur au point courant
+    const rows = series
+      .slice(0, limit)
+      .map(s => {
+        const val = s.data[idx] ?? null;
+        const prev = idx > 0 ? s.data[idx - 1] ?? null : null;
+        const delta = (val !== null && prev !== null) ? val - prev : null;
+        return { id: s.id, color: s.color, val, delta };
+      })
+      .sort((a, b) => (b.val ?? -Infinity) - (a.val ?? -Infinity));
+
+    const hasHover = hoveredNode !== null || focusedNode !== null;
+    list.innerHTML = '';
+    rows.forEach((r, i) => {
+      if (r.val === null) return;
+      const isFocused  = focusedNode  === r.id;
+      const isHovered  = hoveredNode  === r.id;
+      const isDimmed   = hasHover && !isFocused && !isHovered;
+
+      let deltaTxt = '', deltaClass = 'flat';
+      if (r.delta !== null && Math.abs(r.delta) >= 0.01) {
+        deltaClass = r.delta > 0 ? 'up' : 'down';
+        deltaTxt = `${r.delta > 0 ? '▲' : '▼'} ${Math.abs(r.delta).toFixed(1)}`;
+      } else if (r.delta !== null) {
+        deltaTxt = '=';
+      }
+
+      const item = document.createElement('div');
+      item.className = 'rleg-item' +
+        (isFocused ? ' focused' : '') +
+        (isHovered && !isFocused ? ' hovered' : '') +
+        (isDimmed ? ' dimmed' : '');
+      item.dataset.nodeId = r.id;
+      item.innerHTML = `
+        <div class="rleg-swatch" style="background:${r.color};box-shadow:0 0 5px ${r.color}88"></div>
+        <span class="rleg-rank">${i + 1}.</span>
+        <span class="rleg-name" title="${escapeHtml(r.id)}">${escapeHtml(r.id)}</span>
+        <span class="rleg-val">${r.val.toFixed(1)}</span>
+        <span class="rleg-delta ${deltaClass}">${deltaTxt}</span>
+      `;
+
+      item.addEventListener('mouseenter', () => {
+        hoveredNode = r.id;
+        renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+        renderRankedLegend(series, rankedHoverIdx);
+      });
+      item.addEventListener('mouseleave', () => {
+        hoveredNode = null;
+        renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+        renderRankedLegend(series, rankedHoverIdx);
+      });
+      item.addEventListener('click', e => {
+        e.stopPropagation();
+        const gd = getGD(currentCountry, periods[currentIdx]?.key);
+        const node = (gd.nodes || []).find(nd => nd.id === r.id);
+        focusedNode = isFocused ? null : r.id;
+        setTop10Active(focusedNode);
+        if (focusedNode && node) renderArticlesPanel(node);
+        else renderArticlesPanel(null);
+        renderRankedChart(gd, rankedHoverIdx);
+        renderRankedLegend(series, rankedHoverIdx);
+      });
+
+      list.appendChild(item);
+    });
+
+    // Bouton + Voir plus / moins
+    const moreBtn = document.getElementById('ranked-legend-more');
+    if (moreBtn) {
+      moreBtn.textContent = rankedShowMore ? '− Voir moins' : '+ Voir plus';
+      moreBtn.style.display = series.length > 10 ? '' : 'none';
+    }
+  }
+
   function getRankedSeries(gd, limit = 10) {
     const topIds = (gd?.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, limit).map(n => n.id);
     return topIds.map((id, i) => ({
@@ -1091,9 +1227,14 @@
     ctx.stroke();
 
     // Lignes des objets Top 10
+    const hasActiveNode = focusedNode !== null || hoveredNode !== null;
     series.forEach(s => {
       const [r, g, b] = hexToRgb(s.color);
-      const isFocused = focusedNode === s.id;
+      const isFocused  = focusedNode  === s.id;
+      const isHovered  = hoveredNode  === s.id;
+      const isActive   = isFocused || isHovered;
+      const isDimmed   = hasActiveNode && !isActive;
+      const lineAlpha  = isDimmed ? 0.18 : 1;
 
       ctx.beginPath();
       let first = true;
@@ -1104,10 +1245,12 @@
         if (first) { ctx.moveTo(x, y); first = false; }
         else ctx.lineTo(x, y);
       });
-      ctx.strokeStyle = s.color;
-      ctx.lineWidth = isFocused ? 3 : 2;
+      ctx.strokeStyle = isDimmed
+        ? `rgba(${r},${g},${b},0.18)`
+        : s.color;
+      ctx.lineWidth  = isActive ? 3.2 : 2;
       ctx.shadowColor = s.color;
-      ctx.shadowBlur = isFocused ? 12 : 8;
+      ctx.shadowBlur  = isActive ? 14 : (isDimmed ? 0 : 7);
       ctx.stroke();
       ctx.shadowBlur = 0;
 
@@ -1116,13 +1259,18 @@
         const x = xOf(i);
         const y = yOf(v);
         const isCurrent = i === currentIdx;
-        const radius = isCurrent ? (isFocused ? 4.8 : 4) : 2.2;
+        const radius = isCurrent ? (isActive ? 5 : 4) : 2.2;
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = isCurrent ? `rgba(${r},${g},${b},0.98)` : `rgba(${r},${g},${b},0.76)`;
+        ctx.fillStyle = isDimmed
+          ? `rgba(${r},${g},${b},0.18)`
+          : (isCurrent ? `rgba(${r},${g},${b},0.98)` : `rgba(${r},${g},${b},0.76)`);
         ctx.fill();
       });
     });
+
+    // Appel légende dynamique (sans boucle infinie)
+    requestAnimationFrame(() => renderRankedLegend(series, hoverIdx));
 
     // Marqueur de période courante
     if (currentIdx >= 0 && currentIdx < n) {
@@ -1180,45 +1328,14 @@
     if (canvasX < PAD.left || canvasX > PAD.left + chartW) {
       rankedHoverIdx = null;
       renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), null);
-      document.getElementById('evo-tooltip').style.display = 'none';
       return;
     }
 
     const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))));
     rankedHoverIdx = idx;
     const gd = getGD(currentCountry, periods[currentIdx]?.key);
-    const series = getRankedSeries(gd, 10);
     renderRankedChart(gd, idx);
-
-    const period = periods[idx];
-    const rows = series
-      .map(s => {
-        const val = s.data[idx];
-        const prev = idx > 0 ? s.data[idx - 1] : null;
-        const delta = (val !== null && prev !== null) ? val - prev : null;
-        return { id: s.id, color: s.color, val, delta };
-      })
-      .filter(r => r.val !== null)
-      .sort((a, b) => b.val - a.val)
-      .slice(0, 10);
-
-    const tt = document.getElementById('evo-tooltip');
-    document.getElementById('evo-tooltip-period').textContent = period?.label || '';
-    document.getElementById('evo-tooltip-items').innerHTML = rows.map(r => {
-      let deltaTxt = '—';
-      if (r.delta !== null) deltaTxt = `${r.delta > 0 ? '▲' : (r.delta < 0 ? '▼' : '=')} ${Math.abs(r.delta).toFixed(2)}`;
-      return `<div class="evo-tt-row"><div class="evo-tt-dot" style="background:${r.color}"></div><div class="evo-tt-name">${escapeHtml(r.id)}</div><div class="evo-tt-val">${r.val.toFixed(2)} · ${deltaTxt}</div></div>`;
-    }).join('');
-
-    let tx = clientX + 16;
-    let ty = clientY - 10;
-    const ttW = 250;
-    const ttH = tt.offsetHeight || 80;
-    if (tx + ttW > window.innerWidth) tx = clientX - ttW - 10;
-    if (ty + ttH > window.innerHeight) ty = clientY - ttH - 10;
-    tt.style.left = tx + 'px';
-    tt.style.top = ty + 'px';
-    tt.style.display = 'block';
+    // La légende est mise à jour par renderRankedChart via requestAnimationFrame.
   }
 
   function getEvolutionChartLayout(rect) {
@@ -1433,6 +1550,14 @@
 
   // Mode tabs
   document.querySelectorAll('.mode-tab').forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+
+  // Bouton + Voir plus dans la légende ranked
+  document.getElementById('ranked-legend-more').addEventListener('click', () => {
+    rankedShowMore = !rankedShowMore;
+    const gd = getGD(currentCountry, periods[currentIdx]?.key);
+    const series = getRankedSeries(gd, rankedShowMore ? 20 : 10);
+    renderRankedLegend(series, rankedHoverIdx);
+  });
 
   // Evolution canvas events
   const evoCanvas = document.getElementById('evo-canvas');
