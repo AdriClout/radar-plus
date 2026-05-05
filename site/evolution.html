@@ -1182,8 +1182,8 @@
     rows.forEach((r, i) => {
       const isFocused  = focusedNode  === r.id;
       const isHovered  = hoveredNode  === r.id;
-      const isDimmed   = hasHover && !isFocused && !isHovered;
       const isTracked  = trackedObjects.has(r.id);
+      const isDimmed   = hasHover && !isFocused && !isHovered && !isTracked;
 
       let deltaTxt = '', deltaClass = 'flat';
       if (r.delta !== null && Math.abs(r.delta) >= 0.01) {
@@ -1195,10 +1195,10 @@
 
       const item = document.createElement('div');
       item.className = 'rleg-item' +
-        (isTracked ? ' tracked' : '') +
         (isFocused ? ' focused' : '') +
-        (isHovered && !isFocused ? ' hovered' : '') +
-        (isDimmed ? ' dimmed' : '');
+        (isHovered && !isFocused && !isTracked ? ' hovered' : '') +
+        (isDimmed ? ' dimmed' : '') +
+        (isTracked ? ' tracked' : '');
       item.dataset.nodeId = r.id;
       item.innerHTML = `
         <div class="rleg-swatch" style="background:${r.color};box-shadow:0 0 5px ${r.color}88"></div>
@@ -1463,7 +1463,8 @@
       const [r, g, b] = hexToRgb(s.color);
       const isFocused  = focusedNode  === s.id;
       const isHovered  = hoveredNode  === s.id;
-      const isActive   = isFocused || isHovered;
+      const isTracked  = trackedObjects.has(s.id);
+      const isActive   = isFocused || isHovered || isTracked;
       const isDimmed   = hasActiveNode && !isActive;
       const lineAlpha  = isDimmed ? 0.18 : 1;
 
