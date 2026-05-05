@@ -1183,7 +1183,10 @@
         .slice(0, limit);
     }
 
-    const hasHover = hoveredNode !== null || focusedNode !== null;
+    const hasVisibleFocusedL = focusedNode !== null && rows.some(r => r.id === focusedNode);
+    const hasVisibleHoveredL = hoveredNode !== null && rows.some(r => r.id === hoveredNode);
+    const hasVisibleTrackedL = rows.some(r => trackedObjects.has(r.id));
+    const hasHover = hasVisibleFocusedL || hasVisibleHoveredL || hasVisibleTrackedL;
     list.innerHTML = '';
     rows.forEach((r, i) => {
       const isFocused  = focusedNode  === r.id;
@@ -1481,7 +1484,10 @@
     const winCurrentIdx = winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
 
     // Lignes des objets Top 10
-    const hasActiveNode = focusedNode !== null || hoveredNode !== null;
+    const hasVisibleFocused = focusedNode !== null && series.some(s => s.id === focusedNode);
+    const hasVisibleHovered = hoveredNode !== null && series.some(s => s.id === hoveredNode);
+    const hasVisibleTracked = series.some(s => trackedObjects.has(s.id));
+    const hasActiveNode = hasVisibleFocused || hasVisibleHovered || hasVisibleTracked;
     series.forEach(s => {
       const [r, g, b] = hexToRgb(s.color);
       const isFocused  = focusedNode  === s.id;
