@@ -1233,8 +1233,8 @@
         e.stopPropagation();
         const gd = getGD(currentCountry, periods[currentIdx]?.key);
         focusedNode = r.id;
-        if (trackedObjects.has(r.id)) removeTracked(r.id);
-        else addTracked(r.id);
+        // En mode classement, un clic objet doit l'ajouter au suivi (pas le retirer).
+        addTracked(r.id);
         renderRankedChart(gd, rankedHoverIdx);
         renderRankedLegend(series, rankedHoverIdx);
       });
@@ -1931,23 +1931,26 @@
       const canvasX = e.clientX - rect.left;
       const canvasY = e.clientY - rect.top;
       if (canvasX < PAD.left || canvasX > PAD.left + chartW) return;
-      const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))));
 
       let hitId = null;
+      let hitIdx = -1;
       let bestDist = Infinity;
+      const HIT_R = 26;
       series.forEach(s => {
-        const v = s.data[idx];
-        if (v === null) return;
-        const dist = Math.hypot(canvasX - xOf(idx), canvasY - yOf(v));
-        if (dist < bestDist) {
-          bestDist = dist;
-          hitId = s.id;
-        }
+        s.data.forEach((v, i) => {
+          if (v === null) return;
+          const dist = Math.hypot(canvasX - xOf(i), canvasY - yOf(v));
+          if (dist < bestDist) {
+            bestDist = dist;
+            hitId = s.id;
+            hitIdx = i;
+          }
+        });
       });
-      if (hitId && bestDist <= 18) {
+      if (hitId && hitIdx >= 0 && bestDist <= HIT_R) {
         focusedNode = hitId;
         addTracked(hitId);
-        const clickedPeriod = winPeriods[idx];
+        const clickedPeriod = winPeriods[hitIdx];
         const periodGraph = getGD(currentCountry, clickedPeriod?.key);
         const node = (periodGraph.nodes || []).find(n2 => n2.id === hitId);
         const exactIdx = periods.findIndex(p => p.key === clickedPeriod?.key);
