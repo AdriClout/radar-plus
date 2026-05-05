@@ -907,7 +907,8 @@
   function renderTop10(gd, country) {
     const list = document.getElementById('top10-list');
     const countryEl = document.getElementById('top10-country');
-    countryEl.textContent = country;
+    if (countryEl) countryEl.textContent = country;
+    if (!list) return; // mode ranked: la légende dynamique gère l'affichage
 
     const top = (gd.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, 10);
     if (!top.length) {
