@@ -1426,8 +1426,8 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
     }
 
-    // Axes + X ticks
-    const xStep = Math.max(1, Math.floor(n / 10));
+    // Axes + X ticks - Improved visibility
+    const xStep = rankedGranularity === 'day' ? Math.max(1, Math.floor(n / 16)) : Math.max(1, Math.floor(n / 8));
     winPeriods.forEach((p, i) => {
       if (i % xStep !== 0 && i !== n - 1) return;
       const x = xOf(i);
@@ -1437,13 +1437,30 @@
       ctx.moveTo(x, PAD.top + chartH);
       ctx.lineTo(x, PAD.top + chartH + 5);
       ctx.stroke();
-      ctx.fillStyle = 'rgba(100,140,205,0.5)';
-      ctx.textAlign = 'center';
+      
       const parts = periodTickParts(p);
-      ctx.fillText(parts.major, x, H - PAD.bottom + 22);
+      ctx.font = 'bold 13px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      
+      // Background pour les dates
+      const metrics = ctx.measureText(parts.major);
+      const textWidth = metrics.width + 6;
+      const textHeight = 16;
+      ctx.fillStyle = 'rgba(8, 18, 48, 0.65)';
+      ctx.fillRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      ctx.strokeStyle = 'rgba(100, 150, 255, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      
+      // Major text - brightness increased
+      ctx.fillStyle = 'rgba(150, 190, 255, 0.92)';
+      ctx.fillText(parts.major, x, H - PAD.bottom + 32);
+      
+      // Minor text if exists
       if (parts.minor) {
-        ctx.fillStyle = 'rgba(80,120,180,0.38)';
-        ctx.fillText(parts.minor, x, H - PAD.bottom + 34);
+        ctx.font = '11px "Space Mono", monospace';
+        ctx.fillStyle = 'rgba(120, 160, 220, 0.75)';
+        ctx.fillText(parts.minor, x, H - PAD.bottom + 46);
       }
     });
 
@@ -1639,18 +1656,40 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
     }
 
-    // X ticks
-    const xStep = Math.max(1, Math.floor(n / 10));
+    // X ticks - Improved visibility
+    const xStep = Math.max(1, Math.floor(n / 8));
     periods.forEach((p, i) => {
       if (i % xStep !== 0 && i !== n - 1) return;
       const x = xOf(i);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, PAD.top + chartH); ctx.lineTo(x, PAD.top + chartH + 5); ctx.stroke();
-      ctx.fillStyle = 'rgba(100,140,205,0.5)'; ctx.textAlign = 'center';
+      
       const date = p.label.length > 10 ? p.label.slice(0, 10) : p.label;
       const rest = p.label.slice(10).trim();
-      ctx.fillText(date, x, H - PAD.bottom + 22);
-      if (rest) { ctx.fillStyle = 'rgba(80,120,180,0.38)'; ctx.fillText(rest, x, H - PAD.bottom + 34); }
+      
+      ctx.font = 'bold 13px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      
+      // Background pour la date principale
+      const metrics = ctx.measureText(date);
+      const textWidth = metrics.width + 6;
+      const textHeight = 16;
+      ctx.fillStyle = 'rgba(8, 18, 48, 0.65)';
+      ctx.fillRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      ctx.strokeStyle = 'rgba(100, 150, 255, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      
+      // Date principale - brightness increased
+      ctx.fillStyle = 'rgba(150, 190, 255, 0.92)';
+      ctx.fillText(date, x, H - PAD.bottom + 32);
+      
+      // Rest of label if exists
+      if (rest) {
+        ctx.font = '11px "Space Mono", monospace';
+        ctx.fillStyle = 'rgba(120, 160, 220, 0.75)';
+        ctx.fillText(rest, x, H - PAD.bottom + 46);
+      }
     });
 
     // Axes
