@@ -831,6 +831,7 @@
   let trackColorSeq = 0;
   let currentMode = 'ranked';
   let evoMaxVal = 1;
+  let rankedHoverIdx = null;
 
   function clearFocusAndRecenter() {
     focusedNode = null;
@@ -848,7 +849,7 @@
     renderTop10(gd, country);
     renderArticlesPanel(null);
     if (currentMode === 'tracking') { renderTrackedList(); renderEvolutionChart(); }
-    else { renderRankedChart(gd); }
+    else { renderRankedChart(gd, rankedHoverIdx); }
   }
 
   function renderTop10(gd, country) {
@@ -978,82 +979,246 @@
     });
   }
 
-  function renderRankedChart(gd) {
+  function getRankedSeries(gd, limit = 10) {
+    const topIds = (gd?.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, limit).map(n => n.id);
+    return topIds.map((id, i) => ({
+      id,
+      color: TRACK_COLORS[i % TRACK_COLORS.length],
+      data: periods.map(p => {
+        const g = graphs[currentCountry]?.[p.key];
+        return g?.nodes.find(nd => nd.id === id)?.size ?? null;
+      })
+    }));
+  }
+
+  function getRankedChartLayout(rect) {
+    const W = rect.width;
+    const mediaVisible = document.getElementById('media-panel').style.display !== 'none';
+    const topVisible = document.getElementById('top10-panel').style.display !== 'none';
+    const compact = W < 960;
+    const leftPad = mediaVisible ? (compact ? 58 : Math.min(290, W * 0.30) + 26) : 72;
+    const rightPad = topVisible ? (compact ? 24 : Math.min(360, W * 0.35) + 28) : 24;
+    let bottomPad = 72;
+    const controls = document.getElementById('controls');
+    if (controls) {
+      const controlsRect = controls.getBoundingClientRect();
+      const controlsTop = controlsRect.top - rect.top;
+      if (Number.isFinite(controlsTop)) bottomPad = Math.max(bottomPad, rect.height - controlsTop + 12);
+    }
+    const PAD = { top: compact ? 112 : 94, right: rightPad, bottom: bottomPad, left: leftPad };
+    const chartW = Math.max(90, rect.width - PAD.left - PAD.right);
+    const chartH = Math.max(80, rect.height - PAD.top - PAD.bottom);
+    return { PAD, chartW, chartH };
+  }
+
+  function renderRankedChart(gd, hoverIdx = null) {
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.clientWidth || window.innerWidth;
-    const H = canvas.clientHeight || window.innerHeight;
-    canvas.width  = W * dpr;
-    canvas.height = H * dpr;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    const W = canvas.width;
+    const H = canvas.height;
+    if (!W || !H) return;
     const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#00000f';
+    ctx.fillRect(0, 0, W, H);
 
-    const top = (gd && gd.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, 10);
-    if (!top.length) return;
-
-    // Marges : laisser de la place aux panneaux latéraux
-    const mediaPanelW = Math.min(290, W * 0.30) + 30;
-    const top10PanelW = Math.min(360, W * 0.35) + 30;
-    const controlsEl = document.getElementById('controls');
-    const ctrlH = controlsEl ? (H - controlsEl.getBoundingClientRect().top + 12) : 100;
-    const PAD = { top: 100, left: mediaPanelW, right: top10PanelW, bottom: Math.max(90, ctrlH) };
-    const chartW = Math.max(80, W - PAD.left - PAD.right);
-    const chartH = Math.max(60, H - PAD.top - PAD.bottom);
-    const n = top.length;
-    const rowH = chartH / n;
-    const barH = Math.min(rowH * 0.52, 28);
-    const maxScore = top[0].size || 1;
-    const labelW = Math.min(130, chartW * 0.28);
-    const barAreaW = chartW - labelW - 50;
-
-    top.forEach((node, i) => {
-      const y = PAD.top + i * rowH + rowH / 2;
-      const barW = (node.size / maxScore) * barAreaW;
-      const x0 = PAD.left + labelW + 8;
-      const isActive = focusedNode === node.id;
-
-      // Barre de fond subtile
-      ctx.fillStyle = 'rgba(20,40,100,0.18)';
-      ctx.beginPath(); ctx.roundRect(x0, y - barH/2, barAreaW, barH, 3); ctx.fill();
-
-      // Barre principale
-      const alpha = isActive ? 0.92 : 0.55 + 0.3 * (1 - i / n);
-      const r = Math.round(40  + (i/n) * 20);
-      const g2= Math.round(100 - (i/n) * 40);
-      const b = Math.round(220 - (i/n) * 40);
-      ctx.fillStyle = `rgba(${r},${g2},${b},${alpha})`;
-      if (barW > 3) {
-        ctx.beginPath(); ctx.roundRect(x0, y - barH/2, barW, barH, 3); ctx.fill();
-      }
-      if (isActive) {
-        ctx.strokeStyle = 'rgba(180,210,255,0.75)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.roundRect(x0, y - barH/2, barAreaW, barH, 3); ctx.stroke();
-      }
-
-      // Rang
-      ctx.fillStyle = isActive ? 'rgba(200,225,255,0.6)' : 'rgba(80,110,160,0.6)';
-      ctx.font = '10px Space Mono, monospace';
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`${i+1}.`, PAD.left + labelW - 8 - labelW * 0.35, y);
-
-      // Nom
-      const maxChars = Math.floor(labelW * 0.28);
-      const label = node.id.length > maxChars ? node.id.slice(0, maxChars - 1) + '…' : node.id;
-      ctx.fillStyle = isActive ? 'rgba(230,245,255,0.95)' : 'rgba(160,195,240,0.82)';
-      ctx.font = isActive ? 'bold 11px Space Mono, monospace' : '11px Space Mono, monospace';
-      ctx.textAlign = 'right';
-      ctx.fillText(label, PAD.left + labelW, y);
-
-      // Score à droite de la barre
-      ctx.fillStyle = 'rgba(110,145,200,0.65)';
-      ctx.font = '10px Space Mono, monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText(`${node.size.toFixed(1)} pts`, x0 + barAreaW + 6, y);
+    STARS.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,205,255,${(s.a * 0.35).toFixed(2)})`;
+      ctx.fill();
     });
+
+    const series = getRankedSeries(gd, 10);
+    if (!series.length) return;
+    const n = periods.length;
+    if (!n) return;
+
+    const { PAD, chartW, chartH } = getRankedChartLayout(rect);
+    const xOf = i => PAD.left + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
+    const allVals = series.flatMap(s => s.data.filter(v => v !== null));
+    const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
+    const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
+
+    // Grid horizontal
+    ctx.font = '9px "Space Mono", monospace';
+    for (let gi = 0; gi <= 5; gi++) {
+      const v = (gi / 5) * maxVal;
+      const y = yOf(v);
+      ctx.strokeStyle = 'rgba(55,85,175,0.18)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 6]);
+      ctx.beginPath();
+      ctx.moveTo(PAD.left, y);
+      ctx.lineTo(PAD.left + chartW, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(110,150,215,0.55)';
+      ctx.textAlign = 'right';
+      ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
+    }
+
+    // Axes + X ticks
+    const xStep = Math.max(1, Math.floor(n / 10));
+    periods.forEach((p, i) => {
+      if (i % xStep !== 0 && i !== n - 1) return;
+      const x = xOf(i);
+      ctx.strokeStyle = 'rgba(55,85,175,0.22)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, PAD.top + chartH);
+      ctx.lineTo(x, PAD.top + chartH + 5);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(100,140,205,0.5)';
+      ctx.textAlign = 'center';
+      const date = p.label.length > 10 ? p.label.slice(0, 10) : p.label;
+      const rest = p.label.slice(10).trim();
+      ctx.fillText(date, x, H - PAD.bottom + 22);
+      if (rest) {
+        ctx.fillStyle = 'rgba(80,120,180,0.38)';
+        ctx.fillText(rest, x, H - PAD.bottom + 34);
+      }
+    });
+
+    ctx.strokeStyle = 'rgba(75,115,195,0.22)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD.left, PAD.top);
+    ctx.lineTo(PAD.left, PAD.top + chartH);
+    ctx.lineTo(PAD.left + chartW, PAD.top + chartH);
+    ctx.stroke();
+
+    // Lignes des objets Top 10
+    series.forEach(s => {
+      const [r, g, b] = hexToRgb(s.color);
+      const isFocused = focusedNode === s.id;
+
+      ctx.beginPath();
+      let first = true;
+      s.data.forEach((v, i) => {
+        if (v === null) return;
+        const x = xOf(i);
+        const y = yOf(v);
+        if (first) { ctx.moveTo(x, y); first = false; }
+        else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = isFocused ? 3 : 2;
+      ctx.shadowColor = s.color;
+      ctx.shadowBlur = isFocused ? 12 : 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      s.data.forEach((v, i) => {
+        if (v === null) return;
+        const x = xOf(i);
+        const y = yOf(v);
+        const isCurrent = i === currentIdx;
+        const radius = isCurrent ? (isFocused ? 4.8 : 4) : 2.2;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = isCurrent ? `rgba(${r},${g},${b},0.98)` : `rgba(${r},${g},${b},0.76)`;
+        ctx.fill();
+      });
+    });
+
+    // Marqueur de période courante
+    if (currentIdx >= 0 && currentIdx < n) {
+      const cx = xOf(currentIdx);
+      ctx.strokeStyle = 'rgba(180,210,255,0.25)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.moveTo(cx, PAD.top - 8);
+      ctx.lineTo(cx, PAD.top + chartH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(180,210,255,0.5)';
+      ctx.font = '9px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('▼', cx, PAD.top - 10);
+    }
+
+    // Marqueur de hover
+    if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < n) {
+      const hx = xOf(hoverIdx);
+      ctx.strokeStyle = 'rgba(200,220,255,0.18)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(hx, PAD.top);
+      ctx.lineTo(hx, PAD.top + chartH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      series.forEach(s => {
+        const v = s.data[hoverIdx];
+        if (v === null) return;
+        ctx.beginPath();
+        ctx.arc(hx, yOf(v), focusedNode === s.id ? 6.2 : 5, 0, Math.PI * 2);
+        ctx.fillStyle = s.color;
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+    }
+  }
+
+  function rankedChartHoverAt(clientX, clientY) {
+    const canvas = document.getElementById('evo-canvas');
+    if (!canvas || currentMode !== 'ranked') return;
+    const rect = canvas.getBoundingClientRect();
+    const { PAD, chartW } = getRankedChartLayout(rect);
+    const n = periods.length;
+    const canvasX = clientX - rect.left;
+
+    if (canvasX < PAD.left || canvasX > PAD.left + chartW) {
+      rankedHoverIdx = null;
+      renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), null);
+      document.getElementById('evo-tooltip').style.display = 'none';
+      return;
+    }
+
+    const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))));
+    rankedHoverIdx = idx;
+    const gd = getGD(currentCountry, periods[currentIdx]?.key);
+    const series = getRankedSeries(gd, 10);
+    renderRankedChart(gd, idx);
+
+    const period = periods[idx];
+    const rows = series
+      .map(s => {
+        const val = s.data[idx];
+        const prev = idx > 0 ? s.data[idx - 1] : null;
+        const delta = (val !== null && prev !== null) ? val - prev : null;
+        return { id: s.id, color: s.color, val, delta };
+      })
+      .filter(r => r.val !== null)
+      .sort((a, b) => b.val - a.val)
+      .slice(0, 10);
+
+    const tt = document.getElementById('evo-tooltip');
+    document.getElementById('evo-tooltip-period').textContent = period?.label || '';
+    document.getElementById('evo-tooltip-items').innerHTML = rows.map(r => {
+      let deltaTxt = '—';
+      if (r.delta !== null) deltaTxt = `${r.delta > 0 ? '▲' : (r.delta < 0 ? '▼' : '=')} ${Math.abs(r.delta).toFixed(2)}`;
+      return `<div class="evo-tt-row"><div class="evo-tt-dot" style="background:${r.color}"></div><div class="evo-tt-name">${escapeHtml(r.id)}</div><div class="evo-tt-val">${r.val.toFixed(2)} · ${deltaTxt}</div></div>`;
+    }).join('');
+
+    let tx = clientX + 16;
+    let ty = clientY - 10;
+    const ttW = 250;
+    const ttH = tt.offsetHeight || 80;
+    if (tx + ttW > window.innerWidth) tx = clientX - ttW - 10;
+    if (ty + ttH > window.innerHeight) ty = clientY - ttH - 10;
+    tt.style.left = tx + 'px';
+    tt.style.top = ty + 'px';
+    tt.style.display = 'block';
   }
 
   function getEvolutionChartLayout(rect) {
@@ -1255,6 +1420,8 @@
     if (mode === 'tracking') {
       evoView.classList.add('visible'); top10El.style.display = 'none'; mediaEl.style.display = 'none';
       trackedEl.style.display = '';
+      rankedHoverIdx = null;
+      document.getElementById('evo-tooltip').style.display = 'none';
       renderTrackedList(); renderEvolutionChart();
     } else {
       evoView.classList.add('visible'); top10El.style.display = ''; mediaEl.style.display = '';
@@ -1269,34 +1436,55 @@
 
   // Evolution canvas events
   const evoCanvas = document.getElementById('evo-canvas');
-  evoCanvas.addEventListener('mousemove', e => { if (currentMode === 'tracking') evoChartHoverAt(e.clientX, e.clientY); });
+  evoCanvas.addEventListener('mousemove', e => {
+    if (currentMode === 'tracking') evoChartHoverAt(e.clientX, e.clientY);
+    else rankedChartHoverAt(e.clientX, e.clientY);
+  });
   evoCanvas.addEventListener('mouseleave', () => {
-    if (currentMode === 'tracking') { renderEvolutionChart(null); document.getElementById('evo-tooltip').style.display = 'none'; }
+    if (currentMode === 'tracking') renderEvolutionChart(null);
+    else {
+      rankedHoverIdx = null;
+      const period = periods[currentIdx];
+      renderRankedChart(getGD(currentCountry, period?.key), null);
+    }
+    document.getElementById('evo-tooltip').style.display = 'none';
   });
   evoCanvas.addEventListener('click', e => {
     if (currentMode === 'ranked') {
-      // Détecter la barre cliquée dans le chart ranked
+      // Sélectionne l'objet le plus proche du clic à la période visée.
       const period = periods[currentIdx];
       const gd = getGD(currentCountry, period?.key);
-      const top = (gd.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, 10);
-      if (!top.length) return;
-      const W = evoCanvas.clientWidth || window.innerWidth;
-      const H = evoCanvas.clientHeight || window.innerHeight;
-      const mediaPanelW = Math.min(290, W * 0.30) + 30;
-      const labelW = Math.min(130, (W - mediaPanelW - Math.min(360, W * 0.35) - 30) * 0.28);
-      const controlsEl = document.getElementById('controls');
-      const ctrlH = controlsEl ? (H - controlsEl.getBoundingClientRect().top + 12) : 100;
-      const PAD = { top: 100, left: mediaPanelW, bottom: Math.max(90, ctrlH) };
-      const chartH = Math.max(60, H - PAD.top - PAD.bottom);
-      const n = top.length;
-      const rowH = chartH / n;
-      const canvasY = e.clientY;
-      const rowIdx = Math.floor((canvasY - PAD.top) / rowH);
-      if (rowIdx >= 0 && rowIdx < n) {
-        focusedNode = top[rowIdx].id;
-        setTop10Active(focusedNode);
-        renderArticlesPanel(top[rowIdx]);
-        renderRankedChart(gd);
+      const series = getRankedSeries(gd, 10);
+      if (!series.length) return;
+      const rect = evoCanvas.getBoundingClientRect();
+      const { PAD, chartW, chartH } = getRankedChartLayout(rect);
+      const n = periods.length;
+      const xOf = i => PAD.left + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
+      const allVals = series.flatMap(s => s.data.filter(v => v !== null));
+      const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
+      const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
+      const canvasX = e.clientX - rect.left;
+      const canvasY = e.clientY - rect.top;
+      if (canvasX < PAD.left || canvasX > PAD.left + chartW) return;
+      const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))));
+
+      let hitId = null;
+      let bestDist = Infinity;
+      series.forEach(s => {
+        const v = s.data[idx];
+        if (v === null) return;
+        const dist = Math.hypot(canvasX - xOf(idx), canvasY - yOf(v));
+        if (dist < bestDist) {
+          bestDist = dist;
+          hitId = s.id;
+        }
+      });
+      if (hitId && bestDist <= 18) {
+        focusedNode = hitId;
+        setTop10Active(hitId);
+        const node = (gd.nodes || []).find(n2 => n2.id === hitId);
+        if (node) renderArticlesPanel(node);
+        renderRankedChart(gd, rankedHoverIdx);
       }
       return;
     }
