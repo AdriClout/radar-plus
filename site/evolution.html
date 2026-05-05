@@ -1802,6 +1802,13 @@
       applyTimelineHeat(currentCountry);
       syncRankedNavigationState();
       loadPeriod(currentCountry, currentIdx);
+      
+      // Si y'a des objets tracké, focus le premier pour que le dimming fonctionne
+      if (trackedObjects.size > 0) {
+        focusedNode = Array.from(trackedObjects)[0];
+        const gd = getGD(currentCountry, periods[currentIdx]?.key);
+        renderRankedChart(gd, rankedHoverIdx);
+      }
     }
     updateWindowUI();
   }
