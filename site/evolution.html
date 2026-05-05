@@ -1309,6 +1309,9 @@
     ctx.lineTo(PAD.left + chartW, PAD.top + chartH);
     ctx.stroke();
 
+    // Index de la période courante dans winPeriods (avant le tracé des dots)
+    const winCurrentIdx = winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
+
     // Lignes des objets Top 10
     const hasActiveNode = focusedNode !== null || hoveredNode !== null;
     series.forEach(s => {
@@ -1356,7 +1359,6 @@
     requestAnimationFrame(() => renderRankedLegend(series, hoverIdx));
 
     // Marqueur de période courante
-    const winCurrentIdx = winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
     if (winCurrentIdx >= 0) {
       const cx = xOf(winCurrentIdx);
       ctx.strokeStyle = 'rgba(180,210,255,0.25)';
