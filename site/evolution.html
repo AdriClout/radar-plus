@@ -339,6 +339,72 @@
     #ranked-search-input::placeholder { color: rgba(90,120,180,0.55); }
     #ranked-search-input:focus { border-color: rgba(140,190,255,0.75); box-shadow: 0 0 10px rgba(80,130,255,0.25); color: #d0e8ff; }
     #ranked-search-results { display: flex; flex-direction: column; gap: 3px; max-height: 120px; overflow-y: auto; }
+
+    #left-tracked-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 170px;
+      overflow-y: auto;
+    }
+    .left-tracked-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(90,130,250,0.22);
+      border-radius: 4px;
+      background: rgba(8,18,48,0.48);
+      padding: 5px 7px;
+    }
+    .left-track-check {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid rgba(120,190,150,0.6);
+      background: rgba(20,72,52,0.5);
+      color: rgba(165,235,195,0.95);
+      font-size: 10px;
+      line-height: 12px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .left-track-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 10px;
+      color: rgba(190,215,255,0.95);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .left-track-rm {
+      border: none;
+      background: none;
+      color: rgba(190,90,90,0.75);
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 2px;
+      flex-shrink: 0;
+    }
+    .left-track-rm:hover { color: rgba(255,120,120,0.95); }
+    #left-tracked-empty {
+      color: rgba(104,130,182,0.7);
+      font-size: 10px;
+      line-height: 1.45;
+      padding: 2px 0;
+    }
+    .rleg-item.tracked {
+      border-color: rgba(110,210,155,0.62);
+      background: rgba(20,72,52,0.40);
+    }
+    .rleg-check {
+      font-size: 10px;
+      color: rgba(110,210,155,0.95);
+      width: 12px;
+      text-align: center;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -387,6 +453,10 @@
         <button class="win-btn" data-gran="year" type="button" aria-label="Granularité année">Année</button>
       </div>
       <div id="window-granularity"></div>
+    </div>
+    <div class="lpanel-section" id="left-tracked-section">
+      <div class="lpanel-label">Suivi</div>
+      <div id="left-tracked-list"></div>
     </div>
   </div>
   <div id="top10-panel">
@@ -540,7 +610,7 @@
     }[c]));
   }
 
-  function renderArticlesPanel(node) {
+  function renderArticlesPanel(node, periodLabel = '') {
     const panel = document.getElementById('object-panel');
     if (!node) {
       panel.classList.remove('visible');
@@ -559,8 +629,11 @@
     const radarplusUrl = `./radarplus.html?country=${encodeURIComponent(currentCountry)}&q=${encodeURIComponent(node.id)}`;
     const tracked = trackedObjects.has(node.id);
 
+    const periodLine = periodLabel ? `<div class="meta">Bloc: ${escapeHtml(periodLabel)}</div>` : '';
+
     panel.innerHTML = `
       <div class="h">${escapeHtml(node.id)}</div>
+      ${periodLine}
       <div class="meta">Saillance: ${Number(node.size || 0).toFixed(2)} · Mentions: ${Number(node.n || 0)}</div>
       <button class="track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
       <div class="panel-actions">
@@ -617,6 +690,8 @@
     year: { topN: 16, emptyLabel: 'Année' },
   };
   const FR_MONTHS = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
+  const FR_MONTHS_SHORT = ['janv.', 'fevr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'aout', 'sept.', 'oct.', 'nov.', 'dec.'];
+  const FR_WEEKDAYS_SHORT = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
   const EN_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
 
   function periodKeyToDate(key) {
@@ -725,6 +800,27 @@
       const fallback = periods[currentIdx];
       return fallback ? [fallback] : [];
     }
+    if (rankedGranularity === 'day') {
+      const starts = [0, 4, 8, 12, 16, 20];
+      const byStart = new Map();
+      slot.periods.forEach(p => {
+        const timePart = String(p.key || '').split('_')[1] || '';
+        const startRaw = Number(timePart.split('-')[0]);
+        if (Number.isFinite(startRaw)) byStart.set(startRaw, { ...p, blockStart: startRaw, isFuture: false });
+      });
+
+      return starts.map(start => {
+        if (byStart.has(start)) return byStart.get(start);
+        const end = (start + 4) % 24;
+        const fakeKey = `${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`;
+        return {
+          key: fakeKey,
+          label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
+          blockStart: start,
+          isFuture: true
+        };
+      });
+    }
     return slot.periods;
   }
 
@@ -750,6 +846,14 @@
   function clearFocusAndRecenter() {
     focusedNode = null;
     renderArticlesPanel(null);
+  }
+
+  function blockRangeLabelFromPeriod(period) {
+    const timePart = String(period?.key || '').split('_')[1] || '';
+    const startRaw = Number(timePart.split('-')[0]);
+    const start = Number.isFinite(startRaw) ? startRaw : Number(period?.blockStart || 0);
+    const end = (start + 4) % 24;
+    return `${String(start).padStart(2, '0')} h-${String(end).padStart(2, '0')} h`;
   }
 
   function updatePeriodSummary(country, idx) {
@@ -843,6 +947,9 @@
     if (currentMode === 'tracking') {
       updatePeriodSummary(currentCountry, currentIdx);
       renderEvolutionChart();
+    } else {
+      const gd = getGD(currentCountry, periods[currentIdx]?.key);
+      renderRankedChart(gd, rankedHoverIdx);
     }
   }
 
@@ -851,6 +958,9 @@
     if (currentMode === 'tracking') {
       updatePeriodSummary(currentCountry, currentIdx);
       renderEvolutionChart();
+    } else {
+      const gd = getGD(currentCountry, periods[currentIdx]?.key);
+      renderRankedChart(gd, rankedHoverIdx);
     }
   }
 
@@ -864,12 +974,25 @@
     return [...ids].sort();
   }
 
+  function getRankedScopedObjectIds() {
+    const ids = new Set();
+    const wp = getRankedWindowPeriods();
+    wp.forEach(p => {
+      const g = getGD(currentCountry, p.key);
+      (g.nodes || []).forEach(n => ids.add(n.id));
+    });
+    return [...ids].sort();
+  }
+
   function renderTrackedList() {
     const list = document.getElementById('tracked-list');
+    const leftList = document.getElementById('left-tracked-list');
     if (!list) return;
     list.innerHTML = '';
+    if (leftList) leftList.innerHTML = '';
     if (!trackedObjects.size) {
       list.innerHTML = '<div id="evo-empty">Recherchez un objet ci-dessus<br>ou cliquez sur "Suivre" dans le classement.</div>';
+      if (leftList) leftList.innerHTML = '<div id="left-tracked-empty">Aucun objet suivi.<br>Cliquez un objet du Top 10 ou utilisez la recherche.</div>';
       return;
     }
     const period = periods[currentIdx];
@@ -888,6 +1011,18 @@
       `;
       item.querySelector('.tracked-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
       list.appendChild(item);
+
+      if (leftList) {
+        const leftItem = document.createElement('div');
+        leftItem.className = 'left-tracked-item';
+        leftItem.innerHTML = `
+          <div class="left-track-check">✓</div>
+          <div class="left-track-name" title="${escapeHtml(id)}">${escapeHtml(id)}</div>
+          <button class="left-track-rm" title="Retirer">×</button>
+        `;
+        leftItem.querySelector('.left-track-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
+        leftList.appendChild(leftItem);
+      }
     });
   }
 
@@ -914,7 +1049,6 @@
   function addTrackedAndSwitch(id) {
     if (!id) return;
     addTracked(id);
-    setMode('tracking');
   }
 
   function renderRankedSearchResults(q) {
@@ -923,15 +1057,16 @@
     resultsEl.innerHTML = '';
     if (!q.trim()) return;
     const ql = q.toLowerCase();
-    const matches = getAllObjectIds()
+    const matches = getRankedScopedObjectIds()
       .filter(id => id.toLowerCase().includes(ql))
+      .filter(id => !trackedObjects.has(id))
       .slice(0, 7);
     matches.forEach(id => {
       const div = document.createElement('div');
       div.className = 'evo-result';
       div.textContent = id;
       div.addEventListener('click', () => {
-        addTrackedAndSwitch(id);
+        addTracked(id);
         const input = document.getElementById('ranked-search-input');
         if (input) input.value = '';
         renderRankedSearchResults('');
@@ -985,6 +1120,7 @@
       const isFocused  = focusedNode  === r.id;
       const isHovered  = hoveredNode  === r.id;
       const isDimmed   = hasHover && !isFocused && !isHovered;
+      const isTracked  = trackedObjects.has(r.id);
 
       let deltaTxt = '', deltaClass = 'flat';
       if (r.delta !== null && Math.abs(r.delta) >= 0.01) {
@@ -996,6 +1132,7 @@
 
       const item = document.createElement('div');
       item.className = 'rleg-item' +
+        (isTracked ? ' tracked' : '') +
         (isFocused ? ' focused' : '') +
         (isHovered && !isFocused ? ' hovered' : '') +
         (isDimmed ? ' dimmed' : '');
@@ -1004,6 +1141,7 @@
         <div class="rleg-swatch" style="background:${r.color};box-shadow:0 0 5px ${r.color}88"></div>
         <span class="rleg-rank">${i + 1}.</span>
         <span class="rleg-name" title="${escapeHtml(r.id)}">${escapeHtml(r.id)}</span>
+        <span class="rleg-check">${isTracked ? '✓' : ''}</span>
         <span class="rleg-val${r.displayVal === null ? ' null-val' : ''}">${r.displayVal !== null ? r.displayVal.toFixed(1) : '—'}</span>
         <span class="rleg-delta ${deltaClass}">${deltaTxt}</span>
       `;
@@ -1021,10 +1159,9 @@
       item.addEventListener('click', e => {
         e.stopPropagation();
         const gd = getGD(currentCountry, periods[currentIdx]?.key);
-        const node = (gd.nodes || []).find(nd => nd.id === r.id);
-        focusedNode = isFocused ? null : r.id;
-        if (focusedNode && node) renderArticlesPanel(node);
-        else renderArticlesPanel(null);
+        focusedNode = r.id;
+        if (trackedObjects.has(r.id)) removeTracked(r.id);
+        else addTracked(r.id);
         renderRankedChart(gd, rankedHoverIdx);
         renderRankedLegend(series, rankedHoverIdx);
       });
@@ -1141,14 +1278,25 @@
   }
 
   function periodTickParts(period) {
-    const label = String(period?.label || '');
-    const [left, right] = label.split('·').map(s => s.trim());
     if (rankedGranularity === 'day') {
-      const interval = right ? right.split(' ')[0] : '';
-      const tz = right ? right.split(' ').slice(1).join(' ') : '';
-      return { major: interval || left, minor: tz || '' };
+      return { major: blockRangeLabelFromPeriod(period), minor: '' };
     }
-    return { major: left || label, minor: right || '' };
+
+    const dateStr = periodDisplayDate(period);
+    const [y, m, d] = String(dateStr).split('-').map(Number);
+    if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)) {
+      const dt = new Date(`${dateStr}T00:00:00`);
+      if (rankedGranularity === 'week') {
+        const wd = FR_WEEKDAYS_SHORT[dt.getDay()] || '';
+        return { major: `${wd} ${String(d).padStart(2, '0')}`, minor: FR_MONTHS_SHORT[Math.max(0, m - 1)] || '' };
+      }
+      if (rankedGranularity === 'month') {
+        return { major: `${String(d).padStart(2, '0')} ${FR_MONTHS_SHORT[Math.max(0, m - 1)] || ''}`.trim(), minor: '' };
+      }
+      return { major: `${FR_MONTHS_SHORT[Math.max(0, m - 1)] || ''} ${y}`.trim(), minor: '' };
+    }
+    const label = String(period?.label || '');
+    return { major: label, minor: '' };
   }
 
   function renderRankedChart(gd, hoverIdx = null) {
@@ -1656,8 +1804,16 @@
       });
       if (hitId && bestDist <= 18) {
         focusedNode = hitId;
-        const node = (gd.nodes || []).find(n2 => n2.id === hitId);
-        if (node) renderArticlesPanel(node);
+        const clickedPeriod = winPeriods[idx];
+        const periodGraph = getGD(currentCountry, clickedPeriod?.key);
+        const node = (periodGraph.nodes || []).find(n2 => n2.id === hitId);
+        const exactIdx = periods.findIndex(p => p.key === clickedPeriod?.key);
+        if (exactIdx >= 0) {
+          currentIdx = exactIdx;
+          updatePeriodSummary(currentCountry, currentIdx);
+        }
+        if (node) renderArticlesPanel(node, clickedPeriod?.label || blockRangeLabelFromPeriod(clickedPeriod));
+        else renderArticlesPanel(null);
         renderRankedChart(gd, rankedHoverIdx);
       }
       return;
@@ -1675,20 +1831,21 @@
     const yOf = v => PAD.top + chartH - (v / Math.max(evoMaxVal, 0.1)) * chartH;
     const HIT_R = 20;
     let hitNode = null;
+    let hitPi = null;
     outer: for (const id of trackedObjects) {
       for (let di = -1; di <= 1; di++) {
         const pi = idx + di;
         if (pi < 0 || pi >= n) continue;
         const node = graphs[currentCountry]?.[periods[pi]?.key]?.nodes.find(nd => nd.id === id);
         if (!node) continue;
-        if (Math.hypot(canvasX - xOf(pi), canvasY - yOf(node.size)) < HIT_R) { hitNode = node; break outer; }
+        if (Math.hypot(canvasX - xOf(pi), canvasY - yOf(node.size)) < HIT_R) { hitNode = node; hitPi = pi; break outer; }
       }
     }
 
-    currentIdx = idx;
+    currentIdx = hitPi !== null ? hitPi : idx;
     slider.value = currentIdx;
     loadPeriod(currentCountry, currentIdx);
-    if (hitNode) renderArticlesPanel(hitNode);
+    if (hitNode) renderArticlesPanel(hitNode, periods[currentIdx]?.label || '');
   });
 
   // Evolution search
@@ -1758,9 +1915,9 @@
       rankedSearchInput.blur();
     } else if (e.key === 'Enter') {
       const q = rankedSearchInput.value.trim().toLowerCase();
-      const id = getAllObjectIds().find(v => v.toLowerCase().includes(q));
+      const id = getRankedScopedObjectIds().find(v => v.toLowerCase().includes(q));
       if (id) {
-        addTrackedAndSwitch(id);
+        addTracked(id);
         rankedSearchInput.value = '';
         renderRankedSearchResults('');
       }
@@ -1814,6 +1971,17 @@
     });
   });
 
+  document.addEventListener('click', e => {
+    const panel = document.getElementById('object-panel');
+    if (!panel || !panel.classList.contains('visible')) return;
+    if (panel.contains(e.target)) return;
+    if (e.target.closest('.rleg-item')) return;
+    if (e.target.closest('.tracked-item')) return;
+    if (e.target.closest('.left-tracked-item')) return;
+    if (e.target.closest('#evo-canvas')) return;
+    renderArticlesPanel(null);
+  });
+
   document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
     tab.setAttribute('aria-selected', String(tab.dataset.country === currentCountry));
@@ -1825,6 +1993,7 @@
 
   // Mode par défaut: classement évolutif
   setMode('ranked');
+  renderTrackedList();
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
   const urlNode = urlParams.get('node');
