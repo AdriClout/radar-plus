@@ -692,6 +692,7 @@
   const FR_MONTHS = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
   const FR_MONTHS_SHORT = ['janv.', 'fevr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'aout', 'sept.', 'oct.', 'nov.', 'dec.'];
   const FR_WEEKDAYS_SHORT = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+  const LOCAL_UTC_OFFSET_HOURS = 4; // EDT, cohérent avec le pipeline actuel
   const EN_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
 
   function periodKeyToDate(key) {
@@ -790,9 +791,8 @@
 
       const eligibleKeys = slot.periodKeys.filter(key => {
         if (!isToday) return true;
-        const timePart = String(key || '').split('_')[1] || '';
-        const startRaw = Number(timePart.split('-')[0]);
-        return Number.isFinite(startRaw) && startRaw < currentBlockStart;
+        const localStart = localBlockStartFromPeriodKey(key);
+        return Number.isFinite(localStart) && localStart <= currentBlockStart;
       });
 
       const fallbackKey = slot.periodKeys[slot.periodKeys.length - 1];
@@ -814,6 +814,13 @@
     return new Date(`${date}T${h}:00:00`);
   }
 
+  function localBlockStartFromPeriodKey(key) {
+    const timePart = String(key || '').split('_')[1] || '';
+    const utcStartRaw = Number(timePart.split('-')[0]);
+    if (!Number.isFinite(utcStartRaw)) return null;
+    return (utcStartRaw - LOCAL_UTC_OFFSET_HOURS + 24) % 24;
+  }
+
   function getRankedWindowPeriods() {
     const slot = rankedSlots[rankedSlotIdx];
     if (!slot || !slot.periods.length) {
@@ -828,11 +835,10 @@
       const starts = [0, 4, 8, 12, 16, 20];
       const byStart = new Map();
       slot.periods.forEach(p => {
-        const timePart = String(p.key || '').split('_')[1] || '';
-        const startRaw = Number(timePart.split('-')[0]);
-        if (!Number.isFinite(startRaw)) return;
-        const isFuture = isToday ? startRaw >= currentBlockStart : false;
-        byStart.set(startRaw, { ...p, blockStart: startRaw, isFuture });
+        const localStart = localBlockStartFromPeriodKey(p.key);
+        if (!Number.isFinite(localStart)) return;
+        const isFuture = isToday ? localStart > currentBlockStart : false;
+        byStart.set(localStart, { ...p, blockStart: localStart, isFuture });
       });
 
       return starts.map(start => {
@@ -851,7 +857,7 @@
         }
         const end = (start + 4) % 24;
         const fakeKey = `${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`;
-        const isFuture = isToday ? start >= currentBlockStart : true;
+        const isFuture = isToday ? start > currentBlockStart : true;
         return {
           key: fakeKey,
           label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
@@ -890,9 +896,8 @@
   }
 
   function blockRangeLabelFromPeriod(period) {
-    const timePart = String(period?.key || '').split('_')[1] || '';
-    const startRaw = Number(timePart.split('-')[0]);
-    const start = Number.isFinite(startRaw) ? startRaw : Number(period?.blockStart || 0);
+    const localStart = localBlockStartFromPeriodKey(period?.key);
+    const start = Number.isFinite(localStart) ? localStart : Number(period?.blockStart || 0);
     const end = (start + 4) % 24;
     return `${String(start).padStart(2, '0')} h-${String(end).padStart(2, '0')} h`;
   }
