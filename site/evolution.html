@@ -806,6 +806,10 @@
 
   window.addEventListener('resize', () => {
     if (currentMode === 'tracking') renderEvolutionChart();
+    else {
+      const period = periods[currentIdx];
+      if (period) renderRankedChart(getGD(currentCountry, period.key));
+    }
   });
 
   // ── État ──────────────────────────────────────────────────────────────────
@@ -844,6 +848,7 @@
     renderTop10(gd, country);
     renderArticlesPanel(null);
     if (currentMode === 'tracking') { renderTrackedList(); renderEvolutionChart(); }
+    else { renderRankedChart(gd); }
   }
 
   function renderTop10(gd, country) {
@@ -970,6 +975,84 @@
         renderEvoSearchResults('');
       });
       resultsEl.appendChild(div);
+    });
+  }
+
+  function renderRankedChart(gd) {
+    const canvas = document.getElementById('evo-canvas');
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.clientWidth || window.innerWidth;
+    const H = canvas.clientHeight || window.innerHeight;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const top = (gd && gd.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, 10);
+    if (!top.length) return;
+
+    // Marges : laisser de la place aux panneaux latéraux
+    const mediaPanelW = Math.min(290, W * 0.30) + 30;
+    const top10PanelW = Math.min(360, W * 0.35) + 30;
+    const controlsEl = document.getElementById('controls');
+    const ctrlH = controlsEl ? (H - controlsEl.getBoundingClientRect().top + 12) : 100;
+    const PAD = { top: 100, left: mediaPanelW, right: top10PanelW, bottom: Math.max(90, ctrlH) };
+    const chartW = Math.max(80, W - PAD.left - PAD.right);
+    const chartH = Math.max(60, H - PAD.top - PAD.bottom);
+    const n = top.length;
+    const rowH = chartH / n;
+    const barH = Math.min(rowH * 0.52, 28);
+    const maxScore = top[0].size || 1;
+    const labelW = Math.min(130, chartW * 0.28);
+    const barAreaW = chartW - labelW - 50;
+
+    top.forEach((node, i) => {
+      const y = PAD.top + i * rowH + rowH / 2;
+      const barW = (node.size / maxScore) * barAreaW;
+      const x0 = PAD.left + labelW + 8;
+      const isActive = focusedNode === node.id;
+
+      // Barre de fond subtile
+      ctx.fillStyle = 'rgba(20,40,100,0.18)';
+      ctx.beginPath(); ctx.roundRect(x0, y - barH/2, barAreaW, barH, 3); ctx.fill();
+
+      // Barre principale
+      const alpha = isActive ? 0.92 : 0.55 + 0.3 * (1 - i / n);
+      const r = Math.round(40  + (i/n) * 20);
+      const g2= Math.round(100 - (i/n) * 40);
+      const b = Math.round(220 - (i/n) * 40);
+      ctx.fillStyle = `rgba(${r},${g2},${b},${alpha})`;
+      if (barW > 3) {
+        ctx.beginPath(); ctx.roundRect(x0, y - barH/2, barW, barH, 3); ctx.fill();
+      }
+      if (isActive) {
+        ctx.strokeStyle = 'rgba(180,210,255,0.75)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(x0, y - barH/2, barAreaW, barH, 3); ctx.stroke();
+      }
+
+      // Rang
+      ctx.fillStyle = isActive ? 'rgba(200,225,255,0.6)' : 'rgba(80,110,160,0.6)';
+      ctx.font = '10px Space Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${i+1}.`, PAD.left + labelW - 8 - labelW * 0.35, y);
+
+      // Nom
+      const maxChars = Math.floor(labelW * 0.28);
+      const label = node.id.length > maxChars ? node.id.slice(0, maxChars - 1) + '…' : node.id;
+      ctx.fillStyle = isActive ? 'rgba(230,245,255,0.95)' : 'rgba(160,195,240,0.82)';
+      ctx.font = isActive ? 'bold 11px Space Mono, monospace' : '11px Space Mono, monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(label, PAD.left + labelW, y);
+
+      // Score à droite de la barre
+      ctx.fillStyle = 'rgba(110,145,200,0.65)';
+      ctx.font = '10px Space Mono, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${node.size.toFixed(1)} pts`, x0 + barAreaW + 6, y);
     });
   }
 
@@ -1168,11 +1251,14 @@
     const evoView = document.getElementById('evolution-view');
     const top10El = document.getElementById('top10-panel');
     const mediaEl = document.getElementById('media-panel');
+    const trackedEl = document.getElementById('tracked-panel');
     if (mode === 'tracking') {
       evoView.classList.add('visible'); top10El.style.display = 'none'; mediaEl.style.display = 'none';
+      trackedEl.style.display = '';
       renderTrackedList(); renderEvolutionChart();
     } else {
-      evoView.classList.remove('visible'); top10El.style.display = ''; mediaEl.style.display = '';
+      evoView.classList.add('visible'); top10El.style.display = ''; mediaEl.style.display = '';
+      trackedEl.style.display = 'none';
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry, currentIdx);
     }
@@ -1183,9 +1269,37 @@
 
   // Evolution canvas events
   const evoCanvas = document.getElementById('evo-canvas');
-  evoCanvas.addEventListener('mousemove', e => evoChartHoverAt(e.clientX, e.clientY));
-  evoCanvas.addEventListener('mouseleave', () => { renderEvolutionChart(null); document.getElementById('evo-tooltip').style.display = 'none'; });
+  evoCanvas.addEventListener('mousemove', e => { if (currentMode === 'tracking') evoChartHoverAt(e.clientX, e.clientY); });
+  evoCanvas.addEventListener('mouseleave', () => {
+    if (currentMode === 'tracking') { renderEvolutionChart(null); document.getElementById('evo-tooltip').style.display = 'none'; }
+  });
   evoCanvas.addEventListener('click', e => {
+    if (currentMode === 'ranked') {
+      // Détecter la barre cliquée dans le chart ranked
+      const period = periods[currentIdx];
+      const gd = getGD(currentCountry, period?.key);
+      const top = (gd.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, 10);
+      if (!top.length) return;
+      const W = evoCanvas.clientWidth || window.innerWidth;
+      const H = evoCanvas.clientHeight || window.innerHeight;
+      const mediaPanelW = Math.min(290, W * 0.30) + 30;
+      const labelW = Math.min(130, (W - mediaPanelW - Math.min(360, W * 0.35) - 30) * 0.28);
+      const controlsEl = document.getElementById('controls');
+      const ctrlH = controlsEl ? (H - controlsEl.getBoundingClientRect().top + 12) : 100;
+      const PAD = { top: 100, left: mediaPanelW, bottom: Math.max(90, ctrlH) };
+      const chartH = Math.max(60, H - PAD.top - PAD.bottom);
+      const n = top.length;
+      const rowH = chartH / n;
+      const canvasY = e.clientY;
+      const rowIdx = Math.floor((canvasY - PAD.top) / rowH);
+      if (rowIdx >= 0 && rowIdx < n) {
+        focusedNode = top[rowIdx].id;
+        setTop10Active(focusedNode);
+        renderArticlesPanel(top[rowIdx]);
+        renderRankedChart(gd);
+      }
+      return;
+    }
     const rect = evoCanvas.getBoundingClientRect();
     const { PAD, chartW, chartH } = getEvolutionChartLayout(rect);
     const n = periods.length;
