@@ -847,7 +847,7 @@
           if (existing.isFuture) {
             const end = (start + 4) % 24;
             return {
-              key: `${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
+              key: `__synthetic__${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
               label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
               blockStart: start,
               isSynthetic: true,
@@ -857,7 +857,7 @@
           return existing;
         }
         const end = (start + 4) % 24;
-        const fakeKey = `${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`;
+        const fakeKey = `__synthetic__${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`;
         return {
           key: fakeKey,
           label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
