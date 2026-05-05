@@ -1010,13 +1010,13 @@
 
       item.addEventListener('mouseenter', () => {
         hoveredNode = r.id;
+        item.classList.add('hovered');
         renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
-        renderRankedLegend(series, rankedHoverIdx);
       });
       item.addEventListener('mouseleave', () => {
         hoveredNode = null;
+        item.classList.remove('hovered');
         renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
-        renderRankedLegend(series, rankedHoverIdx);
       });
       item.addEventListener('click', e => {
         e.stopPropagation();
