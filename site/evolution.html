@@ -447,6 +447,19 @@
     .evo-tt-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .evo-tt-name { color: rgba(175,205,255,0.9); flex: 1; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
     .evo-tt-val { color: rgba(160,200,255,0.8); font-size: 10px; }
+    /* ── Sélecteur de fenêtre temporelle ────────────────────────────────────── */
+    #window-row { display: none; justify-content: center; gap: 4px; margin-bottom: 8px; }
+    #window-row.visible { display: flex; }
+    .win-btn {
+      background: rgba(8,16,44,0.55); border: 1px solid rgba(90,130,250,0.22); border-radius: 3px;
+      color: rgba(110,150,210,0.65); font-family: 'Space Mono', monospace; font-size: 9px;
+      letter-spacing: 1px; padding: 3px 9px; cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+    }
+    .win-btn:hover { border-color: rgba(120,170,255,0.55); color: rgba(180,210,255,0.9); }
+    .win-btn.active { border-color: rgba(120,180,255,0.75); background: rgba(30,60,150,0.40); color: #d0e8ff; box-shadow: 0 0 8px rgba(80,130,255,0.2); }
+    #window-granularity { text-align: center; font-size: 9px; letter-spacing: 0.8px; color: rgba(90,130,180,0.50); margin-bottom: 4px; display: none; }
+    #window-granularity.visible { display: block; }
+
     /* ── Légende classement évolutif ──────────────────────────────────────── */
     #ranked-legend-head {
       display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 6px;
@@ -575,6 +588,14 @@
   <div id="object-panel"></div>
   <div id="tooltip"></div>
   <div id="controls">
+    <div id="window-row">
+      <button class="win-btn active" data-win="all" type="button">Tout</button>
+      <button class="win-btn" data-win="24h" type="button">24h</button>
+      <button class="win-btn" data-win="72h" type="button">72h</button>
+      <button class="win-btn" data-win="7j" type="button">7j</button>
+      <button class="win-btn" data-win="30j" type="button">30j</button>
+    </div>
+    <div id="window-granularity"></div>
     <div id="period-label">—</div>
     <div id="slider-row">
       <button id="play-btn">▶</button>
@@ -882,8 +903,53 @@
   let currentMode = 'ranked';
   let evoMaxVal = 1;
   let rankedHoverIdx = null;
-  let hoveredNode = null;   // survol temporaire (légende ou canvas)
+  let hoveredNode = null;
   let rankedShowMore = false;
+  let rankedWindow = 'all';
+
+  const RANKED_WINDOWS = {
+    '24h': { hours:  24, topN: 12 },
+    '72h': { hours:  72, topN: 10 },
+    '7j':  { hours: 168, topN: 10 },
+    '30j': { hours: 720, topN:  8 },
+    'all': { hours: Infinity, topN: 10 },
+  };
+
+  function parsePeriodKey(key) {
+    // '2026-04-21_00-04' → Date du début du bloc
+    const [date, time] = key.split('_');
+    const h = (time || '00').split('-')[0].padStart(2, '0');
+    return new Date(`${date}T${h}:00:00`);
+  }
+
+  function getRankedWindowPeriods() {
+    const cfg = RANKED_WINDOWS[rankedWindow] || RANKED_WINDOWS['all'];
+    if (!isFinite(cfg.hours) || !periods.length) return periods;
+    const last = parsePeriodKey(periods[periods.length - 1].key);
+    const cutoff = new Date(last.getTime() - cfg.hours * 3600 * 1000);
+    const filtered = periods.filter(p => parsePeriodKey(p.key) >= cutoff);
+    return filtered.length > 0 ? filtered : periods;
+  }
+
+  function getRankedTopN() {
+    return (RANKED_WINDOWS[rankedWindow] || RANKED_WINDOWS['all']).topN;
+  }
+
+  function updateWindowUI() {
+    const winRow  = document.getElementById('window-row');
+    const granEl  = document.getElementById('window-granularity');
+    const visible = currentMode === 'ranked';
+    if (winRow)  winRow.classList.toggle('visible', visible);
+    if (granEl)  granEl.classList.toggle('visible', visible);
+    if (!visible) return;
+    document.querySelectorAll('.win-btn').forEach(b => b.classList.toggle('active', b.dataset.win === rankedWindow));
+    if (granEl) {
+      const wp = getRankedWindowPeriods();
+      const cfg = RANKED_WINDOWS[rankedWindow] || RANKED_WINDOWS['all'];
+      const label = rankedWindow === 'all' ? `${wp.length} périodes · cadence 4h` : `${wp.length} périodes · fenêtre ${rankedWindow} · cadence 4h`;
+      granEl.textContent = label;
+    }
+  }
 
   function clearFocusAndRecenter() {
     focusedNode = null;
@@ -1037,17 +1103,19 @@
     const periodEl = document.getElementById('ranked-legend-period');
     if (!list) return;
 
-    const limit = rankedShowMore ? 20 : 10;
-    const idx = (hoverIdx !== null && hoverIdx >= 0) ? hoverIdx : currentIdx;
-    const period = periods[idx];
+    const winPeriods = getRankedWindowPeriods();
+    const limit = rankedShowMore ? 20 : getRankedTopN();
+    const idx = (hoverIdx !== null && hoverIdx >= 0) ? hoverIdx : winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
+    const safeIdx = idx >= 0 ? idx : winPeriods.length - 1;
+    const period = winPeriods[safeIdx];
     if (periodEl) periodEl.textContent = period?.label || '';
 
     // Trier par valeur au point courant
     const rows = series
       .slice(0, limit)
       .map(s => {
-        const val = s.data[idx] ?? null;
-        const prev = idx > 0 ? s.data[idx - 1] ?? null : null;
+        const val = s.data[safeIdx] ?? null;
+        const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
         const delta = (val !== null && prev !== null) ? val - prev : null;
         return { id: s.id, color: s.color, val, delta };
       })
@@ -1116,12 +1184,13 @@
     }
   }
 
-  function getRankedSeries(gd, limit = 10) {
+  function getRankedSeries(gd, limit = 10, winPeriods = null) {
+    const wp = winPeriods || getRankedWindowPeriods();
     const topIds = (gd?.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, limit).map(n => n.id);
     return topIds.map((id, i) => ({
       id,
       color: TRACK_COLORS[i % TRACK_COLORS.length],
-      data: periods.map(p => {
+      data: wp.map(p => {
         const g = graphs[currentCountry]?.[p.key];
         return g?.nodes.find(nd => nd.id === id)?.size ?? null;
       })
@@ -1168,9 +1237,10 @@
       ctx.fill();
     });
 
-    const series = getRankedSeries(gd, 10);
+    const winPeriods = getRankedWindowPeriods();
+    const series = getRankedSeries(gd, getRankedTopN(), winPeriods);
     if (!series.length) return;
-    const n = periods.length;
+    const n = winPeriods.length;
     if (!n) return;
 
     const { PAD, chartW, chartH } = getRankedChartLayout(rect);
@@ -1199,7 +1269,7 @@
 
     // Axes + X ticks
     const xStep = Math.max(1, Math.floor(n / 10));
-    periods.forEach((p, i) => {
+    winPeriods.forEach((p, i) => {
       if (i % xStep !== 0 && i !== n - 1) return;
       const x = xOf(i);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)';
@@ -1274,8 +1344,9 @@
     requestAnimationFrame(() => renderRankedLegend(series, hoverIdx));
 
     // Marqueur de période courante
-    if (currentIdx >= 0 && currentIdx < n) {
-      const cx = xOf(currentIdx);
+    const winCurrentIdx = winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
+    if (winCurrentIdx >= 0) {
+      const cx = xOf(winCurrentIdx);
       ctx.strokeStyle = 'rgba(180,210,255,0.25)';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 5]);
@@ -1323,7 +1394,8 @@
     if (!canvas || currentMode !== 'ranked') return;
     const rect = canvas.getBoundingClientRect();
     const { PAD, chartW } = getRankedChartLayout(rect);
-    const n = periods.length;
+    const winPeriods = getRankedWindowPeriods();
+    const n = winPeriods.length;
     const canvasX = clientX - rect.left;
 
     if (canvasX < PAD.left || canvasX > PAD.left + chartW) {
@@ -1547,16 +1619,26 @@
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry, currentIdx);
     }
+    updateWindowUI();
   }
 
   // Mode tabs
   document.querySelectorAll('.mode-tab').forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
 
+  // Boutons fenêtre temporelle (mode ranked uniquement)
+  document.querySelectorAll('.win-btn').forEach(btn => btn.addEventListener('click', () => {
+    rankedWindow = btn.dataset.win;
+    rankedHoverIdx = null;
+    updateWindowUI();
+    const gd = getGD(currentCountry, periods[currentIdx]?.key);
+    renderRankedChart(gd, null);
+  }));
+
   // Bouton + Voir plus dans la légende ranked
   document.getElementById('ranked-legend-more').addEventListener('click', () => {
     rankedShowMore = !rankedShowMore;
     const gd = getGD(currentCountry, periods[currentIdx]?.key);
-    const series = getRankedSeries(gd, rankedShowMore ? 20 : 10);
+    const series = getRankedSeries(gd, rankedShowMore ? 20 : getRankedTopN());
     renderRankedLegend(series, rankedHoverIdx);
   });
 
