@@ -735,7 +735,7 @@
   function updateWindowUI() {
     const winSection = document.getElementById('window-section');
     const granEl = document.getElementById('window-granularity');
-    const visible = currentMode === 'ranked';
+    const visible = true; // Afficher les boutons en mode ranked ET tracking
     if (winSection) winSection.classList.toggle('visible', visible);
     if (!visible) return;
     document.querySelectorAll('.win-btn').forEach(b => b.classList.toggle('active', b.dataset.gran === rankedGranularity));
@@ -1540,6 +1540,8 @@
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
       graphs  = tsData.graphs;
+      rankedGranularity = 'year'; // Défaut: Année en mode Suivi
+      buildRankedSlots(); // Reconstruire les slots avec la granularité année
       periods = getTrackingPeriodsForCurrentFilters();
       currentIdx = Math.min(tsIdx, Math.max(0, periods.length - 1));
       slider.max = periods.length - 1;
@@ -1576,16 +1578,26 @@
   // Mode tabs
   document.querySelectorAll('.mode-tab').forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
 
-  // Boutons fenêtre temporelle (mode ranked uniquement)
+  // Boutons fenêtre temporelle (mode ranked et tracking)
   document.querySelectorAll('.win-btn').forEach(btn => btn.addEventListener('click', () => {
     rankedGranularity = btn.dataset.gran || 'day';
     rankedHoverIdx = null;
     rankedShowMore = false;
     clearRankedSeriesCache();
+    buildRankedSlots(); // Reconstruire les slots avec la nouvelle granularité
     syncRankedNavigationState();
     updateWindowUI();
-    const gd = getGD(currentCountry, periods[currentIdx]?.key);
-    renderRankedChart(gd, null);
+    if (currentMode === 'tracking') {
+      periods = getTrackingPeriodsForCurrentFilters();
+      currentIdx = Math.min(currentIdx, Math.max(0, periods.length - 1));
+      slider.max = periods.length - 1;
+      slider.value = currentIdx;
+      renderTrackedList();
+      renderEvolutionChart();
+    } else {
+      const gd = getGD(currentCountry, periods[currentIdx]?.key);
+      renderRankedChart(gd, null);
+    }
   }));
 
   // Bouton + Voir plus dans la légende ranked
