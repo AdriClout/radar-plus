@@ -111,6 +111,7 @@
     #play-btn.playing { color: #ff8080; border-color: rgba(255,100,100,0.5); }
     #timeline {
       flex: 1; -webkit-appearance: none; height: 2px;
+      appearance: none;
       background: linear-gradient(to right, rgba(60,100,200,0.6), rgba(100,60,200,0.6));
       outline: none; border-radius: 2px; cursor: pointer;
     }
@@ -748,15 +749,15 @@
     return `Semaine ${Number(wk)} · ${year}`;
   }
 
-  function buildRankedSlots() {
-    if (!periods.length) {
+  function buildRankedSlots(sourcePeriods = periods) {
+    if (!sourcePeriods.length) {
       rankedSlots = [];
       rankedSlotIdx = 0;
       return;
     }
 
     const buckets = new Map();
-    periods.forEach(p => {
+    sourcePeriods.forEach(p => {
       const dateStr = periodDisplayDate(p);
       let bucketKey = dateStr;
       if (rankedGranularity === 'week') bucketKey = dateToWeekKey(dateStr);
@@ -1788,16 +1789,16 @@
     tt.style.left = tx + 'px'; tt.style.top = ty + 'px'; tt.style.display = 'block';
   }
 
-  function syncRankedNavigationState() {
-    buildRankedSlots();
+  function syncRankedNavigationState(sourcePeriods = periods) {
+    buildRankedSlots(sourcePeriods);
     syncRankedSlotToCurrentPeriod();
     setCurrentPeriodFromRankedSlot();
     slider.max = Math.max(0, rankedSlots.length - 1);
     slider.value = rankedSlotIdx;
   }
 
-  function getTrackingPeriodsForCurrentFilters() {
-    const allTsPeriods = (tsData?.meta?.periods || []).slice();
+  function getTrackingPeriodsForCurrentFilters(basePeriods = null) {
+    const allTsPeriods = basePeriods ? basePeriods.slice() : (tsData?.meta?.periods || []).slice();
     const slot = rankedSlots[rankedSlotIdx];
     if (!slot || !slot.periodKeys?.length) return allTsPeriods;
     const keySet = new Set(slot.periodKeys);
@@ -1822,16 +1823,17 @@
     if (mode === 'tracking') {
       graphs  = tsData.graphs;
       rankedGranularity = 'year'; // Défaut: Année en mode Suivi
-      buildRankedSlots(); // Reconstruire les slots avec la granularité année
-      periods = getTrackingPeriodsForCurrentFilters();
+      const trackingBasePeriods = (tsData?.meta?.periods || []);
+      buildRankedSlots(trackingBasePeriods); // Reconstruire les slots avec la granularité année
+      periods = getTrackingPeriodsForCurrentFilters(trackingBasePeriods);
       currentIdx = Math.min(tsIdx, Math.max(0, periods.length - 1));
-      slider.max = periods.length - 1;
+      slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
     } else {
       graphs  = graphData.graphs;
       periods = graphData.meta.periods;
       currentIdx = Math.min(graphIdx, periods.length - 1);
-      syncRankedNavigationState();
+      syncRankedNavigationState(periods);
       
       // Si y'a des objets tracké, focus le premier AVANT loadPeriod pour que le dimming fonctionne
       if (trackedObjects.size > 0) {
@@ -1869,20 +1871,23 @@
     rankedHoverIdx = null;
     rankedShowMore = false;
     clearRankedSeriesCache();
-    buildRankedSlots(); // Reconstruire les slots avec la nouvelle granularité
-    syncRankedNavigationState();
-    updateWindowUI();
     if (currentMode === 'tracking') {
-      periods = getTrackingPeriodsForCurrentFilters();
+      const trackingBasePeriods = (tsData?.meta?.periods || []);
+      buildRankedSlots(trackingBasePeriods);
+      syncRankedSlotToCurrentPeriod();
+      periods = getTrackingPeriodsForCurrentFilters(trackingBasePeriods);
+      setCurrentPeriodFromRankedSlot();
       currentIdx = Math.min(currentIdx, Math.max(0, periods.length - 1));
-      slider.max = periods.length - 1;
+      slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
       renderTrackedList();
       renderEvolutionChart();
     } else {
+      syncRankedNavigationState(graphData.meta.periods);
       const gd = getGD(currentCountry, periods[currentIdx]?.key);
       renderRankedChart(gd, null);
     }
+    updateWindowUI();
   }));
 
   // Bouton + Voir plus dans la légende ranked
@@ -2102,7 +2107,16 @@
       clearRankedSeriesCache();
       applyTimelineHeat(currentCountry);
       if (currentMode === 'ranked') {
-        syncRankedNavigationState();
+        syncRankedNavigationState(graphData.meta.periods);
+      } else {
+        const trackingBasePeriods = (tsData?.meta?.periods || []);
+        buildRankedSlots(trackingBasePeriods);
+        syncRankedSlotToCurrentPeriod();
+        periods = getTrackingPeriodsForCurrentFilters(trackingBasePeriods);
+        setCurrentPeriodFromRankedSlot();
+        currentIdx = Math.min(currentIdx, Math.max(0, periods.length - 1));
+        slider.max = Math.max(0, periods.length - 1);
+        slider.value = currentIdx;
       }
       loadPeriod(currentCountry,currentIdx);
     });
