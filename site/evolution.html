@@ -13,19 +13,34 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #00000f; font-family: 'Space Mono', 'SF Mono', monospace; overflow: hidden; height: 100vh; width: 100vw; }
     #graph { display: none; }
-    #header {
-      position: absolute; top: 0; left: 0; right: 0;
-      display: grid;
-      grid-template-columns: auto auto minmax(180px, 250px) minmax(340px, 1fr);
-      grid-template-areas: "countries modes search title";
-      align-items: center;
-      column-gap: 10px;
-      row-gap: 6px;
-      padding: 14px 174px 14px 20px;
-      background: linear-gradient(to bottom, rgba(0,0,15,0.92) 70%, transparent);
-      z-index: 20; pointer-events: none;
+    #left-panel {
+      position: absolute; top: 0; left: 0; bottom: calc(var(--ticker-height, 44px) + 100px);
+      width: 200px;
+      display: flex; flex-direction: column; gap: 0;
+      padding: 18px 14px 14px;
+      background: linear-gradient(to right, rgba(0,0,15,0.96) 80%, transparent);
+      z-index: 20; pointer-events: all;
+      overflow: hidden;
     }
-    #country-tabs { display: flex; gap: 6px; pointer-events: all; grid-area: countries; }
+    #evo-title {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 22px;
+      letter-spacing: 6px;
+      color: rgba(195, 220, 255, 0.92);
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(90,140,255,0.36), 0 0 26px rgba(70,110,230,0.22);
+      margin-bottom: 22px;
+      line-height: 1.1;
+    }
+    .lpanel-section {
+      display: flex; flex-direction: column; gap: 6px;
+      margin-bottom: 14px;
+    }
+    .lpanel-label {
+      font-size: 8px; letter-spacing: 1.8px; text-transform: uppercase;
+      color: rgba(100,140,200,0.45); padding-left: 1px;
+    }
+    #country-tabs { display: flex; gap: 6px; flex-wrap: wrap; pointer-events: all; }
     .tab {
       padding: 5px 14px; border: 1px solid rgba(100,150,255,0.3); border-radius: 3px;
       background: rgba(10,20,50,0.6); color: #7090c0; font-size: 11px;
@@ -33,23 +48,7 @@
     }
     .tab:hover  { border-color: rgba(100,150,255,0.7); color: #a0c0ff; }
     .tab.active { background: rgba(40,80,180,0.4); border-color: rgba(120,180,255,0.8); color: #d0e8ff; box-shadow: 0 0 12px rgba(80,130,255,0.3); }
-    #title {
-      grid-area: title;
-      justify-self: end;
-      max-width: min(62vw, 900px);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: clamp(17px, 1.8vw, 30px);
-      letter-spacing: clamp(4px, 0.45vw, 10px);
-      color: rgba(195, 220, 255, 0.92);
-      text-transform: uppercase;
-      text-shadow:
-        0 0 10px rgba(90, 140, 255, 0.36),
-        0 0 26px rgba(70, 110, 230, 0.22);
-      line-height: 1.1;
-    }
+    /* #title supprimé — remplacé par #evo-title dans #left-panel */
     #tooltip {
       position: absolute; pointer-events: none;
       background: rgba(2,4,20,0.96); border: 1px solid rgba(80,120,255,0.35);
@@ -180,103 +179,8 @@
       border-radius: 5px;
       display: none;
     }
-    #media-panel {
-      position: absolute; top: 82px; left: 20px;
-      width: min(290px, 30vw); max-height: 44vh;
-      overflow: auto;
-      z-index: 11;
-      border: 1px solid rgba(95, 140, 255, 0.28);
-      border-radius: 7px;
-      background: linear-gradient(to right, rgba(8,14,40,0.78), rgba(6,10,30,0.50));
-      box-shadow: 0 0 20px rgba(60, 100, 210, 0.14);
-      padding: 10px 10px 8px;
-      backdrop-filter: blur(2px);
-    }
-    #media-panel.collapsed {
-      width: auto;
-      max-height: none;
-      overflow: visible;
-      padding-bottom: 10px;
-    }
-    #media-title {
-      font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 12px;
-      color: rgba(182, 208, 255, 0.98);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    #media-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    #media-toggle {
-      border: 1px solid rgba(90,130,250,0.28);
-      border-radius: 5px;
-      background: rgba(8,18,48,0.62);
-      color: rgba(176,206,255,0.95);
-      font-family: 'Space Mono', 'SF Mono', monospace;
-      font-size: 10px;
-      padding: 4px 8px;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-    #media-toggle:hover {
-      border-color: rgba(145,182,255,0.75);
-      color: rgba(222,236,255,1);
-    }
-    #media-panel.collapsed #media-body {
-      display: none;
-    }
-    #media-actions { display: flex; gap: 6px; margin-bottom: 8px; }
-    .media-action {
-      border: 1px solid rgba(90,130,250,0.25);
-      border-radius: 5px;
-      background: rgba(8,18,48,0.62);
-      color: rgba(176,206,255,0.95);
-      font-family: 'Space Mono', 'SF Mono', monospace;
-      font-size: 10px;
-      padding: 4px 8px;
-      cursor: pointer;
-    }
-    .media-action:hover { border-color: rgba(145,182,255,0.75); color: rgba(222,236,255,1); }
-    #media-help {
-      color: rgba(120, 152, 214, 0.88);
-      font-size: 10px;
-      line-height: 1.35;
-      margin-bottom: 8px;
-    }
-    #media-list { display: flex; flex-direction: column; gap: 6px; }
-    .media-item {
-      width: 100%;
-      border: 1px solid rgba(90,130,250,0.18);
-      border-radius: 5px;
-      background: rgba(8,18,48,0.62);
-      color: rgba(176,206,255,0.95);
-      text-align: left;
-      padding: 6px 9px;
-      cursor: pointer;
-      transition: all 0.16s ease;
-      font-family: 'Space Mono', 'SF Mono', monospace;
-      font-size: 11px;
-      line-height: 1.35;
-    }
-    .media-item:hover {
-      border-color: rgba(145,182,255,0.75);
-      background: rgba(20,36,86,0.7);
-      color: rgba(222,236,255,1);
-      transform: translateX(2px);
-    }
-    .media-item.active {
-      border-color: rgba(186,211,255,0.95);
-      background: rgba(40,74,150,0.42);
-      color: rgba(239,246,255,1);
-      box-shadow: 0 0 10px rgba(90,135,255,0.32);
-    }
-    #media-empty { color: rgba(104,130,182,0.9); font-size: 11px; padding: 6px 2px; }
+    /* #media-panel supprimé */
+    /* styles media-panel supprimés */
     #object-panel {
       position: absolute; right: 20px; bottom: calc(var(--ticker-height, 44px) + 92px); width: min(360px, 35vw); max-height: 38vh;
       overflow: auto; padding: 12px 14px; border: 1px solid rgba(80,120,255,0.35);
@@ -311,82 +215,12 @@
     #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #00000f; z-index: 100; }
     #loading-text { font-size: 11px; letter-spacing: 3px; color: rgba(80,120,255,0.5); text-transform: uppercase; animation: pulse 1.8s ease-in-out infinite; }
     @media (max-width: 1500px) {
-      .menu-discover-hint {
-        display: none;
-      }
-      #header {
-        padding-right: 72px;
-      }
-      #title {
-        font-size: clamp(16px, 2vw, 28px);
-        letter-spacing: clamp(3px, 0.35vw, 7px);
-      }
-    }
-    @media (max-width: 1220px) {
-      #header {
-        grid-template-columns: auto auto minmax(180px, 1fr);
-        grid-template-areas:
-          "countries modes title"
-          "search search title";
-        align-items: start;
-      }
-      #title {
-        align-self: center;
-        max-width: min(46vw, 560px);
-      }
-      #search-wrap {
-        justify-self: start;
-        width: min(100%, 420px);
-      }
-      #search-input {
-        width: min(100%, 420px);
-      }
+      .menu-discover-hint { display: none; }
     }
     @media (max-width: 900px) {
-      #header {
-        grid-template-columns: 1fr auto;
-        grid-template-areas:
-          "countries title"
-          "modes title"
-          "search search";
-        align-items: start;
-        padding: 10px 72px 10px 10px;
-      }
-      .side-nav {
-        width: 280px;
-        right: -280px;
-      }
-      #country-tabs,
-      #mode-tabs {
-        flex-wrap: wrap;
-      }
-      #title {
-        max-width: min(44vw, 320px);
-        font-size: 13px;
-        letter-spacing: 2px;
-      }
-      #stats {
-        top: 74px;
-        font-size: 13px;
-        padding: 5px 7px;
-      }
-      #top10-panel {
-        top: 72px;
-        right: 10px;
-        left: 10px;
-        width: auto;
-        max-width: none;
-      }
-      #top10-country { font-size: 18px; }
-      #top10-title { font-size: 11px; }
-      #top10-list { max-height: 30vh; }
-      #media-panel {
-        top: 72px;
-        left: 10px;
-        right: 10px;
-        width: auto;
-        max-height: 20vh;
-      }
+      #left-panel { width: 160px; padding: 12px 10px 10px; }
+      #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
+      .side-nav { width: 280px; right: -280px; }
       #object-panel {
         left: 10px;
         right: 10px;
@@ -407,10 +241,9 @@
       50% { transform: translateY(-2px); }
     }
     /* Mode tabs */
-    #mode-tabs { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; pointer-events: all; grid-area: modes; }
-    #mode-tabs-row { display: flex; gap: 4px; }
-    #mode-desc { font-size: 9px; letter-spacing: 0.8px; color: rgba(120,160,220,0.45); padding: 0 2px; line-height: 1.2; }
-    .mode-tab { padding: 5px 12px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.2px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+    #mode-tabs { display: flex; flex-direction: column; gap: 4px; pointer-events: all; }
+    #mode-tabs-row { display: flex; flex-direction: column; gap: 4px; }
+    .mode-tab { padding: 6px 10px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: left; width: 100%; }
     .mode-tab:hover { border-color: rgba(100,150,255,0.6); color: #a0c0ff; }
     .mode-tab[data-mode="ranked"].active { background: rgba(40,80,180,0.35); border-color: rgba(120,180,255,0.7); color: #d0e8ff; box-shadow: 0 0 10px rgba(80,130,255,0.25); }
     .mode-tab[data-mode="tracking"].active { background: rgba(20,72,52,0.38); border-color: rgba(80,200,140,0.65); color: rgba(140,230,185,0.95); box-shadow: 0 0 10px rgba(60,180,110,0.22); }
@@ -447,18 +280,18 @@
     .evo-tt-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .evo-tt-name { color: rgba(175,205,255,0.9); flex: 1; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
     .evo-tt-val { color: rgba(160,200,255,0.8); font-size: 10px; }
-    /* ── Sélecteur de fenêtre temporelle ────────────────────────────────────── */
-    #window-row { display: none; justify-content: center; gap: 4px; margin-bottom: 8px; }
-    #window-row.visible { display: flex; }
+    /* ── Sélecteur de fenêtre temporelle (dans #left-panel) ─────────────────── */
+    #window-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    #window-section { display: none; }
+    #window-section.visible { display: flex; }
     .win-btn {
       background: rgba(8,16,44,0.55); border: 1px solid rgba(90,130,250,0.22); border-radius: 3px;
       color: rgba(110,150,210,0.65); font-family: 'Space Mono', monospace; font-size: 9px;
-      letter-spacing: 1px; padding: 3px 9px; cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+      letter-spacing: 1px; padding: 4px 8px; cursor: pointer; transition: all 0.15s; text-transform: uppercase;
     }
     .win-btn:hover { border-color: rgba(120,170,255,0.55); color: rgba(180,210,255,0.9); }
     .win-btn.active { border-color: rgba(120,180,255,0.75); background: rgba(30,60,150,0.40); color: #d0e8ff; box-shadow: 0 0 8px rgba(80,130,255,0.2); }
-    #window-granularity { text-align: center; font-size: 9px; letter-spacing: 0.8px; color: rgba(90,130,180,0.50); margin-bottom: 4px; display: none; }
-    #window-granularity.visible { display: block; }
+    #window-granularity { font-size: 8px; letter-spacing: 0.7px; color: rgba(90,130,180,0.50); margin-top: 2px; }
 
     /* ── Légende classement évolutif ──────────────────────────────────────── */
     #ranked-legend-head {
@@ -509,12 +342,12 @@
     .rleg-delta.flat { color: rgba(110,150,200,0.50); }
 
     @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
-    #search-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: all; grid-area: search; }
+    #search-wrap { display: flex; flex-direction: column; gap: 4px; pointer-events: all; width: 100%; }
     #search-input {
       background: rgba(5,10,35,0.75); border: 1px solid rgba(100,150,255,0.3);
       border-radius: 3px; color: #a0c8f0; font-family: 'Space Mono','SF Mono',monospace;
-      font-size: 11px; letter-spacing: 0.8px; outline: none; padding: 5px 12px;
-      width: 220px; transition: border-color 0.2s, box-shadow 0.2s;
+      font-size: 11px; letter-spacing: 0.8px; outline: none; padding: 5px 10px;
+      width: 100%; transition: border-color 0.2s, box-shadow 0.2s;
     }
     #search-input::placeholder { color: rgba(90,120,180,0.55); }
     #search-input:focus { border-color: rgba(140,190,255,0.75); box-shadow: 0 0 10px rgba(80,130,255,0.25); color: #d0e8ff; }
@@ -543,39 +376,44 @@
     <div id="evo-tooltip-items"></div>
   </div>
   <div id="header">
-    <div id="country-tabs">
-      <button class="tab active" data-country="CAN">CAN</button>
-      <button class="tab" data-country="QC">QC</button>
-      <button class="tab" data-country="USA">USA</button>
-    </div>
-    <div id="mode-tabs">
-      <div id="mode-tabs-row">
-        <button class="mode-tab" data-mode="ranked" type="button">Classement évolutif</button>
-        <button class="mode-tab" data-mode="tracking" type="button">Suivi personnalisé</button>
+    <div id="left-panel">
+      <div id="evo-title">Évolution</div>
+      <div class="lpanel-section">
+        <div class="lpanel-label">Pays</div>
+        <div id="country-tabs">
+          <button class="tab active" data-country="CAN">CAN</button>
+          <button class="tab" data-country="QC">QC</button>
+          <button class="tab" data-country="USA">USA</button>
+        </div>
       </div>
-      <div id="mode-desc"></div>
-    </div>
-    <div id="search-wrap">
-      <input type="text" id="search-input" placeholder="/ rechercher un objet…" autocomplete="off" spellcheck="false" />
-      <div id="search-status"></div>
-    </div>
-    <div id="title">Évolution</div>
-  </div>
-  <div id="media-panel">
-    <div id="media-head">
-      <div id="media-title">Filtres Médias</div>
-      <button id="media-toggle" type="button" aria-expanded="true">Masquer</button>
-    </div>
-    <div id="media-body">
-      <div id="media-actions">
-        <button class="media-action" id="media-all">TOUT</button>
-        <button class="media-action" id="media-clear">DÉSÉLECTIONNER</button>
+      <div class="lpanel-section">
+        <div class="lpanel-label">Mode</div>
+        <div id="mode-tabs">
+          <div id="mode-tabs-row">
+            <button class="mode-tab" data-mode="ranked" type="button">Classement</button>
+            <button class="mode-tab" data-mode="tracking" type="button">Suivi</button>
+          </div>
+        </div>
       </div>
-      <div id="media-help">Astuce: "Désélectionner" sert à repartir de zéro pour isoler ensuite 1 ou 2 médias.</div>
-      <div id="media-list"></div>
+      <div class="lpanel-section" id="window-section">
+        <div class="lpanel-label">Fenêtre</div>
+        <div id="window-row">
+          <button class="win-btn active" data-win="all" type="button">Tout</button>
+          <button class="win-btn" data-win="24h" type="button">24h</button>
+          <button class="win-btn" data-win="72h" type="button">72h</button>
+          <button class="win-btn" data-win="7j" type="button">7j</button>
+          <button class="win-btn" data-win="30j" type="button">30j</button>
+        </div>
+        <div id="window-granularity"></div>
+      </div>
+      <div class="lpanel-section">
+        <div class="lpanel-label">Recherche</div>
+        <div id="search-wrap">
+          <input type="text" id="search-input" placeholder="rechercher un objet…" autocomplete="off" spellcheck="false" />
+          <div id="search-status"></div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div id="top10-panel">
     <!-- Mode classement : légende dynamique -->
     <div id="ranked-legend-head">
       <div id="top10-title">Top Saillants</div>
@@ -589,14 +427,6 @@
   <div id="object-panel"></div>
   <div id="tooltip"></div>
   <div id="controls">
-    <div id="window-row">
-      <button class="win-btn active" data-win="all" type="button">Tout</button>
-      <button class="win-btn" data-win="24h" type="button">24h</button>
-      <button class="win-btn" data-win="72h" type="button">72h</button>
-      <button class="win-btn" data-win="7j" type="button">7j</button>
-      <button class="win-btn" data-win="30j" type="button">30j</button>
-    </div>
-    <div id="window-granularity"></div>
     <div id="period-label">—</div>
     <div id="slider-row">
       <button id="play-btn">▶</button>
@@ -644,7 +474,6 @@
   const allMediaIds = Array.isArray(graphData.meta.media_ids) ? graphData.meta.media_ids : [];
   let graphIdx = graphData.meta.periods.length - 1;
   let tsIdx    = tsData.meta.periods.length - 1;
-  let mediaPanelCollapsed = false;
 
   const MAX_LINKS_NODE = 5;
 
@@ -660,49 +489,6 @@
     return [...kept];
   }
 
-  function normalizeMediaIds(mediaIds) {
-    return Array.isArray(mediaIds) ? mediaIds.filter(Boolean) : (mediaIds ? [mediaIds] : []);
-  }
-
-  function collectCountryMediaIds(country) {
-    const mediaSet = new Set();
-    const countryGraphs = graphs[country] || {};
-    Object.values(countryGraphs).forEach(g => {
-      (g.nodes || []).forEach(n => normalizeMediaIds(n.media_ids).forEach(m => mediaSet.add(m)));
-      (g.links || []).forEach(l => normalizeMediaIds(l.media_ids).forEach(m => mediaSet.add(m)));
-    });
-    return [...mediaSet].sort();
-  }
-
-  const mediaIdsByCountry = Object.fromEntries(
-    countries.map(country => [country, collectCountryMediaIds(country)])
-  );
-
-  const selectedMediaByCountry = Object.fromEntries(
-    countries.map(country => [country, new Set(mediaIdsByCountry[country])])
-  );
-
-  function getAvailableMediaIds(country = currentCountry) {
-    return mediaIdsByCountry[country] || [];
-  }
-
-  function getSelectedMedia(country = currentCountry) {
-    if (!selectedMediaByCountry[country]) {
-      selectedMediaByCountry[country] = new Set(getAvailableMediaIds(country));
-    }
-    return selectedMediaByCountry[country];
-  }
-
-  function hasMediaIntersection(mediaIds) {
-    const ids = normalizeMediaIds(mediaIds);
-    const selectedMedia = getSelectedMedia();
-    if (!ids.length) return false;
-    if (!selectedMedia.size) return false;
-    for (const m of ids) {
-      if (selectedMedia.has(m)) return true;
-    }
-    return false;
-  }
 
   function getGD(country, key) {
     const g = graphs[country]?.[key];
@@ -710,69 +496,10 @@
     let nodes = g.nodes.map(n=>({...n}));
     let links = g.links.map(l=>({...l}));
 
-    const selectedMedia = getSelectedMedia(country);
-    const availableMediaIds = getAvailableMediaIds(country);
-    const filterActive = selectedMedia.size > 0 && selectedMedia.size < availableMediaIds.length;
-    if (filterActive) {
-      nodes = nodes.filter(n => hasMediaIntersection(n.media_ids));
-      const nodeSet = new Set(nodes.map(n => n.id));
-      links = links.filter(l => {
-        const s = l.source?.id ?? l.source;
-        const t = l.target?.id ?? l.target;
-        return nodeSet.has(s) && nodeSet.has(t) && hasMediaIntersection(l.media_ids);
-      });
-    }
 
     nodes.sort((a,b)=>b.size-a.size);
     nodes.forEach((n,i)=>{ n._rank=i; });
     return { nodes, links: filterTopLinks(links, MAX_LINKS_NODE) };
-  }
-
-  function renderMediaFilters() {
-    const list = document.getElementById('media-list');
-    const availableMediaIds = getAvailableMediaIds();
-    const selectedMedia = getSelectedMedia();
-
-    if (!availableMediaIds.length) {
-      list.innerHTML = '<div id="media-empty">Aucun média disponible.</div>';
-      return;
-    }
-
-    list.innerHTML = '';
-    availableMediaIds.forEach(m => {
-      const btn = document.createElement('button');
-      btn.className = 'media-item';
-      btn.dataset.mediaId = m;
-      btn.textContent = m;
-      if (selectedMedia.has(m)) btn.classList.add('active');
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (selectedMedia.has(m)) selectedMedia.delete(m);
-        else selectedMedia.add(m);
-        syncMediaButtons();
-        loadPeriod(currentCountry, currentIdx);
-      });
-      list.appendChild(btn);
-    });
-
-    syncMediaButtons();
-  }
-
-  function syncMediaButtons() {
-    const selectedMedia = getSelectedMedia();
-    document.querySelectorAll('.media-item').forEach(btn => {
-      if (selectedMedia.has(btn.dataset.mediaId)) btn.classList.add('active');
-      else btn.classList.remove('active');
-    });
-  }
-
-  function setMediaPanelCollapsed(collapsed) {
-    mediaPanelCollapsed = Boolean(collapsed);
-    const panel = document.getElementById('media-panel');
-    const toggle = document.getElementById('media-toggle');
-    panel.classList.toggle('collapsed', mediaPanelCollapsed);
-    toggle.textContent = mediaPanelCollapsed ? 'Ouvrir' : 'Masquer';
-    toggle.setAttribute('aria-expanded', String(!mediaPanelCollapsed));
   }
 
   function periodConvergenceScore(country, key) {
@@ -788,99 +515,7 @@
     return ultra * 0.75 + linksStrong * 0.95 + density * 1.6;
   }
 
-  function heatColor(t) {
-    const tt = Math.max(0, Math.min(1, t));
-    const r = Math.round(30 + tt * 130);
-    const g = Math.round(50 + tt * 165);
-    const b = Math.round(115 + tt * 125);
-    const a = (0.30 + tt * 0.70).toFixed(2);
-    return `rgba(${r},${g},${b},${a})`;
-  }
 
-  function applyTimelineHeat(country) {
-    if (!periods.length) return;
-    const scores = periods.map(p => periodConvergenceScore(country, p.key));
-    const min = Math.min(...scores);
-    const max = Math.max(...scores);
-    const denom = Math.max(1e-9, max - min);
-    const norm = scores.map(s => (s - min) / denom);
-
-    if (periods.length === 1) {
-      slider.style.background = `linear-gradient(to right, ${heatColor(norm[0])}, ${heatColor(norm[0])})`;
-      slider.dataset.convScores = JSON.stringify(scores);
-      return;
-    }
-
-    const stops = [];
-    for (let i = 0; i < norm.length; i++) {
-      const start = i === 0 ? 0 : ((i - 0.5) / (norm.length - 1)) * 100;
-      const end = i === norm.length - 1 ? 100 : ((i + 0.5) / (norm.length - 1)) * 100;
-      const c = heatColor(norm[i]);
-      stops.push(`${c} ${start.toFixed(2)}%`, `${c} ${end.toFixed(2)}%`);
-    }
-    slider.style.background = `linear-gradient(to right, ${stops.join(',')})`;
-    slider.dataset.convScores = JSON.stringify(scores);
-  }
-
-  function escapeHtml(s) {
-    return String(s ?? '').replace(/[&<>'"]/g, c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[c]));
-  }
-
-  function renderArticlesPanel(node) {
-    const panel = document.getElementById('object-panel');
-    if (!node) {
-      panel.classList.remove('visible');
-      panel.innerHTML = '';
-      return;
-    }
-
-    const articles = Array.isArray(node.articles) ? node.articles : [];
-    const items = articles.map(a => {
-      const title = escapeHtml(a.title || a.url || 'Article');
-      const url = escapeHtml(a.url || '#');
-      const media = a.media_id ? `<span class="it-media">${escapeHtml(a.media_id)}</span>` : '';
-      return `<a class="it" href="${url}" target="_blank" rel="noopener noreferrer">${media}${title}</a>`;
-    }).join('');
-    const constellationUrl = `./constellation.html?country=${encodeURIComponent(currentCountry)}&node=${encodeURIComponent(node.id)}`;
-
-    const isTracked = trackedObjects.has(node.id);
-    panel.innerHTML = `
-      <div class="h">${escapeHtml(node.id)}</div>
-      <div class="meta">${node.size.toFixed(2)} pts · ${node.n} mentions · ${articles.length} articles</div>
-      <div class="panel-actions">
-        <a class="panel-link" href="${constellationUrl}">Voir dans Constellation</a>
-      </div>
-      <button class="track-btn${isTracked ? ' tracked' : ''}" id="track-btn-panel">${isTracked ? '✓ Suivi' : '+ Suivre'}</button>
-      <div class="list">${items || '<div class="empty">Aucun article associé dans ce jeu de données.</div>'}</div>
-    `;
-    panel.classList.add('visible');
-    document.getElementById('track-btn-panel').addEventListener('click', () => {
-      const btn = document.getElementById('track-btn-panel');
-      if (trackedObjects.has(node.id)) { removeTracked(node.id); btn.textContent = '+ Suivre'; btn.classList.remove('tracked'); }
-      else { addTracked(node.id); btn.textContent = '✓ Suivi'; btn.classList.add('tracked'); }
-    });
-  }
-
-  // ── Étoiles ───────────────────────────────────────────────────────────────
-  const STARS = Array.from({length: 400}, () => ({
-    x: Math.random(), y: Math.random(),
-    r: Math.random() * 1.3 + 0.15,
-    a: Math.random() * 0.45 + 0.08,
-    tw: Math.random() * Math.PI * 2,
-    ts: 0.003 + Math.random() * 0.007
-  }));
-
-  window.addEventListener('resize', () => {
-    if (currentMode === 'tracking') renderEvolutionChart();
-    else {
-      const period = periods[currentIdx];
-      if (period) renderRankedChart(getGD(currentCountry, period.key));
     }
   });
 
@@ -916,54 +551,7 @@
     'all': { hours: Infinity, topN: 10 },
   };
 
-  function parsePeriodKey(key) {
-    // '2026-04-21_00-04' → Date du début du bloc
-    const [date, time] = key.split('_');
-    const h = (time || '00').split('-')[0].padStart(2, '0');
-    return new Date(`${date}T${h}:00:00`);
-  }
 
-  function getRankedWindowPeriods() {
-    const cfg = RANKED_WINDOWS[rankedWindow] || RANKED_WINDOWS['all'];
-    if (!isFinite(cfg.hours) || !periods.length) return periods;
-    const last = parsePeriodKey(periods[periods.length - 1].key);
-    const cutoff = new Date(last.getTime() - cfg.hours * 3600 * 1000);
-    const filtered = periods.filter(p => parsePeriodKey(p.key) >= cutoff);
-    return filtered.length > 0 ? filtered : periods;
-  }
-
-  function getRankedTopN() {
-    return (RANKED_WINDOWS[rankedWindow] || RANKED_WINDOWS['all']).topN;
-  }
-
-  function updateWindowUI() {
-    const winRow  = document.getElementById('window-row');
-    const granEl  = document.getElementById('window-granularity');
-    const visible = currentMode === 'ranked';
-    if (winRow)  winRow.classList.toggle('visible', visible);
-    if (granEl)  granEl.classList.toggle('visible', visible);
-    if (!visible) return;
-    document.querySelectorAll('.win-btn').forEach(b => b.classList.toggle('active', b.dataset.win === rankedWindow));
-    if (granEl) {
-      const wp = getRankedWindowPeriods();
-      const cfg = RANKED_WINDOWS[rankedWindow] || RANKED_WINDOWS['all'];
-      const label = rankedWindow === 'all' ? `${wp.length} périodes · cadence 4h` : `${wp.length} périodes · fenêtre ${rankedWindow} · cadence 4h`;
-      granEl.textContent = label;
-    }
-  }
-
-  function clearFocusAndRecenter() {
-    focusedNode = null;
-    renderArticlesPanel(null);
-    setTop10Active(null);
-  }
-
-  function loadPeriod(country, idx) {
-    const period = periods[idx]; if (!period) return;
-    const gd = getGD(country, period.key);
-    focusedNode = null;
-    const conv = periodConvergenceScore(country, period.key);
-    document.getElementById('period-label').innerHTML =
       `<span>${period.label}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${conv.toFixed(1)}`;
     renderTop10(gd, country);
     renderArticlesPanel(null);
@@ -1216,10 +804,9 @@
 
   function getRankedChartLayout(rect) {
     const W = rect.width;
-    const mediaVisible = document.getElementById('media-panel').style.display !== 'none';
     const topVisible = document.getElementById('top10-panel').style.display !== 'none';
     const compact = W < 960;
-    const leftPad = mediaVisible ? (compact ? 58 : Math.min(290, W * 0.30) + 26) : 72;
+    const leftPad = compact ? 170 : 215;
     const rightPad = topVisible ? (compact ? 24 : Math.min(360, W * 0.35) + 28) : 24;
     let bottomPad = 72;
     const controls = document.getElementById('controls');
@@ -1624,16 +1211,15 @@
 
     const evoView = document.getElementById('evolution-view');
     const top10El = document.getElementById('top10-panel');
-    const mediaEl = document.getElementById('media-panel');
     const trackedEl = document.getElementById('tracked-panel');
     if (mode === 'tracking') {
-      evoView.classList.add('visible'); top10El.style.display = 'none'; mediaEl.style.display = 'none';
+      evoView.classList.add('visible'); top10El.style.display = 'none';
       trackedEl.style.display = '';
       rankedHoverIdx = null;
       document.getElementById('evo-tooltip').style.display = 'none';
       renderTrackedList(); renderEvolutionChart();
     } else {
-      evoView.classList.add('visible'); top10El.style.display = ''; mediaEl.style.display = '';
+      evoView.classList.add('visible'); top10El.style.display = '';
       trackedEl.style.display = 'none';
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry, currentIdx);
@@ -1830,7 +1416,6 @@
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
       tab.classList.add('active'); currentCountry=tab.dataset.country;
-      renderMediaFilters();
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry,currentIdx);
     });
@@ -1840,26 +1425,7 @@
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
   });
 
-  document.getElementById('media-all').addEventListener('click', () => {
-    selectedMediaByCountry[currentCountry] = new Set(getAvailableMediaIds(currentCountry));
-    syncMediaButtons();
-    loadPeriod(currentCountry, currentIdx);
-  });
-
-  document.getElementById('media-clear').addEventListener('click', () => {
-    selectedMediaByCountry[currentCountry] = new Set();
-    syncMediaButtons();
-    loadPeriod(currentCountry, currentIdx);
-  });
-
-  document.getElementById('media-toggle').addEventListener('click', (e) => {
-    e.stopPropagation();
-    setMediaPanelCollapsed(!mediaPanelCollapsed);
-  });
-
   document.getElementById('loading').style.display = 'none';
-  renderMediaFilters();
-  setMediaPanelCollapsed(false);
   applyTimelineHeat(currentCountry);
   loadPeriod(currentCountry, currentIdx);
 
