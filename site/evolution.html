@@ -88,7 +88,7 @@
     }
     #speed-btn:hover { color: #7090b0; }
     #top10-panel {
-      position: absolute; top: 82px; right: 20px;
+      position: absolute; top: 20px; right: 20px;
       font-family: 'Orbitron', 'Space Mono', monospace;
       z-index: 11;
       width: min(360px, 35vw);
@@ -100,12 +100,6 @@
       padding: 10px 10px 8px;
       backdrop-filter: blur(2px);
     }
-    #top10-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
     #top10-title {
       font-size: 13px;
       color: rgba(182, 208, 255, 0.98);
@@ -116,68 +110,6 @@
       font-size: 22px;
       color: rgba(200, 224, 255, 0.96);
       text-shadow: 0 0 12px rgba(78, 125, 245, 0.30);
-    }
-    #top10-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 44vh;
-      overflow: auto;
-      padding-right: 2px;
-    }
-    .top10-item {
-      width: 100%;
-      border: 1px solid rgba(90, 130, 250, 0.18);
-      border-radius: 5px;
-      background: rgba(8, 18, 48, 0.62);
-      color: rgba(176, 206, 255, 0.95);
-      text-align: left;
-      padding: 7px 9px;
-      cursor: pointer;
-      transition: all 0.16s ease;
-      font-family: 'Space Mono', 'SF Mono', monospace;
-      font-size: 11px;
-      line-height: 1.35;
-    }
-    .top10-item:hover {
-      border-color: rgba(145, 182, 255, 0.75);
-      background: rgba(20, 36, 86, 0.7);
-      color: rgba(222, 236, 255, 1);
-      transform: translateX(-2px);
-    }
-    .top10-item.active {
-      border-color: rgba(186, 211, 255, 0.95);
-      background: rgba(40, 74, 150, 0.42);
-      color: rgba(239, 246, 255, 1);
-      box-shadow: 0 0 10px rgba(90, 135, 255, 0.32);
-    }
-    .top10-rank {
-      color: rgba(160, 195, 255, 0.88);
-      margin-right: 8px;
-      font-family: 'Orbitron', 'Space Mono', monospace;
-    }
-    .top10-score {
-      display: block;
-      color: rgba(126, 165, 245, 0.9);
-      font-size: 10px;
-      margin-top: 2px;
-    }
-    #top10-empty {
-      color: rgba(104, 130, 182, 0.9);
-      font-size: 11px;
-      padding: 6px 2px;
-    }
-    #stats {
-      position: absolute; top: 82px; right: 20px;
-      font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 17px; color: rgba(185, 214, 255, 0.95);
-      text-align: right; line-height: 1.7; z-index: 10; pointer-events: none;
-      letter-spacing: 1px;
-      text-shadow: 0 0 12px rgba(78, 125, 245, 0.30);
-      background: linear-gradient(to left, rgba(8,14,40,0.62), rgba(8,14,40,0));
-      padding: 8px 10px;
-      border-radius: 5px;
-      display: none;
     }
     /* #media-panel supprimé */
     /* styles media-panel supprimés */
@@ -255,7 +187,7 @@
     #evolution-view { position: absolute; inset: 0; display: none; z-index: 5; }
     #evolution-view.visible { display: block; }
     #evo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-    #tracked-panel { position: absolute; top: 72px; right: 20px; width: min(290px, 30vw); max-height: calc(100vh - 160px); overflow: hidden; border: 1px solid rgba(95,140,255,0.28); border-radius: 7px; background: linear-gradient(to left, rgba(8,14,40,0.88), rgba(6,10,30,0.70)); box-shadow: 0 0 20px rgba(60,100,210,0.14); padding: 10px; z-index: 11; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(2px); }
+    #tracked-panel { position: absolute; top: 20px; right: 20px; width: min(290px, 30vw); max-height: calc(100vh - 160px); overflow: hidden; border: 1px solid rgba(95,140,255,0.28); border-radius: 7px; background: linear-gradient(to left, rgba(8,14,40,0.88), rgba(6,10,30,0.70)); box-shadow: 0 0 20px rgba(60,100,210,0.14); padding: 10px; z-index: 11; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(2px); }
     #tracked-title { font-family: 'Orbitron','Space Mono',monospace; font-size: 12px; color: rgba(182,208,255,0.98); text-transform: uppercase; letter-spacing: 1px; }
     #tracked-head { display: flex; align-items: center; justify-content: space-between; }
     #tracked-clear { border: 1px solid rgba(90,130,250,0.25); border-radius: 5px; background: rgba(8,18,48,0.62); color: rgba(176,206,255,0.95); font-family: 'Space Mono',monospace; font-size: 10px; padding: 4px 8px; cursor: pointer; }
@@ -341,6 +273,17 @@
     .rleg-delta.down { color: rgba(255,100,100,0.80); }
     .rleg-delta.flat { color: rgba(110,150,200,0.50); }
 
+    .tab:focus-visible,
+    .mode-tab:focus-visible,
+    .win-btn:focus-visible,
+    #ranked-legend-more:focus-visible,
+    #play-btn:focus-visible,
+    #speed-btn:focus-visible,
+    #tracked-clear:focus-visible {
+      outline: 2px solid rgba(170, 205, 255, 0.9);
+      outline-offset: 2px;
+    }
+
     @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
     #search-wrap { display: flex; flex-direction: column; gap: 4px; pointer-events: all; width: 100%; }
     #search-input {
@@ -379,29 +322,29 @@
     <div id="evo-title">Évolution</div>
     <div class="lpanel-section">
       <div class="lpanel-label">Pays</div>
-      <div id="country-tabs">
-        <button class="tab active" data-country="CAN">CAN</button>
-        <button class="tab" data-country="QC">QC</button>
-        <button class="tab" data-country="USA">USA</button>
+      <div id="country-tabs" role="tablist" aria-label="Sélection du pays">
+        <button class="tab active" data-country="CAN" role="tab" aria-label="Canada">CAN</button>
+        <button class="tab" data-country="QC" role="tab" aria-label="Québec">QC</button>
+        <button class="tab" data-country="USA" role="tab" aria-label="États-Unis">USA</button>
       </div>
     </div>
     <div class="lpanel-section">
       <div class="lpanel-label">Mode</div>
       <div id="mode-tabs">
         <div id="mode-tabs-row">
-          <button class="mode-tab" data-mode="ranked" type="button">Classement</button>
-          <button class="mode-tab" data-mode="tracking" type="button">Suivi</button>
+          <button class="mode-tab" data-mode="ranked" type="button" aria-label="Mode classement">Classement</button>
+          <button class="mode-tab" data-mode="tracking" type="button" aria-label="Mode suivi">Suivi</button>
         </div>
       </div>
     </div>
     <div class="lpanel-section" id="window-section">
       <div class="lpanel-label">Fenêtre</div>
       <div id="window-row">
-        <button class="win-btn active" data-win="all" type="button">Tout</button>
-        <button class="win-btn" data-win="24h" type="button">24h</button>
-        <button class="win-btn" data-win="72h" type="button">72h</button>
-        <button class="win-btn" data-win="7j" type="button">7j</button>
-        <button class="win-btn" data-win="30j" type="button">30j</button>
+        <button class="win-btn active" data-win="all" type="button" aria-label="Fenêtre complète">Tout</button>
+        <button class="win-btn" data-win="24h" type="button" aria-label="Fenêtre 24 heures">24h</button>
+        <button class="win-btn" data-win="72h" type="button" aria-label="Fenêtre 72 heures">72h</button>
+        <button class="win-btn" data-win="7j" type="button" aria-label="Fenêtre 7 jours">7j</button>
+        <button class="win-btn" data-win="30j" type="button" aria-label="Fenêtre 30 jours">30j</button>
       </div>
       <div id="window-granularity"></div>
     </div>
@@ -423,15 +366,14 @@
     <div id="ranked-legend-list"></div>
     <button id="ranked-legend-more" type="button">+ Voir plus</button>
   </div>
-  <div id="stats"></div>
   <div id="object-panel"></div>
   <div id="tooltip"></div>
   <div id="controls">
     <div id="period-label">—</div>
     <div id="slider-row">
-      <button id="play-btn">▶</button>
+      <button id="play-btn" aria-label="Lecture automatique" aria-pressed="false">▶</button>
       <input type="range" id="timeline" min="0" value="0" step="1" />
-      <button id="speed-btn">1×</button>
+      <button id="speed-btn" aria-label="Vitesse de lecture">1×</button>
     </div>
   </div>
   <section class="ticker-section" id="ticker-section" aria-live="polite">
@@ -471,7 +413,6 @@
   let graphs  = graphData.graphs;
   let periods = graphData.meta.periods;
   const countries   = graphData.meta.countries;
-  const allMediaIds = Array.isArray(graphData.meta.media_ids) ? graphData.meta.media_ids : [];
   let graphIdx = graphData.meta.periods.length - 1;
   let tsIdx    = tsData.meta.periods.length - 1;
 
@@ -664,14 +605,13 @@
     document.querySelectorAll('.win-btn').forEach(b => b.classList.toggle('active', b.dataset.win === rankedWindow));
     if (granEl) {
       const wp = getRankedWindowPeriods();
-      granEl.textContent = `${wp.length} periodes · 4h`;
+      granEl.textContent = `${wp.length} périodes · 4h`;
     }
   }
 
   function clearFocusAndRecenter() {
     focusedNode = null;
     renderArticlesPanel(null);
-    setTop10Active(null);
   }
 
   function loadPeriod(country, idx) {
@@ -682,7 +622,8 @@
     const conv = periodConvergenceScore(country, period.key);
     document.getElementById('period-label').innerHTML =
       `<span>${period.label}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${conv.toFixed(1)}`;
-    renderTop10(gd, country);
+    const countryEl = document.getElementById('top10-country');
+    if (countryEl) countryEl.textContent = country;
     renderArticlesPanel(null);
     if (currentMode === 'tracking') { renderTrackedList(); renderEvolutionChart(); }
     else { renderRankedChart(gd, rankedHoverIdx); }
@@ -705,39 +646,6 @@
     }
   });
 
-  function renderTop10(gd, country) {
-    const list = document.getElementById('top10-list');
-    const countryEl = document.getElementById('top10-country');
-    if (countryEl) countryEl.textContent = country;
-    if (!list) return; // mode ranked: la légende dynamique gère l'affichage
-
-    const top = (gd.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, 10);
-    if (!top.length) {
-      list.innerHTML = '<div id="top10-empty">Aucun objet pour cette période.</div>';
-      return;
-    }
-
-    list.innerHTML = '';
-    top.forEach((n, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'top10-item';
-      btn.dataset.nodeId = n.id;
-      btn.innerHTML = `<span class="top10-rank">${i + 1}.</span>${escapeHtml(n.id)}<span class="top10-score">${n.size.toFixed(1)} pts · ${n.n} mentions</span>`;
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        focusNodeById(btn.dataset.nodeId);
-      });
-      list.appendChild(btn);
-    });
-  }
-
-  function setTop10Active(nodeId) {
-    document.querySelectorAll('.top10-item').forEach(btn => {
-      if (nodeId && btn.dataset.nodeId === nodeId) btn.classList.add('active');
-      else btn.classList.remove('active');
-    });
-  }
-
   function focusNodeById(nodeId) {
     const period = periods[currentIdx];
     const gd = getGD(currentCountry, period?.key);
@@ -747,7 +655,6 @@
     focusedNode = node.id;
     document.getElementById('tooltip').style.display = 'none';
     renderArticlesPanel(node);
-    setTop10Active(node.id);
   }
 
   document.addEventListener('mousemove', e => {
@@ -905,7 +812,6 @@
         const gd = getGD(currentCountry, periods[currentIdx]?.key);
         const node = (gd.nodes || []).find(nd => nd.id === r.id);
         focusedNode = isFocused ? null : r.id;
-        setTop10Active(focusedNode);
         if (focusedNode && node) renderArticlesPanel(node);
         else renderArticlesPanel(null);
         renderRankedChart(gd, rankedHoverIdx);
@@ -923,9 +829,25 @@
     }
   }
 
+  const rankedSeriesCache = new Map();
+
+  function getRankedSeriesCacheKey(limit, wp) {
+    if (!wp.length) return `${currentCountry}|${rankedWindow}|empty|${limit}`;
+    const first = wp[0].key;
+    const last = wp[wp.length - 1].key;
+    return `${currentCountry}|${rankedWindow}|${first}|${last}|${wp.length}|${limit}`;
+  }
+
+  function clearRankedSeriesCache() {
+    rankedSeriesCache.clear();
+  }
+
   function getRankedSeries(gd, limit = 10, winPeriods = null) {
     const wp = winPeriods || getRankedWindowPeriods();
-    // Score = saillance max de l'objet sur toute la fenêtre, en respectant les filtres médias
+    const cacheKey = getRankedSeriesCacheKey(limit, wp);
+    if (rankedSeriesCache.has(cacheKey)) return rankedSeriesCache.get(cacheKey);
+
+    // Score = saillance max de l'objet sur toute la fenêtre
     const scoreMap = new Map();
     for (const p of wp) {
       const g = getGD(currentCountry, p.key);
@@ -937,7 +859,7 @@
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
       .map(e => e[0]);
-    return topIds.map((id, i) => ({
+    const series = topIds.map((id, i) => ({
       id,
       color: TRACK_COLORS[i % TRACK_COLORS.length],
       maxVal: scoreMap.get(id) ?? 0,
@@ -946,15 +868,20 @@
         return g.nodes.find(nd => nd.id === id)?.size ?? null;
       })
     }));
+    rankedSeriesCache.set(cacheKey, series);
+    return series;
   }
 
   function getRankedChartLayout(rect) {
     const W = rect.width;
+    const leftPanel = document.getElementById('left-panel');
     const topPanel = document.getElementById('top10-panel');
-    const topVisible = !topPanel || topPanel.style.display !== 'none';
+    const topVisible = !!topPanel && topPanel.style.display !== 'none';
     const compact = W < 960;
-    const leftPad = compact ? 170 : 215;
-    const rightPad = topVisible ? (compact ? 24 : Math.min(360, W * 0.35) + 28) : 24;
+    const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
+    const topPanelWidth = topPanel ? topPanel.getBoundingClientRect().width : 0;
+    const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
+    const rightPad = topVisible ? Math.max(28, Math.ceil(topPanelWidth + 28)) : 24;
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -1335,13 +1262,8 @@
     else tsIdx = currentIdx;
 
     currentMode = mode;
+    clearRankedSeriesCache();
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
-    const modeDescs = {
-      ranked:   'Top 10 · comparaison de périodes · ← → pour naviguer',
-      tracking: 'Graphique multi-objets · cliquez sur les séries pour détails'
-    };
-    const modeDescEl = document.getElementById('mode-desc');
-    if (modeDescEl) modeDescEl.textContent = modeDescs[mode] || '';
 
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
@@ -1383,6 +1305,7 @@
   document.querySelectorAll('.win-btn').forEach(btn => btn.addEventListener('click', () => {
     rankedWindow = btn.dataset.win;
     rankedHoverIdx = null;
+    clearRankedSeriesCache();
     updateWindowUI();
     const gd = getGD(currentCountry, periods[currentIdx]?.key);
     renderRankedChart(gd, null);
@@ -1443,7 +1366,6 @@
       });
       if (hitId && bestDist <= 18) {
         focusedNode = hitId;
-        setTop10Active(hitId);
         const node = (gd.nodes || []).find(n2 => n2.id === hitId);
         if (node) renderArticlesPanel(node);
         renderRankedChart(gd, rankedHoverIdx);
@@ -1494,8 +1416,18 @@
   const playBtn = document.getElementById('play-btn');
   function advance() { currentIdx=(currentIdx+1)%periods.length; slider.value=currentIdx; loadPeriod(currentCountry,currentIdx); }
   function togglePlay() {
-    if (playInterval) { clearInterval(playInterval); playInterval=null; playBtn.textContent='▶'; playBtn.classList.remove('playing'); }
-    else { playBtn.textContent='⏸'; playBtn.classList.add('playing'); playInterval=setInterval(advance,playSpeed); }
+    if (playInterval) {
+      clearInterval(playInterval);
+      playInterval = null;
+      playBtn.textContent = '▶';
+      playBtn.classList.remove('playing');
+      playBtn.setAttribute('aria-pressed', 'false');
+    } else {
+      playBtn.textContent = '⏸';
+      playBtn.classList.add('playing');
+      playBtn.setAttribute('aria-pressed', 'true');
+      playInterval = setInterval(advance, playSpeed);
+    }
   }
   playBtn.addEventListener('click', togglePlay);
   document.getElementById('speed-btn').addEventListener('click', () => {
@@ -1563,8 +1495,13 @@
   });
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
       tab.classList.add('active'); currentCountry=tab.dataset.country;
+      tab.setAttribute('aria-selected', 'true');
+      clearRankedSeriesCache();
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry,currentIdx);
     });
@@ -1572,6 +1509,7 @@
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
+    tab.setAttribute('aria-selected', String(tab.dataset.country === currentCountry));
   });
 
   document.getElementById('loading').style.display = 'none';
