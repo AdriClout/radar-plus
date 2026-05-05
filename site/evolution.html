@@ -1318,13 +1318,10 @@
   function getRankedChartLayout(rect) {
     const W = rect.width;
     const leftPanel = document.getElementById('left-panel');
-    const topPanel = document.getElementById('top10-panel');
-    const topVisible = !!topPanel && topPanel.style.display !== 'none';
     const compact = W < 960;
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
-    const topPanelWidth = topPanel ? topPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
-    const rightPad = topVisible ? Math.max(28, Math.ceil(topPanelWidth + 28)) : 24;
+    const rightPad = getRightPanelPad(rect, ['top10-panel'], 24);
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -1336,6 +1333,22 @@
     const chartW = Math.max(90, rect.width - PAD.left - PAD.right);
     const chartH = Math.max(80, rect.height - PAD.top - PAD.bottom);
     return { PAD, chartW, chartH };
+  }
+
+  function getRightPanelPad(rect, panelIds, fallbackPad = 24) {
+    const gap = 20;
+    let rightPad = fallbackPad;
+    for (const panelId of panelIds) {
+      const panel = document.getElementById(panelId);
+      if (!panel) continue;
+      const style = getComputedStyle(panel);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      const panelRect = panel.getBoundingClientRect();
+      if (panelRect.width <= 0 || panelRect.height <= 0) continue;
+      const panelOffsetFromRight = Math.max(0, rect.right - panelRect.right);
+      rightPad = Math.max(rightPad, Math.ceil(panelRect.width + panelOffsetFromRight + gap));
+    }
+    return rightPad;
   }
 
   function periodTickParts(period) {
@@ -1556,7 +1569,8 @@
   }
 
   function getEvolutionChartLayout(rect) {
-    const panelW = Math.min(310, rect.width * 0.30) + 30;
+    const fallbackPanelPad = Math.min(310, rect.width * 0.30) + 30;
+    const panelW = getRightPanelPad(rect, ['tracked-panel'], fallbackPanelPad);
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
