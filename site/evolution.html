@@ -124,7 +124,7 @@
     }
     #speed-btn:hover { color: #7090b0; }
     #top10-panel {
-      position: absolute; top: 44px; right: 24px;
+      position: absolute; top: 54px; right: 20px;
       font-family: 'Orbitron', 'Space Mono', monospace;
       z-index: 11;
       width: min(360px, 35vw);
@@ -136,7 +136,9 @@
       padding: 10px 10px 8px;
       backdrop-filter: blur(2px);
     }
-    body.has-shared-menu #top10-panel,
+    body.has-shared-menu #top10-panel {
+      right: 20px;
+    }
     body.has-shared-menu #tracked-panel {
       right: 136px;
     }
@@ -196,7 +198,7 @@
       #left-panel { width: 160px; padding: 12px 10px 10px; }
       #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
       .side-nav { width: 280px; right: -280px; }
-      body.has-shared-menu #top10-panel,
+      body.has-shared-menu #top10-panel { right: 10px; }
       body.has-shared-menu #tracked-panel { right: 116px; }
       #object-panel {
         left: 10px;
