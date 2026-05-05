@@ -1821,6 +1821,11 @@
       periods = graphData.meta.periods;
       currentIdx = Math.min(graphIdx, periods.length - 1);
       syncRankedNavigationState();
+      
+      // Si y'a des objets tracké, focus le premier AVANT loadPeriod pour que le dimming fonctionne
+      if (trackedObjects.size > 0) {
+        focusedNode = Array.from(trackedObjects)[0];
+      }
     }
 
     const evoView = document.getElementById('evolution-view');
@@ -1839,15 +1844,7 @@
       if (top10El) top10El.style.display = '';
       trackedEl.style.display = 'none';
       applyTimelineHeat(currentCountry);
-      syncRankedNavigationState();
       loadPeriod(currentCountry, currentIdx);
-      
-      // Si y'a des objets tracké, focus le premier pour que le dimming fonctionne
-      if (trackedObjects.size > 0) {
-        focusedNode = Array.from(trackedObjects)[0];
-        const gd = getGD(currentCountry, periods[currentIdx]?.key);
-        renderRankedChart(gd, rankedHoverIdx);
-      }
     }
     updateWindowUI();
   }
