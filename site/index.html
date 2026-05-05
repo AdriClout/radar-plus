@@ -746,6 +746,64 @@
       100% { transform: translateX(-50%); }
     }
 
+    /* ========== MODULES ========== */
+    .modules-section {
+      position: relative; z-index: 1;
+      padding: 60px 40px 80px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .modules-title {
+      font-family: var(--orbitron); font-size: clamp(11px, 1.1vw, 14px);
+      letter-spacing: 3px; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 28px; text-align: center;
+    }
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .module-card {
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 22px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-decoration: none;
+      transition: border-color 0.25s, background 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    .module-card:hover {
+      border-color: rgba(100,160,255,0.55);
+      background: rgba(20,36,86,0.55);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(40,80,200,0.15);
+    }
+    .module-card-featured {
+      border-color: rgba(80,140,255,0.42);
+      background: rgba(14,28,68,0.62);
+      box-shadow: 0 0 22px rgba(60,100,200,0.12);
+    }
+    .module-card-icon {
+      font-size: 20px; color: var(--accent); opacity: 0.75; line-height: 1;
+    }
+    .module-card-featured .module-card-icon { opacity: 1; }
+    .module-card-name {
+      font-family: var(--orbitron); font-size: 13px;
+      letter-spacing: 2px; color: #e0ecff;
+      text-transform: uppercase;
+    }
+    .module-card-desc {
+      font-size: 11px; line-height: 1.65; color: var(--muted); flex: 1;
+    }
+    .module-card-cta {
+      font-size: 10px; color: var(--accent);
+      font-family: var(--orbitron); letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    @media (max-width: 640px) {
+      .modules-grid { grid-template-columns: 1fr; }
+      .modules-section { padding: 40px 20px 60px; }
+    }
+
     /* ========== FOOTER ========== */
     footer {
       position: relative; z-index: 1;
@@ -888,6 +946,31 @@
   <div class="hot20-search-result" id="search-result"></div>
   <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty">Chargement&hellip;</div>
+  </div>
+</section>
+
+<!-- ========== MODULES ========== -->
+<section class="modules-section" id="modules">
+  <h2 class="modules-title">Outils d&rsquo;analyse</h2>
+  <div class="modules-grid">
+    <a class="module-card" href="./constellation.html">
+      <div class="module-card-icon">&#9678;</div>
+      <div class="module-card-name">Constellation</div>
+      <div class="module-card-desc">Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques.</div>
+      <div class="module-card-cta">Explorer &rarr;</div>
+    </a>
+    <a class="module-card module-card-featured" href="./evolution.html">
+      <div class="module-card-icon">&#9672;</div>
+      <div class="module-card-name">Évolution</div>
+      <div class="module-card-desc">Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n&rsquo;importe quel sujet sur l&rsquo;ensemble de l&rsquo;historique.</div>
+      <div class="module-card-cta">Voir l&rsquo;évolution &rarr;</div>
+    </a>
+    <a class="module-card" href="./statistiques.html">
+      <div class="module-card-icon">&#9638;</div>
+      <div class="module-card-name">Statistiques</div>
+      <div class="module-card-desc">Analyse détaillée par objet&nbsp;: pics de saillance, distribution médiatique, historique complet et articles associés.</div>
+      <div class="module-card-cta">Analyser &rarr;</div>
+    </a>
   </div>
 </section>
 

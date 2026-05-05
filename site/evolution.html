@@ -9,33 +9,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared-menu.css" />
   <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
-  <script src="./assets/js/force-graph.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #00000f; font-family: 'Space Mono', 'SF Mono', monospace; overflow: hidden; height: 100vh; width: 100vw; }
-    #constellation-bg {
-      position: absolute; inset: 0; z-index: 0; pointer-events: none;
-      background: radial-gradient(ellipse at 50% 40%, rgba(62,98,198,0.17), rgba(5,10,36,0.05) 52%, rgba(0,0,15,0) 72%);
-    }
-    #constellation-bg::before,
-    #constellation-bg::after {
-      content: ''; position: absolute; inset: 0;
-    }
-    #constellation-bg::before {
-      background-image:
-        radial-gradient(circle at 12% 18%, rgba(170,200,255,0.34) 0 1.2px, transparent 1.4px),
-        radial-gradient(circle at 28% 42%, rgba(150,188,255,0.28) 0 1px, transparent 1.2px),
-        radial-gradient(circle at 62% 26%, rgba(160,196,255,0.3) 0 1px, transparent 1.2px),
-        radial-gradient(circle at 79% 38%, rgba(140,180,255,0.26) 0 1px, transparent 1.2px),
-        radial-gradient(circle at 38% 74%, rgba(170,205,255,0.24) 0 0.9px, transparent 1.1px),
-        radial-gradient(circle at 86% 76%, rgba(170,205,255,0.2) 0 0.8px, transparent 1px);
-      opacity: 0.55;
-    }
-    #constellation-bg::after {
-      background: repeating-radial-gradient(circle at 50% 52%, rgba(85,135,255,0.12) 0 1px, rgba(85,135,255,0) 1px 11px);
-      opacity: 0.34;
-    }
-    #graph { position: absolute; inset: 0; z-index: 1; }
+    #graph { display: none; }
     #header {
       position: absolute; top: 0; left: 0; right: 0;
       display: grid;
@@ -203,9 +180,6 @@
       border-radius: 5px;
       display: none;
     }
-    #focus-hint { position: absolute; top: 56px; left: 20px; font-size: 10px; color: rgba(80,100,140,0.6); z-index: 10; pointer-events: none; display: none; }
-    #focus-hint.visible { display: block; }
-    #focus-hint span { color: #8090c0; }
     #media-panel {
       position: absolute; top: 82px; left: 20px;
       width: min(290px, 30vw); max-height: 44vh;
@@ -321,6 +295,19 @@
     #object-panel .it:hover { border-color: rgba(140,180,255,0.72); color: #e3efff; }
     #object-panel .it-media { display: block; color: #4a7aaa; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
     #object-panel .empty { color: #5872a8; font-size: 11px; }
+    #object-panel .panel-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+    #object-panel .panel-link {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(95,140,255,0.4);
+      border-radius: 4px;
+      padding: 4px 8px;
+      color: #b9d6ff;
+      font-size: 10px;
+      text-decoration: none;
+      background: rgba(10,20,50,0.55);
+    }
+    #object-panel .panel-link:hover { border-color: rgba(145,182,255,0.8); color: #e3efff; }
     #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #00000f; z-index: 100; }
     #loading-text { font-size: 11px; letter-spacing: 3px; color: rgba(80,120,255,0.5); text-transform: uppercase; animation: pulse 1.8s ease-in-out infinite; }
     @media (max-width: 1500px) {
@@ -420,10 +407,13 @@
       50% { transform: translateY(-2px); }
     }
     /* Mode tabs */
-    #mode-tabs { display: flex; gap: 4px; pointer-events: all; grid-area: modes; }
+    #mode-tabs { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; pointer-events: all; grid-area: modes; }
+    #mode-tabs-row { display: flex; gap: 4px; }
+    #mode-desc { font-size: 9px; letter-spacing: 0.8px; color: rgba(120,160,220,0.45); padding: 0 2px; line-height: 1.2; }
     .mode-tab { padding: 5px 12px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.2px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
     .mode-tab:hover { border-color: rgba(100,150,255,0.6); color: #a0c0ff; }
-    .mode-tab.active { background: rgba(40,80,180,0.35); border-color: rgba(120,180,255,0.7); color: #d0e8ff; box-shadow: 0 0 10px rgba(80,130,255,0.25); }
+    .mode-tab[data-mode="ranked"].active { background: rgba(40,80,180,0.35); border-color: rgba(120,180,255,0.7); color: #d0e8ff; box-shadow: 0 0 10px rgba(80,130,255,0.25); }
+    .mode-tab[data-mode="tracking"].active { background: rgba(20,72,52,0.38); border-color: rgba(80,200,140,0.65); color: rgba(140,230,185,0.95); box-shadow: 0 0 10px rgba(60,180,110,0.22); }
     /* Track button (panneau articles) */
     .track-btn { display: inline-block; margin: 0 0 8px; padding: 4px 10px; border: 1px solid rgba(100,150,255,0.3); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(140,180,255,0.8); font-family: 'Space Mono', monospace; font-size: 10px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
     .track-btn:hover { border-color: rgba(140,190,255,0.7); color: #c0d8ff; }
@@ -474,9 +464,7 @@
   </style>
 </head>
 <body>
-  <div id="constellation-bg" aria-hidden="true"></div>
   <div id="loading"><div id="loading-text">initialisation · évolution</div></div>
-  <div id="graph"></div>
   <div id="evolution-view">
     <canvas id="evo-canvas"></canvas>
     <div id="tracked-panel">
@@ -500,8 +488,11 @@
       <button class="tab" data-country="USA">USA</button>
     </div>
     <div id="mode-tabs">
-      <a class="mode-tab" href="./constellation.html">Constellation</a>
-      <span class="mode-tab active">Évolution</span>
+      <div id="mode-tabs-row">
+        <button class="mode-tab" data-mode="ranked" type="button">Classement évolutif</button>
+        <button class="mode-tab" data-mode="tracking" type="button">Suivi personnalisé</button>
+      </div>
+      <div id="mode-desc"></div>
     </div>
     <div id="search-wrap">
       <input type="text" id="search-input" placeholder="/ rechercher un objet…" autocomplete="off" spellcheck="false" />
@@ -531,7 +522,6 @@
     <div id="top10-list"></div>
   </div>
   <div id="stats"></div>
-  <div id="focus-hint">click pour tout voir · <span id="focus-name"></span> · <span style="color:#70b0a0;opacity:0.8">T: suivre</span></div>
   <div id="object-panel"></div>
   <div id="tooltip"></div>
   <div id="controls">
@@ -574,7 +564,7 @@
     }
     return;
   }
-  // Constellation utilise graphData, Évolution utilise tsData.
+  // Mode "Classement évolutif" utilise graphData, mode "Suivi personnalisé" utilise tsData.
   // On swap les globals à chaque changement de mode (voir setMode).
   let graphs  = graphData.graphs;
   let periods = graphData.meta.periods;
@@ -584,29 +574,9 @@
   let tsIdx    = tsData.meta.periods.length - 1;
   let mediaPanelCollapsed = false;
 
-  const TOP_LABELS     = Number.POSITIVE_INFINITY;
   const MAX_LINKS_NODE = 5;
 
   // ── Couleurs ──────────────────────────────────────────────────────────────
-  function sizeToT(s) { return Math.min(1, Math.log(s + 1) / Math.log(250)); }
-
-  function nodeRGB(size) {
-    const t = sizeToT(size);
-    return [Math.round(160 + t*95), Math.round(190 - t*30), Math.round(255 - t*210)];
-  }
-
-  function nodeColorStr(size, hl) {
-    if (hl === false) return 'rgba(25,30,60,0.5)';
-    const [r,g,b] = nodeRGB(size);
-    return `rgb(${r},${g},${b})`;
-  }
-
-  function linkColorStr(val, hl) {
-    if (hl === false) return 'rgba(30,45,105,0.28)';
-    const t = Math.min(1, Math.log((val||1)+1) / Math.log(12));
-    return `rgba(${Math.round(65+t*130)},${Math.round(80+t*28)},${Math.round(210+t*45)},${(0.34+t*0.46).toFixed(2)})`;
-  }
-
   // ── Anti-hairball ─────────────────────────────────────────────────────────
   function filterTopLinks(links, max) {
     const m = new Map();
@@ -805,11 +775,15 @@
       const media = a.media_id ? `<span class="it-media">${escapeHtml(a.media_id)}</span>` : '';
       return `<a class="it" href="${url}" target="_blank" rel="noopener noreferrer">${media}${title}</a>`;
     }).join('');
+    const constellationUrl = `./constellation.html?country=${encodeURIComponent(currentCountry)}&node=${encodeURIComponent(node.id)}`;
 
     const isTracked = trackedObjects.has(node.id);
     panel.innerHTML = `
       <div class="h">${escapeHtml(node.id)}</div>
       <div class="meta">${node.size.toFixed(2)} pts · ${node.n} mentions · ${articles.length} articles</div>
+      <div class="panel-actions">
+        <a class="panel-link" href="${constellationUrl}">Voir dans Constellation</a>
+      </div>
       <button class="track-btn${isTracked ? ' tracked' : ''}" id="track-btn-panel">${isTracked ? '✓ Suivi' : '+ Suivre'}</button>
       <div class="list">${items || '<div class="empty">Aucun article associé dans ce jeu de données.</div>'}</div>
     `;
@@ -830,96 +804,9 @@
     ts: 0.003 + Math.random() * 0.007
   }));
 
-  // ── Graphe 2D ─────────────────────────────────────────────────────────────
-  const graphEl = document.getElementById('graph');
-  const Graph = ForceGraph()(graphEl);
-  const setIfFn = (name, value) => {
-    if (typeof Graph[name] === 'function') Graph[name](value);
-  };
-
-  setIfFn('width', window.innerWidth);
-  setIfFn('height', window.innerHeight);
-  setIfFn('backgroundColor', '#00000f');
-  // Nœuds par défaut (cercles) — couleur + taille via API standard
-  setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
-  setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
-  setIfFn('nodeRelSize', 3);
-  setIfFn('nodeLabel', () => '');
-  // Liens
-  setIfFn('linkColor', l => linkColorStr(l.value, l._highlighted));
-  setIfFn('linkWidth', l => l._highlighted === false ? 0.7 : Math.max(1, Math.log((l.value||1)+1) * 1.1));
-  setIfFn('linkDirectionalParticles', l => (l.value||0) >= 3 ? 2 : 0);
-  setIfFn('linkDirectionalParticleWidth', 2);
-  setIfFn('linkDirectionalParticleSpeed', 0.005);
-  setIfFn('linkDirectionalParticleColor', l => { const t=Math.min(1,Math.log((l.value||1)+1)/Math.log(12)); return `rgba(${Math.round(100+t*155)},${Math.round(100+t*100)},255,0.9)`; });
-  setIfFn('d3AlphaDecay', 0.015);
-  setIfFn('d3VelocityDecay', 0.28);
-  // Étoiles (avant) + halos de nœuds (avant le cercle par défaut)
-  setIfFn('onRenderFramePre', (ctx, gs) => {
-      // 1. Étoiles en coords écran
-      ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      const W = ctx.canvas.width, H = ctx.canvas.height;
-      STARS.forEach(s => {
-        s.tw += s.ts;
-        const a = s.a * (0.55 + 0.45 * Math.sin(s.tw));
-        ctx.beginPath();
-        ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180,205,255,${a.toFixed(2)})`;
-        ctx.fill();
-      });
-      ctx.restore();
-
-      // 2. Halos en coords monde (dessinés avant les cercles par défaut)
-      const { nodes } = Graph.graphData();
-      nodes.forEach(n => {
-        if (n.x == null || n._highlighted === false) return;
-        const r  = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
-        const [nr, ng, nb] = nodeRGB(n.size);
-        // Halo extérieur
-        const g1 = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4);
-        g1.addColorStop(0, `rgba(${nr},${ng},${nb},0.12)`);
-        g1.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.beginPath(); ctx.arc(n.x, n.y, r*4, 0, Math.PI*2);
-        ctx.fillStyle = g1; ctx.fill();
-        // Halo intérieur
-        const g2 = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 2);
-        g2.addColorStop(0, `rgba(${nr},${ng},${nb},0.30)`);
-        g2.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.beginPath(); ctx.arc(n.x, n.y, r*2, 0, Math.PI*2);
-        ctx.fillStyle = g2; ctx.fill();
-      });
-    });
-  // Labels (après les cercles par défaut)
-  setIfFn('onRenderFramePost', (ctx, gs) => {
-      const { nodes } = Graph.graphData();
-      nodes.forEach(n => {
-        if (n._rank >= TOP_LABELS || n.x == null || n._highlighted === false) return;
-        const t   = sizeToT(n.size);
-        const r   = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
-        const fs  = Math.max(2, 11 / gs);
-        ctx.font  = `${fs}px 'SF Mono', monospace`;
-        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-        const lbl = n.id;
-        const tw  = ctx.measureText(lbl).width;
-        const pad = 2 / gs;
-        const lx  = n.x + r + pad * 1.5;
-        const ly  = n.y;
-        ctx.fillStyle = 'rgba(0,3,22,0.80)';
-        ctx.fillRect(lx - pad, ly - fs/2 - pad, tw + pad*2, fs + pad*2);
-        ctx.fillStyle = `rgba(${Math.round(175+t*75)},215,255,0.92)`;
-        ctx.fillText(lbl, lx, ly);
-      });
-    });
-  setIfFn('onNodeHover', handleHover);
-  setIfFn('onNodeClick', handleClick);
-  setIfFn('onEngineStop', () => {
-    if (typeof Graph.zoomToFit === 'function') Graph.zoomToFit(400, 60);
+  window.addEventListener('resize', () => {
+    if (currentMode === 'tracking') renderEvolutionChart();
   });
-
-  Graph.d3Force('charge').strength(-220);
-  Graph.d3Force('link').distance(80);
-  window.addEventListener('resize', () => { Graph.width(window.innerWidth).height(window.innerHeight); if (currentMode === 'evolution') renderEvolutionChart(); });
 
   // ── État ──────────────────────────────────────────────────────────────────
   const urlParams = new URLSearchParams(window.location.search);
@@ -927,7 +814,6 @@
   let currentCountry = countries.includes(urlCountry) ? urlCountry : countries[0];
   let currentIdx     = periods.length - 1;
   let focusedNode    = null;
-  let lastNodeClickTs = 0;
   let playInterval   = null;
   let playSpeed      = 1500;
   const SPEEDS       = [1500, 700, 250];
@@ -939,37 +825,25 @@
   let trackedObjects = new Set();
   const trackColorMap = new Map();
   let trackColorSeq = 0;
-  let currentMode = 'constellation';
+  let currentMode = 'ranked';
   let evoMaxVal = 1;
 
   function clearFocusAndRecenter() {
-    const gd = Graph.graphData();
-    (gd.nodes || []).forEach(n => { n._highlighted = true; });
-    (gd.links || []).forEach(l => { l._highlighted = true; });
     focusedNode = null;
-    document.getElementById('focus-hint').classList.remove('visible');
     renderArticlesPanel(null);
     setTop10Active(null);
-    if (typeof Graph.zoomToFit === 'function') Graph.zoomToFit(400, 60);
   }
 
   function loadPeriod(country, idx) {
     const period = periods[idx]; if (!period) return;
     const gd = getGD(country, period.key);
-    const prev = {};
-    (Graph.graphData().nodes || []).forEach(n => { prev[n.id] = {x:n.x, y:n.y}; });
-    gd.nodes.forEach(n => { if (prev[n.id]) Object.assign(n, prev[n.id]); });
     focusedNode = null;
-    gd.nodes.forEach(n => { n._highlighted = true; });
-    gd.links.forEach(l => { l._highlighted = true; });
-    Graph.graphData(gd);
     const conv = periodConvergenceScore(country, period.key);
     document.getElementById('period-label').innerHTML =
       `<span>${period.label}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${conv.toFixed(1)}`;
     renderTop10(gd, country);
-    document.getElementById('focus-hint').classList.remove('visible');
     renderArticlesPanel(null);
-    if (currentMode === 'evolution') { renderTrackedList(); renderEvolutionChart(); }
+    if (currentMode === 'tracking') { renderTrackedList(); renderEvolutionChart(); }
   }
 
   function renderTop10(gd, country) {
@@ -1005,61 +879,23 @@
   }
 
   function focusNodeById(nodeId) {
-    const gd = Graph.graphData();
+    const period = periods[currentIdx];
+    const gd = getGD(currentCountry, period?.key);
     const node = (gd.nodes || []).find(n => n.id === nodeId);
     if (!node) return;
 
     focusedNode = node.id;
-    const nb = new Set([node.id]);
-    (gd.links || []).forEach(l => {
-      const s=l.source?.id??l.source, t=l.target?.id??l.target;
-      if(s===node.id) nb.add(t); if(t===node.id) nb.add(s);
-    });
-
-    (gd.nodes || []).forEach(n => { n._highlighted = nb.has(n.id); });
-    (gd.links || []).forEach(l => {
-      const s=l.source?.id??l.source, t=l.target?.id??l.target;
-      l._highlighted=(s===node.id||t===node.id);
-    });
-
-    document.getElementById('focus-name').textContent = node.id;
-    document.getElementById('focus-hint').classList.add('visible');
     document.getElementById('tooltip').style.display = 'none';
     renderArticlesPanel(node);
     setTop10Active(node.id);
   }
 
-  function handleHover(node) {
-    const tt = document.getElementById('tooltip');
-    if (!node || focusedNode) { tt.style.display='none'; return; }
-    tt.style.display = 'block';
-    tt.innerHTML = `<div class="n">${node.id}</div>
-      <div class="s">saillance &nbsp;${node.size.toFixed(2)}</div>
-      <div class="m">mentions &nbsp;&nbsp;${node.n}</div>
-      <div class="m">articles &nbsp;&nbsp;&nbsp;${(node.articles || []).length}</div>`;
-  }
   document.addEventListener('mousemove', e => {
     const tt = document.getElementById('tooltip');
     if (tt.style.display === 'block') {
       tt.style.left = Math.min(e.clientX+16, window.innerWidth-240)+'px';
       tt.style.top  = Math.min(e.clientY-10, window.innerHeight-120)+'px';
     }
-  });
-
-  function handleClick(node) {
-    lastNodeClickTs = Date.now();
-    if (focusedNode === node.id) {
-      clearFocusAndRecenter();
-    } else {
-      focusNodeById(node.id);
-    }
-  }
-
-  // Clic en arrière-plan du graphe: fermer le panneau + recentrer tout.
-  graphEl.addEventListener('click', (e) => {
-    if (!focusedNode) return;
-    if (Date.now() - lastNodeClickTs < 250) return;
-    clearFocusAndRecenter();
   });
 
   // ── Fonctions mode Évolution ──────────────────────────────────────────────
@@ -1072,12 +908,12 @@
     if (!id || trackedObjects.has(id)) return;
     trackedObjects.add(id); getTrackColor(id);
     renderTrackedList();
-    if (currentMode === 'evolution') renderEvolutionChart();
+    if (currentMode === 'tracking') renderEvolutionChart();
   }
 
   function removeTracked(id) {
     trackedObjects.delete(id); renderTrackedList();
-    if (currentMode === 'evolution') renderEvolutionChart();
+    if (currentMode === 'tracking') renderEvolutionChart();
   }
 
   function hexToRgb(hex) {
@@ -1095,7 +931,7 @@
     if (!list) return;
     list.innerHTML = '';
     if (!trackedObjects.size) {
-      list.innerHTML = '<div id="evo-empty">Recherchez un objet ci-dessus<br>ou cliquez sur "Suivre" en constellation.</div>';
+      list.innerHTML = '<div id="evo-empty">Recherchez un objet ci-dessus<br>ou cliquez sur "Suivre" dans le classement.</div>';
       return;
     }
     const period = periods[currentIdx];
@@ -1157,7 +993,7 @@
 
   function renderEvolutionChart(hoverIdx = null) {
     const canvas = document.getElementById('evo-canvas');
-    if (!canvas || currentMode !== 'evolution') return;
+    if (!canvas || currentMode !== 'tracking') return;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width; canvas.height = rect.height;
     const W = canvas.width, H = canvas.height;
@@ -1304,14 +1140,20 @@
 
   function setMode(mode) {
     // Sauvegarder l'index courant avant de changer de mode
-    if (currentMode === 'constellation') graphIdx = currentIdx;
+    if (currentMode === 'ranked') graphIdx = currentIdx;
     else tsIdx = currentIdx;
 
     currentMode = mode;
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    const modeDescs = {
+      ranked:   'Top 10 · comparaison de périodes · ← → pour naviguer',
+      tracking: 'Graphique multi-objets · cliquez sur les séries pour détails'
+    };
+    const modeDescEl = document.getElementById('mode-desc');
+    if (modeDescEl) modeDescEl.textContent = modeDescs[mode] || '';
 
     // Swapper les données + slider selon le mode
-    if (mode === 'evolution') {
+    if (mode === 'tracking') {
       graphs  = tsData.graphs;
       periods = tsData.meta.periods;
       currentIdx = Math.min(tsIdx, periods.length - 1);
@@ -1326,14 +1168,11 @@
     const evoView = document.getElementById('evolution-view');
     const top10El = document.getElementById('top10-panel');
     const mediaEl = document.getElementById('media-panel');
-    const graphDiv = document.getElementById('graph');
-    if (mode === 'evolution') {
+    if (mode === 'tracking') {
       evoView.classList.add('visible'); top10El.style.display = 'none'; mediaEl.style.display = 'none';
-      graphDiv.style.opacity = '0.07'; graphDiv.style.pointerEvents = 'none';
       renderTrackedList(); renderEvolutionChart();
     } else {
       evoView.classList.remove('visible'); top10El.style.display = ''; mediaEl.style.display = '';
-      graphDiv.style.opacity = ''; graphDiv.style.pointerEvents = '';
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry, currentIdx);
     }
@@ -1381,7 +1220,7 @@
   document.getElementById('evo-search').addEventListener('keydown', e => { if (e.key === 'Escape') { e.target.value = ''; renderEvoSearchResults(''); } e.stopPropagation(); });
   document.getElementById('tracked-clear').addEventListener('click', () => {
     trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
-    renderTrackedList(); if (currentMode === 'evolution') renderEvolutionChart();
+    renderTrackedList(); if (currentMode === 'tracking') renderEvolutionChart();
   });
 
   const slider = document.getElementById('timeline');
@@ -1411,7 +1250,7 @@
     if (!q) { clearFocusAndRecenter(); return; }
 
     // Cherche dans la période courante
-    const gd = Graph.graphData();
+    const gd = getGD(currentCountry, periods[currentIdx]?.key);
     const matchNow = (gd.nodes || []).find(n => n.id.toLowerCase().includes(q));
     if (matchNow) {
       focusNodeById(matchNow.id);
@@ -1495,8 +1334,8 @@
   applyTimelineHeat(currentCountry);
   loadPeriod(currentCountry, currentIdx);
 
-  // Auto-start en mode évolution
-  setMode('evolution');
+  // Mode par défaut: classement évolutif
+  setMode('ranked');
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
   const urlNode = urlParams.get('node');
@@ -1510,7 +1349,10 @@
                 (g.nodes || []).find(n => n.id.toLowerCase().includes(q));
       if (m) foundId = m.id;
     }
-    if (foundId) addTracked(foundId);
+    if (foundId) {
+      addTracked(foundId);
+      setMode('tracking');
+    }
   }
 
   } catch(e) {
