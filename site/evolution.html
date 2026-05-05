@@ -15,7 +15,7 @@
     #graph { display: none; }
     #left-panel {
       position: absolute; top: 0; left: 0; bottom: calc(var(--ticker-height, 44px) + 100px);
-      width: 200px;
+      width: 220px;
       display: flex; flex-direction: column; gap: 0;
       padding: 18px 14px 14px;
       background: linear-gradient(to right, rgba(0,0,15,0.96) 80%, transparent);
@@ -25,12 +25,13 @@
     #evo-title {
       font-family: 'Orbitron', 'Space Mono', monospace;
       font-size: 22px;
-      letter-spacing: 6px;
+      letter-spacing: 4px;
       color: rgba(195, 220, 255, 0.92);
       text-transform: uppercase;
       text-shadow: 0 0 10px rgba(90,140,255,0.36), 0 0 26px rgba(70,110,230,0.22);
       margin-bottom: 22px;
       line-height: 1.1;
+      white-space: nowrap;
     }
     .lpanel-section {
       display: flex; flex-direction: column; gap: 6px;
@@ -137,7 +138,7 @@
     }
     body.has-shared-menu #top10-panel,
     body.has-shared-menu #tracked-panel {
-      right: 86px;
+      right: 98px;
     }
     #top10-title {
       font-size: 13px;
@@ -193,7 +194,7 @@
       #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
       .side-nav { width: 280px; right: -280px; }
       body.has-shared-menu #top10-panel,
-      body.has-shared-menu #tracked-panel { right: 78px; }
+      body.has-shared-menu #tracked-panel { right: 90px; }
       #object-panel {
         left: 10px;
         right: 10px;
@@ -435,15 +436,6 @@
         <button class="tab" data-country="USA" role="tab" aria-label="États-Unis">USA</button>
       </div>
     </div>
-    <div class="lpanel-section">
-      <div class="lpanel-label">Mode</div>
-      <div id="mode-tabs">
-        <div id="mode-tabs-row">
-          <button class="mode-tab" data-mode="ranked" type="button" aria-label="Mode classement">Classement</button>
-          <button class="mode-tab" data-mode="tracking" type="button" aria-label="Mode suivi">Suivi</button>
-        </div>
-      </div>
-    </div>
     <div class="lpanel-section" id="window-section">
       <div class="lpanel-label">Granularité</div>
       <div id="window-row">
@@ -453,6 +445,15 @@
         <button class="win-btn" data-gran="year" type="button" aria-label="Granularité année">Année</button>
       </div>
       <div id="window-granularity"></div>
+    </div>
+    <div class="lpanel-section">
+      <div class="lpanel-label">Mode</div>
+      <div id="mode-tabs">
+        <div id="mode-tabs-row">
+          <button class="mode-tab" data-mode="ranked" type="button" aria-label="Mode classement">Classement</button>
+          <button class="mode-tab" data-mode="tracking" type="button" aria-label="Mode suivi">Suivi</button>
+        </div>
+      </div>
     </div>
     <div class="lpanel-section" id="left-tracked-section">
       <div class="lpanel-label">Suivi</div>
