@@ -623,6 +623,7 @@
     year: { topN: 16, emptyLabel: 'Année' },
   };
   const FR_MONTHS = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
+  const EN_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
 
   function periodKeyToDate(key) {
     return String(key || '').split('_')[0];
@@ -644,9 +645,20 @@
     return dateStr.slice(0, 4);
   }
 
+  function periodDisplayDate(period) {
+    const label = String(period?.label || '');
+    const m = label.match(/^([A-Za-z]{3})\s+(\d{1,2})/);
+    if (m) {
+      const month = EN_MONTHS[m[1]];
+      const year = String(period?.key || '').split('_')[0]?.split('-')[0] || '1970';
+      if (month) return `${year}-${month}-${String(Number(m[2])).padStart(2, '0')}`;
+    }
+    return periodKeyToDate(period?.key || '');
+  }
+
   function toDayLabel(dateStr) {
-    const d = new Date(`${dateStr}T00:00:00`);
-    return `${d.getDate()} ${FR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    const [y, m, d] = String(dateStr).split('-').map(Number);
+    return `${d} ${FR_MONTHS[Math.max(0, (m || 1) - 1)]} ${y}`;
   }
 
   function toMonthLabel(monthKey) {
@@ -668,7 +680,7 @@
 
     const buckets = new Map();
     periods.forEach(p => {
-      const dateStr = periodKeyToDate(p.key);
+      const dateStr = periodDisplayDate(p);
       let bucketKey = dateStr;
       if (rankedGranularity === 'week') bucketKey = dateToWeekKey(dateStr);
       else if (rankedGranularity === 'month') bucketKey = dateToMonthKey(dateStr);
@@ -911,27 +923,38 @@
     if (!list) return;
 
     const winPeriods = getRankedWindowPeriods();
-    const limit = rankedShowMore ? 20 : getRankedTopN();
+    const isHoverBlock = hoverIdx !== null && hoverIdx >= 0;
+    const limit = 10;
     const idx = (hoverIdx !== null && hoverIdx >= 0) ? hoverIdx : winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
     const safeIdx = idx >= 0 ? idx : winPeriods.length - 1;
     const period = winPeriods[safeIdx];
-    if (periodEl) periodEl.textContent = period?.label || '';
+    const slotLabel = rankedSlots[rankedSlotIdx]?.label || '';
+    if (periodEl) periodEl.textContent = isHoverBlock ? `${period?.label || ''} · Bloc survole` : `${slotLabel} · Cumul fenetre`;
 
-    // Trier par valeur au point courant, ou par score max si null
-    const rows = series
-      .slice(0, limit)
-      .map(s => {
-        const val = s.data[safeIdx] ?? null;
-        const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
-        const delta = (val !== null && prev !== null) ? val - prev : null;
-        return { id: s.id, color: s.color, val, delta, maxVal: s.maxVal ?? 0 };
-      })
-      .sort((a, b) => {
-        if (b.val !== null && a.val !== null) return b.val - a.val;
-        if (b.val !== null) return 1;
-        if (a.val !== null) return -1;
-        return b.maxVal - a.maxVal;
-      });
+    let rows = [];
+    if (isHoverBlock) {
+      rows = series
+        .map(s => {
+          const val = s.data[safeIdx] ?? null;
+          const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
+          const delta = (val !== null && prev !== null) ? val - prev : null;
+          return { id: s.id, color: s.color, val, displayVal: val, delta, maxVal: s.maxVal ?? 0 };
+        })
+        .filter(r => r.val !== null)
+        .sort((a, b) => b.val - a.val)
+        .slice(0, limit);
+    } else {
+      rows = series
+        .map(s => {
+          const cum = s.data.reduce((acc, v) => acc + (v ?? 0), 0);
+          const val = s.data[safeIdx] ?? null;
+          const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
+          const delta = (val !== null && prev !== null) ? val - prev : null;
+          return { id: s.id, color: s.color, val, displayVal: cum, delta, maxVal: s.maxVal ?? 0 };
+        })
+        .sort((a, b) => b.displayVal - a.displayVal)
+        .slice(0, limit);
+    }
 
     const hasHover = hoveredNode !== null || focusedNode !== null;
     list.innerHTML = '';
@@ -958,7 +981,7 @@
         <div class="rleg-swatch" style="background:${r.color};box-shadow:0 0 5px ${r.color}88"></div>
         <span class="rleg-rank">${i + 1}.</span>
         <span class="rleg-name" title="${escapeHtml(r.id)}">${escapeHtml(r.id)}</span>
-        <span class="rleg-val${r.val === null ? ' null-val' : ''}">${r.val !== null ? r.val.toFixed(1) : '—'}</span>
+        <span class="rleg-val${r.displayVal === null ? ' null-val' : ''}">${r.displayVal !== null ? r.displayVal.toFixed(1) : '—'}</span>
         <span class="rleg-delta ${deltaClass}">${deltaTxt}</span>
       `;
 
@@ -989,8 +1012,7 @@
     // Bouton + Voir plus / moins
     const moreBtn = document.getElementById('ranked-legend-more');
     if (moreBtn) {
-      moreBtn.textContent = rankedShowMore ? '− Voir moins' : '+ Voir plus';
-      moreBtn.style.display = series.length > 10 ? '' : 'none';
+      moreBtn.style.display = 'none';
     }
   }
 
@@ -1011,32 +1033,63 @@
     rankedSeriesCache.clear();
   }
 
-  function getRankedSeries(gd, limit = 10, winPeriods = null) {
+  function getSeriesColor(i) {
+    if (i < TRACK_COLORS.length) return TRACK_COLORS[i];
+    const hue = (i * 47) % 360;
+    return `hsl(${hue} 78% 62%)`;
+  }
+
+  function topIdsForPeriod(periodKey, topN = 10) {
+    const g = getGD(currentCountry, periodKey);
+    return (g.nodes || [])
+      .slice()
+      .sort((a, b) => (b.size || 0) - (a.size || 0))
+      .slice(0, topN)
+      .map(n => n.id);
+  }
+
+  function getRankedSeries(gd, limit = Infinity, winPeriods = null) {
     const wp = winPeriods || getRankedWindowPeriods();
     const cacheKey = getRankedSeriesCacheKey(limit, wp);
     if (rankedSeriesCache.has(cacheKey)) return rankedSeriesCache.get(cacheKey);
 
-    // Score = saillance max de l'objet sur toute la fenêtre
+    // Union des Top 10 locaux de chaque bloc visible.
+    const unionIds = new Set();
     const scoreMap = new Map();
+    const hitMap = new Map();
     for (const p of wp) {
+      const topIds = topIdsForPeriod(p.key, 10);
       const g = getGD(currentCountry, p.key);
-      for (const nd of g.nodes) {
-        scoreMap.set(nd.id, Math.max(scoreMap.get(nd.id) ?? 0, nd.size));
+      const nodeById = new Map((g.nodes || []).map(nd => [nd.id, nd]));
+      for (const id of topIds) {
+        unionIds.add(id);
+        const val = Number(nodeById.get(id)?.size) || 0;
+        scoreMap.set(id, (scoreMap.get(id) || 0) + val);
+        hitMap.set(id, (hitMap.get(id) || 0) + 1);
       }
     }
-    const topIds = [...scoreMap.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, limit)
-      .map(e => e[0]);
+
+    let topIds = [...unionIds]
+      .sort((a, b) => {
+        const ds = (scoreMap.get(b) || 0) - (scoreMap.get(a) || 0);
+        if (Math.abs(ds) > 1e-9) return ds;
+        return (hitMap.get(b) || 0) - (hitMap.get(a) || 0);
+      });
+
+    if (Number.isFinite(limit)) topIds = topIds.slice(0, Math.max(0, Math.floor(limit)));
+
     const series = topIds.map((id, i) => ({
       id,
-      color: TRACK_COLORS[i % TRACK_COLORS.length],
-      maxVal: scoreMap.get(id) ?? 0,
+      color: getSeriesColor(i),
+      maxVal: 0,
       data: wp.map(p => {
         const g = getGD(currentCountry, p.key);
         return g.nodes.find(nd => nd.id === id)?.size ?? null;
       })
     }));
+    series.forEach(s => {
+      s.maxVal = s.data.reduce((mx, v) => (v !== null ? Math.max(mx, v) : mx), 0);
+    });
     rankedSeriesCache.set(cacheKey, series);
     return series;
   }
@@ -1064,6 +1117,17 @@
     return { PAD, chartW, chartH };
   }
 
+  function periodTickParts(period) {
+    const label = String(period?.label || '');
+    const [left, right] = label.split('·').map(s => s.trim());
+    if (rankedGranularity === 'day') {
+      const interval = right ? right.split(' ')[0] : '';
+      const tz = right ? right.split(' ').slice(1).join(' ') : '';
+      return { major: interval || left, minor: tz || '' };
+    }
+    return { major: left || label, minor: right || '' };
+  }
+
   function renderRankedChart(gd, hoverIdx = null) {
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
@@ -1085,7 +1149,7 @@
     });
 
     const winPeriods = getRankedWindowPeriods();
-    const series = getRankedSeries(gd, getRankedTopN(), winPeriods);
+    const series = getRankedSeries(gd, Infinity, winPeriods);
     if (!series.length) return;
     const n = winPeriods.length;
     if (!n) return;
@@ -1127,12 +1191,11 @@
       ctx.stroke();
       ctx.fillStyle = 'rgba(100,140,205,0.5)';
       ctx.textAlign = 'center';
-      const date = p.label.length > 10 ? p.label.slice(0, 10) : p.label;
-      const rest = p.label.slice(10).trim();
-      ctx.fillText(date, x, H - PAD.bottom + 22);
-      if (rest) {
+      const parts = periodTickParts(p);
+      ctx.fillText(parts.major, x, H - PAD.bottom + 22);
+      if (parts.minor) {
         ctx.fillStyle = 'rgba(80,120,180,0.38)';
-        ctx.fillText(rest, x, H - PAD.bottom + 34);
+        ctx.fillText(parts.minor, x, H - PAD.bottom + 34);
       }
     });
 
@@ -1497,7 +1560,7 @@
   document.getElementById('ranked-legend-more').addEventListener('click', () => {
     rankedShowMore = !rankedShowMore;
     const gd = getGD(currentCountry, periods[currentIdx]?.key);
-    const series = getRankedSeries(gd, rankedShowMore ? 20 : getRankedTopN());
+    const series = getRankedSeries(gd, Infinity);
     renderRankedLegend(series, rankedHoverIdx);
   });
 
@@ -1522,7 +1585,7 @@
       const period = periods[currentIdx];
       const gd = getGD(currentCountry, period?.key);
       const winPeriods = getRankedWindowPeriods();
-      const series = getRankedSeries(gd, getRankedTopN(), winPeriods);
+      const series = getRankedSeries(gd, Infinity, winPeriods);
       if (!series.length) return;
       const rect = evoCanvas.getBoundingClientRect();
       const { PAD, chartW, chartH } = getRankedChartLayout(rect);
