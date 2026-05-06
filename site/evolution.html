@@ -1821,7 +1821,6 @@
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
       graphs  = tsData.graphs;
-      rankedGranularity = 'year'; // Défaut: Année en mode Suivi
       const trackingBasePeriods = (tsData?.meta?.periods || []);
       buildRankedSlots(trackingBasePeriods); // Reconstruire les slots avec la granularité année
       periods = getTrackingPeriodsForCurrentFilters(trackingBasePeriods);
