@@ -1122,16 +1122,29 @@
 
     let rows = [];
     if (isHoverBlock) {
-      rows = series
-        .map(s => {
-          const val = s.data[safeIdx] ?? null;
-          const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
-          const delta = (val !== null && prev !== null) ? val - prev : null;
-          return { id: s.id, color: s.color, val, displayVal: val, delta, maxVal: s.maxVal ?? 0 };
-        })
-        .filter(r => r.val !== null)
-        .sort((a, b) => b.val - a.val)
-        .slice(0, limit);
+      const hoverPeriod = winPeriods[safeIdx];
+      const gNow = getGD(currentCountry, hoverPeriod?.key);
+      const prevPeriod = safeIdx > 0 ? winPeriods[safeIdx - 1] : null;
+      const gPrev = prevPeriod ? getGD(currentCountry, prevPeriod.key) : { nodes: [] };
+      const prevMap = new Map((gPrev.nodes || []).map(n => [n.id, Number(n.size) || 0]));
+
+      rows = (gNow.nodes || [])
+        .slice()
+        .sort((a, b) => (Number(b.size) || 0) - (Number(a.size) || 0))
+        .slice(0, limit)
+        .map((n, i) => {
+          const val = Number(n.size) || 0;
+          const prev = prevMap.has(n.id) ? prevMap.get(n.id) : null;
+          const delta = prev !== null ? val - prev : null;
+          return {
+            id: n.id,
+            color: getSeriesColor(i),
+            val,
+            displayVal: val,
+            delta,
+            maxVal: val
+          };
+        });
     } else {
       rows = series
         .map(s => {
