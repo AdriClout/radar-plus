@@ -1364,6 +1364,27 @@
     return series;
   }
 
+  function getRankedChartSeries(gd, winPeriods) {
+    const fullSeries = getRankedSeries(gd, Infinity, winPeriods);
+    const topSeries = getRankedSeries(gd, getRankedTopN(), winPeriods);
+    const byId = new Map(fullSeries.map(s => [s.id, s]));
+
+    const requiredIds = new Set([
+      focusedNode,
+      hoveredNode,
+      ...Array.from(trackedObjects)
+    ].filter(Boolean));
+
+    const out = [...topSeries];
+    requiredIds.forEach(id => {
+      if (out.some(s => s.id === id)) return;
+      const extra = byId.get(id);
+      if (extra) out.push(extra);
+    });
+
+    return out;
+  }
+
   function getRankedChartLayout(rect) {
     const W = rect.width;
     const leftPanel = document.getElementById('left-panel');
@@ -1443,7 +1464,7 @@
     });
 
     const winPeriods = getRankedWindowPeriods();
-    const series = getRankedSeries(gd, Infinity, winPeriods);
+    const series = getRankedChartSeries(gd, winPeriods);
     if (!series.length) return;
     const n = winPeriods.length;
     if (!n) return;
@@ -1984,7 +2005,7 @@
       const period = periods[currentIdx];
       const gd = getGD(currentCountry, period?.key);
       const winPeriods = getRankedWindowPeriods();
-      const series = getRankedSeries(gd, Infinity, winPeriods);
+      const series = getRankedChartSeries(gd, winPeriods);
       if (!series.length) return;
       const rect = evoCanvas.getBoundingClientRect();
       const { PAD, chartW, chartH } = getRankedChartLayout(rect);
