@@ -66,7 +66,7 @@
       z-index: 10;
     }
     #period-label {
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       gap: 0;
@@ -584,9 +584,35 @@
     return `rgba(${r},${g},${b},${a})`;
   }
 
+  function applyTimelineNeutral() {
+    slider.style.background = 'linear-gradient(to right, rgba(60,100,200,0.6), rgba(100,60,200,0.6))';
+    delete slider.dataset.convScores;
+  }
+
+  function getRankedSlotConvergenceScores(country) {
+    if (!rankedSlots.length) return [];
+    return rankedSlots.map(slot => {
+      const keys = Array.isArray(slot?.periodKeys) ? slot.periodKeys : [];
+      if (!keys.length) return 0;
+      const vals = keys.map(k => periodConvergenceScore(country, k));
+      return vals.reduce((a, b) => a + b, 0) / vals.length;
+    });
+  }
+
   function applyTimelineHeat(country) {
-    if (!periods.length) return;
-    const scores = periods.map(p => periodConvergenceScore(country, p.key));
+    if (currentMode !== 'ranked') {
+      applyTimelineNeutral();
+      return;
+    }
+
+    const scores = rankedSlots.length
+      ? getRankedSlotConvergenceScores(country)
+      : periods.map(p => periodConvergenceScore(country, p.key));
+    if (!scores.length) {
+      applyTimelineNeutral();
+      return;
+    }
+
     const min = Math.min(...scores);
     const max = Math.max(...scores);
     const denom = Math.max(1e-9, max - min);
@@ -1937,6 +1963,7 @@
       trackedEl.style.display = '';
       rankedHoverIdx = null;
       document.getElementById('evo-tooltip').style.display = 'none';
+      applyTimelineNeutral();
       renderTrackedList(); renderEvolutionChart();
     } else {
       evoView.classList.add('visible');
@@ -1966,10 +1993,12 @@
       currentIdx = Math.min(currentIdx, Math.max(0, periods.length - 1));
       slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
+      applyTimelineNeutral();
       renderTrackedList();
       renderEvolutionChart();
     } else {
       syncRankedNavigationState(graphData.meta.periods);
+      applyTimelineHeat(currentCountry);
       const gd = getGD(currentCountry, periods[currentIdx]?.key);
       renderRankedChart(gd, null);
     }
