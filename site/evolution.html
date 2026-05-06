@@ -138,9 +138,28 @@
       color: #aecdff; font-size: 11px; line-height: 1.4;
     }
     #object-panel .it:hover { border-color: rgba(140,180,255,0.72); color: #e3efff; }
+    #object-panel .it.muted {
+      cursor: default;
+      color: rgba(145,172,215,0.78);
+      border-style: dashed;
+    }
     #object-panel .it-media { display: block; color: #4a7aaa; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
     #object-panel .empty { color: #5872a8; font-size: 11px; }
     #object-panel .panel-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+    #object-panel .panel-toggle {
+      border: 1px solid rgba(90,130,250,0.32);
+      border-radius: 4px;
+      background: rgba(8,18,48,0.62);
+      color: rgba(166,202,255,0.9);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      padding: 4px 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    #object-panel .panel-toggle:hover { border-color: rgba(145,182,255,0.72); color: #dcecff; }
+    #object-panel .panel-subtle { color: rgba(115,150,210,0.72); font-size: 10px; margin-bottom: 8px; }
     #object-panel .panel-link {
       display: inline-flex;
       align-items: center;
@@ -168,7 +187,7 @@
         left: 10px;
         right: 10px;
         width: auto;
-        max-height: 30vh;
+        max-height: 42vh;
         bottom: calc(var(--ticker-height, 44px) + 92px);
       }
       #controls { bottom: calc(var(--ticker-height, 44px) + 2px); }
@@ -623,51 +642,130 @@
     }[c]));
   }
 
-  function renderArticlesPanel(node, periodLabel = '') {
+  function panelPeriodLabel(period = periods[currentIdx]) {
+    if (!period) return '';
+    const day = toDayLabel(periodDisplayDate(period));
+    const block = blockRangeLabelFromPeriod(period);
+    return `${day} · ${block} EDT`;
+  }
+
+  function panelLinksFor(nodeId) {
+    return {
+      constellationUrl: `./constellation.html?country=${encodeURIComponent(currentCountry)}&node=${encodeURIComponent(nodeId)}`,
+      radarplusUrl: `./radarplus.html?country=${encodeURIComponent(currentCountry)}&q=${encodeURIComponent(nodeId)}`
+    };
+  }
+
+  function bindPanelTrackButton(nodeId) {
+    const btn = document.getElementById('track-btn-panel');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const target = document.getElementById('track-btn-panel');
+      if (!target) return;
+      if (trackedObjects.has(nodeId)) {
+        removeTracked(nodeId);
+        target.textContent = '+ Suivre';
+        target.classList.remove('tracked');
+      } else {
+        addTracked(nodeId);
+        target.textContent = '✓ Suivi';
+        target.classList.add('tracked');
+      }
+    });
+  }
+
+  function renderArticlesPanelUnavailable(nodeId) {
     const panel = document.getElementById('object-panel');
-    if (!node) {
+    if (!nodeId) {
+      panelState.nodeId = null;
+      panelState.expanded = false;
       panel.classList.remove('visible');
       panel.innerHTML = '';
       return;
     }
 
+    panelState.nodeId = nodeId;
+    const tracked = trackedObjects.has(nodeId);
+    const links = panelLinksFor(nodeId);
+
+    panel.innerHTML = `
+      <div class="h">${escapeHtml(nodeId)}</div>
+      <div class="meta">Bloc: ${escapeHtml(panelPeriodLabel())}</div>
+      <div class="meta">Données: indisponibles pour ce bloc</div>
+      <button class="track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
+      <div class="list"><div class="empty"><strong>Pas d'articles pour cette période.</strong><br>Essayez un autre bloc ou une autre granularité.</div></div>
+      <div class="panel-actions">
+        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Voir Constellation</a>
+        <a class="panel-link" href="${links.radarplusUrl}" target="_blank" rel="noopener noreferrer">Voir Radar+</a>
+      </div>
+      <div class="panel-subtle">Ouvre un nouvel onglet</div>
+    `;
+    panel.classList.add('visible');
+    bindPanelTrackButton(nodeId);
+  }
+
+  function renderArticlesPanel(node) {
+    const panel = document.getElementById('object-panel');
+    if (!node) {
+      panelState.nodeId = null;
+      panelState.expanded = false;
+      panel.classList.remove('visible');
+      panel.innerHTML = '';
+      return;
+    }
+
+    if (panelState.nodeId !== node.id) panelState.expanded = false;
+    panelState.nodeId = node.id;
+
     const articles = Array.isArray(node.articles) ? node.articles : [];
-    const items = articles.map(a => {
+    const previewCount = 3;
+    const visibleArticles = panelState.expanded ? articles : articles.slice(0, previewCount);
+    const items = visibleArticles.map(a => {
       const title = escapeHtml(a.title || a.url || 'Article');
-      const url = escapeHtml(a.url || '#');
+      const safeUrl = String(a.url || '').trim();
       const media = a.media_id ? `<span class="it-media">${escapeHtml(a.media_id)}</span>` : '';
+      if (!safeUrl) return `<div class="it muted">${media}${title}</div>`;
+      const url = escapeHtml(safeUrl);
       return `<a class="it" href="${url}" target="_blank" rel="noopener noreferrer">${media}${title}</a>`;
     }).join('');
-    const constellationUrl = `./constellation.html?country=${encodeURIComponent(currentCountry)}&node=${encodeURIComponent(node.id)}`;
-    const radarplusUrl = `./radarplus.html?country=${encodeURIComponent(currentCountry)}&q=${encodeURIComponent(node.id)}`;
+    const links = panelLinksFor(node.id);
     const tracked = trackedObjects.has(node.id);
-
-    const periodLine = periodLabel ? `<div class="meta">Bloc: ${escapeHtml(periodLabel)}</div>` : '';
+    const toggleLabel = panelState.expanded ? 'Voir moins' : `Voir tout (${articles.length})`;
+    const toggleBtn = articles.length > previewCount
+      ? `<button class="panel-toggle" id="panel-toggle-articles">${toggleLabel}</button>`
+      : '';
 
     panel.innerHTML = `
       <div class="h">${escapeHtml(node.id)}</div>
-      ${periodLine}
+      <div class="meta">Bloc: ${escapeHtml(panelPeriodLabel())}</div>
       <div class="meta">Saillance: ${Number(node.size || 0).toFixed(2)} · Mentions: ${Number(node.n || 0)}</div>
       <button class="track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
+      <div class="list">${items || '<div class="empty"><strong>Pas d\'articles pour cette période.</strong><br>Essayez un autre bloc ou une autre granularité.</div>'}</div>
+      ${toggleBtn}
       <div class="panel-actions">
-        <a class="panel-link" href="${constellationUrl}" target="_blank" rel="noopener noreferrer">Voir Constellation</a>
-        <a class="panel-link" href="${radarplusUrl}" target="_blank" rel="noopener noreferrer">Voir Radar+</a>
+        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Voir Constellation</a>
+        <a class="panel-link" href="${links.radarplusUrl}" target="_blank" rel="noopener noreferrer">Voir Radar+</a>
       </div>
-      <div class="list">${items || '<div class="empty">Aucun article associé dans ce jeu de données.</div>'}</div>
+      <div class="panel-subtle">Ouvre un nouvel onglet</div>
     `;
     panel.classList.add('visible');
-    document.getElementById('track-btn-panel').addEventListener('click', () => {
-      const btn = document.getElementById('track-btn-panel');
-      if (trackedObjects.has(node.id)) {
-        removeTracked(node.id);
-        btn.textContent = '+ Suivre';
-        btn.classList.remove('tracked');
-      } else {
-        addTracked(node.id);
-        btn.textContent = '✓ Suivi';
-        btn.classList.add('tracked');
-      }
-    });
+    bindPanelTrackButton(node.id);
+    const toggle = document.getElementById('panel-toggle-articles');
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        panelState.expanded = !panelState.expanded;
+        renderArticlesPanel(node);
+      });
+    }
+  }
+
+  function syncArticlesPanel() {
+    if (!panelState.nodeId) return;
+    const period = periods[currentIdx];
+    const gd = getGD(currentCountry, period?.key);
+    const node = (gd.nodes || []).find(n => n.id === panelState.nodeId);
+    if (node) renderArticlesPanel(node);
+    else renderArticlesPanelUnavailable(panelState.nodeId);
   }
 
   // ── État ──────────────────────────────────────────────────────────────────
@@ -695,6 +793,7 @@
   let rankedGranularity = 'day';
   let rankedSlots = [];
   let rankedSlotIdx = 0;
+  const panelState = { nodeId: null, expanded: false };
 
   const RANKED_GRANULARITIES = {
     day: { topN: 10, emptyLabel: 'Journée' },
@@ -963,17 +1062,17 @@
     if (!period) return;
     const gd = getGD(country, period.key);
     
-    // Ne pas réinitialiser focusedNode si c'est un objet tracké - garde la lumière sur les objets suivi
-    if (!trackedObjects.has(focusedNode)) {
-      focusedNode = null;
+    if (focusedNode) {
+      const hasFocused = (gd.nodes || []).some(n => n.id === focusedNode);
+      if (!hasFocused && !trackedObjects.has(focusedNode)) focusedNode = null;
     }
     
     updatePeriodSummary(country, idx);
     const countryEl = document.getElementById('top10-country');
     if (countryEl) countryEl.textContent = country;
-    renderArticlesPanel(null);
     if (currentMode === 'tracking') { renderTrackedList(); renderEvolutionChart(); }
     else { renderRankedChart(gd, rankedHoverIdx); }
+    syncArticlesPanel();
   }
 
   // Etoiles de fond
@@ -997,7 +1096,10 @@
     const period = periods[currentIdx];
     const gd = getGD(currentCountry, period?.key);
     const node = (gd.nodes || []).find(n => n.id === nodeId);
-    if (!node) return;
+    if (!node) {
+      renderArticlesPanelUnavailable(nodeId);
+      return;
+    }
 
     focusedNode = node.id;
     document.getElementById('tooltip').style.display = 'none';
@@ -1088,6 +1190,7 @@
         <button class="tracked-rm" title="Retirer">×</button>
       `;
       item.querySelector('.tracked-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
+      item.addEventListener('click', () => focusNodeById(id));
       list.appendChild(item);
 
       if (leftList) {
@@ -1099,6 +1202,7 @@
           <button class="left-track-rm" title="Retirer">×</button>
         `;
         leftItem.querySelector('.left-track-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
+        leftItem.addEventListener('click', () => focusNodeById(id));
         leftList.appendChild(leftItem);
       }
     });
@@ -1267,6 +1371,11 @@
         focusedNode = r.id;
         // En mode classement, un clic objet doit l'ajouter au suivi (pas le retirer).
         addTracked(r.id);
+        const sourcePeriod = winPeriods[safeIdx];
+        const sourceGraph = getWinPeriodGD(currentCountry, sourcePeriod);
+        const sourceNode = (sourceGraph.nodes || []).find(n => n.id === r.id);
+        if (sourceNode) renderArticlesPanel(sourceNode);
+        else renderArticlesPanelUnavailable(r.id);
         renderRankedChart(gd, rankedHoverIdx);
         renderRankedLegend(series, rankedHoverIdx);
       });
@@ -1881,8 +1990,7 @@
     if (currentMode === 'ranked') graphIdx = currentIdx;
     else tsIdx = currentIdx;
 
-    // Réinitialiser les états de focus/hover pour éviter que les objets restent illuminés
-    focusedNode = null;
+    // Préserver le focus autant que possible; loadPeriod tranchera si l'objet n'existe plus.
     hoveredNode = null;
 
     currentMode = mode;
@@ -1922,6 +2030,7 @@
       document.getElementById('evo-tooltip').style.display = 'none';
       applyTimelineNeutral();
       renderTrackedList(); renderEvolutionChart();
+      syncArticlesPanel();
     } else {
       evoView.classList.add('visible');
       if (top10El) top10El.style.display = '';
@@ -2031,8 +2140,8 @@
           currentIdx = exactIdx;
           updatePeriodSummary(currentCountry, currentIdx);
         }
-        if (node) renderArticlesPanel(node, clickedPeriod?.label || blockRangeLabelFromPeriod(clickedPeriod));
-        else renderArticlesPanel(null);
+        if (node) renderArticlesPanel(node);
+        else renderArticlesPanelUnavailable(hitId);
         renderRankedChart(gd, rankedHoverIdx);
       }
       return;
@@ -2064,7 +2173,7 @@
     currentIdx = hitPi !== null ? hitPi : idx;
     slider.value = currentIdx;
     loadPeriod(currentCountry, currentIdx);
-    if (hitNode) renderArticlesPanel(hitNode, periods[currentIdx]?.label || '');
+    if (hitNode) renderArticlesPanel(hitNode);
   });
 
   // Evolution search
