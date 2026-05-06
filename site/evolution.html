@@ -69,11 +69,12 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 0;
+      margin-bottom: 10px;
       text-align: center;
     }
     #period-current {
+      display: none;
       font-size: 13px;
       letter-spacing: 1.2px;
       color: #d8e8ff;
@@ -914,6 +915,36 @@
     return `${String(start).padStart(2, '0')} h-${String(end).padStart(2, '0')} h`;
   }
 
+  function periodHeaderLabelFr(period) {
+    if (!period) return '—';
+
+    const dateStr = periodDisplayDate(period);
+    const [y, m, d] = String(dateStr).split('-').map(Number);
+    if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) {
+      return String(period.label || '—');
+    }
+
+    const dt = new Date(`${dateStr}T00:00:00`);
+    const wd = FR_WEEKDAYS_SHORT[dt.getDay()] || '';
+    const day = String(d).padStart(2, '0');
+    const monthLong = FR_MONTHS[Math.max(0, m - 1)] || '';
+    const monthShort = FR_MONTHS_SHORT[Math.max(0, m - 1)] || '';
+
+    if (rankedGranularity === 'day') {
+      return `${wd} ${day} ${monthLong} · ${blockRangeLabelFromPeriod(period)} HE`;
+    }
+    if (rankedGranularity === 'week') {
+      return `${wd} ${day} ${monthLong}`;
+    }
+    if (rankedGranularity === 'month') {
+      return `${day} ${monthLong}`;
+    }
+    if (rankedGranularity === 'year') {
+      return `${monthShort} ${y}`;
+    }
+    return String(period.label || '—');
+  }
+
   function updatePeriodSummary(country, idx) {
     const currentEl = document.getElementById('period-current');
     const statsEl = document.getElementById('period-stats');
@@ -929,18 +960,23 @@
     const peak = gd.nodes.reduce((max, node) => Math.max(max, Number(node.size) || 0), 0);
     const stats = currentMode === 'tracking'
       ? [
-          `${gd.nodes.length} objets`,
-          `${trackedObjects.size} suivi${trackedObjects.size > 1 ? 's' : ''}`,
-          `pic ${peak.toFixed(1)}`
+          { label: `${gd.nodes.length} objets` },
+          { label: `${trackedObjects.size} suivi${trackedObjects.size > 1 ? 's' : ''}` },
+          { label: `pic ${peak.toFixed(1)}` }
         ]
       : [
-          `${gd.nodes.length} objets`,
-          `${gd.links.length} liens`,
-          `convergence ${periodConvergenceScore(country, period.key).toFixed(1)}`
+          { label: `${gd.nodes.length} objets` },
+          { label: `${gd.links.length} liens` },
+          {
+            label: `convergence ${periodConvergenceScore(country, period.key).toFixed(1)}`,
+            title: 'Indice synthétique de cooccurrence: plus élevé = sujet plus concentré/convergent.'
+          }
         ];
 
-    currentEl.textContent = period.label || '—';
-    statsEl.innerHTML = stats.map(label => `<span class="period-chip">${escapeHtml(label)}</span>`).join('');
+    currentEl.textContent = periodHeaderLabelFr(period);
+    statsEl.innerHTML = stats
+      .map(s => `<span class="period-chip"${s.title ? ` title="${escapeHtml(s.title)}"` : ''}>${escapeHtml(s.label)}</span>`)
+      .join('');
   }
 
   function loadPeriod(country, idx) {
@@ -1375,7 +1411,7 @@
       const dt = new Date(`${dateStr}T00:00:00`);
       if (rankedGranularity === 'week') {
         const wd = FR_WEEKDAYS_SHORT[dt.getDay()] || '';
-        return { major: `${wd} ${String(d).padStart(2, '0')}`, minor: FR_MONTHS_SHORT[Math.max(0, m - 1)] || '' };
+        return { major: `${wd} ${String(d).padStart(2, '0')}`, minor: '' };
       }
       if (rankedGranularity === 'month') {
         return { major: `${String(d).padStart(2, '0')} ${FR_MONTHS_SHORT[Math.max(0, m - 1)] || ''}`.trim(), minor: '' };
@@ -1436,10 +1472,38 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
     }
 
-    // Axes + X ticks - Improved visibility
-    const xStep = rankedGranularity === 'day' ? Math.max(1, Math.floor(n / 16)) : Math.max(1, Math.floor(n / 8));
-    winPeriods.forEach((p, i) => {
-      if (i % xStep !== 0 && i !== n - 1) return;
+    // Axes + X ticks - densite adaptee pour eviter les repetitions inutiles.
+    const tickIndices = (() => {
+      if (rankedGranularity === 'day') {
+        const xStep = Math.max(1, Math.floor(n / 16));
+        const idxs = [];
+        for (let i = 0; i < n; i++) {
+          if (i % xStep === 0 || i === n - 1) idxs.push(i);
+        }
+        return idxs;
+      }
+
+      const candidateIdxs = [];
+      let prevBucket = null;
+      for (let i = 0; i < n; i++) {
+        const d = periodDisplayDate(winPeriods[i]);
+        const bucket = rankedGranularity === 'year' ? d.slice(0, 7) : d;
+        if (bucket !== prevBucket) {
+          candidateIdxs.push(i);
+          prevBucket = bucket;
+        }
+      }
+      if (candidateIdxs[candidateIdxs.length - 1] !== n - 1) candidateIdxs.push(n - 1);
+
+      const maxTicks = rankedGranularity === 'year' ? 12 : 10;
+      const keepEvery = Math.max(1, Math.ceil(candidateIdxs.length / maxTicks));
+      const selected = candidateIdxs.filter((_, idx) => idx % keepEvery === 0);
+      if (selected[selected.length - 1] !== n - 1) selected.push(n - 1);
+      return selected;
+    })();
+
+    tickIndices.forEach(i => {
+      const p = winPeriods[i];
       const x = xOf(i);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)';
       ctx.lineWidth = 1;
