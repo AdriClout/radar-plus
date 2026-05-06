@@ -61,57 +61,11 @@
     #tooltip .m { color: #408060; }
     #controls {
       position: absolute; bottom: calc(var(--ticker-height, 44px) + 4px); left: 0; right: 0;
-      padding: 16px 24px 20px;
+      padding: 10px 24px 16px;
       background: linear-gradient(to top, rgba(0,0,15,0.96) 70%, transparent);
       z-index: 10;
     }
-    #period-label {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 0;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-    #period-current {
-      display: none;
-      font-size: 13px;
-      letter-spacing: 1.2px;
-      color: #d8e8ff;
-      text-transform: uppercase;
-      text-shadow: 0 0 12px rgba(78, 125, 245, 0.22);
-    }
-    #period-stats {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      max-width: min(940px, calc(100vw - 120px));
-    }
-    .period-chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 24px;
-      padding: 4px 10px;
-      border: 1px solid rgba(90, 130, 250, 0.18);
-      border-radius: 999px;
-      background: rgba(8, 18, 48, 0.42);
-      color: rgba(154, 186, 235, 0.84);
-      font-size: 10px;
-      letter-spacing: 0.8px;
-      white-space: nowrap;
-      backdrop-filter: blur(4px);
-    }
     #slider-row { display: flex; align-items: center; gap: 14px; }
-    #timeline-context {
-      font-size: 10px;
-      letter-spacing: 0.9px;
-      color: rgba(130, 165, 220, 0.72);
-      text-align: center;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-    }
     #play-btn {
       background: none; border: 1px solid rgba(100,150,255,0.35); border-radius: 3px;
       color: #6080a0; font-size: 14px; padding: 4px 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
@@ -493,11 +447,6 @@
   <div id="object-panel"></div>
   <div id="tooltip"></div>
   <div id="controls">
-    <div id="period-label">
-      <div id="period-current">—</div>
-      <div id="period-stats"></div>
-    </div>
-    <div id="timeline-context"></div>
     <div id="slider-row">
       <button id="play-btn" aria-label="Lecture automatique" aria-pressed="false">▶</button>
       <input type="range" id="timeline" min="0" value="0" step="1" />
@@ -950,69 +899,9 @@
     return `${String(start).padStart(2, '0')} h-${String(end).padStart(2, '0')} h`;
   }
 
-  function periodHeaderLabelFr(period) {
-    if (!period) return '—';
-
-    const dateStr = periodDisplayDate(period);
-    const [y, m, d] = String(dateStr).split('-').map(Number);
-    if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) {
-      return String(period.label || '—');
-    }
-
-    const dt = new Date(`${dateStr}T00:00:00`);
-    const wd = FR_WEEKDAYS_SHORT[dt.getDay()] || '';
-    const day = String(d).padStart(2, '0');
-    const monthLong = FR_MONTHS[Math.max(0, m - 1)] || '';
-    const monthShort = FR_MONTHS_SHORT[Math.max(0, m - 1)] || '';
-
-    if (rankedGranularity === 'day') {
-      return `${wd} ${day} ${monthLong} · ${blockRangeLabelFromPeriod(period)} HE`;
-    }
-    if (rankedGranularity === 'week') {
-      return `${wd} ${day} ${monthLong}`;
-    }
-    if (rankedGranularity === 'month') {
-      return `${day} ${monthLong}`;
-    }
-    if (rankedGranularity === 'year') {
-      return `${monthShort} ${y}`;
-    }
-    return String(period.label || '—');
-  }
-
   function updatePeriodSummary(country, idx) {
-    const currentEl = document.getElementById('period-current');
-    const statsEl = document.getElementById('period-stats');
-    const timelineContextEl = document.getElementById('timeline-context');
-    const period = periods[idx];
-    if (!currentEl || !statsEl) return;
-    if (!period) {
-      currentEl.textContent = '—';
-      statsEl.innerHTML = '';
-      if (timelineContextEl) timelineContextEl.textContent = '—';
-      return;
-    }
-
-    const gd = getGD(country, period.key);
-    const peak = gd.nodes.reduce((max, node) => Math.max(max, Number(node.size) || 0), 0);
-    let timelineContext = '';
-    if (currentMode === 'ranked') {
-      const slot = rankedSlots[rankedSlotIdx];
-      const slotLabel = slot?.label || periodHeaderLabelFr(period);
-      const granText = {
-        day: 'jour',
-        week: 'semaine',
-        month: 'mois',
-        year: 'annee'
-      }[rankedGranularity] || rankedGranularity;
-      timelineContext = `Navigation ${granText}: ${slotLabel}`;
-    } else {
-      timelineContext = `Navigation suivi: ${periodHeaderLabelFr(period)}`;
-    }
-
-    currentEl.textContent = periodHeaderLabelFr(period);
-    statsEl.innerHTML = '';
-    if (timelineContextEl) timelineContextEl.textContent = timelineContext;
+    // UI de synthese retiree: fonction gardee pour compatibilite des appels existants.
+    return;
   }
 
   function loadPeriod(country, idx) {
@@ -1459,7 +1348,8 @@
 
   function periodTickParts(period) {
     if (rankedGranularity === 'day') {
-      return { major: blockRangeLabelFromPeriod(period), minor: '' };
+      const label = blockRangeLabelFromPeriod(period).replace(' h-', '-').replace(' h', '');
+      return { major: label, minor: '' };
     }
 
     const dateStr = periodDisplayDate(period);
@@ -1529,10 +1419,10 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
     }
 
-    // Axes + X ticks - densite adaptee pour eviter les repetitions inutiles.
+    // Axes + X ticks - labels courts, lisibles et adaptes a chaque filtre.
     const tickIndices = (() => {
       if (rankedGranularity === 'day') {
-        const xStep = Math.max(1, Math.floor(n / 16));
+        const xStep = Math.max(1, Math.floor(n / 6));
         const idxs = [];
         for (let i = 0; i < n; i++) {
           if (i % xStep === 0 || i === n - 1) idxs.push(i);
@@ -1552,7 +1442,7 @@
       }
       if (candidateIdxs[candidateIdxs.length - 1] !== n - 1) candidateIdxs.push(n - 1);
 
-      const maxTicks = rankedGranularity === 'year' ? 12 : 10;
+      const maxTicks = rankedGranularity === 'year' ? 10 : 8;
       const keepEvery = Math.max(1, Math.ceil(candidateIdxs.length / maxTicks));
       const selected = candidateIdxs.filter((_, idx) => idx % keepEvery === 0);
       if (selected[selected.length - 1] !== n - 1) selected.push(n - 1);
@@ -1570,30 +1460,11 @@
       ctx.stroke();
       
       const parts = periodTickParts(p);
-      ctx.font = 'bold 13px "Space Mono", monospace';
+      ctx.font = '11px "Space Mono", monospace';
       ctx.textAlign = 'center';
-      const axisLabelY = PAD.top + chartH + 8;
-      
-      // Background pour les dates
-      const metrics = ctx.measureText(parts.major);
-      const textWidth = metrics.width + 6;
-      const textHeight = 16;
-      ctx.fillStyle = 'rgba(8, 18, 48, 0.65)';
-      ctx.fillRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
-      ctx.strokeStyle = 'rgba(100, 150, 255, 0.25)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
-      
-      // Major text - brightness increased
-      ctx.fillStyle = 'rgba(150, 190, 255, 0.92)';
-      ctx.fillText(parts.major, x, axisLabelY + 14);
-      
-      // Minor text if exists
-      if (parts.minor) {
-        ctx.font = '11px "Space Mono", monospace';
-        ctx.fillStyle = 'rgba(120, 160, 220, 0.75)';
-        ctx.fillText(parts.minor, x, axisLabelY + 28);
-      }
+      const axisLabelY = PAD.top + chartH + 18;
+      ctx.fillStyle = 'rgba(138, 176, 235, 0.85)';
+      ctx.fillText(parts.major, x, axisLabelY);
     });
 
     ctx.strokeStyle = 'rgba(75,115,195,0.22)';
@@ -1791,41 +1662,34 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
     }
 
-    // X ticks - Improved visibility
-    const xStep = Math.max(1, Math.floor(n / 8));
-    periods.forEach((p, i) => {
-      if (i % xStep !== 0 && i !== n - 1) return;
+    // X ticks - echantillonnage propre pour le mode suivi.
+    const tickIndices = (() => {
+      const target = 8;
+      const step = Math.max(1, Math.ceil(n / target));
+      const out = [];
+      for (let i = 0; i < n; i += step) out.push(i);
+      if (out[out.length - 1] !== n - 1) out.push(n - 1);
+      return out;
+    })();
+
+    tickIndices.forEach(i => {
+      const p = periods[i];
       const x = xOf(i);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, PAD.top + chartH); ctx.lineTo(x, PAD.top + chartH + 5); ctx.stroke();
-      
-      const date = p.label.length > 10 ? p.label.slice(0, 10) : p.label;
-      const rest = p.label.slice(10).trim();
-      
-      ctx.font = 'bold 13px "Space Mono", monospace';
-      ctx.textAlign = 'center';
-      
-      // Background pour la date principale
-      const axisLabelY = PAD.top + chartH + 8;
-      const metrics = ctx.measureText(date);
-      const textWidth = metrics.width + 6;
-      const textHeight = 16;
-      ctx.fillStyle = 'rgba(8, 18, 48, 0.65)';
-      ctx.fillRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
-      ctx.strokeStyle = 'rgba(100, 150, 255, 0.25)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
-      
-      // Date principale - brightness increased
-      ctx.fillStyle = 'rgba(150, 190, 255, 0.92)';
-      ctx.fillText(date, x, axisLabelY + 14);
-      
-      // Rest of label if exists
-      if (rest) {
-        ctx.font = '11px "Space Mono", monospace';
-        ctx.fillStyle = 'rgba(120, 160, 220, 0.75)';
-        ctx.fillText(rest, x, axisLabelY + 28);
+
+      const date = periodDisplayDate(p);
+      const [y, m, d] = String(date).split('-').map(Number);
+      let label = String(p.label || '').slice(0, 10);
+      if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)) {
+        label = `${String(d).padStart(2, '0')} ${FR_MONTHS_SHORT[Math.max(0, m - 1)] || ''}`.trim();
       }
+
+      ctx.font = '11px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      const axisLabelY = PAD.top + chartH + 18;
+      ctx.fillStyle = 'rgba(138, 176, 235, 0.85)';
+      ctx.fillText(label, x, axisLabelY);
     });
 
     // Axes
