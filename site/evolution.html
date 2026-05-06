@@ -1229,8 +1229,9 @@
         item.classList.remove('hovered');
         renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
       });
-      item.addEventListener('click', e => {
+      item.addEventListener('pointerdown', e => {
         e.stopPropagation();
+        e.preventDefault();
         const gd = getGD(currentCountry, periods[currentIdx]?.key);
         focusedNode = r.id;
         // En mode classement, un clic objet doit l'ajouter au suivi (pas le retirer).
