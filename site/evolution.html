@@ -1430,17 +1430,25 @@
         return idxs;
       }
 
+      const bucketFor = (idx) => {
+        const d = periodDisplayDate(winPeriods[idx]);
+        return rankedGranularity === 'year' ? d.slice(0, 7) : d;
+      };
+
       const candidateIdxs = [];
       let prevBucket = null;
       for (let i = 0; i < n; i++) {
-        const d = periodDisplayDate(winPeriods[i]);
-        const bucket = rankedGranularity === 'year' ? d.slice(0, 7) : d;
+        const bucket = bucketFor(i);
         if (bucket !== prevBucket) {
           candidateIdxs.push(i);
           prevBucket = bucket;
         }
       }
-      if (candidateIdxs[candidateIdxs.length - 1] !== n - 1) candidateIdxs.push(n - 1);
+      if (candidateIdxs[candidateIdxs.length - 1] !== n - 1) {
+        const lastCandidateBucket = bucketFor(candidateIdxs[candidateIdxs.length - 1]);
+        const lastBucket = bucketFor(n - 1);
+        if (lastCandidateBucket !== lastBucket) candidateIdxs.push(n - 1);
+      }
 
       const maxTicks = rankedGranularity === 'year' ? 10 : 8;
       const keepEvery = Math.max(1, Math.ceil(candidateIdxs.length / maxTicks));
@@ -1495,7 +1503,10 @@
       ctx.beginPath();
       let first = true;
       s.data.forEach((v, i) => {
-        if (v === null) return;
+        if (v === null) {
+          first = true;
+          return;
+        }
         const x = xOf(i);
         const y = yOf(v);
         if (first) { ctx.moveTo(x, y); first = false; }
