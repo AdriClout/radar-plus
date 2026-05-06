@@ -520,6 +520,26 @@
     return { nodes, links: filterTopLinks(links, MAX_LINKS_NODE) };
   }
 
+  // Retourne le GD d'une winPeriod : agrège les blocs 4h pour les journées (isDay), sinon délègue à getGD.
+  function getWinPeriodGD(country, winPeriod) {
+    if (!winPeriod) return { nodes: [], links: [] };
+    if (winPeriod.isDay && Array.isArray(winPeriod.periodKeys) && winPeriod.periodKeys.length) {
+      const sizeMap = new Map();
+      for (const pk of winPeriod.periodKeys) {
+        const g = getGD(country, pk);
+        for (const n of (g.nodes || [])) {
+          sizeMap.set(n.id, (sizeMap.get(n.id) || 0) + (Number(n.size) || 0));
+        }
+      }
+      const nodes = [...sizeMap.entries()]
+        .map(([id, size]) => ({ id, size }))
+        .sort((a, b) => b.size - a.size);
+      nodes.forEach((n, i) => { n._rank = i; });
+      return { nodes, links: [] };
+    }
+    return getGD(country, winPeriod.key);
+  }
+
   function periodConvergenceScore(country, key) {
     const g = graphs[country]?.[key];
     if (!g || !Array.isArray(g.nodes) || !g.nodes.length) return 0;
@@ -709,6 +729,7 @@
   }
 
   function periodDisplayDate(period) {
+    if (period?.isDay && period.dateKey) return period.dateKey;
     const label = String(period?.label || '');
     const m = label.match(/^([A-Za-z]{3})\s+(\d{1,2})/);
     if (m) {
@@ -860,7 +881,40 @@
         };
       });
     }
-    return slot.periods;
+
+    // Semaine / Mois / Année : agréger par JOUR (pas par bloc 4h)
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
+
+    const dayMap = new Map();
+    for (const p of slot.periods) {
+      const dk = periodKeyToDate(p.key);
+      if (!dayMap.has(dk)) dayMap.set(dk, []);
+      dayMap.get(dk).push(p);
+    }
+
+    const dayPeriods = [];
+    for (const [dk, dPeriods] of dayMap.entries()) {
+      const isToday = dk === todayKey;
+      let eligiblePeriods = dPeriods;
+      if (isToday) {
+        eligiblePeriods = dPeriods.filter(p => {
+          const localStart = localBlockStartFromPeriodKey(p.key);
+          return Number.isFinite(localStart) && localStart <= currentBlockStart;
+        });
+      }
+      if (!eligiblePeriods.length) continue; // journée future, pas encore de blocs complétés
+      dayPeriods.push({
+        key: `__day__${dk}`,
+        dateKey: dk,
+        label: toDayLabel(dk),
+        periodKeys: eligiblePeriods.map(p => p.key),
+        isDay: true,
+        isFuture: false
+      });
+    }
+    return dayPeriods;
   }
 
   function getRankedTopN() {
@@ -880,7 +934,7 @@
       const head = slot?.label || (RANKED_GRANULARITIES[rankedGranularity] || RANKED_GRANULARITIES.day).emptyLabel;
       const completed = wp.filter(p => !p.isFuture).length;
       if (rankedGranularity === 'day') granEl.textContent = `${head} · ${completed} blocs complétés`;
-      else granEl.textContent = `${head} · ${wp.length} blocs`;
+      else granEl.textContent = `${head} · ${wp.length} jours`;
     }
   }
 
@@ -1107,13 +1161,16 @@
     const winPeriods = getRankedWindowPeriods();
     const isHoverBlock = hoverIdx !== null && hoverIdx >= 0;
     const limit = 10;
-    const idx = (hoverIdx !== null && hoverIdx >= 0) ? hoverIdx : winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
+    const currentPKey = periods[currentIdx]?.key;
+    const idx = (hoverIdx !== null && hoverIdx >= 0) ? hoverIdx
+      : winPeriods.findIndex(p => p.isDay ? (p.periodKeys?.includes(currentPKey)) : p.key === currentPKey);
     const safeIdx = idx >= 0 ? idx : winPeriods.length - 1;
     const period = winPeriods[safeIdx];
     const slotLabel = rankedSlots[rankedSlotIdx]?.label || '';
     if (periodEl) {
       if (isHoverBlock) {
         if (rankedGranularity === 'day') periodEl.textContent = `${blockRangeLabelFromPeriod(period)} · Bloc survolé`;
+        else if (period?.isDay) periodEl.textContent = `${toDayLabel(period.dateKey)} · Journée survolée`;
         else periodEl.textContent = `${period?.label || ''} · Bloc survolé`;
       } else {
         periodEl.textContent = `${slotLabel} · Cumul fenêtre`;
@@ -1123,9 +1180,9 @@
     let rows = [];
     if (isHoverBlock) {
       const hoverPeriod = winPeriods[safeIdx];
-      const gNow = getGD(currentCountry, hoverPeriod?.key);
+      const gNow = getWinPeriodGD(currentCountry, hoverPeriod);
       const prevPeriod = safeIdx > 0 ? winPeriods[safeIdx - 1] : null;
-      const gPrev = prevPeriod ? getGD(currentCountry, prevPeriod.key) : { nodes: [] };
+      const gPrev = prevPeriod ? getWinPeriodGD(currentCountry, prevPeriod) : { nodes: [] };
       const prevMap = new Map((gPrev.nodes || []).map(n => [n.id, Number(n.size) || 0]));
 
       rows = (gNow.nodes || [])
@@ -1261,13 +1318,13 @@
     const cacheKey = getRankedSeriesCacheKey(limit, wp);
     if (rankedSeriesCache.has(cacheKey)) return rankedSeriesCache.get(cacheKey);
 
-    // Union des Top 10 locaux de chaque bloc visible.
+    // Union des Top 10 locaux de chaque journée/bloc visible.
     const unionIds = new Set();
     const scoreMap = new Map();
     const hitMap = new Map();
     for (const p of wp) {
-      const topIds = topIdsForPeriod(p.key, 10);
-      const g = getGD(currentCountry, p.key);
+      const g = getWinPeriodGD(currentCountry, p);
+      const topIds = (g.nodes || []).slice(0, 10).map(n => n.id);
       const nodeById = new Map((g.nodes || []).map(nd => [nd.id, nd]));
       for (const id of topIds) {
         unionIds.add(id);
@@ -1291,7 +1348,7 @@
       color: getSeriesColor(i),
       maxVal: 0,
       data: wp.map(p => {
-        const g = getGD(currentCountry, p.key);
+        const g = getWinPeriodGD(currentCountry, p);
         return g.nodes.find(nd => nd.id === id)?.size ?? null;
       })
     }));
@@ -1497,7 +1554,8 @@
     ctx.stroke();
 
     // Index de la période courante dans winPeriods (avant le tracé des dots)
-    const winCurrentIdx = winPeriods.findIndex(p => p.key === periods[currentIdx]?.key);
+    const currentPKey = periods[currentIdx]?.key;
+    const winCurrentIdx = winPeriods.findIndex(p => p.isDay ? (p.periodKeys?.includes(currentPKey)) : p.key === currentPKey);
 
     // Lignes des objets Top 10
     const hasVisibleFocused = focusedNode !== null && series.some(s => s.id === focusedNode);
