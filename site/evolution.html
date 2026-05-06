@@ -104,6 +104,14 @@
       backdrop-filter: blur(4px);
     }
     #slider-row { display: flex; align-items: center; gap: 14px; }
+    #timeline-context {
+      font-size: 10px;
+      letter-spacing: 0.9px;
+      color: rgba(130, 165, 220, 0.72);
+      text-align: center;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
     #play-btn {
       background: none; border: 1px solid rgba(100,150,255,0.35); border-radius: 3px;
       color: #6080a0; font-size: 14px; padding: 4px 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
@@ -489,6 +497,7 @@
       <div id="period-current">—</div>
       <div id="period-stats"></div>
     </div>
+    <div id="timeline-context"></div>
     <div id="slider-row">
       <button id="play-btn" aria-label="Lecture automatique" aria-pressed="false">▶</button>
       <input type="range" id="timeline" min="0" value="0" step="1" />
@@ -974,35 +983,36 @@
   function updatePeriodSummary(country, idx) {
     const currentEl = document.getElementById('period-current');
     const statsEl = document.getElementById('period-stats');
+    const timelineContextEl = document.getElementById('timeline-context');
     const period = periods[idx];
     if (!currentEl || !statsEl) return;
     if (!period) {
       currentEl.textContent = '—';
       statsEl.innerHTML = '';
+      if (timelineContextEl) timelineContextEl.textContent = '—';
       return;
     }
 
     const gd = getGD(country, period.key);
     const peak = gd.nodes.reduce((max, node) => Math.max(max, Number(node.size) || 0), 0);
-    const stats = currentMode === 'tracking'
-      ? [
-          { label: `${gd.nodes.length} objets` },
-          { label: `${trackedObjects.size} suivi${trackedObjects.size > 1 ? 's' : ''}` },
-          { label: `pic ${peak.toFixed(1)}` }
-        ]
-      : [
-          { label: `${gd.nodes.length} objets` },
-          { label: `${gd.links.length} liens` },
-          {
-            label: `convergence ${periodConvergenceScore(country, period.key).toFixed(1)}`,
-            title: 'Indice synthétique de cooccurrence: plus élevé = sujet plus concentré/convergent.'
-          }
-        ];
+    let timelineContext = '';
+    if (currentMode === 'ranked') {
+      const slot = rankedSlots[rankedSlotIdx];
+      const slotLabel = slot?.label || periodHeaderLabelFr(period);
+      const granText = {
+        day: 'jour',
+        week: 'semaine',
+        month: 'mois',
+        year: 'annee'
+      }[rankedGranularity] || rankedGranularity;
+      timelineContext = `Navigation ${granText}: ${slotLabel}`;
+    } else {
+      timelineContext = `Navigation suivi: ${periodHeaderLabelFr(period)}`;
+    }
 
     currentEl.textContent = periodHeaderLabelFr(period);
-    statsEl.innerHTML = stats
-      .map(s => `<span class="period-chip"${s.title ? ` title="${escapeHtml(s.title)}"` : ''}>${escapeHtml(s.label)}</span>`)
-      .join('');
+    statsEl.innerHTML = '';
+    if (timelineContextEl) timelineContextEl.textContent = timelineContext;
   }
 
   function loadPeriod(country, idx) {
@@ -1562,26 +1572,27 @@
       const parts = periodTickParts(p);
       ctx.font = 'bold 13px "Space Mono", monospace';
       ctx.textAlign = 'center';
+      const axisLabelY = PAD.top + chartH + 8;
       
       // Background pour les dates
       const metrics = ctx.measureText(parts.major);
       const textWidth = metrics.width + 6;
       const textHeight = 16;
       ctx.fillStyle = 'rgba(8, 18, 48, 0.65)';
-      ctx.fillRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      ctx.fillRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
       ctx.strokeStyle = 'rgba(100, 150, 255, 0.25)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      ctx.strokeRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
       
       // Major text - brightness increased
       ctx.fillStyle = 'rgba(150, 190, 255, 0.92)';
-      ctx.fillText(parts.major, x, H - PAD.bottom + 32);
+      ctx.fillText(parts.major, x, axisLabelY + 14);
       
       // Minor text if exists
       if (parts.minor) {
         ctx.font = '11px "Space Mono", monospace';
         ctx.fillStyle = 'rgba(120, 160, 220, 0.75)';
-        ctx.fillText(parts.minor, x, H - PAD.bottom + 46);
+        ctx.fillText(parts.minor, x, axisLabelY + 28);
       }
     });
 
@@ -1795,24 +1806,25 @@
       ctx.textAlign = 'center';
       
       // Background pour la date principale
+      const axisLabelY = PAD.top + chartH + 8;
       const metrics = ctx.measureText(date);
       const textWidth = metrics.width + 6;
       const textHeight = 16;
       ctx.fillStyle = 'rgba(8, 18, 48, 0.65)';
-      ctx.fillRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      ctx.fillRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
       ctx.strokeStyle = 'rgba(100, 150, 255, 0.25)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(x - textWidth / 2, H - PAD.bottom + 18, textWidth, textHeight);
+      ctx.strokeRect(x - textWidth / 2, axisLabelY, textWidth, textHeight);
       
       // Date principale - brightness increased
       ctx.fillStyle = 'rgba(150, 190, 255, 0.92)';
-      ctx.fillText(date, x, H - PAD.bottom + 32);
+      ctx.fillText(date, x, axisLabelY + 14);
       
       // Rest of label if exists
       if (rest) {
         ctx.font = '11px "Space Mono", monospace';
         ctx.fillStyle = 'rgba(120, 160, 220, 0.75)';
-        ctx.fillText(rest, x, H - PAD.bottom + 46);
+        ctx.fillText(rest, x, axisLabelY + 28);
       }
     });
 
@@ -1999,6 +2011,7 @@
     } else {
       syncRankedNavigationState(graphData.meta.periods);
       applyTimelineHeat(currentCountry);
+      updatePeriodSummary(currentCountry, currentIdx);
       const gd = getGD(currentCountry, periods[currentIdx]?.key);
       renderRankedChart(gd, null);
     }
