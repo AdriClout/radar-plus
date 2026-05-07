@@ -2538,15 +2538,14 @@
       slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
     } else {
+      // Reset propre au retour en HOT 10
+      trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
+      focusedNode = null;
+      renderArticlesPanel(null);
       graphs  = graphData.graphs;
       periods = graphData.meta.periods;
       currentIdx = Math.min(graphIdx, periods.length - 1);
       syncRankedNavigationState(periods);
-      
-      // Si y'a des objets tracké, focus le premier AVANT loadPeriod pour que le dimming fonctionne
-      if (trackedObjects.size > 0) {
-        focusedNode = Array.from(trackedObjects)[0];
-      }
     }
 
     const evoView = document.getElementById('evolution-view');
