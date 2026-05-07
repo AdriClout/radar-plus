@@ -1660,10 +1660,11 @@
       ...Array.from(trackedObjects)
     ].filter(Boolean));
 
-    // Quand on survole un bloc, inclure son top 10 dans le chart pour que
-    // la légende et les courbes affichent les mêmes objets
-    if (hoverPeriod && !hoverPeriod.isFuture && !hoverPeriod.isSynthetic) {
-      const g = getWinPeriodGD(currentCountry, hoverPeriod);
+    // Inclure en permanence le top 10 de CHAQUE bloc visible (pas juste le cumulé)
+    // → toutes les courbes/dots des objets dominants de chaque bloc apparaissent
+    for (const p of winPeriods) {
+      if (p.isFuture || p.isSynthetic) continue;
+      const g = getWinPeriodGD(currentCountry, p);
       (g.nodes || []).slice(0, 10).forEach(n => requiredIds.add(n.id));
     }
 
