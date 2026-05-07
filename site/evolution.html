@@ -966,12 +966,12 @@
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
       const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
-      // 00-04 is replaced by the veille reference point; only show 04–24 blocks
-      const starts = [4, 8, 12, 16, 20];
+      // All 6 blocks of the day including Minuit-4h (UTC 04-08 = local 00-04)
+      const starts = [0, 4, 8, 12, 16, 20];
       const byStart = new Map();
       slot.periods.forEach(p => {
         const localStart = localBlockStartFromPeriodKey(p.key);
-        if (!Number.isFinite(localStart) || localStart === 0) return; // skip 00-04
+        if (!Number.isFinite(localStart)) return;
         const isFuture = isToday ? localStart > currentBlockStart : false;
         byStart.set(localStart, { ...p, blockStart: localStart, isFuture });
       });
@@ -1002,7 +1002,11 @@
         };
       });
 
-      // Prepend veille reference: yesterday's cumulative total as first anchor point
+      // Use Minuit-4h as anchor when real data exists; otherwise fall back to yesterday's total
+      const minuit4hEntry = byStart.get(0);
+      const hasRealMinuit = minuit4hEntry && !minuit4hEntry.isFuture;
+      if (hasRealMinuit) return dayBlocks;
+
       const prevSlot = rankedSlots[rankedSlotIdx - 1];
       const veilleP = prevSlot?.periodKeys?.length
         ? { key: `__veille__${prevSlot.key}`, label: 'Hier (total)', isDay: true, periodKeys: prevSlot.periodKeys, isVeille: true, isFuture: false }
@@ -1387,6 +1391,20 @@
           .map(s => ({ id: s.id, v: s.data[0] }));
         veilleScores.sort((a, b) => b.v - a.v);
         prevRankMap = new Map(veilleScores.map((x, i) => [x.id, i + 1]));
+      } else if (rankedGranularity === 'day' && !hasVeille && rankedSlotIdx > 0) {
+        // Minuit-4h is anchor; aggregate yesterday's slot for rank reference
+        const prevSlot = rankedSlots[rankedSlotIdx - 1];
+        if (prevSlot?.periodKeys?.length) {
+          const sizeMap = new Map();
+          for (const pk of prevSlot.periodKeys) {
+            const g = getGD(currentCountry, pk);
+            for (const n of (g.nodes || [])) {
+              sizeMap.set(n.id, (sizeMap.get(n.id) || 0) + (Number(n.size) || 0));
+            }
+          }
+          const sorted = [...sizeMap.entries()].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+          prevRankMap = new Map(sorted.map(([id], i) => [id, i + 1]));
+        }
       } else if (rankedGranularity !== 'day' && rankedSlotIdx > 0) {
         const prevSlot = rankedSlots[rankedSlotIdx - 1];
         if (prevSlot?.periodKeys?.length) {
@@ -1738,8 +1756,9 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
+    const hasRealMinuit4h = winPeriods.some(p => !p.isVeille && !p.isSynthetic && !p.isFuture && blockStartFromPeriod(p) === 0);
     const DAY_LABELS = [
-      { h: 0, label: 'Hier', align: 'left' },
+      { h: 0, label: hasRealMinuit4h ? 'Minuit' : 'Hier', align: 'left' },
       { h: 4, label: '4h', align: 'center' },
       { h: 8, label: '8h', align: 'center' },
       { h: 12, label: 'Midi', align: 'center' },
@@ -1755,11 +1774,13 @@
       ctx.fillText(label, x, PAD.top + chartH + 18);
     });
 
-    // Séparateur entre Hier et les blocs du jour
-    const sepX = (xOfHour(0) + xOfHour(4)) / 2;
-    ctx.strokeStyle = 'rgba(80,100,180,0.22)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
-    ctx.beginPath(); ctx.moveTo(sepX, PAD.top); ctx.lineTo(sepX, PAD.top + chartH); ctx.stroke();
-    ctx.setLineDash([]);
+    // Séparateur Hier/Aujourd'hui uniquement quand le point h=0 est une référence veille (pas un vrai bloc Minuit-4h)
+    if (!hasRealMinuit4h) {
+      const sepX = (xOfHour(0) + xOfHour(4)) / 2;
+      ctx.strokeStyle = 'rgba(80,100,180,0.22)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
+      ctx.beginPath(); ctx.moveTo(sepX, PAD.top); ctx.lineTo(sepX, PAD.top + chartH); ctx.stroke();
+      ctx.setLineDash([]);
+    }
 
     // Zone future (après le dernier bloc réel, aujourd'hui seulement)
     if (isToday) {

@@ -14,7 +14,7 @@ from datetime import date, timedelta
 REGION       = "ca-central-1"
 WORKGROUP    = "ellipse-work-group"
 DATABASE     = "gluestackdatamartdbd046f685"
-HISTORY_DAYS = 90
+HISTORY_DAYS = 130  # Covers all of 2026 from January 1st
 
 
 def run_query(athena, sql):

@@ -16,7 +16,7 @@
 # ─── Paramètres ────────────────────────────────────────────────────────────────
 
 GRAPH_DAYS       <- 14   # Fenêtre graph.json (constellation)
-HISTORY_DAYS     <- 90   # Fenêtre timeseries.json (évolution)
+HISTORY_DAYS     <- 130  # Fenêtre timeseries.json (évolution) — couvre tout 2026 depuis le 1er janvier
 TOP_N_OBJECTS    <- 30   # Nœuds max par période × pays
 MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
 
