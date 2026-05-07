@@ -541,12 +541,12 @@
     }
     return;
   }
-  // Mode "Classement évolutif" utilise graphData, mode "Suivi personnalisé" utilise tsData.
-  // On swap les globals à chaque changement de mode (voir setMode).
-  let graphs  = graphData.graphs;
-  let periods = graphData.meta.periods;
-  const countries   = graphData.meta.countries;
-  let graphIdx = graphData.meta.periods.length - 1;
+  // Les deux modes (HOT 10 et Suivi personnalisé) utilisent tsData (130 jours).
+  // graphData (graph.json) ne couvre que 14 jours et n'est plus utilisé pour le chart.
+  let graphs  = tsData.graphs;
+  let periods = tsData.meta.periods;
+  const countries   = tsData.meta.countries;
+  let graphIdx = tsData.meta.periods.length - 1;
   let tsIdx    = tsData.meta.periods.length - 1;
 
   const MAX_LINKS_NODE = 5;
@@ -2663,8 +2663,8 @@
       trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
       focusedNode = null;
       renderArticlesPanel(null);
-      graphs  = graphData.graphs;
-      periods = graphData.meta.periods;
+      graphs  = tsData.graphs;
+      periods = tsData.meta.periods;
       currentIdx = Math.min(graphIdx, periods.length - 1);
       syncRankedNavigationState(periods);
     }
@@ -2709,7 +2709,7 @@
       renderTrackedList();
       renderEvolutionChart();
     } else {
-      syncRankedNavigationState(graphData.meta.periods);
+      syncRankedNavigationState(tsData.meta.periods);
       applyTimelineHeat(currentCountry);
       updatePeriodSummary(currentCountry, currentIdx);
       const gd = getGD(currentCountry, periods[currentIdx]?.key);
@@ -2983,7 +2983,7 @@
       clearRankedSeriesCache();
       applyTimelineHeat(currentCountry);
       if (currentMode === 'ranked') {
-        syncRankedNavigationState(graphData.meta.periods);
+        syncRankedNavigationState(tsData.meta.periods);
       } else {
         const trackingBasePeriods = (tsData?.meta?.periods || []);
         buildRankedSlots(trackingBasePeriods);
