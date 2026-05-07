@@ -1097,7 +1097,7 @@
     if (!label) return;
     if (currentMode === 'ranked') {
       const slot = rankedSlots[rankedSlotIdx];
-      const activeIdx = rankedHoverIdx !== null ? rankedHoverIdx : selectedPeriodIdx;
+      const activeIdx = selectedPeriodIdx !== null ? selectedPeriodIdx : rankedHoverIdx;
       if (activeIdx !== null && activeIdx >= 0) {
         const wp = getRankedWindowPeriods();
         const period = wp[activeIdx];
@@ -1857,9 +1857,9 @@
       }
     }
 
-    // "Période sélectionnée" : hoverIdx > selectedPeriodIdx > null
-    const effectiveHoverIdx = hoverIdx !== null ? hoverIdx : selectedPeriodIdx;
-    const hasPeriodSelection = selectedPeriodIdx !== null && hoverIdx === null;
+    // Sélection persistante : priorité sur le hover pour les stats et le visuel
+    const hasPeriodSelection = selectedPeriodIdx !== null;
+    const effectiveHoverIdx  = hasPeriodSelection ? selectedPeriodIdx : hoverIdx;
 
     // Dimming : objet actif OU sélection de période (sans objet actif)
     const hasVisibleFocused = focusedNode !== null && series.some(s => s.id === focusedNode);
@@ -1943,21 +1943,33 @@
       ctx.fillText('▼', sx, PAD.top - 10);
     }
 
-    // Marqueur de hover (temporaire)
-    if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < n) {
+    // Marqueur de hover
+    if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < n && hoverIdx !== selectedPeriodIdx) {
       const hx = xOf(hoverIdx);
-      ctx.strokeStyle = 'rgba(200,220,255,0.18)';
-      ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
-      ctx.beginPath(); ctx.moveTo(hx, PAD.top); ctx.lineTo(hx, PAD.top + chartH); ctx.stroke();
-      ctx.setLineDash([]);
-      series.forEach(s => {
-        const v = s.data[hoverIdx]; if (v === null) return;
-        ctx.beginPath();
-        ctx.arc(hx, yOf(v), focusedNode === s.id ? 6.2 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = s.color; ctx.shadowColor = s.color; ctx.shadowBlur = 12; ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
-      });
+      if (hasPeriodSelection) {
+        // Période sélectionnée active : hover = lueur de colonne très discrète (suggestion de clic)
+        const colW = n > 1 ? chartW / (n - 1) : chartW;
+        const hg = ctx.createLinearGradient(hx - colW * 0.5, 0, hx + colW * 0.5, 0);
+        hg.addColorStop(0, 'rgba(180,210,255,0)');
+        hg.addColorStop(0.5, 'rgba(180,210,255,0.06)');
+        hg.addColorStop(1, 'rgba(180,210,255,0)');
+        ctx.fillStyle = hg;
+        ctx.fillRect(hx - colW * 0.5, PAD.top, colW, chartH);
+      } else {
+        // Pas de sélection : hover normal avec ligne + dots brillants
+        ctx.strokeStyle = 'rgba(200,220,255,0.18)';
+        ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+        ctx.beginPath(); ctx.moveTo(hx, PAD.top); ctx.lineTo(hx, PAD.top + chartH); ctx.stroke();
+        ctx.setLineDash([]);
+        series.forEach(s => {
+          const v = s.data[hoverIdx]; if (v === null) return;
+          ctx.beginPath();
+          ctx.arc(hx, yOf(v), focusedNode === s.id ? 6.2 : 5, 0, Math.PI * 2);
+          ctx.fillStyle = s.color; ctx.shadowColor = s.color; ctx.shadowBlur = 12; ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+        });
+      }
     }
 
     // Aligner le slider avec les bords du graphe
@@ -2295,7 +2307,7 @@
     rankedShowMore = !rankedShowMore;
     const gd = getGD(currentCountry, periods[currentIdx]?.key);
     const series = getRankedSeries(gd, Infinity);
-    const effectiveIdx = rankedHoverIdx !== null ? rankedHoverIdx : selectedPeriodIdx;
+    const effectiveIdx = selectedPeriodIdx !== null ? selectedPeriodIdx : rankedHoverIdx;
     renderRankedLegend(series, effectiveIdx);
   });
 
