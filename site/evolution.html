@@ -1614,6 +1614,7 @@
 
   function clearRankedSeriesCache() {
     rankedSeriesCache.clear();
+    rankedChartSeriesCache.clear();
   }
 
   function getSeriesColor(i) {
@@ -1643,18 +1644,26 @@
     const cacheKey = getRankedSeriesCacheKey(limit, wp);
     if (rankedSeriesCache.has(cacheKey)) return rankedSeriesCache.get(cacheKey);
 
+    // Pré-compute per-period node maps une seule fois (sinon O(topIds × wp × nodes))
+    const periodInfo = wp.map(p => {
+      if (p.isSynthetic || p.isFuture) return { p, nodes: null, nodeById: null, isReal: false };
+      const g = getWinPeriodGD(currentCountry, p);
+      const nodes = g.nodes || [];
+      const nodeById = new Map(nodes.map(nd => [nd.id, nd]));
+      return { p, nodes, nodeById, isReal: true };
+    });
+
     // Union des Top 10 locaux de chaque journée/bloc visible.
     const unionIds = new Set();
     const scoreMap = new Map();
     const hitMap = new Map();
-    for (const p of wp) {
-      const g = getWinPeriodGD(currentCountry, p);
-      const topIds = (g.nodes || []).slice(0, 10).map(n => n.id);
-      const nodeById = new Map((g.nodes || []).map(nd => [nd.id, nd]));
-      const veilleNorm = p.isVeille ? (Array.isArray(p.periodKeys) ? (p.periodKeys.length || 1) : 6) : 1;
+    for (const info of periodInfo) {
+      if (!info.isReal) continue;
+      const topIds = info.nodes.slice(0, 10).map(n => n.id);
+      const veilleNorm = info.p.isVeille ? (Array.isArray(info.p.periodKeys) ? (info.p.periodKeys.length || 1) : 6) : 1;
       for (const id of topIds) {
         unionIds.add(id);
-        const val = (Number(nodeById.get(id)?.size) || 0) / veilleNorm;
+        const val = (Number(info.nodeById.get(id)?.size) || 0) / veilleNorm;
         scoreMap.set(id, (scoreMap.get(id) || 0) + val);
         hitMap.set(id, (hitMap.get(id) || 0) + 1);
       }
@@ -1669,21 +1678,17 @@
 
     if (Number.isFinite(limit)) topIds = topIds.slice(0, Math.max(0, Math.floor(limit)));
 
-    const series = topIds.map((id, i) => ({
+    const series = topIds.map((id) => ({
       id,
       color: getObjectColor(id),
       maxVal: 0,
-      data: wp.map(p => {
-        // Synthetic/future blocks: no real data → null (skipped in rendering)
-        if (p.isSynthetic || p.isFuture) return null;
-        const g = getWinPeriodGD(currentCountry, p);
-        const node = g.nodes.find(nd => nd.id === id);
-        // Real period without this object → 0 (dot at axis bottom, line connects through)
+      data: periodInfo.map(info => {
+        if (!info.isReal) return null;
+        const node = info.nodeById.get(id);
         if (!node) return 0;
         const size = Number(node.size) || 0;
-        // Veille = somme des blocs d'hier → normaliser en moyenne par bloc pour garder la même échelle
-        if (p.isVeille && size > 0) {
-          const nBlocks = Array.isArray(p.periodKeys) ? (p.periodKeys.length || 1) : 6;
+        if (info.p.isVeille && size > 0) {
+          const nBlocks = Array.isArray(info.p.periodKeys) ? (info.p.periodKeys.length || 1) : 6;
           return size / nBlocks;
         }
         return size;
@@ -1696,9 +1701,17 @@
     return series;
   }
 
+  const rankedChartSeriesCache = new Map();
   function getRankedChartSeries(gd, winPeriods, hoverPeriod = null) {
     const fullSeries = getRankedSeries(gd, Infinity, winPeriods);
     const topSeries = getRankedSeries(gd, getRankedTopN(), winPeriods);
+
+    // Cache du résultat final basé sur l'état "visible" (mêmes wp + mêmes overlays utilisateur)
+    const stableKey = getRankedSeriesCacheKey('chart', winPeriods);
+    const overlayKey = `${focusedNode || ''}|${hoveredNode || ''}|${[...trackedObjects].sort().join(',')}|${hoverPeriod?.key || ''}`;
+    const cacheKey = `${stableKey}|${overlayKey}`;
+    if (rankedChartSeriesCache.has(cacheKey)) return rankedChartSeriesCache.get(cacheKey);
+
     const byId = new Map(fullSeries.map(s => [s.id, s]));
 
     const requiredIds = new Set([
@@ -1707,13 +1720,11 @@
       ...Array.from(trackedObjects)
     ].filter(Boolean));
 
-    // Inclure en permanence le top 10 de CHAQUE bloc visible (pas juste le cumulé)
-    // → toutes les courbes/dots des objets dominants de chaque bloc apparaissent
-    for (const p of winPeriods) {
-      if (p.isFuture || p.isSynthetic) continue;
-      const g = getWinPeriodGD(currentCountry, p);
-      (g.nodes || []).slice(0, 10).forEach(n => requiredIds.add(n.id));
-    }
+    // Inclure en permanence le top 10 de CHAQUE bloc visible (pas juste le cumulé).
+    // fullSeries contient déjà tous les unionIds (top 10 de chaque période), donc on
+    // peut simplement prendre tous les IDs de fullSeries qui n'auraient pas été inclus
+    // dans topSeries (qui slice à getRankedTopN). Évite un nouveau pass sur winPeriods.
+    fullSeries.forEach(s => requiredIds.add(s.id));
 
     const out = [...topSeries];
     requiredIds.forEach(id => {
@@ -1722,6 +1733,7 @@
       if (extra) out.push(extra);
     });
 
+    rankedChartSeriesCache.set(cacheKey, out);
     return out;
   }
 
