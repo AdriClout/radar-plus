@@ -124,73 +124,101 @@
     .rleg-delta.ret-entry { color: rgba(120, 200, 255, 0.88); }
     /* #media-panel supprimé */
     /* styles media-panel supprimés */
+    /* Article panel — slide-in from right (style HOT 20) */
+    #object-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,10,0.6);
+      z-index: 300; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #object-overlay.open { opacity: 1; pointer-events: auto; }
     #object-panel {
-      position: fixed; right: 0; top: 0; bottom: 0;
-      width: 380px; max-width: 92vw;
-      overflow-y: auto; overflow-x: hidden;
-      padding: 64px 20px calc(var(--ticker-height, 44px) + 24px) 20px;
-      border-left: 1px solid rgba(80,120,255,0.35);
-      border-radius: 0;
-      background: rgba(3,6,26,0.96);
-      z-index: 12; display: none;
-      box-shadow: -4px 0 32px rgba(40,70,180,0.18);
+      position: fixed; top: 0; right: -440px; width: min(440px, 92vw);
+      height: 100vh; z-index: 310;
+      background: linear-gradient(175deg, rgba(6,12,38,0.98), rgba(3,6,20,0.99));
+      border-left: 1px solid rgba(80,130,255,0.35);
+      backdrop-filter: blur(20px);
+      transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      overflow-y: auto; padding: 0;
     }
-    #object-panel.visible { display: block; }
+    #object-panel.open { right: 0; }
+    #object-panel-header {
+      position: sticky; top: 0; z-index: 2;
+      background: linear-gradient(180deg, rgba(6,12,38,0.99) 80%, transparent);
+      padding: 24px 24px 16px;
+    }
     #object-panel-close {
-      position: absolute; top: 14px; right: 14px;
-      width: 28px; height: 28px;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid rgba(80,120,255,0.32);
-      border-radius: 4px;
-      background: rgba(8,15,46,0.72);
-      color: rgba(180,210,255,0.85);
-      font-family: 'Space Mono', monospace; font-size: 14px;
-      cursor: pointer; z-index: 2;
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: 1px solid rgba(80,130,255,0.35); border-radius: 4px;
+      color: #cbe0ff; font-size: 18px; width: 32px; height: 32px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
     }
-    #object-panel-close:hover { border-color: rgba(140,180,255,0.8); color: #e3efff; }
-    #object-panel .h { color: #dcecff; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
-    #object-panel .meta { color: #7f9fd8; font-size: 11px; margin-bottom: 10px; }
-    #object-panel .list { display: flex; flex-direction: column; gap: 8px; }
-    #object-panel .it {
-      display: block; text-decoration: none; border: 1px solid rgba(80,120,255,0.24);
-      background: rgba(8,15,46,0.72); border-radius: 4px; padding: 8px 10px;
-      color: #aecdff; font-size: 11px; line-height: 1.4;
+    #object-panel-close:hover { border-color: rgba(140,180,255,0.85); color: #fff; }
+    #object-panel .h {
+      font-family: 'Orbitron', sans-serif; font-size: 16px;
+      color: #e8f0ff; text-transform: capitalize;
+      letter-spacing: 1px; max-width: calc(100% - 50px);
+      margin: 0;
     }
-    #object-panel .it:hover { border-color: rgba(140,180,255,0.72); color: #e3efff; }
-    #object-panel .it.muted {
-      cursor: default;
-      color: rgba(145,172,215,0.78);
-      border-style: dashed;
+    #object-panel .meta {
+      font-size: 11px; color: rgba(140,170,220,0.75); margin-top: 4px;
     }
-    #object-panel .it-media { display: block; color: #4a7aaa; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
-    #object-panel .empty { color: #5872a8; font-size: 11px; }
-    #object-panel .panel-actions { display: flex; gap: 8px; margin-bottom: 10px; }
-    #object-panel .panel-toggle {
-      border: 1px solid rgba(90,130,250,0.32);
-      border-radius: 4px;
-      background: rgba(8,18,48,0.62);
-      color: rgba(166,202,255,0.9);
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      padding: 4px 8px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      cursor: pointer;
+    #object-panel .panel-links {
+      display: flex; gap: 10px; margin-top: 12px;
     }
-    #object-panel .panel-toggle:hover { border-color: rgba(145,182,255,0.72); color: #dcecff; }
-    #object-panel .panel-subtle { color: rgba(115,150,210,0.72); font-size: 10px; margin-bottom: 8px; }
-    #object-panel .panel-link {
-      display: inline-flex;
-      align-items: center;
+    #object-panel .panel-link,
+    #object-panel .panel-link:link,
+    #object-panel .panel-link:visited {
+      display: inline-flex; align-items: center;
+      font-size: 10px; font-family: 'Orbitron', sans-serif; letter-spacing: 1.5px;
+      color: #8ab4f8; text-decoration: none; text-transform: uppercase;
+      background: rgba(80,130,255,0.08);
+      border: 1px solid rgba(80,130,255,0.35); border-radius: 5px;
+      padding: 6px 14px; transition: all 0.2s;
+    }
+    #object-panel .panel-link:hover,
+    #object-panel .panel-link:focus {
+      border-color: rgba(120,170,255,0.8); color: #fff;
+      background: rgba(80,130,255,0.2); outline: none;
+    }
+    #object-panel .panel-track-btn {
+      margin-top: 12px;
       border: 1px solid rgba(95,140,255,0.4);
-      border-radius: 4px;
-      padding: 4px 8px;
-      color: #b9d6ff;
-      font-size: 10px;
-      text-decoration: none;
       background: rgba(10,20,50,0.55);
+      color: #b9d6ff; font-family: 'Space Mono', monospace; font-size: 11px;
+      padding: 6px 12px; border-radius: 4px; cursor: pointer;
     }
-    #object-panel .panel-link:hover { border-color: rgba(145,182,255,0.8); color: #e3efff; }
+    #object-panel .panel-track-btn.tracked { border-color: rgba(120,200,255,0.7); color: #d6ecff; }
+    #object-panel .panel-track-btn:hover { border-color: rgba(140,180,255,0.85); color: #fff; }
+    #object-panel-body { padding: 0 24px 32px; }
+    #object-panel .article-item {
+      display: block; padding: 14px 0;
+      border-bottom: 1px solid rgba(80,130,255,0.1);
+      text-decoration: none; color: #cdddf5;
+      transition: all 0.2s;
+    }
+    #object-panel .article-item:hover { color: #fff; padding-left: 6px; }
+    #object-panel .article-item-media {
+      font-size: 10px; font-weight: 700; color: #8ab4f8;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;
+    }
+    #object-panel .article-item-title { font-size: 13px; line-height: 1.5; }
+    #object-panel .article-section-header {
+      margin: 20px 0 4px;
+      padding: 8px 0 6px;
+      border-top: 1px solid rgba(80,130,255,0.18);
+      font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 2px;
+      color: rgba(140,170,220,0.65); text-transform: uppercase;
+    }
+    #object-panel .article-period-label {
+      margin: 14px 0 0;
+      font-size: 10px; color: rgba(120,160,255,0.55);
+      letter-spacing: 0.5px;
+    }
+    #object-panel .empty {
+      color: rgba(140,170,220,0.65); font-size: 12px;
+      padding: 20px 0; font-style: italic;
+    }
     #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #00000f; z-index: 100; }
     #loading-text { font-size: 11px; letter-spacing: 3px; color: rgba(80,120,255,0.5); text-transform: uppercase; animation: pulse 1.8s ease-in-out infinite; }
     @media (max-width: 1500px) {
@@ -200,10 +228,9 @@
       #left-panel { width: 160px; padding: 12px 10px 10px; }
       #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
       .side-nav { width: 280px; right: -280px; }
-      #object-panel {
-        width: 92vw;
-        padding: 56px 14px calc(var(--ticker-height, 44px) + 16px) 14px;
-      }
+      #object-panel { width: 92vw; right: -92vw; }
+      #object-panel-header { padding: 20px 16px 12px; }
+      #object-panel-body { padding: 0 16px 24px; }
       #controls { bottom: calc(var(--ticker-height, 44px) + 2px); }
       #period-current { font-size: 11px; letter-spacing: 0.9px; }
       #period-stats { max-width: calc(100vw - 36px); gap: 6px; }
@@ -468,6 +495,7 @@
       <div id="left-tracked-list"></div>
     </div>
   </div>
+  <div id="object-overlay"></div>
   <div id="object-panel"></div>
   <div id="tooltip"></div>
   <div id="period-nav-row">
@@ -686,127 +714,146 @@
     const btn = document.getElementById('track-btn-panel');
     if (!btn) return;
     btn.addEventListener('click', () => {
-      const target = document.getElementById('track-btn-panel');
-      if (!target) return;
       if (trackedObjects.has(nodeId)) {
         removeTracked(nodeId);
-        target.textContent = '+ Suivre';
-        target.classList.remove('tracked');
+        btn.textContent = '+ Suivre';
+        btn.classList.remove('tracked');
       } else {
         addTracked(nodeId);
-        target.textContent = '✓ Suivi';
-        target.classList.add('tracked');
+        btn.textContent = '✓ Suivi';
+        btn.classList.add('tracked');
         setMode('tracking');
       }
     });
   }
 
+  function articleItemHtml(art) {
+    const title = escapeHtml(art.title || art.url || 'Article');
+    const safeUrl = String(art.url || '').trim();
+    const media = art.media_id ? `<div class="article-item-media">${escapeHtml(art.media_id)}</div>` : '';
+    if (!safeUrl) return `<div class="article-item">${media}<div class="article-item-title">${title}</div></div>`;
+    return `<a class="article-item" href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">${media}<div class="article-item-title">${title}</div></a>`;
+  }
+
+  function closeObjectPanel() {
+    panelState.nodeId = null;
+    panelState.contextPeriod = null;
+    document.getElementById('object-panel')?.classList.remove('open');
+    document.getElementById('object-overlay')?.classList.remove('open');
+  }
+
+  function renderObjectPanelHeader(nodeId, metaLine) {
+    const links = panelLinksFor(nodeId);
+    const tracked = trackedObjects.has(nodeId);
+    const displayName = nodeId.replace(/(^|\s)\S/g, c => c.toUpperCase());
+    return `
+      <div id="object-panel-header">
+        <button id="object-panel-close" aria-label="Fermer">×</button>
+        <div class="h">${escapeHtml(displayName)}</div>
+        <div class="meta">${escapeHtml(metaLine)}</div>
+        <div class="panel-links">
+          <a class="panel-link" href="${links.statsUrl}" target="_blank" rel="noopener noreferrer">Statistiques ↗</a>
+          <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Constellation ↗</a>
+        </div>
+        <button class="panel-track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
+      </div>
+    `;
+  }
+
+  function bindObjectPanelControls(nodeId) {
+    const closeBtn = document.getElementById('object-panel-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeObjectPanel);
+    bindPanelTrackButton(nodeId);
+  }
+
+  function openObjectPanelDom() {
+    document.getElementById('object-panel')?.classList.add('open');
+    document.getElementById('object-overlay')?.classList.add('open');
+  }
+
+  // Articles précédents : descend dans periods array, dédupe par URL, groupe par période
+  function buildPreviousArticleGroups(nodeId, currentSeenUrls, contextPeriod) {
+    const groups = [];
+    const seen = new Set(currentSeenUrls);
+    // Skip period keys belonging to current context (slot or single period)
+    const skipKeys = new Set();
+    if (contextPeriod?.isDay && Array.isArray(contextPeriod.periodKeys)) {
+      contextPeriod.periodKeys.forEach(k => skipKeys.add(k));
+    } else if (contextPeriod?.key) {
+      skipKeys.add(contextPeriod.key);
+    }
+    const allPeriods = (tsData?.meta?.periods?.length ? tsData.meta.periods : periods) || [];
+    const sourceGraphs = (tsData?.graphs?.[currentCountry]) || graphs?.[currentCountry] || {};
+    for (let i = allPeriods.length - 1; i >= 0 && groups.length < 8; i--) {
+      const pk = allPeriods[i].key;
+      if (skipKeys.has(pk)) continue;
+      const pd = sourceGraphs[pk];
+      if (!pd?.nodes) continue;
+      const pnode = pd.nodes.find(n => n.id === nodeId);
+      if (!pnode?.articles?.length) continue;
+      const fresh = pnode.articles.filter(a => a.url && !seen.has(a.url));
+      if (!fresh.length) continue;
+      fresh.forEach(a => seen.add(a.url));
+      const day = toDayLabel(periodDisplayDate(allPeriods[i]));
+      const block = blockRangeLabelFromPeriod(allPeriods[i]);
+      groups.push({ label: `${day} · ${block} EDT`, articles: fresh });
+    }
+    return groups;
+  }
+
   function renderArticlesPanelUnavailable(nodeId, contextPeriod = null) {
     const panel = document.getElementById('object-panel');
-    if (!nodeId) {
-      panelState.nodeId = null;
-      panelState.expanded = false;
-      panelState.contextPeriod = null;
-      panel.classList.remove('visible');
-      panel.innerHTML = '';
-      return;
-    }
+    if (!nodeId) { closeObjectPanel(); return; }
 
     panelState.nodeId = nodeId;
     panelState.contextPeriod = contextPeriod;
-    const tracked = trackedObjects.has(nodeId);
-    const links = panelLinksFor(nodeId);
+    const periodLabel = panelPeriodLabel(contextPeriod);
 
     panel.innerHTML = `
-      <button id="object-panel-close" aria-label="Fermer">×</button>
-      <div class="h">${escapeHtml(nodeId)}</div>
-      <div class="meta">Bloc: ${escapeHtml(panelPeriodLabel())}</div>
-      <div class="meta">Données: indisponibles pour ce bloc</div>
-      <button class="track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
-      <div class="list"><div class="empty"><strong>Pas d'articles pour cette période.</strong><br>Essayez un autre bloc ou une autre granularité.</div></div>
-      <div class="panel-actions">
-        <a class="panel-link" href="${links.statsUrl}" target="_blank" rel="noopener noreferrer">Statistiques</a>
-        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Constellation</a>
+      ${renderObjectPanelHeader(nodeId, `Bloc: ${periodLabel} · données indisponibles`)}
+      <div id="object-panel-body">
+        <div class="empty"><strong>Pas d'articles pour cette période.</strong><br>Essayez un autre bloc ou une autre granularité.</div>
       </div>
-      <div class="panel-subtle">Ouvre un nouvel onglet</div>
     `;
-    panel.classList.add('visible');
-    reRenderActiveChart();
-    bindPanelTrackButton(nodeId);
-    const closeBtn = document.getElementById('object-panel-close');
-    if (closeBtn) closeBtn.addEventListener('click', () => renderArticlesPanel(null));
-  }
-
-  function reRenderActiveChart() {
-    requestAnimationFrame(() => {
-      if (currentMode === 'tracking') renderEvolutionChart();
-      else {
-        const period = periods[currentIdx];
-        if (period) renderRankedChart(getGD(currentCountry, period.key), rankedHoverIdx);
-      }
-    });
+    openObjectPanelDom();
+    bindObjectPanelControls(nodeId);
   }
 
   function renderArticlesPanel(node, contextPeriod = null) {
-    const panel = document.getElementById('object-panel');
-    if (!node) {
-      panelState.nodeId = null;
-      panelState.expanded = false;
-      panelState.contextPeriod = null;
-      panel.classList.remove('visible');
-      panel.innerHTML = '';
-      reRenderActiveChart();
-      return;
-    }
+    if (!node) { closeObjectPanel(); return; }
 
-    if (panelState.nodeId !== node.id) panelState.expanded = false;
     panelState.nodeId = node.id;
     if (contextPeriod !== null) panelState.contextPeriod = contextPeriod;
 
-    const articles = Array.isArray(node.articles) ? node.articles : [];
-    const previewCount = 3;
-    const visibleArticles = panelState.expanded ? articles : articles.slice(0, previewCount);
-    const items = visibleArticles.map(a => {
-      const title = escapeHtml(a.title || a.url || 'Article');
-      const safeUrl = String(a.url || '').trim();
-      const media = a.media_id ? `<span class="it-media">${escapeHtml(a.media_id)}</span>` : '';
-      if (!safeUrl) return `<div class="it muted">${media}${title}</div>`;
-      const url = escapeHtml(safeUrl);
-      return `<a class="it" href="${url}" target="_blank" rel="noopener noreferrer">${media}${title}</a>`;
-    }).join('');
-    const links = panelLinksFor(node.id);
-    const tracked = trackedObjects.has(node.id);
-    const toggleLabel = panelState.expanded ? 'Voir moins' : `Voir tout (${articles.length})`;
-    const toggleBtn = articles.length > previewCount
-      ? `<button class="panel-toggle" id="panel-toggle-articles">${toggleLabel}</button>`
-      : '';
+    const ctx = panelState.contextPeriod || periods[currentIdx];
+    const periodLabel = panelPeriodLabel(ctx);
+    const metaLine = `Bloc: ${periodLabel} · Saillance: ${Number(node.size || 0).toFixed(2)} · Mentions: ${Number(node.n || 0)}`;
 
-    panel.innerHTML = `
-      <button id="object-panel-close" aria-label="Fermer">×</button>
-      <div class="h">${escapeHtml(node.id)}</div>
-      <div class="meta">Bloc: ${escapeHtml(panelPeriodLabel())}</div>
-      <div class="meta">Saillance: ${Number(node.size || 0).toFixed(2)} · Mentions: ${Number(node.n || 0)}</div>
-      <button class="track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
-      <div class="list">${items || '<div class="empty"><strong>Pas d\'articles pour cette période.</strong><br>Essayez un autre bloc ou une autre granularité.</div>'}</div>
-      ${toggleBtn}
-      <div class="panel-actions">
-        <a class="panel-link" href="${links.statsUrl}" target="_blank" rel="noopener noreferrer">Statistiques</a>
-        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Constellation</a>
-      </div>
-      <div class="panel-subtle">Ouvre un nouvel onglet</div>
-    `;
-    panel.classList.add('visible');
-    reRenderActiveChart();
-    bindPanelTrackButton(node.id);
-    const closeBtn = document.getElementById('object-panel-close');
-    if (closeBtn) closeBtn.addEventListener('click', () => renderArticlesPanel(null));
-    const toggle = document.getElementById('panel-toggle-articles');
-    if (toggle) {
-      toggle.addEventListener('click', () => {
-        panelState.expanded = !panelState.expanded;
-        renderArticlesPanel(node);
+    const articles = Array.isArray(node.articles) ? node.articles : [];
+    const seenUrls = new Set();
+    articles.forEach(a => { if (a.url) seenUrls.add(a.url); });
+
+    const currentItems = articles.length
+      ? articles.map(articleItemHtml).join('')
+      : '<div class="empty">Aucun article pour cette période.</div>';
+
+    const prevGroups = buildPreviousArticleGroups(node.id, seenUrls, ctx);
+    let prevHtml = '';
+    if (prevGroups.length > 0) {
+      prevHtml = '<div class="article-section-header">Précédemment à la une</div>';
+      prevGroups.forEach(g => {
+        prevHtml += `<div class="article-period-label">${escapeHtml(g.label)}</div>`;
+        prevHtml += g.articles.map(articleItemHtml).join('');
       });
     }
+
+    const panel = document.getElementById('object-panel');
+    panel.innerHTML = `
+      ${renderObjectPanelHeader(node.id, metaLine)}
+      <div id="object-panel-body">${currentItems}${prevHtml}</div>
+    `;
+    openObjectPanelDom();
+    bindObjectPanelControls(node.id);
   }
 
   function syncArticlesPanel() {
@@ -1684,7 +1731,7 @@
     const compact = W < 960;
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
-    const rightPad = getRightPanelPad(rect, ['object-panel'], 38);
+    const rightPad = 38;
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -2373,7 +2420,7 @@
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
     const fallbackPanelPad = 38;
-    const panelW = getRightPanelPad(rect, ['object-panel'], fallbackPanelPad);
+    const panelW = fallbackPanelPad;
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -2918,8 +2965,12 @@
     if (e.key === 'ArrowRight')    { navigateNext(); }
     else if (e.key === 'ArrowLeft') { navigatePrev(); }
     else if ((e.key==='t'||e.key==='T') && focusedNode) { addTracked(focusedNode); }
-    else if (e.key==='Escape')    { if(rankedSearchInput.value){rankedSearchInput.value='';renderRankedSearchResults('');} }
+    else if (e.key==='Escape')    {
+      if(rankedSearchInput.value){rankedSearchInput.value='';renderRankedSearchResults('');}
+      else if (panelState.nodeId) { closeObjectPanel(); }
+    }
   });
+  document.getElementById('object-overlay')?.addEventListener('click', closeObjectPanel);
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.tab').forEach(t => {
