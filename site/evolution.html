@@ -1406,7 +1406,7 @@
           const isNew = delta === null && safeIdx > 0;
           return {
             id: n.id,
-            color: getSeriesColor(i),
+            color: getObjectColor(n.id),
             val,
             displayVal: val,
             delta,
@@ -1497,6 +1497,10 @@
           }
           return;
         }
+        // En mode ranked : remplace la sélection (1 objet à la fois depuis le Hot 10)
+        if (currentMode === 'ranked') {
+          trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
+        }
         focusedNode = r.id;
         addTracked(r.id);
         let sourceGraph;
@@ -1550,6 +1554,13 @@
     return `hsl(${hue} 78% 62%)`;
   }
 
+  function getObjectColor(id) {
+    if (trackColorMap.has(id)) return trackColorMap.get(id);
+    let h = 0;
+    for (let ci = 0; ci < id.length; ci++) h = (h * 31 + id.charCodeAt(ci)) >>> 0;
+    return TRACK_COLORS[h % TRACK_COLORS.length];
+  }
+
   function topIdsForPeriod(periodKey, topN = 10) {
     const g = getGD(currentCountry, periodKey);
     return (g.nodes || [])
@@ -1591,7 +1602,7 @@
 
     const series = topIds.map((id, i) => ({
       id,
-      color: getSeriesColor(i),
+      color: getObjectColor(id),
       maxVal: 0,
       data: wp.map(p => {
         const g = getWinPeriodGD(currentCountry, p);
