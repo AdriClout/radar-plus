@@ -2407,7 +2407,12 @@
     });
 
     const { PAD, chartW, chartH } = getEvolutionChartLayout(rect);
-    const n = periods.length;
+    const displayPeriods = (rankedSlots.length > 0 && rankedSlots[rankedSlotIdx]?.periods?.length)
+      ? rankedSlots[rankedSlotIdx].periods
+      : periods;
+    const n = displayPeriods.length;
+    const currentPeriodKey = periods[currentIdx]?.key;
+    const displayCurrentIdx = displayPeriods.findIndex(p => p.key === currentPeriodKey);
 
     if (!trackedObjects.size) {
       ctx.fillStyle = 'rgba(120,160,220,0.35)'; ctx.font = '13px "Space Mono", monospace'; ctx.textAlign = 'center';
@@ -2422,7 +2427,7 @@
 
     const series = [...trackedObjects].map(id => ({
       id, color: getTrackColor(id),
-      data: periods.map(p => { const g = graphs[currentCountry]?.[p.key]; return g?.nodes.find(nd => nd.id === id)?.size ?? null; })
+      data: displayPeriods.map(p => { const g = graphs[currentCountry]?.[p.key]; return g?.nodes.find(nd => nd.id === id)?.size ?? null; })
     }));
     const allVals = series.flatMap(s => s.data.filter(v => v !== null));
     const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
@@ -2450,7 +2455,7 @@
     })();
 
     tickIndices.forEach(i => {
-      const p = periods[i];
+      const p = displayPeriods[i];
       const x = xOf(i);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, PAD.top + chartH); ctx.lineTo(x, PAD.top + chartH + 5); ctx.stroke();
@@ -2497,7 +2502,7 @@
       // Dots
       s.data.forEach((v, i) => {
         if (v === null) return;
-        const isCurr = i === currentIdx;
+        const isCurr = i === displayCurrentIdx;
         const r3 = isCurr ? 5.5 : 3.5;
         ctx.beginPath(); ctx.arc(xOf(i), yOf(v, maxVal), r3, 0, Math.PI * 2);
         ctx.fillStyle = s.color;
@@ -2520,8 +2525,8 @@
     }
 
     // Current period marker
-    if (currentIdx >= 0 && currentIdx < n) {
-      const cx = xOf(currentIdx);
+    if (displayCurrentIdx >= 0 && displayCurrentIdx < n) {
+      const cx = xOf(displayCurrentIdx);
       ctx.strokeStyle = 'rgba(180,210,255,0.25)'; ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
       ctx.beginPath(); ctx.moveTo(cx, PAD.top - 8); ctx.lineTo(cx, PAD.top + chartH); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(180,210,255,0.5)'; ctx.font = '9px "Space Mono", monospace'; ctx.textAlign = 'center';
@@ -2534,7 +2539,10 @@
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const { PAD, chartW } = getEvolutionChartLayout(rect);
-    const n = periods.length;
+    const displayPeriods = (rankedSlots.length > 0 && rankedSlots[rankedSlotIdx]?.periods?.length)
+      ? rankedSlots[rankedSlotIdx].periods
+      : periods;
+    const n = displayPeriods.length;
     const canvasX = clientX - rect.left;
     if (canvasX < PAD.left || canvasX > PAD.left + chartW) {
       renderEvolutionChart(null);
@@ -2544,7 +2552,7 @@
     renderEvolutionChart(idx);
 
     const tt = document.getElementById('evo-tooltip');
-    const period = periods[idx];
+    const period = displayPeriods[idx];
     const ttDay = period ? toDayLabel(periodDisplayDate(period)) : '';
     const ttBlock = period ? blockRangeLabelFromPeriod(period) : '';
     document.getElementById('evo-tooltip-period').textContent = period ? `${ttDay} · ${ttBlock}` : '';
@@ -2602,6 +2610,7 @@
       buildRankedSlots(trackingBasePeriods);
       periods = trackingBasePeriods;
       currentIdx = Math.min(tsIdx, Math.max(0, periods.length - 1));
+      syncRankedSlotToCurrentPeriod();
       slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
     } else {
@@ -2854,6 +2863,7 @@
       setCurrentPeriodFromRankedSlot();
     } else {
       currentIdx = +slider.value;
+      syncRankedSlotToCurrentPeriod();
     }
     loadPeriod(currentCountry, currentIdx);
   });
@@ -2866,8 +2876,9 @@
       slider.value = rankedSlotIdx;
       setCurrentPeriodFromRankedSlot();
     } else {
-      if (currentIdx <= 0) return;
-      currentIdx--;
+      if (rankedSlotIdx <= 0) return;
+      rankedSlotIdx--;
+      setCurrentPeriodFromRankedSlot();
       slider.value = currentIdx;
     }
     loadPeriod(currentCountry, currentIdx);
@@ -2880,8 +2891,9 @@
       slider.value = rankedSlotIdx;
       setCurrentPeriodFromRankedSlot();
     } else {
-      if (currentIdx >= periods.length - 1) return;
-      currentIdx++;
+      if (rankedSlotIdx >= rankedSlots.length - 1) return;
+      rankedSlotIdx++;
+      setCurrentPeriodFromRankedSlot();
       slider.value = currentIdx;
     }
     loadPeriod(currentCountry, currentIdx);
