@@ -3069,6 +3069,7 @@
   })();
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
+  // Après l'auto-track, on nettoie l'URL pour qu'un hard-refresh revienne en HOT 10 propre.
   const urlNode = urlParams.get('node');
   if (urlNode) {
     const q = urlNode.toLowerCase();
@@ -3084,6 +3085,13 @@
       addTracked(foundId);
       setMode('tracking');
     }
+    // Retire ?node= (et ?q=) de l'URL sans recharger la page
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.delete('node');
+      u.searchParams.delete('q');
+      window.history.replaceState({}, '', u.pathname + (u.search ? u.search : '') + u.hash);
+    } catch (_) { /* noop */ }
   }
 
   } catch(e) {
