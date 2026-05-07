@@ -451,8 +451,8 @@
       <div class="lpanel-label">Mode</div>
       <div id="mode-tabs">
         <div id="mode-tabs-row">
-          <button class="mode-tab" data-mode="ranked" type="button" aria-label="Mode classement">Classement</button>
-          <button class="mode-tab" data-mode="tracking" type="button" aria-label="Mode suivi">Suivi</button>
+          <button class="mode-tab" data-mode="ranked" type="button" aria-label="Mode classement">Hot 10</button>
+          <button class="mode-tab" data-mode="tracking" type="button" aria-label="Mode suivi">Chercher</button>
         </div>
       </div>
     </div>
@@ -489,6 +489,7 @@
     <div id="slider-row">
       <input type="range" id="timeline" min="0" value="0" step="1" />
     </div>
+    <div id="conv-tooltip" style="display:none;position:absolute;bottom:100%;left:0;background:rgba(4,8,28,0.92);border:1px solid rgba(80,120,255,0.35);border-radius:4px;padding:4px 9px;font-size:10px;font-family:'Space Mono',monospace;color:#a0c8ff;pointer-events:none;white-space:nowrap;z-index:30;transform:translateX(-50%);"></div>
   </div>
   <section class="ticker-section" id="ticker-section" aria-live="polite">
     <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir toutes les dernières Unes">
@@ -1204,6 +1205,13 @@
     if (currentMode === 'tracking') {
       updatePeriodSummary(currentCountry, currentIdx);
       renderEvolutionChart();
+      // Ouvrir la fiche du dernier bloc où l'objet apparaît
+      focusedNode = id;
+      for (let i = periods.length - 1; i >= 0; i--) {
+        const g = graphs[currentCountry]?.[periods[i]?.key];
+        const node = g?.nodes?.find(nd => nd.id === id);
+        if (node) { renderArticlesPanel(node); break; }
+      }
     } else {
       const gd = getGD(currentCountry, periods[currentIdx]?.key);
       renderRankedChart(gd, rankedHoverIdx);
@@ -1332,10 +1340,11 @@
       div.className = 'evo-result';
       div.textContent = id;
       div.addEventListener('click', () => {
-        addTracked(id);
         const input = document.getElementById('ranked-search-input');
         if (input) input.value = '';
         renderRankedSearchResults('');
+        addTracked(id);
+        setMode('tracking');
       });
       resultsEl.appendChild(div);
     });
@@ -1741,7 +1750,7 @@
       ctx.moveTo(x, PAD.top + chartH);
       ctx.lineTo(x, PAD.top + chartH + 5);
       ctx.stroke();
-      
+      if (p?.isFuture) return; // les labels futurs sont gérés plus bas
       const parts = periodTickParts(p);
       ctx.font = '11px "Space Mono", monospace';
       ctx.textAlign = 'center';
@@ -1761,6 +1770,75 @@
     // Index de la période courante dans winPeriods
     const currentPKey = periods[currentIdx]?.key;
     const winCurrentIdx = winPeriods.findIndex(p => p.isDay ? (p.periodKeys?.includes(currentPKey)) : p.key === currentPKey);
+
+    // ── Journée en construction : fantôme + zone future ──────────────────────
+    const firstFutureIdx = winPeriods.findIndex(p => p.isFuture);
+    const isPartialDay = rankedGranularity === 'day' && firstFutureIdx > 0;
+    if (isPartialDay) {
+      // Zone future — gradient subtil du bord du dernier bloc complété vers la droite
+      const futureX = n > 1
+        ? xOf(firstFutureIdx) - (xOf(1) - xOf(0)) * 0.5
+        : PAD.left + chartW;
+      const grad = ctx.createLinearGradient(futureX, 0, PAD.left + chartW, 0);
+      grad.addColorStop(0, 'rgba(15,25,70,0.0)');
+      grad.addColorStop(1, 'rgba(15,25,70,0.28)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(futureX, PAD.top, PAD.left + chartW - futureX, chartH);
+
+      // Labels axes X futurs en plus pâle
+      tickIndices.forEach(i => {
+        if (!winPeriods[i]?.isFuture) return;
+        const x = xOf(i);
+        ctx.fillStyle = 'rgba(90,120,200,0.35)';
+        ctx.font = '11px "Space Mono", monospace'; ctx.textAlign = 'center';
+        ctx.fillText(periodTickParts(winPeriods[i]).major, x, PAD.top + chartH + 18);
+      });
+
+      // Fantôme de la journée précédente (référence)
+      const prevSlot = rankedSlots[rankedSlotIdx - 1];
+      if (prevSlot?.periodKeys?.length) {
+        const allGhostVals = series.flatMap(s =>
+          prevSlot.periodKeys.map(k => graphs[currentCountry]?.[k]?.nodes?.find(nd => nd.id === s.id)?.size ?? null)
+            .filter(v => v !== null)
+        );
+        const ghostMax = allGhostVals.length ? Math.max(...allGhostVals, maxVal) : maxVal;
+        const yGhost = v => PAD.top + chartH - (v / ghostMax) * chartH;
+        const ghostN = prevSlot.periodKeys.length;
+        series.forEach(s => {
+          const [r, g2, b] = hexToRgb(s.color);
+          const ghostData = prevSlot.periodKeys.map(k =>
+            graphs[currentCountry]?.[k]?.nodes?.find(nd => nd.id === s.id)?.size ?? null
+          );
+          if (ghostData.every(v => v === null)) return;
+          ctx.beginPath();
+          let gFirst = true;
+          ghostData.forEach((v, i) => {
+            if (v === null) { gFirst = true; return; }
+            const gx = PAD.left + (ghostN > 1 ? (i / (ghostN - 1)) * chartW : chartW / 2);
+            const gy = yGhost(v);
+            if (gFirst) { ctx.moveTo(gx, gy); gFirst = false; } else ctx.lineTo(gx, gy);
+          });
+          ctx.strokeStyle = `rgba(${r},${g2},${b},0.13)`;
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([3, 5]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      }
+
+      // Indicateur "live" au dernier bloc complété
+      const liveIdx = firstFutureIdx - 1;
+      if (liveIdx >= 0) {
+        const lx = xOf(liveIdx);
+        ctx.strokeStyle = 'rgba(100,220,160,0.5)';
+        ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(lx, PAD.top); ctx.lineTo(lx, PAD.top + chartH); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(100,220,160,0.75)';
+        ctx.font = '8px "Space Mono", monospace'; ctx.textAlign = 'left';
+        ctx.fillText('LIVE', lx + 4, PAD.top + 12);
+      }
+    }
 
     // "Période sélectionnée" : hoverIdx > selectedPeriodIdx > null
     const effectiveHoverIdx = hoverIdx !== null ? hoverIdx : selectedPeriodIdx;
@@ -1864,6 +1942,14 @@
         ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
       });
     }
+
+    // Aligner le slider avec les bords du graphe
+    const sliderRow = document.getElementById('slider-row');
+    if (sliderRow) {
+      const ctrlPad = 24;
+      sliderRow.style.paddingLeft  = `${Math.max(0, PAD.left  - ctrlPad)}px`;
+      sliderRow.style.paddingRight = `${Math.max(0, PAD.right - ctrlPad)}px`;
+    }
   }
 
   function rankedChartHoverAt(clientX, clientY) {
@@ -1889,7 +1975,12 @@
   }
 
   function getEvolutionChartLayout(rect) {
-    const fallbackPanelPad = Math.min(310, rect.width * 0.30) + 30;
+    const W = rect.width;
+    const leftPanel = document.getElementById('left-panel');
+    const compact = W < 960;
+    const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
+    const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
+    const fallbackPanelPad = Math.min(310, W * 0.30) + 30;
     const panelW = getRightPanelPad(rect, ['tracked-panel'], fallbackPanelPad);
     let bottomPad = 72;
     const controls = document.getElementById('controls');
@@ -1897,11 +1988,10 @@
       const controlsRect = controls.getBoundingClientRect();
       const controlsTop = controlsRect.top - rect.top;
       if (Number.isFinite(controlsTop)) {
-        // Garder l'axe X et les points bas au-dessus de la zone des contrôles.
         bottomPad = Math.max(bottomPad, rect.height - controlsTop + 12);
       }
     }
-    const PAD = { top: 88, right: panelW, bottom: bottomPad, left: 72 };
+    const PAD = { top: compact ? 112 : 94, right: panelW, bottom: bottomPad, left: leftPad };
     const chartW = Math.max(100, rect.width - PAD.left - PAD.right);
     const chartH = Math.max(80, rect.height - PAD.top - PAD.bottom);
     return { PAD, panelW, chartW, chartH };
@@ -2013,7 +2103,13 @@
       // Dots
       s.data.forEach((v, i) => {
         if (v === null) return;
-        ctx.beginPath(); ctx.arc(xOf(i), yOf(v, maxVal), 2.5, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill();
+        const isCurr = i === currentIdx;
+        const r3 = isCurr ? 5.5 : 3.5;
+        ctx.beginPath(); ctx.arc(xOf(i), yOf(v, maxVal), r3, 0, Math.PI * 2);
+        ctx.fillStyle = s.color;
+        if (isCurr) { ctx.shadowColor = s.color; ctx.shadowBlur = 10; }
+        ctx.fill();
+        if (isCurr) { ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1.5; ctx.stroke(); }
       });
     });
 
@@ -2023,8 +2119,8 @@
       ctx.beginPath(); ctx.moveTo(xOf(hoverIdx), PAD.top); ctx.lineTo(xOf(hoverIdx), PAD.top + chartH); ctx.stroke(); ctx.setLineDash([]);
       series.forEach(s => {
         const v = s.data[hoverIdx]; if (v === null) return;
-        ctx.beginPath(); ctx.arc(xOf(hoverIdx), yOf(v, maxVal), 5, 0, Math.PI * 2);
-        ctx.fillStyle = s.color; ctx.shadowColor = s.color; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.arc(xOf(hoverIdx), yOf(v, maxVal), 7, 0, Math.PI * 2);
+        ctx.fillStyle = s.color; ctx.shadowColor = s.color; ctx.shadowBlur = 16; ctx.fill(); ctx.shadowBlur = 0;
         ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
       });
     }
@@ -2309,6 +2405,31 @@
 
   const slider = document.getElementById('timeline');
   slider.max = periods.length-1; slider.value = currentIdx;
+
+  // Tooltip convergence sur le slider
+  slider.addEventListener('mousemove', e => {
+    const tip = document.getElementById('conv-tooltip');
+    if (!tip || currentMode !== 'ranked') { if (tip) tip.style.display = 'none'; return; }
+    const scores = (() => { try { return JSON.parse(slider.dataset.convScores || 'null'); } catch { return null; } })();
+    if (!scores) { tip.style.display = 'none'; return; }
+    const sliderRect = slider.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (e.clientX - sliderRect.left) / sliderRect.width));
+    const idx = Math.round(frac * (scores.length - 1));
+    const raw = scores[idx] ?? 0;
+    const min = Math.min(...scores), max = Math.max(...scores);
+    const pct = max > min ? Math.round(((raw - min) / (max - min)) * 100) : 50;
+    const slot = rankedSlots[idx];
+    const label = slot?.label || `Slot ${idx + 1}`;
+    tip.textContent = `${label} · Convergence ${pct} %`;
+    const leftPx = e.clientX - document.getElementById('controls').getBoundingClientRect().left;
+    tip.style.left = `${leftPx}px`;
+    tip.style.display = 'block';
+  });
+  slider.addEventListener('mouseleave', () => {
+    const tip = document.getElementById('conv-tooltip');
+    if (tip) tip.style.display = 'none';
+  });
+
   slider.addEventListener('input', () => {
     if (currentMode === 'ranked') {
       selectedPeriodIdx = null;
@@ -2372,9 +2493,10 @@
       const q = rankedSearchInput.value.trim().toLowerCase();
       const id = getRankedScopedObjectIds().find(v => v.toLowerCase().includes(q));
       if (id) {
-        addTracked(id);
         rankedSearchInput.value = '';
         renderRankedSearchResults('');
+        addTracked(id);
+        setMode('tracking');
       }
     }
     e.stopPropagation();
