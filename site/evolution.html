@@ -323,6 +323,8 @@
     #ranked-search-input::placeholder { color: rgba(90,120,180,0.55); }
     #ranked-search-input:focus { border-color: rgba(140,190,255,0.75); box-shadow: 0 0 10px rgba(80,130,255,0.25); color: #d0e8ff; }
     #ranked-search-results { display: flex; flex-direction: column; gap: 3px; max-height: 120px; overflow-y: auto; }
+    .evo-result { padding: 5px 8px; border-radius: 3px; background: rgba(8,18,48,0.62); border: 1px solid rgba(90,130,250,0.2); color: rgba(170,200,255,0.9); font-size: 10px; cursor: pointer; transition: all 0.12s; }
+    .evo-result:hover { border-color: rgba(145,182,255,0.7); color: #e0f0ff; background: rgba(20,36,86,0.7); }
 
     #left-tracked-list {
       display: flex;
@@ -1247,7 +1249,8 @@
     const ids = new Set();
     const wp = getRankedWindowPeriods();
     wp.forEach(p => {
-      const g = getGD(currentCountry, p.key);
+      if (p.isSynthetic || p.isFuture) return;
+      const g = (p.isDay || p.isVeille) ? getWinPeriodGD(currentCountry, p) : getGD(currentCountry, p.key);
       (g.nodes || []).forEach(n => ids.add(n.id));
     });
     return [...ids].sort();
@@ -2798,9 +2801,10 @@
       renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
     }
   });
-  // ── Recherche dédiée (panneau droit) ─────────────────────────────────────
+  // ── Recherche (panneau gauche) ───────────────────────────────────────────
   const rankedSearchInput = document.getElementById('ranked-search-input');
   rankedSearchInput.addEventListener('input', () => renderRankedSearchResults(rankedSearchInput.value));
+  rankedSearchInput.addEventListener('blur', () => { setTimeout(() => { const r = document.getElementById('ranked-search-results'); if (r) r.innerHTML = ''; }, 150); });
   rankedSearchInput.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       rankedSearchInput.value = '';
