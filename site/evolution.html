@@ -15,7 +15,7 @@
     #graph { display: none; }
     #left-panel {
       position: absolute; top: 0; left: 0; bottom: calc(var(--ticker-height, 44px) + 100px);
-      width: 256px;
+      width: 280px;
       display: flex; flex-direction: column; gap: 0;
       padding: 18px 14px 14px;
       background: linear-gradient(to right, rgba(0,0,15,0.96) 80%, transparent);
@@ -119,9 +119,10 @@
     #left-hot10-section #ranked-search-wrap {
       margin: 2px 0 2px;
     }
-    #left-hot10-section .rleg-delta { display: none; }
-    #left-hot10-section .rleg-val { min-width: 28px; }
+    #left-hot10-section .rleg-val { min-width: 26px; }
     #left-hot10-section #ranked-legend-period { flex: none; }
+    .rleg-delta.new-entry { color: rgba(255, 220, 60, 0.92); }
+    .rleg-delta.ret-entry { color: rgba(120, 200, 255, 0.88); }
     /* #media-panel supprimé */
     /* styles media-panel supprimés */
     #object-panel {
@@ -1401,12 +1402,15 @@
           const val = Number(n.size) || 0;
           const prev = prevMap.has(n.id) ? prevMap.get(n.id) : null;
           const delta = prev !== null ? val - prev : null;
+          const isNew = delta === null && safeIdx > 0;
           return {
             id: n.id,
             color: getSeriesColor(i),
             val,
             displayVal: val,
             delta,
+            isNew,
+            isReturn: false,
             maxVal: val
           };
         });
@@ -1417,7 +1421,10 @@
           const val = s.data[safeIdx] ?? null;
           const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
           const delta = (val !== null && prev !== null) ? val - prev : null;
-          return { id: s.id, color: s.color, val, displayVal: cum, delta, maxVal: s.maxVal ?? 0 };
+          const hadPrev = safeIdx > 0 && s.data.slice(0, safeIdx).some(v => v != null && v > 0);
+          const isNew = delta === null && safeIdx > 0 && !hadPrev;
+          const isReturn = delta === null && safeIdx > 0 && hadPrev;
+          return { id: s.id, color: s.color, val, displayVal: cum, delta, isNew, isReturn, maxVal: s.maxVal ?? 0 };
         })
         .sort((a, b) => b.displayVal - a.displayVal)
         .slice(0, limit);
@@ -1435,11 +1442,16 @@
       const isDimmed   = hasHover && !isFocused && !isHovered && !isTracked;
 
       let deltaTxt = '', deltaClass = 'flat';
+      const compLabel = { day: 'vs hier', week: 'vs sem. passée', month: 'vs mois passé', year: 'vs an passé' }[rankedGranularity] || '';
       if (r.delta !== null && Math.abs(r.delta) >= 0.01) {
         deltaClass = r.delta > 0 ? 'up' : 'down';
         deltaTxt = `${r.delta > 0 ? '▲' : '▼'} ${Math.abs(r.delta).toFixed(1)}`;
       } else if (r.delta !== null) {
         deltaTxt = '=';
+      } else if (r.isNew) {
+        deltaTxt = 'NVX'; deltaClass = 'new-entry';
+      } else if (r.isReturn) {
+        deltaTxt = 'RET'; deltaClass = 'ret-entry';
       }
 
       const item = document.createElement('div');
@@ -1455,7 +1467,7 @@
         <span class="rleg-name" title="${escapeHtml(r.id)}">${escapeHtml(r.id)}</span>
         <span class="rleg-check">${isTracked ? '✓' : ''}</span>
         <span class="rleg-val${r.displayVal === null ? ' null-val' : ''}">${r.displayVal !== null ? r.displayVal.toFixed(1) : '—'}</span>
-        <span class="rleg-delta ${deltaClass}">${deltaTxt}</span>
+        <span class="rleg-delta ${deltaClass}" title="${escapeHtml(compLabel)}">${deltaTxt}</span>
       `;
 
       item.addEventListener('mouseenter', () => {
@@ -2217,8 +2229,8 @@
     if (mode === 'tracking') {
       graphs  = tsData.graphs;
       const trackingBasePeriods = (tsData?.meta?.periods || []);
-      buildRankedSlots(trackingBasePeriods); // Reconstruire les slots avec la granularité année
-      periods = getTrackingPeriodsForCurrentFilters(trackingBasePeriods);
+      buildRankedSlots(trackingBasePeriods);
+      periods = trackingBasePeriods;
       currentIdx = Math.min(tsIdx, Math.max(0, periods.length - 1));
       slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
@@ -2268,9 +2280,8 @@
     if (currentMode === 'tracking') {
       const trackingBasePeriods = (tsData?.meta?.periods || []);
       buildRankedSlots(trackingBasePeriods);
+      periods = trackingBasePeriods;
       syncRankedSlotToCurrentPeriod();
-      periods = getTrackingPeriodsForCurrentFilters(trackingBasePeriods);
-      setCurrentPeriodFromRankedSlot();
       currentIdx = Math.min(currentIdx, Math.max(0, periods.length - 1));
       slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
@@ -2549,9 +2560,8 @@
       } else {
         const trackingBasePeriods = (tsData?.meta?.periods || []);
         buildRankedSlots(trackingBasePeriods);
+        periods = trackingBasePeriods;
         syncRankedSlotToCurrentPeriod();
-        periods = getTrackingPeriodsForCurrentFilters(trackingBasePeriods);
-        setCurrentPeriodFromRankedSlot();
         currentIdx = Math.min(currentIdx, Math.max(0, periods.length - 1));
         slider.max = Math.max(0, periods.length - 1);
         slider.value = currentIdx;
