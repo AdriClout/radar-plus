@@ -78,7 +78,8 @@
     #prev-btn:disabled, #next-btn:disabled { opacity: 0.25; cursor: not-allowed; }
     #period-nav-label {
       font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1px;
-      color: rgba(175,208,255,0.92); text-align: center; min-width: 160px;
+      color: rgba(175,208,255,0.92); text-align: center;
+      width: 240px; white-space: normal; line-height: 1.35;
     }
     #timeline {
       flex: 1; -webkit-appearance: none; height: 2px;
@@ -1483,6 +1484,19 @@
       item.addEventListener('pointerdown', e => {
         e.stopPropagation();
         e.preventDefault();
+        // Reclique sur un item déjà focusé → déselection
+        if (focusedNode === r.id) {
+          focusedNode = null;
+          renderArticlesPanel(null);
+          if (currentMode === 'ranked') {
+            renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+            renderRankedLegend(series, rankedHoverIdx);
+          } else {
+            renderEvolutionChart();
+            renderTrackedList();
+          }
+          return;
+        }
         focusedNode = r.id;
         addTracked(r.id);
         let sourceGraph;
@@ -1618,7 +1632,7 @@
     const compact = W < 960;
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
-    const rightPad = 24;
+    const rightPad = 38;
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -1717,8 +1731,8 @@
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(110,150,215,0.55)';
-      ctx.textAlign = 'right';
-      ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
+      ctx.textAlign = 'left';
+      ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left + chartW + 5, y + 3);
     }
 
     // Axes + X ticks - labels courts, lisibles et adaptes a chaque filtre.
