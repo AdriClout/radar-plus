@@ -1822,26 +1822,28 @@
     const hasVisT = series.some(s => trackedObjects.has(s.id));
     const hasActiveNode = hasVisF || hasVisH || hasVisT;
 
-    series.forEach(s => {
+    // Pre-compute per-series state (so we can do two passes: lines first, dots on top)
+    const seriesState = series.map(s => {
       const [r, g, b] = hexToRgb(s.color);
       const isFocused = focusedNode === s.id;
       const isHovS = hoveredNode === s.id;
       const isTracked = trackedObjects.has(s.id);
       const isActive = isFocused || isHovS || isTracked;
       const isDimmed = (hasActiveNode && !isActive) || (hasPeriodSelection && !hasActiveNode);
-      const lineW = isActive ? 3.2 : 2;
-      const shadowB = isActive ? 14 : (isDimmed ? 0 : 7);
-
-      // Points de données réels (non-futur, non-synthétique)
       const pts = [];
       winPeriods.forEach((p, i) => {
         if ((p.isFuture && !p.isSynthetic) || p.isSynthetic) return;
         if (s.data[i] === null) return;
         pts.push({ h: dayBlockHour(p), v: s.data[i], wi: i });
       });
-      if (!pts.length) return;
+      return { s, r, g, b, isActive, isDimmed, pts };
+    });
 
-      // Ligne à travers les points réels
+    // Pass 1 — Lines (so they don't cover other series' dots)
+    seriesState.forEach(({ s, r, g, b, isActive, isDimmed, pts }) => {
+      if (!pts.length) return;
+      const lineW = isActive ? 3.2 : 2;
+      const shadowB = isActive ? 14 : (isDimmed ? 0 : 7);
       ctx.beginPath();
       pts.forEach(({ h, v }, pi) => {
         const x = xOfHour(h), y = yOf(v);
@@ -1851,7 +1853,6 @@
       ctx.lineWidth = lineW; ctx.shadowColor = s.color; ctx.shadowBlur = shadowB;
       ctx.stroke(); ctx.shadowBlur = 0;
 
-      // Extension live : ligne pointillée horizontale du dernier bloc à l'heure actuelle
       if (isToday && pts.length) {
         const last = pts[pts.length - 1];
         if (liveHour > last.h) {
@@ -1863,8 +1864,11 @@
           ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
         }
       }
+    });
 
-      // Points (dots) sur les blocs réels
+    // Pass 2 — Dots on top of all lines (so no series' dot is covered by another's line)
+    seriesState.forEach(({ s, r, g, b, isActive, isDimmed, pts }) => {
+      if (!pts.length) return;
       pts.forEach(({ h, v, wi }) => {
         const x = xOfHour(h), y = yOf(v);
         const isSelected = hasPeriodSelection && selectedPeriodIdx === wi;
@@ -1882,7 +1886,6 @@
         ctx.shadowBlur = 0;
       });
 
-      // Point live mobile à l'heure actuelle
       if (isToday && pts.length && liveHour > pts[pts.length - 1].h) {
         const lastV = pts[pts.length - 1].v;
         const lx = xOfHour(Math.min(liveHour, 24));
