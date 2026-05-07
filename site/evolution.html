@@ -65,13 +65,18 @@
       background: linear-gradient(to top, rgba(0,0,15,0.96) 70%, transparent);
       z-index: 10;
     }
-    #slider-row { display: flex; align-items: center; gap: 14px; }
-    #play-btn {
-      background: none; border: 1px solid rgba(100,150,255,0.35); border-radius: 3px;
-      color: #6080a0; font-size: 14px; padding: 4px 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    #slider-row { display: flex; align-items: center; gap: 10px; }
+    #period-nav-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 6px; }
+    #prev-btn, #next-btn {
+      background: none; border: 1px solid rgba(100,150,255,0.3); border-radius: 3px;
+      color: #6080a0; font-size: 16px; padding: 2px 12px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; line-height: 1.3;
     }
-    #play-btn:hover  { border-color: rgba(120,180,255,0.8); color: #b0d0ff; }
-    #play-btn.playing { color: #ff8080; border-color: rgba(255,100,100,0.5); }
+    #prev-btn:hover, #next-btn:hover { border-color: rgba(120,180,255,0.8); color: #b0d0ff; }
+    #prev-btn:disabled, #next-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    #period-nav-label {
+      font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px;
+      color: rgba(160,196,255,0.85); text-align: center; min-width: 150px;
+    }
     #timeline {
       flex: 1; -webkit-appearance: none; height: 2px;
       appearance: none;
@@ -82,11 +87,6 @@
       -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
       background: #7090ff; box-shadow: 0 0 10px rgba(80,120,255,1), 0 0 20px rgba(80,120,255,0.5); cursor: pointer;
     }
-    #speed-btn {
-      background: none; border: 1px solid rgba(100,150,255,0.2); border-radius: 3px;
-      color: #405060; font-size: 10px; padding: 4px 8px; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
-    }
-    #speed-btn:hover { color: #7090b0; }
     #top10-panel {
       position: absolute; top: 68px; right: 20px;
       font-family: 'Orbitron', 'Space Mono', monospace;
@@ -263,8 +263,17 @@
       display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 6px;
     }
     #ranked-legend-period {
-      font-size: 9px; letter-spacing: 0.7px; color: rgba(120,160,220,0.55); text-transform: uppercase; flex: 1;
+      font-size: 10px; letter-spacing: 0.7px; color: rgba(120,160,220,0.55); text-transform: uppercase; flex: 1;
+      transition: color 0.15s;
     }
+    .lpanel-label-row { display: flex; align-items: center; justify-content: space-between; }
+    .lpanel-clear-btn {
+      background: none; border: 1px solid rgba(100,150,255,0.2); border-radius: 3px;
+      color: rgba(120,150,200,0.55); font-family: 'Space Mono', monospace; font-size: 8px;
+      letter-spacing: 0.8px; padding: 2px 6px; cursor: pointer; transition: all 0.15s; display: none;
+    }
+    .lpanel-clear-btn.visible { display: block; }
+    .lpanel-clear-btn:hover { border-color: rgba(200,80,80,0.5); color: rgba(220,100,100,0.9); }
     #ranked-legend-more {
       border: 1px solid rgba(90,130,250,0.25); border-radius: 5px;
       background: rgba(8,18,48,0.62); color: rgba(140,180,255,0.8);
@@ -310,8 +319,8 @@
     .mode-tab:focus-visible,
     .win-btn:focus-visible,
     #ranked-legend-more:focus-visible,
-    #play-btn:focus-visible,
-    #speed-btn:focus-visible,
+    #prev-btn:focus-visible,
+    #next-btn:focus-visible,
     #tracked-clear:focus-visible {
       outline: 2px solid rgba(170, 205, 255, 0.9);
       outline-offset: 2px;
@@ -445,7 +454,10 @@
       </div>
     </div>
     <div class="lpanel-section" id="left-tracked-section">
-      <div class="lpanel-label">Suivi</div>
+      <div class="lpanel-label-row">
+        <span class="lpanel-label">Suivi</span>
+        <button class="lpanel-clear-btn" id="left-tracked-clear" type="button">Vider</button>
+      </div>
       <div id="left-tracked-list"></div>
     </div>
   </div>
@@ -466,10 +478,13 @@
   <div id="object-panel"></div>
   <div id="tooltip"></div>
   <div id="controls">
+    <div id="period-nav-row">
+      <button id="prev-btn" aria-label="Période précédente">‹</button>
+      <span id="period-nav-label"></span>
+      <button id="next-btn" aria-label="Période suivante">›</button>
+    </div>
     <div id="slider-row">
-      <button id="play-btn" aria-label="Lecture automatique" aria-pressed="false">▶</button>
       <input type="range" id="timeline" min="0" value="0" step="1" />
-      <button id="speed-btn" aria-label="Vitesse de lecture">1×</button>
     </div>
   </div>
   <section class="ticker-section" id="ticker-section" aria-live="polite">
@@ -544,14 +559,24 @@
     if (!winPeriod) return { nodes: [], links: [] };
     if (winPeriod.isDay && Array.isArray(winPeriod.periodKeys) && winPeriod.periodKeys.length) {
       const sizeMap = new Map();
+      const articleMap = new Map();
+      const seenUrls = new Map();
       for (const pk of winPeriod.periodKeys) {
         const g = getGD(country, pk);
         for (const n of (g.nodes || [])) {
           sizeMap.set(n.id, (sizeMap.get(n.id) || 0) + (Number(n.size) || 0));
+          if (!articleMap.has(n.id)) { articleMap.set(n.id, []); seenUrls.set(n.id, new Set()); }
+          for (const a of (n.articles || [])) {
+            const key = a.url || a.title;
+            if (key && !seenUrls.get(n.id).has(key)) {
+              seenUrls.get(n.id).add(key);
+              articleMap.get(n.id).push(a);
+            }
+          }
         }
       }
       const nodes = [...sizeMap.entries()]
-        .map(([id, size]) => ({ id, size }))
+        .map(([id, size]) => ({ id, size, articles: articleMap.get(id) || [], n: (articleMap.get(id) || []).length }))
         .sort((a, b) => b.size - a.size);
       nodes.forEach((n, i) => { n._rank = i; });
       return { nodes, links: [] };
@@ -652,7 +677,8 @@
   function panelLinksFor(nodeId) {
     return {
       constellationUrl: `./constellation.html?country=${encodeURIComponent(currentCountry)}&node=${encodeURIComponent(nodeId)}`,
-      radarplusUrl: `./radarplus.html?country=${encodeURIComponent(currentCountry)}&q=${encodeURIComponent(nodeId)}`
+      radarplusUrl: `./radarplus.html?country=${encodeURIComponent(currentCountry)}&q=${encodeURIComponent(nodeId)}`,
+      statsUrl: `./statistiques.html?objet=${encodeURIComponent(nodeId)}&pays=${encodeURIComponent(currentCountry)}`
     };
   }
 
@@ -695,8 +721,9 @@
       <button class="track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
       <div class="list"><div class="empty"><strong>Pas d'articles pour cette période.</strong><br>Essayez un autre bloc ou une autre granularité.</div></div>
       <div class="panel-actions">
-        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Voir Constellation</a>
-        <a class="panel-link" href="${links.radarplusUrl}" target="_blank" rel="noopener noreferrer">Voir Radar+</a>
+        <a class="panel-link" href="${links.statsUrl}" target="_blank" rel="noopener noreferrer">Statistiques</a>
+        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Constellation</a>
+        <a class="panel-link" href="${links.radarplusUrl}" target="_blank" rel="noopener noreferrer">Radar+</a>
       </div>
       <div class="panel-subtle">Ouvre un nouvel onglet</div>
     `;
@@ -743,8 +770,9 @@
       <div class="list">${items || '<div class="empty"><strong>Pas d\'articles pour cette période.</strong><br>Essayez un autre bloc ou une autre granularité.</div>'}</div>
       ${toggleBtn}
       <div class="panel-actions">
-        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Voir Constellation</a>
-        <a class="panel-link" href="${links.radarplusUrl}" target="_blank" rel="noopener noreferrer">Voir Radar+</a>
+        <a class="panel-link" href="${links.statsUrl}" target="_blank" rel="noopener noreferrer">Statistiques</a>
+        <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Constellation</a>
+        <a class="panel-link" href="${links.radarplusUrl}" target="_blank" rel="noopener noreferrer">Radar+</a>
       </div>
       <div class="panel-subtle">Ouvre un nouvel onglet</div>
     `;
@@ -761,6 +789,17 @@
 
   function syncArticlesPanel() {
     if (!panelState.nodeId) return;
+    if (currentMode === 'ranked') {
+      const winPeriods = getRankedWindowPeriods();
+      const currentPKey = periods[currentIdx]?.key;
+      const wIdx = winPeriods.findIndex(p => p.isDay ? (p.periodKeys?.includes(currentPKey)) : p.key === currentPKey);
+      const period = winPeriods[wIdx >= 0 ? wIdx : winPeriods.length - 1];
+      const gd = getWinPeriodGD(currentCountry, period);
+      const node = (gd.nodes || []).find(n => n.id === panelState.nodeId);
+      if (node) renderArticlesPanel(node);
+      else renderArticlesPanelUnavailable(panelState.nodeId);
+      return;
+    }
     const period = periods[currentIdx];
     const gd = getGD(currentCountry, period?.key);
     const node = (gd.nodes || []).find(n => n.id === panelState.nodeId);
@@ -774,11 +813,6 @@
   let currentCountry = countries.includes(urlCountry) ? urlCountry : countries[0];
   let currentIdx     = periods.length - 1;
   let focusedNode    = null;
-  let playInterval   = null;
-  let playSpeed      = 1500;
-  const SPEEDS       = [1500, 700, 250];
-  const SPEED_LABELS = ['1×', '2×', '5×'];
-  let speedIdx       = 0;
 
   // ── Suivi Temporel ────────────────────────────────────────────────────────
   const TRACK_COLORS = ['#ff6b6b','#ffd93d','#48dbfb','#ff9ff3','#54a0ff','#00d2d3','#ff9f43','#10ac84','#c7b9ff','#f368e0'];
@@ -1042,6 +1076,33 @@
     renderArticlesPanel(null);
   }
 
+  function clearAllTracked() {
+    trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0; focusedNode = null;
+    renderTrackedList();
+    renderArticlesPanel(null);
+    if (currentMode === 'tracking') {
+      renderEvolutionChart();
+    } else {
+      const gd = getGD(currentCountry, periods[currentIdx]?.key);
+      renderRankedChart(gd, rankedHoverIdx);
+    }
+  }
+
+  function updatePeriodNavLabel() {
+    const label = document.getElementById('period-nav-label');
+    if (!label) return;
+    if (currentMode === 'ranked') {
+      label.textContent = rankedSlots[rankedSlotIdx]?.label || '';
+    } else {
+      const period = periods[currentIdx];
+      label.textContent = period ? toDayLabel(periodDisplayDate(period)) : '';
+    }
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    if (prevBtn) prevBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx <= 0 : currentIdx <= 0;
+    if (nextBtn) nextBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx >= rankedSlots.length - 1 : currentIdx >= periods.length - 1;
+  }
+
   function blockRangeLabelFromPeriod(period) {
     const explicitStart = Number(period?.blockStart);
     const localStart = localBlockStartFromPeriodKey(period?.key);
@@ -1061,18 +1122,19 @@
     const period = periods[idx];
     if (!period) return;
     const gd = getGD(country, period.key);
-    
+
     if (focusedNode) {
       const hasFocused = (gd.nodes || []).some(n => n.id === focusedNode);
       if (!hasFocused && !trackedObjects.has(focusedNode)) focusedNode = null;
     }
-    
+
     updatePeriodSummary(country, idx);
     const countryEl = document.getElementById('top10-country');
     if (countryEl) countryEl.textContent = country;
     if (currentMode === 'tracking') { renderTrackedList(); renderEvolutionChart(); }
     else { renderRankedChart(gd, rankedHoverIdx); }
     syncArticlesPanel();
+    updatePeriodNavLabel();
   }
 
   // Etoiles de fond
@@ -1167,9 +1229,11 @@
   function renderTrackedList() {
     const list = document.getElementById('tracked-list');
     const leftList = document.getElementById('left-tracked-list');
+    const leftClearBtn = document.getElementById('left-tracked-clear');
     if (!list) return;
     list.innerHTML = '';
     if (leftList) leftList.innerHTML = '';
+    if (leftClearBtn) leftClearBtn.classList.toggle('visible', trackedObjects.size > 0);
     if (!trackedObjects.size) {
       list.innerHTML = '<div id="evo-empty">Recherchez un objet ci-dessus<br>ou cliquez sur "Suivre" dans le classement.</div>';
       if (leftList) leftList.innerHTML = '<div id="left-tracked-empty">Aucun objet suivi.<br>Cliquez un objet du Top 10 ou utilisez la recherche.</div>';
@@ -1273,11 +1337,15 @@
     const slotLabel = rankedSlots[rankedSlotIdx]?.label || '';
     if (periodEl) {
       if (isHoverBlock) {
-        if (rankedGranularity === 'day') periodEl.textContent = `${blockRangeLabelFromPeriod(period)} · Bloc survolé`;
-        else if (period?.isDay) periodEl.textContent = `${toDayLabel(period.dateKey)} · Journée survolée`;
-        else periodEl.textContent = `${period?.label || ''} · Bloc survolé`;
+        let blockLabel;
+        if (rankedGranularity === 'day') blockLabel = blockRangeLabelFromPeriod(period);
+        else if (period?.isDay) blockLabel = toDayLabel(period.dateKey);
+        else blockLabel = period?.label || '';
+        periodEl.textContent = `↗ Survol · ${blockLabel}`;
+        periodEl.style.color = 'rgba(150,210,255,0.88)';
       } else {
-        periodEl.textContent = `${slotLabel} · Cumul fenêtre`;
+        periodEl.textContent = `= Cumul · ${slotLabel}`;
+        periodEl.style.color = 'rgba(120,160,220,0.55)';
       }
     }
 
@@ -2039,6 +2107,7 @@
       loadPeriod(currentCountry, currentIdx);
     }
     updateWindowUI();
+    updatePeriodNavLabel();
   }
 
   // Mode tabs
@@ -2070,6 +2139,7 @@
       renderRankedChart(gd, null);
     }
     updateWindowUI();
+    updatePeriodNavLabel();
   }));
 
   // Bouton + Voir plus dans la légende ranked
@@ -2197,41 +2267,46 @@
     } else {
       currentIdx = +slider.value;
     }
-    loadPeriod(currentCountry,currentIdx);
+    loadPeriod(currentCountry, currentIdx);
   });
 
-  const playBtn = document.getElementById('play-btn');
-  function advance() {
+  function navigatePrev() {
     if (currentMode === 'ranked') {
-      const count = Math.max(1, rankedSlots.length);
-      rankedSlotIdx = (rankedSlotIdx + 1) % count;
+      if (rankedSlotIdx <= 0) return;
+      rankedSlotIdx--;
       slider.value = rankedSlotIdx;
       setCurrentPeriodFromRankedSlot();
     } else {
-      currentIdx = (currentIdx + 1) % periods.length;
+      if (currentIdx <= 0) return;
+      currentIdx--;
       slider.value = currentIdx;
     }
-    loadPeriod(currentCountry,currentIdx);
+    loadPeriod(currentCountry, currentIdx);
   }
-  function togglePlay() {
-    if (playInterval) {
-      clearInterval(playInterval);
-      playInterval = null;
-      playBtn.textContent = '▶';
-      playBtn.classList.remove('playing');
-      playBtn.setAttribute('aria-pressed', 'false');
+  function navigateNext() {
+    if (currentMode === 'ranked') {
+      if (rankedSlotIdx >= rankedSlots.length - 1) return;
+      rankedSlotIdx++;
+      slider.value = rankedSlotIdx;
+      setCurrentPeriodFromRankedSlot();
     } else {
-      playBtn.textContent = '⏸';
-      playBtn.classList.add('playing');
-      playBtn.setAttribute('aria-pressed', 'true');
-      playInterval = setInterval(advance, playSpeed);
+      if (currentIdx >= periods.length - 1) return;
+      currentIdx++;
+      slider.value = currentIdx;
     }
+    loadPeriod(currentCountry, currentIdx);
   }
-  playBtn.addEventListener('click', togglePlay);
-  document.getElementById('speed-btn').addEventListener('click', () => {
-    speedIdx=(speedIdx+1)%SPEEDS.length; playSpeed=SPEEDS[speedIdx];
-    document.getElementById('speed-btn').textContent=SPEED_LABELS[speedIdx];
-    if (playInterval) { clearInterval(playInterval); playInterval=setInterval(advance,playSpeed); }
+
+  document.getElementById('prev-btn').addEventListener('click', navigatePrev);
+  document.getElementById('next-btn').addEventListener('click', navigateNext);
+
+  document.getElementById('left-tracked-clear').addEventListener('click', clearAllTracked);
+
+  document.getElementById('ranked-legend-list').addEventListener('mouseleave', () => {
+    if (hoveredNode !== null) {
+      hoveredNode = null;
+      renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+    }
   });
   // ── Recherche dédiée (panneau droit) ─────────────────────────────────────
   const rankedSearchInput = document.getElementById('ranked-search-input');
@@ -2256,29 +2331,8 @@
   document.addEventListener('keydown', e => {
     if (document.activeElement === rankedSearchInput || document.activeElement === document.getElementById('evo-search')) return;
     if (e.key === '/') { e.preventDefault(); rankedSearchInput.focus(); rankedSearchInput.select(); return; }
-    if (e.key === 'ArrowRight') {
-      if (currentMode === 'ranked') {
-        rankedSlotIdx = Math.min(rankedSlotIdx + 1, Math.max(0, rankedSlots.length - 1));
-        slider.value = rankedSlotIdx;
-        setCurrentPeriodFromRankedSlot();
-      } else {
-        currentIdx = Math.min(currentIdx + 1, periods.length - 1);
-        slider.value = currentIdx;
-      }
-      loadPeriod(currentCountry,currentIdx);
-    }
-    else if (e.key === 'ArrowLeft') {
-      if (currentMode === 'ranked') {
-        rankedSlotIdx = Math.max(rankedSlotIdx - 1, 0);
-        slider.value = rankedSlotIdx;
-        setCurrentPeriodFromRankedSlot();
-      } else {
-        currentIdx = Math.max(currentIdx - 1, 0);
-        slider.value = currentIdx;
-      }
-      loadPeriod(currentCountry,currentIdx);
-    }
-    else if (e.key===' ')         {e.preventDefault();togglePlay();}
+    if (e.key === 'ArrowRight')    { navigateNext(); }
+    else if (e.key === 'ArrowLeft') { navigatePrev(); }
     else if ((e.key==='t'||e.key==='T') && focusedNode) { addTracked(focusedNode); }
     else if (e.key==='Escape')    { if(rankedSearchInput.value){rankedSearchInput.value='';renderRankedSearchResults('');} }
   });
