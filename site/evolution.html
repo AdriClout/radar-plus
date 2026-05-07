@@ -223,6 +223,17 @@
     #evolution-view { position: absolute; inset: 0; display: none; z-index: 5; }
     #evolution-view.visible { display: block; }
     #evo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #live-badge {
+      position: absolute; pointer-events: none; display: none;
+      font-family: 'Space Mono', monospace; font-size: 13px; font-weight: bold;
+      letter-spacing: 2.5px; color: rgba(80,220,140,0.95); text-transform: uppercase;
+      z-index: 25; white-space: nowrap;
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
     #tracked-panel { position: absolute; top: 68px; right: 20px; width: min(290px, 30vw); max-height: calc(100vh - 160px); overflow: hidden; border: 1px solid rgba(95,140,255,0.28); border-radius: 7px; background: linear-gradient(to left, rgba(8,14,40,0.88), rgba(6,10,30,0.70)); box-shadow: 0 0 20px rgba(60,100,210,0.14); padding: 10px; z-index: 11; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(2px); }
     #tracked-title { font-family: 'Orbitron','Space Mono',monospace; font-size: 12px; color: rgba(182,208,255,0.98); text-transform: uppercase; letter-spacing: 1px; }
     #tracked-head { display: flex; align-items: center; justify-content: space-between; }
@@ -274,13 +285,6 @@
     }
     .lpanel-clear-btn.visible { display: block; }
     .lpanel-clear-btn:hover { border-color: rgba(200,80,80,0.5); color: rgba(220,100,100,0.9); }
-    #ranked-legend-more {
-      border: 1px solid rgba(90,130,250,0.25); border-radius: 5px;
-      background: rgba(8,18,48,0.62); color: rgba(140,180,255,0.8);
-      font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 0.5px;
-      padding: 3px 7px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
-    }
-    #ranked-legend-more:hover { border-color: rgba(145,182,255,0.75); color: #d0e8ff; }
     #ranked-legend-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 46vh; }
     .rleg-item {
       display: flex; align-items: center; gap: 7px;
@@ -318,7 +322,7 @@
     .tab:focus-visible,
     .mode-tab:focus-visible,
     .win-btn:focus-visible,
-    #ranked-legend-more:focus-visible,
+
     #prev-btn:focus-visible,
     #next-btn:focus-visible,
     #tracked-clear:focus-visible {
@@ -404,12 +408,19 @@
       text-align: center;
       flex-shrink: 0;
     }
+    /* ── Mode classes sur body ─────────────────────────────────────────────── */
+    #left-tracked-list { display: none; flex-direction: column; gap: 4px; overflow-y: auto; flex: 1; min-height: 0; }
+    body.mode-tracking #left-tracked-list { display: flex; }
+    body.mode-tracking #ranked-legend-period,
+    body.mode-tracking #ranked-legend-list,
+    body.mode-ranked #left-tracked-clear { display: none !important; }
   </style>
 </head>
 <body>
   <div id="loading"><div id="loading-text">initialisation · évolution</div></div>
   <div id="evolution-view">
     <canvas id="evo-canvas"></canvas>
+    <div id="live-badge">EN DIRECT</div>
     <div id="tracked-panel">
       <div id="tracked-head">
         <div id="tracked-title">Suivi Temporel</div>
@@ -455,8 +466,9 @@
     </div>
     <div id="left-hot10-section">
       <div class="lpanel-label-row">
-        <span class="lpanel-label">Hot 10</span>
+        <span class="lpanel-label" id="left-section-label">Hot 10</span>
         <span id="top10-country">CAN</span>
+        <button class="lpanel-clear-btn" id="left-tracked-clear">Vider</button>
       </div>
       <div id="ranked-search-wrap">
         <input type="text" id="ranked-search-input" placeholder="Chercher des objets…" autocomplete="off" spellcheck="false" />
@@ -464,7 +476,7 @@
       </div>
       <div id="ranked-legend-period"></div>
       <div id="ranked-legend-list"></div>
-      <button id="ranked-legend-more" type="button">+ Voir plus</button>
+      <div id="left-tracked-list"></div>
     </div>
   </div>
   <div id="object-panel"></div>
@@ -663,10 +675,13 @@
     }[c]));
   }
 
-  function panelPeriodLabel(period = periods[currentIdx]) {
-    if (!period) return '';
-    const day = toDayLabel(periodDisplayDate(period));
-    const block = blockRangeLabelFromPeriod(period);
+  function panelPeriodLabel(period = null) {
+    const p = period || panelState?.contextPeriod || periods[currentIdx];
+    if (!p) return '';
+    if (p.isVeille) return 'Hier (total)';
+    if (p.isDay && p.dateKey) return toDayLabel(p.dateKey); // journée agrégée : pas de bloc horaire
+    const day = toDayLabel(periodDisplayDate(p));
+    const block = blockRangeLabelFromPeriod(p);
     return `${day} · ${block} EDT`;
   }
 
@@ -696,17 +711,19 @@
     });
   }
 
-  function renderArticlesPanelUnavailable(nodeId) {
+  function renderArticlesPanelUnavailable(nodeId, contextPeriod = null) {
     const panel = document.getElementById('object-panel');
     if (!nodeId) {
       panelState.nodeId = null;
       panelState.expanded = false;
+      panelState.contextPeriod = null;
       panel.classList.remove('visible');
       panel.innerHTML = '';
       return;
     }
 
     panelState.nodeId = nodeId;
+    panelState.contextPeriod = contextPeriod;
     const tracked = trackedObjects.has(nodeId);
     const links = panelLinksFor(nodeId);
 
@@ -726,11 +743,12 @@
     bindPanelTrackButton(nodeId);
   }
 
-  function renderArticlesPanel(node) {
+  function renderArticlesPanel(node, contextPeriod = null) {
     const panel = document.getElementById('object-panel');
     if (!node) {
       panelState.nodeId = null;
       panelState.expanded = false;
+      panelState.contextPeriod = null;
       panel.classList.remove('visible');
       panel.innerHTML = '';
       return;
@@ -738,6 +756,7 @@
 
     if (panelState.nodeId !== node.id) panelState.expanded = false;
     panelState.nodeId = node.id;
+    if (contextPeriod !== null) panelState.contextPeriod = contextPeriod;
 
     const articles = Array.isArray(node.articles) ? node.articles : [];
     const previewCount = 3;
@@ -785,17 +804,18 @@
     if (!panelState.nodeId) return;
     if (currentMode === 'ranked') {
       const slot = rankedSlots[rankedSlotIdx];
-      const gd = getWinPeriodGD(currentCountry, { isDay: true, periodKeys: slot?.periodKeys || [periods[currentIdx]?.key].filter(Boolean) });
+      const ctxPeriod = { isDay: true, periodKeys: slot?.periodKeys || [periods[currentIdx]?.key].filter(Boolean), dateKey: slot?.key };
+      const gd = getWinPeriodGD(currentCountry, ctxPeriod);
       const node = (gd.nodes || []).find(n => n.id === panelState.nodeId);
-      if (node) renderArticlesPanel(node);
-      else renderArticlesPanelUnavailable(panelState.nodeId);
+      if (node) renderArticlesPanel(node, ctxPeriod);
+      else renderArticlesPanelUnavailable(panelState.nodeId, ctxPeriod);
       return;
     }
     const period = periods[currentIdx];
     const gd = getGD(currentCountry, period?.key);
     const node = (gd.nodes || []).find(n => n.id === panelState.nodeId);
-    if (node) renderArticlesPanel(node);
-    else renderArticlesPanelUnavailable(panelState.nodeId);
+    if (node) renderArticlesPanel(node, period);
+    else renderArticlesPanelUnavailable(panelState.nodeId, period);
   }
 
   // ── État ──────────────────────────────────────────────────────────────────
@@ -815,11 +835,10 @@
   let rankedHoverIdx = null;
   let selectedPeriodIdx = null;
   let hoveredNode = null;
-  let rankedShowMore = false;
   let rankedGranularity = 'day';
   let rankedSlots = [];
   let rankedSlotIdx = 0;
-  const panelState = { nodeId: null, expanded: false };
+  const panelState = { nodeId: null, expanded: false, contextPeriod: null };
 
   const RANKED_GRANULARITIES = {
     day: { topN: 10, emptyLabel: 'Journée' },
@@ -971,23 +990,24 @@
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
       const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
-      const starts = [0, 4, 8, 12, 16, 20];
+      // 00-04 is replaced by the veille reference point; only show 04–24 blocks
+      const starts = [4, 8, 12, 16, 20];
       const byStart = new Map();
       slot.periods.forEach(p => {
         const localStart = localBlockStartFromPeriodKey(p.key);
-        if (!Number.isFinite(localStart)) return;
+        if (!Number.isFinite(localStart) || localStart === 0) return; // skip 00-04
         const isFuture = isToday ? localStart > currentBlockStart : false;
         byStart.set(localStart, { ...p, blockStart: localStart, isFuture });
       });
 
-      return starts.map(start => {
+      const dayBlocks = starts.map(start => {
         if (byStart.has(start)) {
           const existing = byStart.get(start);
           if (existing.isFuture) {
             const end = (start + 4) % 24;
             return {
               key: `__synthetic__${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
-              label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
+              label: `${slot.label} · ${FR_BLOCK_LONG[start] || (start + 'h')}`,
               blockStart: start,
               isSynthetic: true,
               isFuture: true
@@ -999,12 +1019,19 @@
         const fakeKey = `__synthetic__${slot.key}_${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`;
         return {
           key: fakeKey,
-          label: `${slot.label} · ${String(start).padStart(2, '0')}-${String(end).padStart(2, '0')}`,
+          label: `${slot.label} · ${FR_BLOCK_LONG[start] || (start + 'h')}`,
           blockStart: start,
           isSynthetic: true,
           isFuture: true
         };
       });
+
+      // Prepend veille reference: yesterday's cumulative total as first anchor point
+      const prevSlot = rankedSlots[rankedSlotIdx - 1];
+      const veilleP = prevSlot?.periodKeys?.length
+        ? { key: `__veille__${prevSlot.key}`, label: 'Hier (total)', isDay: true, periodKeys: prevSlot.periodKeys, isVeille: true, isFuture: false }
+        : { key: `__veille_empty__${slot.key}`, label: 'Hier (total)', isVeille: true, isFuture: false };
+      return [veilleP, ...dayBlocks];
     }
 
     // Semaine / Mois / Année : agréger par JOUR (pas par bloc 4h)
@@ -1112,14 +1139,20 @@
     if (nextBtn) nextBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx >= rankedSlots.length - 1 : currentIdx >= periods.length - 1;
   }
 
+  const FR_BLOCK_LONG  = { 0: 'Minuit–4h', 4: '4h–8h', 8: '8h–Midi', 12: 'Midi–16h', 16: '16h–20h', 20: '20h–Minuit' };
+  const FR_BLOCK_SHORT = { 0: 'Minuit',    4: '4h',    8: '8h',     12: 'Midi',     16: '16h',     20: '20h'    };
+
+  function blockStartFromPeriod(period) {
+    const ex = Number(period?.blockStart);
+    if (Number.isFinite(ex)) return ex;
+    const ls = localBlockStartFromPeriodKey(period?.key);
+    return Number.isFinite(ls) ? ls : 0;
+  }
+
   function blockRangeLabelFromPeriod(period) {
-    const explicitStart = Number(period?.blockStart);
-    const localStart = localBlockStartFromPeriodKey(period?.key);
-    const start = Number.isFinite(explicitStart)
-      ? explicitStart
-      : (Number.isFinite(localStart) ? localStart : 0);
-    const end = (start + 4) % 24;
-    return `${String(start).padStart(2, '0')} h-${String(end).padStart(2, '0')} h`;
+    if (period?.isVeille) return 'Hier (total)';
+    const start = blockStartFromPeriod(period);
+    return FR_BLOCK_LONG[start] ?? `${String(start).padStart(2,'0')}h–${String((start+4)%24).padStart(2,'0')}h`;
   }
 
   function updatePeriodSummary(country, idx) {
@@ -1364,6 +1397,7 @@
     const winPeriods = getRankedWindowPeriods();
     const isHoverBlock = hoverIdx !== null && hoverIdx >= 0;
     const limit = 10;
+    const activeSeries = series;
     const currentPKey = periods[currentIdx]?.key;
     const idx = (hoverIdx !== null && hoverIdx >= 0) ? hoverIdx
       : winPeriods.findIndex(p => p.isDay ? (p.periodKeys?.includes(currentPKey)) : p.key === currentPKey);
@@ -1380,7 +1414,7 @@
         periodEl.style.color = 'rgba(150,210,255,0.88)';
       } else {
         const cumulLabel = rankedGranularity === 'day'
-          ? `Total cumulé depuis 00h · ${slotLabel}`
+          ? `Total cumulé · ${slotLabel}`
           : `Total cumulé · ${slotLabel}`;
         periodEl.textContent = cumulLabel;
         periodEl.style.color = 'rgba(120,160,220,0.55)';
@@ -1393,7 +1427,11 @@
       const gNow = getWinPeriodGD(currentCountry, hoverPeriod);
       const prevPeriod = safeIdx > 0 ? winPeriods[safeIdx - 1] : null;
       const gPrev = prevPeriod ? getWinPeriodGD(currentCountry, prevPeriod) : { nodes: [] };
-      const prevMap = new Map((gPrev.nodes || []).map(n => [n.id, Number(n.size) || 0]));
+      const prevRankMap = new Map(
+        (gPrev.nodes || []).slice()
+          .sort((a, b) => (Number(b.size)||0) - (Number(a.size)||0))
+          .map((n, i) => [n.id, i + 1])
+      );
 
       rows = (gNow.nodes || [])
         .slice()
@@ -1401,9 +1439,10 @@
         .slice(0, limit)
         .map((n, i) => {
           const val = Number(n.size) || 0;
-          const prev = prevMap.has(n.id) ? prevMap.get(n.id) : null;
-          const delta = prev !== null ? val - prev : null;
-          const isNew = delta === null && safeIdx > 0;
+          const curRank = i + 1;
+          const prevRank = prevRankMap.has(n.id) ? prevRankMap.get(n.id) : null;
+          const delta = prevRank !== null ? prevRank - curRank : null;
+          const isNew = prevRank === null && safeIdx > 0;
           return {
             id: n.id,
             color: getObjectColor(n.id),
@@ -1416,19 +1455,34 @@
           };
         });
     } else {
-      rows = series
-        .map(s => {
-          const cum = s.data.reduce((acc, v) => acc + (v ?? 0), 0);
-          const val = s.data[safeIdx] ?? null;
-          const prev = safeIdx > 0 ? s.data[safeIdx - 1] ?? null : null;
-          const delta = (val !== null && prev !== null) ? val - prev : null;
-          const hadPrev = safeIdx > 0 && s.data.slice(0, safeIdx).some(v => v != null && v > 0);
-          const isNew = delta === null && safeIdx > 0 && !hadPrev;
-          const isReturn = delta === null && safeIdx > 0 && hadPrev;
-          return { id: s.id, color: s.color, val, displayVal: cum, delta, isNew, isReturn, maxVal: s.maxVal ?? 0 };
-        })
+      const hasVeille = winPeriods.length > 0 && winPeriods[0]?.isVeille;
+      let veilleRankMap = null;
+      if (hasVeille) {
+        const veilleScores = activeSeries
+          .filter(s => (s.data[0] ?? 0) > 0)
+          .map(s => ({ id: s.id, v: s.data[0] }));
+        veilleScores.sort((a, b) => b.v - a.v);
+        veilleRankMap = new Map(veilleScores.map((x, i) => [x.id, i + 1]));
+      }
+      const cumRows = activeSeries.map(s => {
+        const cum = s.data.reduce((acc, v, i) => {
+          if (hasVeille && i === 0) return acc;
+          return acc + (v ?? 0);
+        }, 0);
+        const hadPrev = safeIdx > 0 && s.data.slice(0, safeIdx).some(v => v != null && v > 0);
+        const isNew = !veilleRankMap?.has(s.id) && safeIdx > 0;
+        const isReturn = !isNew && safeIdx > 0 && hadPrev && !(s.data[safeIdx] > 0);
+        return { id: s.id, color: s.color, displayVal: cum, isNew, isReturn, maxVal: s.maxVal ?? 0 };
+      });
+      rows = cumRows
         .sort((a, b) => b.displayVal - a.displayVal)
-        .slice(0, limit);
+        .slice(0, limit)
+        .map((r, i) => {
+          const curRank = i + 1;
+          const prevRank = veilleRankMap?.get(r.id) ?? null;
+          const delta = prevRank !== null ? prevRank - curRank : null;
+          return { ...r, val: r.displayVal, delta };
+        });
     }
 
     const hasVisibleFocusedL = focusedNode !== null && rows.some(r => r.id === focusedNode);
@@ -1443,11 +1497,14 @@
       const isDimmed   = hasHover && !isFocused && !isHovered && !isTracked;
 
       let deltaTxt = '', deltaClass = 'flat';
-      const compLabel = { day: 'vs hier', week: 'vs sem. passée', month: 'vs mois passé', year: 'vs an passé' }[rankedGranularity] || '';
-      if (r.delta !== null && Math.abs(r.delta) >= 0.01) {
+      const prevPeriodForLabel = isHoverBlock ? (safeIdx > 0 ? winPeriods[safeIdx - 1] : null) : null;
+      const compLabel = rankedGranularity === 'day'
+        ? (prevPeriodForLabel?.isVeille ? 'vs hier (moy./bloc)' : prevPeriodForLabel ? `vs ${blockRangeLabelFromPeriod(prevPeriodForLabel)}` : 'vs hier')
+        : ({ week: 'vs sem. passée', month: 'vs mois passé', year: 'vs an passé' }[rankedGranularity] || '');
+      if (r.delta !== null && r.delta !== 0) {
         deltaClass = r.delta > 0 ? 'up' : 'down';
-        deltaTxt = `${r.delta > 0 ? '▲' : '▼'} ${Math.abs(r.delta).toFixed(1)}`;
-      } else if (r.delta !== null) {
+        deltaTxt = `${r.delta > 0 ? '↑' : '↓'}${Math.abs(r.delta)}`;
+      } else if (r.delta === 0) {
         deltaTxt = '=';
       } else if (r.isNew) {
         deltaTxt = 'NVX'; deltaClass = 'new-entry';
@@ -1497,25 +1554,25 @@
           }
           return;
         }
-        // En mode ranked : remplace la sélection (1 objet à la fois depuis le Hot 10)
-        if (currentMode === 'ranked') {
-          trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
-        }
         focusedNode = r.id;
-        addTracked(r.id);
         let sourceGraph;
+        let sourcePeriod;
         if (isHoverBlock) {
-          sourceGraph = getWinPeriodGD(currentCountry, winPeriods[safeIdx]);
+          sourcePeriod = winPeriods[safeIdx];
+          sourceGraph = getWinPeriodGD(currentCountry, sourcePeriod);
         } else {
           const slot = rankedSlots[rankedSlotIdx];
-          sourceGraph = getWinPeriodGD(currentCountry, { isDay: true, periodKeys: slot?.periodKeys || [] });
+          sourcePeriod = { isDay: true, periodKeys: slot?.periodKeys || [], dateKey: slot?.key };
+          sourceGraph = getWinPeriodGD(currentCountry, sourcePeriod);
         }
         const sourceNode = (sourceGraph.nodes || []).find(n => n.id === r.id);
-        if (sourceNode) renderArticlesPanel(sourceNode);
-        else renderArticlesPanelUnavailable(r.id);
+        if (sourceNode) renderArticlesPanel(sourceNode, sourcePeriod);
+        else renderArticlesPanelUnavailable(r.id, sourcePeriod);
         if (currentMode === 'ranked') {
-          setMode('tracking');
+          renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+          renderRankedLegend(series, rankedHoverIdx);
         } else {
+          addTracked(r.id);
           renderEvolutionChart();
           renderTrackedList();
         }
@@ -1524,11 +1581,6 @@
       list.appendChild(item);
     });
 
-    // Bouton + Voir plus / moins
-    const moreBtn = document.getElementById('ranked-legend-more');
-    if (moreBtn) {
-      moreBtn.style.display = 'none';
-    }
   }
 
   const rankedSeriesCache = new Map();
@@ -1583,9 +1635,10 @@
       const g = getWinPeriodGD(currentCountry, p);
       const topIds = (g.nodes || []).slice(0, 10).map(n => n.id);
       const nodeById = new Map((g.nodes || []).map(nd => [nd.id, nd]));
+      const veilleNorm = p.isVeille ? (Array.isArray(p.periodKeys) ? (p.periodKeys.length || 1) : 6) : 1;
       for (const id of topIds) {
         unionIds.add(id);
-        const val = Number(nodeById.get(id)?.size) || 0;
+        const val = (Number(nodeById.get(id)?.size) || 0) / veilleNorm;
         scoreMap.set(id, (scoreMap.get(id) || 0) + val);
         hitMap.set(id, (hitMap.get(id) || 0) + 1);
       }
@@ -1606,7 +1659,13 @@
       maxVal: 0,
       data: wp.map(p => {
         const g = getWinPeriodGD(currentCountry, p);
-        return g.nodes.find(nd => nd.id === id)?.size ?? null;
+        const size = g.nodes.find(nd => nd.id === id)?.size ?? null;
+        // Veille = somme des blocs d'hier → normaliser en moyenne par bloc pour garder la même échelle
+        if (p.isVeille && size !== null) {
+          const nBlocks = Array.isArray(p.periodKeys) ? (p.periodKeys.length || 1) : 6;
+          return size / nBlocks;
+        }
+        return size;
       })
     }));
     series.forEach(s => {
@@ -1673,10 +1732,253 @@
     return rightPad;
   }
 
+  // ── Mode Jour : axe X = heures réelles (0h–24h) ─────────────────────────
+
+  function dayBlockHour(p) {
+    if (!p || p.isVeille) return 0;
+    const s = blockStartFromPeriod(p);
+    return Number.isFinite(s) ? s : 0;
+  }
+
+  function renderDayModeChart(gd, hoverIdx = null) {
+    const canvas = document.getElementById('evo-canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width; canvas.height = rect.height;
+    const W = canvas.width, H = canvas.height;
+    if (!W || !H) return;
+    const ctx = canvas.getContext('2d');
+    const lb = document.getElementById('live-badge');
+
+    ctx.fillStyle = '#00000f'; ctx.fillRect(0, 0, W, H);
+    if (lb) lb.style.display = 'none';
+    STARS.forEach(s => {
+      ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(180,205,255,${(s.a * 0.35).toFixed(2)})`; ctx.fill();
+    });
+
+    const { PAD, chartW, chartH } = getRankedChartLayout(rect);
+    const xOfHour = h => PAD.left + (h / 24) * chartW;
+
+    const winPeriods = getRankedWindowPeriods();
+    const series = getRankedChartSeries(gd, winPeriods);
+
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const slot = rankedSlots[rankedSlotIdx];
+    const isToday = slot?.key === todayKey;
+    const liveHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+
+    const allVals = series.flatMap(s => s.data.filter(v => v !== null));
+    const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
+    const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
+
+    // Y grid horizontal
+    ctx.font = '9px "Space Mono", monospace';
+    for (let gi = 0; gi <= 5; gi++) {
+      const v = (gi / 5) * maxVal, y = yOf(v);
+      ctx.strokeStyle = 'rgba(55,85,175,0.18)'; ctx.lineWidth = 1; ctx.setLineDash([3, 6]);
+      ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + chartW, y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(110,150,215,0.55)'; ctx.textAlign = 'left';
+      ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left + chartW + 5, y + 3);
+    }
+
+    // X grid vertical : lignes pâles à 2h, foncées à 4h
+    [2, 6, 10, 14, 18, 22].forEach(h => {
+      ctx.strokeStyle = 'rgba(38,55,125,0.13)'; ctx.lineWidth = 1; ctx.setLineDash([2, 8]);
+      ctx.beginPath(); ctx.moveTo(xOfHour(h), PAD.top); ctx.lineTo(xOfHour(h), PAD.top + chartH); ctx.stroke();
+      ctx.setLineDash([]);
+    });
+    [0, 4, 8, 12, 16, 20, 24].forEach(h => {
+      ctx.strokeStyle = 'rgba(55,85,175,0.28)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(xOfHour(h), PAD.top); ctx.lineTo(xOfHour(h), PAD.top + chartH); ctx.stroke();
+    });
+
+    // Axes
+    ctx.strokeStyle = 'rgba(75,115,195,0.22)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
+
+    // Labels X
+    const DAY_LABELS = [
+      { h: 0, label: 'Hier', align: 'left' },
+      { h: 4, label: '4h', align: 'center' },
+      { h: 8, label: '8h', align: 'center' },
+      { h: 12, label: 'Midi', align: 'center' },
+      { h: 16, label: '16h', align: 'center' },
+      { h: 20, label: '20h', align: 'center' },
+    ];
+    DAY_LABELS.forEach(({ h, label, align }) => {
+      const x = xOfHour(h);
+      ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, PAD.top + chartH); ctx.lineTo(x, PAD.top + chartH + 5); ctx.stroke();
+      ctx.font = '11px "Space Mono", monospace'; ctx.textAlign = align;
+      ctx.fillStyle = 'rgba(138,176,235,0.85)';
+      ctx.fillText(label, x, PAD.top + chartH + 18);
+    });
+
+    // Séparateur entre Hier et les blocs du jour
+    const sepX = (xOfHour(0) + xOfHour(4)) / 2;
+    ctx.strokeStyle = 'rgba(80,100,180,0.22)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
+    ctx.beginPath(); ctx.moveTo(sepX, PAD.top); ctx.lineTo(sepX, PAD.top + chartH); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Zone future (après le dernier bloc réel, aujourd'hui seulement)
+    if (isToday) {
+      let lastRealH = 0;
+      winPeriods.forEach(p => {
+        if (!p.isFuture && !p.isSynthetic && !p.isVeille) {
+          const h = dayBlockHour(p); if (h > lastRealH) lastRealH = h;
+        }
+      });
+      const futureStartX = xOfHour(lastRealH + 4);
+      if (futureStartX < PAD.left + chartW) {
+        const grad = ctx.createLinearGradient(futureStartX, 0, PAD.left + chartW, 0);
+        grad.addColorStop(0, 'rgba(15,25,70,0.0)'); grad.addColorStop(1, 'rgba(15,25,70,0.24)');
+        ctx.fillStyle = grad; ctx.fillRect(futureStartX, PAD.top, PAD.left + chartW - futureStartX, chartH);
+      }
+    }
+
+    // Dimming
+    const hasPeriodSelection = selectedPeriodIdx !== null;
+    const hasVisF = focusedNode !== null && series.some(s => s.id === focusedNode);
+    const hasVisH = hoveredNode !== null && series.some(s => s.id === hoveredNode);
+    const hasVisT = series.some(s => trackedObjects.has(s.id));
+    const hasActiveNode = hasVisF || hasVisH || hasVisT;
+
+    series.forEach(s => {
+      const [r, g, b] = hexToRgb(s.color);
+      const isFocused = focusedNode === s.id;
+      const isHovS = hoveredNode === s.id;
+      const isTracked = trackedObjects.has(s.id);
+      const isActive = isFocused || isHovS || isTracked;
+      const isDimmed = (hasActiveNode && !isActive) || (hasPeriodSelection && !hasActiveNode);
+      const lineW = isActive ? 3.2 : 2;
+      const shadowB = isActive ? 14 : (isDimmed ? 0 : 7);
+
+      // Points de données réels (non-futur, non-synthétique)
+      const pts = [];
+      winPeriods.forEach((p, i) => {
+        if ((p.isFuture && !p.isSynthetic) || p.isSynthetic) return;
+        if (s.data[i] === null) return;
+        pts.push({ h: dayBlockHour(p), v: s.data[i], wi: i });
+      });
+      if (!pts.length) return;
+
+      // Ligne à travers les points réels
+      ctx.beginPath();
+      pts.forEach(({ h, v }, pi) => {
+        const x = xOfHour(h), y = yOf(v);
+        if (pi === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.15)` : s.color;
+      ctx.lineWidth = lineW; ctx.shadowColor = s.color; ctx.shadowBlur = shadowB;
+      ctx.stroke(); ctx.shadowBlur = 0;
+
+      // Extension live : ligne pointillée horizontale du dernier bloc à l'heure actuelle
+      if (isToday && pts.length) {
+        const last = pts[pts.length - 1];
+        if (liveHour > last.h) {
+          const endH = Math.min(liveHour, 24);
+          ctx.beginPath(); ctx.moveTo(xOfHour(last.h), yOf(last.v)); ctx.lineTo(xOfHour(endH), yOf(last.v));
+          ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.08)` : `rgba(${r},${g},${b},0.48)`;
+          ctx.lineWidth = lineW * 0.7; ctx.setLineDash([4, 5]);
+          ctx.shadowColor = s.color; ctx.shadowBlur = isDimmed ? 0 : 4;
+          ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
+        }
+      }
+
+      // Points (dots) sur les blocs réels
+      pts.forEach(({ h, v, wi }) => {
+        const x = xOfHour(h), y = yOf(v);
+        const isSelected = hasPeriodSelection && selectedPeriodIdx === wi;
+        const dotR = isSelected ? 6 : (isActive ? 5 : (h === 0 ? 3 : 3.5));
+        ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2);
+        if (isSelected) {
+          ctx.fillStyle = `rgba(${r},${g},${b},0.98)`;
+          ctx.shadowColor = s.color; ctx.shadowBlur = 16;
+        } else {
+          ctx.fillStyle = isDimmed ? `rgba(${r},${g},${b},0.15)` : `rgba(${r},${g},${b},${isActive ? 0.98 : 0.82})`;
+          if (isActive) { ctx.shadowColor = s.color; ctx.shadowBlur = 12; }
+        }
+        ctx.fill();
+        if (isSelected) { ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.5; ctx.stroke(); }
+        ctx.shadowBlur = 0;
+      });
+
+      // Point live mobile à l'heure actuelle
+      if (isToday && pts.length && liveHour > pts[pts.length - 1].h) {
+        const lastV = pts[pts.length - 1].v;
+        const lx = xOfHour(Math.min(liveHour, 24));
+        ctx.beginPath(); ctx.arc(lx, yOf(lastV), isActive ? 4.5 : 3, 0, Math.PI * 2);
+        ctx.fillStyle = isDimmed ? `rgba(${r},${g},${b},0.12)` : `rgba(${r},${g},${b},0.78)`;
+        if (isActive && !isDimmed) { ctx.shadowColor = s.color; ctx.shadowBlur = 8; }
+        ctx.fill(); ctx.shadowBlur = 0;
+      }
+    });
+
+    // Ligne EN DIRECT + badge
+    if (isToday) {
+      const lx = xOfHour(Math.min(liveHour, 24));
+      ctx.strokeStyle = 'rgba(100,220,160,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(lx, PAD.top); ctx.lineTo(lx, PAD.top + chartH); ctx.stroke();
+      ctx.setLineDash([]);
+      if (lb) {
+        const cr = canvas.getBoundingClientRect();
+        lb.style.display = 'block';
+        lb.style.left = (cr.left + lx + 6) + 'px';
+        lb.style.top = (cr.top + PAD.top + 4) + 'px';
+      }
+    }
+
+    // Hover overlay
+    if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < winPeriods.length) {
+      const hp = winPeriods[hoverIdx];
+      if (!hp.isFuture && !hp.isSynthetic) {
+        const hx = xOfHour(dayBlockHour(hp));
+        if (!hasPeriodSelection || hoverIdx !== selectedPeriodIdx) {
+          ctx.strokeStyle = 'rgba(200,220,255,0.18)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+          ctx.beginPath(); ctx.moveTo(hx, PAD.top); ctx.lineTo(hx, PAD.top + chartH); ctx.stroke(); ctx.setLineDash([]);
+          series.forEach(s => {
+            const v = s.data[hoverIdx]; if (v === null) return;
+            ctx.beginPath(); ctx.arc(hx, yOf(v), focusedNode === s.id ? 6.2 : 5, 0, Math.PI * 2);
+            ctx.fillStyle = s.color; ctx.shadowColor = s.color; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
+          });
+        }
+      }
+    }
+
+    // Sélection persistante
+    if (hasPeriodSelection && selectedPeriodIdx >= 0 && selectedPeriodIdx < winPeriods.length) {
+      const sp = winPeriods[selectedPeriodIdx];
+      if (!sp.isFuture && !sp.isSynthetic) {
+        const sx = xOfHour(dayBlockHour(sp));
+        ctx.strokeStyle = 'rgba(200,225,255,0.45)'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]);
+        ctx.beginPath(); ctx.moveTo(sx, PAD.top); ctx.lineTo(sx, PAD.top + chartH); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(200,225,255,0.8)';
+        ctx.font = '9px "Space Mono", monospace'; ctx.textAlign = 'center';
+        ctx.fillText('▼', sx, PAD.top - 10);
+      }
+    }
+
+    // Aligner le slider
+    const sliderRow = document.getElementById('slider-row');
+    if (sliderRow) {
+      const ctrlPad = 24;
+      sliderRow.style.paddingLeft  = `${Math.max(0, PAD.left  - ctrlPad)}px`;
+      sliderRow.style.paddingRight = `${Math.max(0, PAD.right - ctrlPad)}px`;
+    }
+
+    const effectiveHoverIdx = hasPeriodSelection ? selectedPeriodIdx : hoverIdx;
+    requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
+  }
+
   function periodTickParts(period) {
     if (rankedGranularity === 'day') {
-      const label = blockRangeLabelFromPeriod(period).replace(' h-', '-').replace(' h', '');
-      return { major: label, minor: '' };
+      if (period?.isVeille) return { major: 'Hier', minor: '' };
+      const start = blockStartFromPeriod(period);
+      return { major: FR_BLOCK_SHORT[start] ?? (String(start) + 'h'), minor: '' };
     }
 
     const dateStr = periodDisplayDate(period);
@@ -1697,6 +1999,7 @@
   }
 
   function renderRankedChart(gd, hoverIdx = null) {
+    if (rankedGranularity === 'day') { renderDayModeChart(gd, hoverIdx); return; }
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -1708,6 +2011,8 @@
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#00000f';
     ctx.fillRect(0, 0, W, H);
+    // Badge live caché par défaut — réactivé plus bas si journée partielle
+    { const lb = document.getElementById('live-badge'); if (lb) lb.style.display = 'none'; }
 
     STARS.forEach(s => {
       ctx.beginPath();
@@ -1814,9 +2119,21 @@
     const currentPKey = periods[currentIdx]?.key;
     const winCurrentIdx = winPeriods.findIndex(p => p.isDay ? (p.periodKeys?.includes(currentPKey)) : p.key === currentPKey);
 
-    // ── Journée en construction : fantôme + zone future ──────────────────────
+    // ── Journée en construction : zone future ──────────────────────
+    const hasVeillePoint = winPeriods.length > 0 && winPeriods[0]?.isVeille;
     const firstFutureIdx = winPeriods.findIndex(p => p.isFuture);
     const isPartialDay = rankedGranularity === 'day' && firstFutureIdx > 0;
+    const liveBadge = document.getElementById('live-badge');
+
+    // Séparateur visuel entre le point "Hier" et les blocs d'aujourd'hui
+    if (hasVeillePoint && n > 1) {
+      const sepX = (xOf(0) + xOf(1)) / 2;
+      ctx.strokeStyle = 'rgba(80,100,180,0.25)';
+      ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
+      ctx.beginPath(); ctx.moveTo(sepX, PAD.top); ctx.lineTo(sepX, PAD.top + chartH); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
     if (isPartialDay) {
       // Zone future — gradient subtil du bord du dernier bloc complété vers la droite
       const futureX = n > 1
@@ -1837,39 +2154,41 @@
         ctx.fillText(periodTickParts(winPeriods[i]).major, x, PAD.top + chartH + 18);
       });
 
-      // Fantôme de la journée précédente (référence)
-      const prevSlot = rankedSlots[rankedSlotIdx - 1];
-      if (prevSlot?.periodKeys?.length) {
-        const allGhostVals = series.flatMap(s =>
-          prevSlot.periodKeys.map(k => graphs[currentCountry]?.[k]?.nodes?.find(nd => nd.id === s.id)?.size ?? null)
-            .filter(v => v !== null)
-        );
-        const ghostMax = allGhostVals.length ? Math.max(...allGhostVals, maxVal) : maxVal;
-        const yGhost = v => PAD.top + chartH - (v / ghostMax) * chartH;
-        const ghostN = prevSlot.periodKeys.length;
-        series.forEach(s => {
-          const [r, g2, b] = hexToRgb(s.color);
-          const ghostData = prevSlot.periodKeys.map(k =>
-            graphs[currentCountry]?.[k]?.nodes?.find(nd => nd.id === s.id)?.size ?? null
+      // Fantôme de la veille — uniquement si le point "Hier" n'est pas déjà affiché
+      if (!hasVeillePoint) {
+        const prevSlot = rankedSlots[rankedSlotIdx - 1];
+        if (prevSlot?.periodKeys?.length) {
+          const allGhostVals = series.flatMap(s =>
+            prevSlot.periodKeys.map(k => graphs[currentCountry]?.[k]?.nodes?.find(nd => nd.id === s.id)?.size ?? null)
+              .filter(v => v !== null)
           );
-          if (ghostData.every(v => v === null)) return;
-          ctx.beginPath();
-          let gFirst = true;
-          ghostData.forEach((v, i) => {
-            if (v === null) { gFirst = true; return; }
-            const gx = PAD.left + (ghostN > 1 ? (i / (ghostN - 1)) * chartW : chartW / 2);
-            const gy = yGhost(v);
-            if (gFirst) { ctx.moveTo(gx, gy); gFirst = false; } else ctx.lineTo(gx, gy);
+          const ghostMax = allGhostVals.length ? Math.max(...allGhostVals, maxVal) : maxVal;
+          const yGhost = v => PAD.top + chartH - (v / ghostMax) * chartH;
+          const ghostN = prevSlot.periodKeys.length;
+          series.forEach(s => {
+            const [r, g2, b] = hexToRgb(s.color);
+            const ghostData = prevSlot.periodKeys.map(k =>
+              graphs[currentCountry]?.[k]?.nodes?.find(nd => nd.id === s.id)?.size ?? null
+            );
+            if (ghostData.every(v => v === null)) return;
+            ctx.beginPath();
+            let gFirst = true;
+            ghostData.forEach((v, i) => {
+              if (v === null) { gFirst = true; return; }
+              const gx = PAD.left + (ghostN > 1 ? (i / (ghostN - 1)) * chartW : chartW / 2);
+              const gy = yGhost(v);
+              if (gFirst) { ctx.moveTo(gx, gy); gFirst = false; } else ctx.lineTo(gx, gy);
+            });
+            ctx.strokeStyle = `rgba(${r},${g2},${b},0.13)`;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
           });
-          ctx.strokeStyle = `rgba(${r},${g2},${b},0.13)`;
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([3, 5]);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        });
+        }
       }
 
-      // Indicateur "live" au dernier bloc complété
+      // Ligne verticale et badge "EN DIRECT" au dernier bloc complété
       const liveIdx = firstFutureIdx - 1;
       if (liveIdx >= 0) {
         const lx = xOf(liveIdx);
@@ -1877,10 +2196,15 @@
         ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
         ctx.beginPath(); ctx.moveTo(lx, PAD.top); ctx.lineTo(lx, PAD.top + chartH); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = 'rgba(100,220,160,0.75)';
-        ctx.font = '8px "Space Mono", monospace'; ctx.textAlign = 'left';
-        ctx.fillText('LIVE', lx + 4, PAD.top + 12);
+        if (liveBadge) {
+          const canvasRect = canvas.getBoundingClientRect();
+          liveBadge.style.display = 'block';
+          liveBadge.style.left = (canvasRect.left + lx + 6) + 'px';
+          liveBadge.style.top = (canvasRect.top + PAD.top + 4) + 'px';
+        }
       }
+    } else {
+      if (liveBadge) liveBadge.style.display = 'none';
     }
 
     // Sélection persistante : priorité sur le hover pour les stats et le visuel
@@ -2022,6 +2346,20 @@
       return;
     }
 
+    if (rankedGranularity === 'day') {
+      const hoverHour = ((canvasX - PAD.left) / chartW) * 24;
+      let closest = null, closestDist = Infinity;
+      winPeriods.forEach((p, i) => {
+        if (p.isFuture) return;
+        const d = Math.abs(dayBlockHour(p) - hoverHour);
+        if (d < closestDist) { closestDist = d; closest = i; }
+      });
+      rankedHoverIdx = closest;
+      renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+      updatePeriodNavLabel();
+      return;
+    }
+
     const idx = Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))));
     rankedHoverIdx = idx;
     const gd = getGD(currentCountry, periods[currentIdx]?.key);
@@ -2062,6 +2400,7 @@
     const ctx = canvas.getContext('2d');
 
     ctx.fillStyle = '#00000f'; ctx.fillRect(0, 0, W, H);
+    { const lb = document.getElementById('live-badge'); if (lb) lb.style.display = 'none'; }
     STARS.forEach(s => {
       ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(180,205,255,${(s.a * 0.35).toFixed(2)})`; ctx.fill();
@@ -2206,7 +2545,9 @@
 
     const tt = document.getElementById('evo-tooltip');
     const period = periods[idx];
-    document.getElementById('evo-tooltip-period').textContent = period?.label || '';
+    const ttDay = period ? toDayLabel(periodDisplayDate(period)) : '';
+    const ttBlock = period ? blockRangeLabelFromPeriod(period) : '';
+    document.getElementById('evo-tooltip-period').textContent = period ? `${ttDay} · ${ttBlock}` : '';
     const series = [...trackedObjects].map(id => {
       const g = graphs[currentCountry]?.[period?.key];
       return { id, color: getTrackColor(id), val: g?.nodes.find(nd => nd.id === id)?.size ?? null };
@@ -2248,6 +2589,10 @@
 
     currentMode = mode;
     clearRankedSeriesCache();
+    document.body.classList.toggle('mode-ranked', mode === 'ranked');
+    document.body.classList.toggle('mode-tracking', mode === 'tracking');
+    const leftLabel = document.getElementById('left-section-label');
+    if (leftLabel) leftLabel.textContent = mode === 'tracking' ? 'Suivi' : 'Hot 10';
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
 
     // Swapper les données + slider selon le mode
@@ -2300,7 +2645,7 @@
     rankedGranularity = btn.dataset.gran || 'day';
     rankedHoverIdx = null;
     selectedPeriodIdx = null;
-    rankedShowMore = false;
+
     clearRankedSeriesCache();
     if (currentMode === 'tracking') {
       const trackingBasePeriods = (tsData?.meta?.periods || []);
@@ -2324,14 +2669,6 @@
     updatePeriodNavLabel();
   }));
 
-  // Bouton + Voir plus dans la légende ranked
-  document.getElementById('ranked-legend-more').addEventListener('click', () => {
-    rankedShowMore = !rankedShowMore;
-    const gd = getGD(currentCountry, periods[currentIdx]?.key);
-    const series = getRankedSeries(gd, Infinity);
-    const effectiveIdx = selectedPeriodIdx !== null ? selectedPeriodIdx : rankedHoverIdx;
-    renderRankedLegend(series, effectiveIdx);
-  });
 
   // Evolution canvas events
   const evoCanvas = document.getElementById('evo-canvas');
@@ -2372,9 +2709,20 @@
       }
 
       // Sélectionner la colonne la plus proche
-      selectedPeriodIdx = n > 1
-        ? Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))))
-        : 0;
+      if (rankedGranularity === 'day') {
+        const hoverHour = ((canvasX - PAD.left) / chartW) * 24;
+        let closest = 0, closestDist = Infinity;
+        winPeriods.forEach((p, i) => {
+          if (p.isFuture) return;
+          const d = Math.abs(dayBlockHour(p) - hoverHour);
+          if (d < closestDist) { closestDist = d; closest = i; }
+        });
+        selectedPeriodIdx = closest;
+      } else {
+        selectedPeriodIdx = n > 1
+          ? Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))))
+          : 0;
+      }
 
       // Chercher un point proche du clic
       if (series.length) {
@@ -2399,8 +2747,8 @@
               : clickedWinPeriod
           );
           const articleNode = (periodGd.nodes || []).find(n2 => n2.id === hitId);
-          if (articleNode) renderArticlesPanel(articleNode);
-          else renderArticlesPanelUnavailable(hitId);
+          if (articleNode) renderArticlesPanel(articleNode, clickedWinPeriod);
+          else renderArticlesPanelUnavailable(hitId, clickedWinPeriod);
         } else {
           renderArticlesPanel(null);
         }
@@ -2457,12 +2805,20 @@
   });
   document.getElementById('tracked-clear').addEventListener('click', () => {
     trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
+    focusedNode = null;
+    renderArticlesPanel(null);
     renderTrackedList();
     if (currentMode === 'tracking') {
       updatePeriodSummary(currentCountry, currentIdx);
       renderEvolutionChart();
+    } else {
+      const gd = getGD(currentCountry, periods[currentIdx]?.key);
+      renderRankedChart(gd, rankedHoverIdx);
     }
   });
+
+  const leftTrackedClear = document.getElementById('left-tracked-clear');
+  if (leftTrackedClear) leftTrackedClear.addEventListener('click', clearAllTracked);
 
   const slider = document.getElementById('timeline');
   slider.max = periods.length-1; slider.value = currentIdx;
@@ -2604,6 +2960,10 @@
         !panel.contains(e.target) && !e.target.closest('.rleg-item') &&
         !e.target.closest('.tracked-item')) {
       renderArticlesPanel(null);
+      if (currentMode === 'ranked' && focusedNode !== null) {
+        focusedNode = null;
+        renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+      }
     }
     // Clic hors du canvas : désélectionner la période
     if (currentMode === 'ranked' && selectedPeriodIdx !== null && !clickOnCanvas) {
@@ -2626,6 +2986,29 @@
   // Mode par défaut: classement évolutif
   setMode('ranked');
   renderTrackedList();
+
+  // ── Timer live : EN DIRECT avance chaque 30s ─────────────────────────────
+  setInterval(() => {
+    if (currentMode !== 'ranked' || rankedGranularity !== 'day') return;
+    const now = new Date();
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    if (rankedSlots[rankedSlotIdx]?.key !== todayKey) return;
+    renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+  }, 30000);
+
+  // ── Auto-reload à chaque frontière de bloc UTC (= début de bloc EDT) ─────
+  (() => {
+    const utcBoundaries = [0, 4, 8, 12, 16, 20]; // heures UTC = fins de blocs EDT
+    const now = new Date();
+    const curSec = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+    let minDiff = Infinity;
+    for (const b of utcBoundaries) {
+      const bSec = b * 3600;
+      const diff = bSec > curSec ? bSec - curSec : (bSec + 86400) - curSec;
+      if (diff < minDiff) minDiff = diff;
+    }
+    setTimeout(() => window.location.reload(), minDiff * 1000 + 12000);
+  })();
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
   const urlNode = urlParams.get('node');
