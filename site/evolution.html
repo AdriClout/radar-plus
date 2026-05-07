@@ -1379,30 +1379,42 @@
         });
     } else {
       const hasVeille = winPeriods.length > 0 && winPeriods[0]?.isVeille;
-      let veilleRankMap = null;
-      if (hasVeille) {
+      // Construire un prevRankMap depuis la veille (JOUR) ou le slot précédent (SEMAINE/MOIS/ANNÉE)
+      let prevRankMap = null;
+      if (rankedGranularity === 'day' && hasVeille) {
         const veilleScores = activeSeries
           .filter(s => (s.data[0] ?? 0) > 0)
           .map(s => ({ id: s.id, v: s.data[0] }));
         veilleScores.sort((a, b) => b.v - a.v);
-        veilleRankMap = new Map(veilleScores.map((x, i) => [x.id, i + 1]));
+        prevRankMap = new Map(veilleScores.map((x, i) => [x.id, i + 1]));
+      } else if (rankedGranularity !== 'day' && rankedSlotIdx > 0) {
+        const prevSlot = rankedSlots[rankedSlotIdx - 1];
+        if (prevSlot?.periodKeys?.length) {
+          const sizeMap = new Map();
+          for (const pk of prevSlot.periodKeys) {
+            const g = getGD(currentCountry, pk);
+            for (const n of (g.nodes || [])) {
+              sizeMap.set(n.id, (sizeMap.get(n.id) || 0) + (Number(n.size) || 0));
+            }
+          }
+          const sorted = [...sizeMap.entries()].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+          prevRankMap = new Map(sorted.map(([id], i) => [id, i + 1]));
+        }
       }
       const cumRows = activeSeries.map(s => {
         const cum = s.data.reduce((acc, v, i) => {
           if (hasVeille && i === 0) return acc;
           return acc + (v ?? 0);
         }, 0);
-        const hadPrev = safeIdx > 0 && s.data.slice(0, safeIdx).some(v => v != null && v > 0);
-        const isNew = !veilleRankMap?.has(s.id) && safeIdx > 0;
-        const isReturn = !isNew && safeIdx > 0 && hadPrev && !(s.data[safeIdx] > 0);
-        return { id: s.id, color: s.color, displayVal: cum, isNew, isReturn, maxVal: s.maxVal ?? 0 };
+        const isNew = prevRankMap !== null ? !prevRankMap.has(s.id) : rankedSlotIdx > 0;
+        return { id: s.id, color: s.color, displayVal: cum, isNew, isReturn: false, maxVal: s.maxVal ?? 0 };
       });
       rows = cumRows
         .sort((a, b) => b.displayVal - a.displayVal)
         .slice(0, limit)
         .map((r, i) => {
           const curRank = i + 1;
-          const prevRank = veilleRankMap?.get(r.id) ?? null;
+          const prevRank = prevRankMap?.get(r.id) ?? null;
           const delta = prevRank !== null ? prevRank - curRank : null;
           return { ...r, val: r.displayVal, delta };
         });
@@ -1421,9 +1433,12 @@
 
       let deltaTxt = '', deltaClass = 'flat';
       const prevPeriodForLabel = isHoverBlock ? (safeIdx > 0 ? winPeriods[safeIdx - 1] : null) : null;
+      const prevSlotLabel = !isHoverBlock && rankedGranularity !== 'day' && rankedSlotIdx > 0
+        ? (rankedSlots[rankedSlotIdx - 1]?.label || '')
+        : '';
       const compLabel = rankedGranularity === 'day'
         ? (prevPeriodForLabel?.isVeille ? 'vs hier (moy./bloc)' : prevPeriodForLabel ? `vs ${blockRangeLabelFromPeriod(prevPeriodForLabel)}` : 'vs hier')
-        : ({ week: 'vs sem. passée', month: 'vs mois passé', year: 'vs an passé' }[rankedGranularity] || '');
+        : (prevSlotLabel ? `vs ${prevSlotLabel}` : ({ week: 'vs sem. passée', month: 'vs mois passé', year: 'vs an passé' }[rankedGranularity] || ''));
       if (r.delta !== null && r.delta !== 0) {
         deltaClass = r.delta > 0 ? 'up' : 'down';
         deltaTxt = `${r.delta > 0 ? '↑' : '↓'}${Math.abs(r.delta)}`;
