@@ -38,7 +38,7 @@
       margin-bottom: 14px;
     }
     .lpanel-label {
-      font-size: 8px; letter-spacing: 1.8px; text-transform: uppercase;
+      font-size: 9px; letter-spacing: 1.6px; text-transform: uppercase;
       color: rgba(100,140,200,0.45); padding-left: 1px;
     }
     #country-tabs { display: flex; gap: 6px; flex-wrap: wrap; pointer-events: all; }
@@ -113,6 +113,7 @@
       flex: 1;
       min-height: 0;
       max-height: none;
+      overflow-y: auto;
     }
     #left-hot10-section #ranked-search-wrap {
       margin: 2px 0 2px;
@@ -207,7 +208,7 @@
     /* Mode tabs */
     #mode-tabs { display: flex; flex-direction: column; gap: 4px; pointer-events: all; }
     #mode-tabs-row { display: flex; flex-direction: column; gap: 4px; }
-    .mode-tab { padding: 6px 10px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: left; width: 100%; }
+    .mode-tab { padding: 7px 10px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: left; width: 100%; }
     .mode-tab:hover { border-color: rgba(100,150,255,0.6); color: #a0c0ff; }
     .mode-tab[data-mode="ranked"].active { background: rgba(40,80,180,0.35); border-color: rgba(120,180,255,0.7); color: #d0e8ff; box-shadow: 0 0 10px rgba(80,130,255,0.25); }
     .mode-tab[data-mode="tracking"].active { background: rgba(20,72,52,0.38); border-color: rgba(80,200,140,0.65); color: rgba(140,230,185,0.95); box-shadow: 0 0 10px rgba(60,180,110,0.22); }
@@ -263,16 +264,17 @@
     .lpanel-label-row { display: flex; align-items: center; justify-content: space-between; }
     .lpanel-clear-btn {
       background: none; border: 1px solid rgba(100,150,255,0.2); border-radius: 3px;
-      color: rgba(120,150,200,0.55); font-family: 'Space Mono', monospace; font-size: 8px;
-      letter-spacing: 0.8px; padding: 2px 6px; cursor: pointer; transition: all 0.15s; display: none;
+      color: rgba(120,150,200,0.55); font-family: 'Space Mono', monospace; font-size: 9px;
+      letter-spacing: 0.8px; padding: 4px 8px; cursor: pointer; transition: all 0.15s; display: none;
+      align-self: flex-start; margin-bottom: 4px;
     }
     .lpanel-clear-btn.visible { display: block; }
     .lpanel-clear-btn:hover { border-color: rgba(200,80,80,0.5); color: rgba(220,100,100,0.9); }
-    #ranked-legend-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; max-height: 46vh; }
+    #ranked-legend-list { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; max-height: none; flex: 1; }
     .rleg-item {
-      display: flex; align-items: center; gap: 7px;
+      display: flex; align-items: center; gap: 6px;
       border: 1px solid rgba(90,130,250,0.14); border-radius: 5px;
-      background: rgba(8,18,48,0.50); padding: 5px 8px;
+      background: rgba(8,18,48,0.50); padding: 7px 8px;
       cursor: pointer; transition: all 0.15s;
     }
     .rleg-item:hover, .rleg-item.hovered {
@@ -284,19 +286,19 @@
     }
     .rleg-item.dimmed { opacity: 0.40; }
     .rleg-swatch {
-      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+      width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
     }
     .rleg-rank {
-      font-size: 9px; color: rgba(110,150,210,0.65); flex-shrink: 0; min-width: 14px; text-align: right;
+      font-size: 11px; color: rgba(110,150,210,0.65); flex-shrink: 0; min-width: 18px; text-align: right;
     }
     .rleg-name {
-      flex: 1; font-size: 10px; color: rgba(185,215,255,0.92);
+      flex: 1; font-size: 13px; color: rgba(185,215,255,0.92);
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .rleg-val { font-size: 10px; color: rgba(140,180,255,0.78); flex-shrink: 0; min-width: 36px; text-align: right; }
+    .rleg-val { font-size: 12px; color: rgba(140,180,255,0.78); flex-shrink: 0; min-width: 38px; text-align: right; }
     .rleg-val.null-val { color: rgba(100,130,180,0.38); }
     .rleg-delta {
-      font-size: 9px; flex-shrink: 0; min-width: 44px; text-align: right; letter-spacing: 0.3px;
+      font-size: 11px; flex-shrink: 0; min-width: 44px; text-align: right; letter-spacing: 0.3px;
     }
     .rleg-delta.up   { color: rgba(80,220,140,0.85); }
     .rleg-delta.down { color: rgba(255,100,100,0.80); }
@@ -398,6 +400,8 @@
     body.mode-tracking #ranked-legend-period,
     body.mode-tracking #ranked-legend-list,
     body.mode-ranked #left-tracked-clear { display: none !important; }
+    body.mode-ranked #ranked-search-wrap { display: none; }
+    body.mode-ranked .rleg-check { display: none; }
   </style>
 </head>
 <body>
@@ -430,25 +434,18 @@
       </div>
       <div id="window-granularity"></div>
     </div>
-    <div class="lpanel-section">
-      <div class="lpanel-label">Mode</div>
-      <div id="mode-tabs">
-        <div id="mode-tabs-row">
-          <button class="mode-tab" data-mode="ranked" type="button" aria-label="Mode classement">Hot 10</button>
-          <button class="mode-tab" data-mode="tracking" type="button" aria-label="Mode suivi">Chercher</button>
-        </div>
+    <div id="mode-tabs" class="lpanel-section">
+      <div id="mode-tabs-row">
+        <button class="mode-tab" data-mode="ranked" type="button" aria-label="Mode classement">HOT 10</button>
+        <button class="mode-tab" data-mode="tracking" type="button" aria-label="Mode suivi">Recherche</button>
       </div>
     </div>
     <div id="left-hot10-section">
-      <div class="lpanel-label-row">
-        <span class="lpanel-label" id="left-section-label">Hot 10</span>
-        <span id="top10-country">CAN</span>
-        <button class="lpanel-clear-btn" id="left-tracked-clear">Vider</button>
-      </div>
       <div id="ranked-search-wrap">
-        <input type="text" id="ranked-search-input" placeholder="Chercher des objets…" autocomplete="off" spellcheck="false" />
+        <input type="text" id="ranked-search-input" placeholder="Rechercher des objets…" autocomplete="off" spellcheck="false" />
         <div id="ranked-search-results"></div>
       </div>
+      <button class="lpanel-clear-btn" id="left-tracked-clear">Vider la sélection</button>
       <div id="ranked-legend-period"></div>
       <div id="ranked-legend-list"></div>
       <div id="left-tracked-list"></div>
@@ -1151,8 +1148,6 @@
     }
 
     updatePeriodSummary(country, idx);
-    const countryEl = document.getElementById('top10-country');
-    if (countryEl) countryEl.textContent = country;
     if (currentMode === 'tracking') { renderTrackedList(); renderEvolutionChart(); }
     else { renderRankedChart(gd, rankedHoverIdx); }
     syncArticlesPanel();
@@ -2558,8 +2553,6 @@
     clearRankedSeriesCache();
     document.body.classList.toggle('mode-ranked', mode === 'ranked');
     document.body.classList.toggle('mode-tracking', mode === 'tracking');
-    const leftLabel = document.getElementById('left-section-label');
-    if (leftLabel) leftLabel.textContent = mode === 'tracking' ? 'Suivi' : 'Hot 10';
     document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
 
     // Swapper les données + slider selon le mode
