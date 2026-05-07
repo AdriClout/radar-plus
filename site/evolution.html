@@ -415,8 +415,8 @@
     <div class="lpanel-section">
       <div class="lpanel-label">Pays</div>
       <div id="country-tabs" role="tablist" aria-label="Sélection du pays">
-        <button class="tab active" data-country="CAN" role="tab" aria-label="Canada">CAN</button>
-        <button class="tab" data-country="QC" role="tab" aria-label="Québec">QC</button>
+        <button class="tab active" data-country="QC" role="tab" aria-label="Québec">QC</button>
+        <button class="tab" data-country="CAN" role="tab" aria-label="Canada">CAN</button>
         <button class="tab" data-country="USA" role="tab" aria-label="États-Unis">USA</button>
       </div>
     </div>
@@ -797,7 +797,7 @@
   // ── État ──────────────────────────────────────────────────────────────────
   const urlParams = new URLSearchParams(window.location.search);
   const urlCountry = (urlParams.get('country') || '').toUpperCase();
-  let currentCountry = countries.includes(urlCountry) ? urlCountry : countries[0];
+  let currentCountry = countries.includes(urlCountry) ? urlCountry : (countries.includes('QC') ? 'QC' : countries[0]);
   let currentIdx     = periods.length - 1;
   let focusedNode    = null;
 
