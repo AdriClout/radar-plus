@@ -1649,7 +1649,7 @@
     return series;
   }
 
-  function getRankedChartSeries(gd, winPeriods) {
+  function getRankedChartSeries(gd, winPeriods, hoverPeriod = null) {
     const fullSeries = getRankedSeries(gd, Infinity, winPeriods);
     const topSeries = getRankedSeries(gd, getRankedTopN(), winPeriods);
     const byId = new Map(fullSeries.map(s => [s.id, s]));
@@ -1659,6 +1659,13 @@
       hoveredNode,
       ...Array.from(trackedObjects)
     ].filter(Boolean));
+
+    // Quand on survole un bloc, inclure son top 10 dans le chart pour que
+    // la légende et les courbes affichent les mêmes objets
+    if (hoverPeriod && !hoverPeriod.isFuture && !hoverPeriod.isSynthetic) {
+      const g = getWinPeriodGD(currentCountry, hoverPeriod);
+      (g.nodes || []).slice(0, 10).forEach(n => requiredIds.add(n.id));
+    }
 
     const out = [...topSeries];
     requiredIds.forEach(id => {
@@ -1737,7 +1744,13 @@
     const xOfHour = h => PAD.left + (h / 24) * chartW;
 
     const winPeriods = getRankedWindowPeriods();
-    const series = getRankedChartSeries(gd, winPeriods);
+    const hasPeriodSelectionInit = selectedPeriodIdx !== null;
+    const effectiveIdx = hoverIdx !== null && hoverIdx >= 0
+      ? hoverIdx
+      : (hasPeriodSelectionInit ? selectedPeriodIdx : null);
+    const hoverPeriod = (effectiveIdx !== null && effectiveIdx >= 0 && effectiveIdx < winPeriods.length)
+      ? winPeriods[effectiveIdx] : null;
+    const series = getRankedChartSeries(gd, winPeriods, hoverPeriod);
 
     const now = new Date();
     const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -2001,7 +2014,13 @@
     });
 
     const winPeriods = getRankedWindowPeriods();
-    const series = getRankedChartSeries(gd, winPeriods);
+    const hasPeriodSelectionInit2 = selectedPeriodIdx !== null;
+    const effectiveIdx2 = hoverIdx !== null && hoverIdx >= 0
+      ? hoverIdx
+      : (hasPeriodSelectionInit2 ? selectedPeriodIdx : null);
+    const hoverPeriod2 = (effectiveIdx2 !== null && effectiveIdx2 >= 0 && effectiveIdx2 < winPeriods.length)
+      ? winPeriods[effectiveIdx2] : null;
+    const series = getRankedChartSeries(gd, winPeriods, hoverPeriod2);
     if (!series.length) return;
     const n = winPeriods.length;
     if (!n) return;
