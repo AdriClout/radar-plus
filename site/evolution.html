@@ -91,9 +91,6 @@
       -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
       background: #7090ff; box-shadow: 0 0 10px rgba(80,120,255,1), 0 0 20px rgba(80,120,255,0.5); cursor: pointer;
     }
-    body.has-shared-menu #tracked-panel {
-      right: 20px;
-    }
     body.has-shared-menu .menu-discover-hint {
       display: none;
     }
@@ -185,7 +182,6 @@
       #left-panel { width: 160px; padding: 12px 10px 10px; }
       #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
       .side-nav { width: 280px; right: -280px; }
-      body.has-shared-menu #tracked-panel { right: 10px; }
       #object-panel {
         left: 10px;
         right: 10px;
@@ -234,25 +230,12 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.2; }
     }
-    #tracked-panel { position: absolute; top: 68px; right: 20px; width: min(290px, 30vw); max-height: calc(100vh - 160px); overflow: hidden; border: 1px solid rgba(95,140,255,0.28); border-radius: 7px; background: linear-gradient(to left, rgba(8,14,40,0.88), rgba(6,10,30,0.70)); box-shadow: 0 0 20px rgba(60,100,210,0.14); padding: 10px; z-index: 11; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(2px); }
-    #tracked-title { font-family: 'Orbitron','Space Mono',monospace; font-size: 12px; color: rgba(182,208,255,0.98); text-transform: uppercase; letter-spacing: 1px; }
-    #tracked-head { display: flex; align-items: center; justify-content: space-between; }
-    #tracked-clear { border: 1px solid rgba(90,130,250,0.25); border-radius: 5px; background: rgba(8,18,48,0.62); color: rgba(176,206,255,0.95); font-family: 'Space Mono',monospace; font-size: 10px; padding: 4px 8px; cursor: pointer; }
-    #tracked-clear:hover { border-color: rgba(145,182,255,0.75); color: rgba(222,236,255,1); }
-    #evo-search { background: rgba(5,10,35,0.75); border: 1px solid rgba(100,150,255,0.3); border-radius: 3px; color: #a0c8f0; font-family: 'Space Mono',monospace; font-size: 11px; outline: none; padding: 5px 10px; width: 100%; transition: border-color 0.2s; }
-    #evo-search::placeholder { color: rgba(90,120,180,0.55); }
-    #evo-search:focus { border-color: rgba(140,190,255,0.75); color: #d0e8ff; }
-    #evo-search-results { display: flex; flex-direction: column; gap: 3px; max-height: 120px; overflow-y: auto; }
-    .evo-result { padding: 5px 8px; border-radius: 3px; background: rgba(8,18,48,0.62); border: 1px solid rgba(90,130,250,0.2); color: rgba(170,200,255,0.9); font-size: 10px; cursor: pointer; transition: all 0.12s; }
-    .evo-result:hover { border-color: rgba(145,182,255,0.7); color: #e0f0ff; background: rgba(20,36,86,0.7); }
-    #tracked-list { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; flex: 1; }
     .tracked-item { display: flex; align-items: center; gap: 8px; border: 1px solid rgba(90,130,250,0.2); border-radius: 5px; background: rgba(8,18,48,0.55); padding: 6px 9px; }
     .tracked-swatch { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .tracked-name { flex: 1; font-size: 10px; color: rgba(190,215,255,0.95); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .tracked-val { font-size: 10px; color: rgba(140,180,255,0.75); flex-shrink: 0; min-width: 36px; text-align: right; }
     .tracked-rm { background: none; border: none; color: rgba(180,80,80,0.65); cursor: pointer; font-size: 14px; padding: 0 3px; line-height: 1; }
     .tracked-rm:hover { color: rgba(255,110,110,0.9); }
-    #evo-empty { color: rgba(104,130,182,0.7); font-size: 10px; padding: 4px 2px; text-align: center; line-height: 1.5; }
     #evo-tooltip { position: fixed; pointer-events: none; display: none; z-index: 30; background: rgba(2,4,20,0.96); border: 1px solid rgba(80,120,255,0.35); border-radius: 4px; padding: 8px 12px; font-size: 11px; line-height: 1.6; }
     #evo-tooltip-period { color: #d0e8ff; font-size: 11px; margin-bottom: 4px; }
     .evo-tt-row { display: flex; align-items: center; gap: 6px; }
@@ -324,8 +307,7 @@
     .win-btn:focus-visible,
 
     #prev-btn:focus-visible,
-    #next-btn:focus-visible,
-    #tracked-clear:focus-visible {
+    #next-btn:focus-visible {
       outline: 2px solid rgba(170, 205, 255, 0.9);
       outline-offset: 2px;
     }
@@ -421,15 +403,6 @@
   <div id="evolution-view">
     <canvas id="evo-canvas"></canvas>
     <div id="live-badge">EN DIRECT</div>
-    <div id="tracked-panel">
-      <div id="tracked-head">
-        <div id="tracked-title">Suivi Temporel</div>
-        <button id="tracked-clear">Vider</button>
-      </div>
-      <input type="text" id="evo-search" placeholder="ajouter un objet…" autocomplete="off" spellcheck="false" />
-      <div id="evo-search-results"></div>
-      <div id="tracked-list"></div>
-    </div>
   </div>
   <div id="evo-tooltip">
     <div id="evo-tooltip-period"></div>
@@ -1281,83 +1254,29 @@
   }
 
   function renderTrackedList() {
-    const list = document.getElementById('tracked-list');
     const leftList = document.getElementById('left-tracked-list');
     const leftClearBtn = document.getElementById('left-tracked-clear');
-    if (!list) return;
-    list.innerHTML = '';
-    if (leftList) leftList.innerHTML = '';
+    if (!leftList) return;
+    leftList.innerHTML = '';
     if (leftClearBtn) leftClearBtn.classList.toggle('visible', trackedObjects.size > 0);
     if (!trackedObjects.size) {
-      list.innerHTML = '<div id="evo-empty">Recherchez un objet ci-dessus<br>ou cliquez sur "Suivre" dans le classement.</div>';
-      if (leftList) leftList.innerHTML = '<div id="left-tracked-empty">Aucun objet suivi.<br>Cliquez un objet du Top 10 ou utilisez la recherche.</div>';
+      leftList.innerHTML = '<div id="left-tracked-empty">Aucun objet suivi.<br>Cliquez un objet du Top 10 ou utilisez la recherche.</div>';
       return;
     }
-    const period = periods[currentIdx];
-    const g = graphs[currentCountry]?.[period?.key];
     trackedObjects.forEach(id => {
-      const color = getTrackColor(id);
-      const node = g?.nodes.find(n => n.id === id);
-      const val = node ? node.size.toFixed(1) : '—';
       const item = document.createElement('div');
-      item.className = 'tracked-item';
+      item.className = 'left-tracked-item';
       item.innerHTML = `
-        <div class="tracked-swatch" style="background:${color};box-shadow:0 0 5px ${color}aa"></div>
-        <div class="tracked-name" title="${escapeHtml(id)}">${escapeHtml(id)}</div>
-        <div class="tracked-val">${val}</div>
-        <button class="tracked-rm" title="Retirer">×</button>
+        <div class="left-track-check">✓</div>
+        <div class="left-track-name" title="${escapeHtml(id)}">${escapeHtml(id)}</div>
+        <button class="left-track-rm" title="Retirer">×</button>
       `;
-      item.querySelector('.tracked-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
+      item.querySelector('.left-track-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
       item.addEventListener('click', () => focusNodeById(id));
-      list.appendChild(item);
-
-      if (leftList) {
-        const leftItem = document.createElement('div');
-        leftItem.className = 'left-tracked-item';
-        leftItem.innerHTML = `
-          <div class="left-track-check">✓</div>
-          <div class="left-track-name" title="${escapeHtml(id)}">${escapeHtml(id)}</div>
-          <button class="left-track-rm" title="Retirer">×</button>
-        `;
-        leftItem.querySelector('.left-track-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
-        leftItem.addEventListener('click', () => focusNodeById(id));
-        leftList.appendChild(leftItem);
-      }
+      leftList.appendChild(item);
     });
   }
 
-  function renderEvoSearchResults(q) {
-    const resultsEl = document.getElementById('evo-search-results');
-    if (!resultsEl) return;
-    resultsEl.innerHTML = '';
-    let matches;
-    if (!q.trim()) {
-      // Suggestions : top 10 du classement (graphData, période la plus récente)
-      const latestKey = graphData?.meta?.periods?.slice(-1)[0]?.key;
-      const gdHot = graphData?.graphs?.[currentCountry]?.[latestKey] || { nodes: [] };
-      const hot = (gdHot.nodes || []).slice(0, 10).map(n => n.id).filter(id => !trackedObjects.has(id));
-      if (!hot.length) return;
-      const hint = document.createElement('div');
-      hint.style.cssText = 'font-size:9px;color:rgba(100,140,200,0.55);padding:1px 3px 3px;letter-spacing:0.8px;';
-      hint.textContent = `HOT 10 · ${currentCountry}`;
-      resultsEl.appendChild(hint);
-      matches = hot;
-    } else {
-      const ql = q.toLowerCase();
-      matches = getAllObjectIds().filter(id => id.toLowerCase().includes(ql) && !trackedObjects.has(id)).slice(0, 7);
-    }
-    matches.forEach(id => {
-      const div = document.createElement('div');
-      div.className = 'evo-result';
-      div.textContent = id;
-      div.addEventListener('click', () => {
-        addTracked(id);
-        document.getElementById('evo-search').value = '';
-        renderEvoSearchResults('');
-      });
-      resultsEl.appendChild(div);
-    });
-  }
 
   function addTrackedAndSwitch(id) {
     if (!id) return;
@@ -2374,7 +2293,7 @@
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
     const fallbackPanelPad = Math.min(310, W * 0.30) + 30;
-    const panelW = getRightPanelPad(rect, ['tracked-panel'], fallbackPanelPad);
+    const panelW = getRightPanelPad(rect, [], fallbackPanelPad);
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -2626,11 +2545,9 @@
     }
 
     const evoView = document.getElementById('evolution-view');
-    const trackedEl = document.getElementById('tracked-panel');
     updatePeriodSummary(currentCountry, currentIdx);
     if (mode === 'tracking') {
       evoView.classList.add('visible');
-      trackedEl.style.display = '';
       rankedHoverIdx = null;
       document.getElementById('evo-tooltip').style.display = 'none';
       applyTimelineHeat(currentCountry);
@@ -2638,7 +2555,6 @@
       syncArticlesPanel();
     } else {
       evoView.classList.add('visible');
-      trackedEl.style.display = 'none';
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry, currentIdx);
     }
@@ -2799,32 +2715,6 @@
     if (hitNode) renderArticlesPanel(hitNode);
   });
 
-  // Evolution search
-  document.getElementById('evo-search').addEventListener('focus', e => { if (!e.target.value.trim()) renderEvoSearchResults(''); });
-  document.getElementById('evo-search').addEventListener('blur', () => { setTimeout(() => { const r = document.getElementById('evo-search-results'); if (r) r.innerHTML = ''; }, 150); });
-  document.getElementById('evo-search').addEventListener('input', e => renderEvoSearchResults(e.target.value));
-  document.getElementById('evo-search').addEventListener('keydown', e => {
-    if (e.key === 'Escape') { e.target.value = ''; renderEvoSearchResults(''); e.target.blur(); }
-    else if (e.key === 'Enter') {
-      const q = e.target.value.trim().toLowerCase();
-      const id = getAllObjectIds().find(v => v.toLowerCase().includes(q) && !trackedObjects.has(v));
-      if (id) { addTracked(id); e.target.value = ''; renderEvoSearchResults(''); }
-    }
-    e.stopPropagation();
-  });
-  document.getElementById('tracked-clear').addEventListener('click', () => {
-    trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
-    focusedNode = null;
-    renderArticlesPanel(null);
-    renderTrackedList();
-    if (currentMode === 'tracking') {
-      updatePeriodSummary(currentCountry, currentIdx);
-      renderEvolutionChart();
-    } else {
-      const gd = getGD(currentCountry, periods[currentIdx]?.key);
-      renderRankedChart(gd, rankedHoverIdx);
-    }
-  });
 
   const leftTrackedClear = document.getElementById('left-tracked-clear');
   if (leftTrackedClear) leftTrackedClear.addEventListener('click', clearAllTracked);
@@ -2930,7 +2820,7 @@
   });
 
   document.addEventListener('keydown', e => {
-    if (document.activeElement === rankedSearchInput || document.activeElement === document.getElementById('evo-search')) return;
+    if (document.activeElement === rankedSearchInput) return;
     if (e.key === '/') { e.preventDefault(); rankedSearchInput.focus(); rankedSearchInput.select(); return; }
     if (e.key === 'ArrowRight')    { navigateNext(); }
     else if (e.key === 'ArrowLeft') { navigatePrev(); }
