@@ -244,17 +244,18 @@
     .evo-tt-name { color: rgba(175,205,255,0.9); flex: 1; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
     .evo-tt-val { color: rgba(160,200,255,0.8); font-size: 10px; }
     /* ── Sélecteur de fenêtre temporelle (dans #left-panel) ─────────────────── */
-    #window-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    #window-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
     #window-section { display: none; }
     #window-section.visible { display: flex; }
     .win-btn {
       background: rgba(8,16,44,0.55); border: 1px solid rgba(90,130,250,0.22); border-radius: 3px;
-      color: rgba(110,150,210,0.65); font-family: 'Space Mono', monospace; font-size: 9px;
-      letter-spacing: 1px; padding: 4px 8px; cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+      color: rgba(110,150,210,0.65); font-family: 'Space Mono', monospace; font-size: 11px;
+      letter-spacing: 1px; padding: 7px 6px; cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+      text-align: center; width: 100%;
     }
     .win-btn:hover { border-color: rgba(120,170,255,0.55); color: rgba(180,210,255,0.9); }
     .win-btn.active { border-color: rgba(120,180,255,0.75); background: rgba(30,60,150,0.40); color: #d0e8ff; box-shadow: 0 0 8px rgba(80,130,255,0.2); }
-    #window-granularity { font-size: 8px; letter-spacing: 0.7px; color: rgba(90,130,180,0.50); margin-top: 2px; }
+    #window-granularity { font-size: 9px; letter-spacing: 0.7px; color: rgba(90,130,180,0.50); margin-top: 2px; }
 
     /* ── Légende classement évolutif ──────────────────────────────────────── */
     #ranked-legend-period {
@@ -272,7 +273,7 @@
     .lpanel-clear-btn:hover { border-color: rgba(200,80,80,0.5); color: rgba(220,100,100,0.9); }
     #ranked-legend-list { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; max-height: none; flex: 1; }
     .rleg-item {
-      display: flex; align-items: center; gap: 6px;
+      display: flex; align-items: flex-start; gap: 6px;
       border: 1px solid rgba(90,130,250,0.14); border-radius: 5px;
       background: rgba(8,18,48,0.50); padding: 7px 8px;
       cursor: pointer; transition: all 0.15s;
@@ -290,15 +291,17 @@
     }
     .rleg-rank {
       font-size: 11px; color: rgba(110,150,210,0.65); flex-shrink: 0; min-width: 18px; text-align: right;
+      padding-top: 1px;
     }
     .rleg-name {
       flex: 1; font-size: 13px; color: rgba(185,215,255,0.92);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      overflow: hidden; white-space: normal; line-height: 1.25;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     }
-    .rleg-val { font-size: 12px; color: rgba(140,180,255,0.78); flex-shrink: 0; min-width: 38px; text-align: right; }
+    .rleg-val { font-size: 12px; color: rgba(140,180,255,0.78); flex-shrink: 0; min-width: 38px; text-align: right; padding-top: 1px; }
     .rleg-val.null-val { color: rgba(100,130,180,0.38); }
     .rleg-delta {
-      font-size: 11px; flex-shrink: 0; min-width: 44px; text-align: right; letter-spacing: 0.3px;
+      font-size: 11px; flex-shrink: 0; min-width: 44px; text-align: right; letter-spacing: 0.3px; padding-top: 1px;
     }
     .rleg-delta.up   { color: rgba(80,220,140,0.85); }
     .rleg-delta.down { color: rgba(255,100,100,0.80); }
@@ -999,11 +1002,7 @@
         };
       });
 
-      // Use Minuit-4h as anchor when real data exists; otherwise fall back to yesterday's total
-      const minuit4hEntry = byStart.get(0);
-      const hasRealMinuit = minuit4hEntry && !minuit4hEntry.isFuture;
-      if (hasRealMinuit) return dayBlocks;
-
+      // Veille = Total hier, toujours en premier point d'ancrage
       const prevSlot = rankedSlots[rankedSlotIdx - 1];
       const veilleP = prevSlot?.periodKeys?.length
         ? { key: `__veille__${prevSlot.key}`, label: 'Hier (total)', isDay: true, periodKeys: prevSlot.periodKeys, isVeille: true, isFuture: false }
@@ -1386,20 +1385,6 @@
           .map(s => ({ id: s.id, v: s.data[0] }));
         veilleScores.sort((a, b) => b.v - a.v);
         prevRankMap = new Map(veilleScores.map((x, i) => [x.id, i + 1]));
-      } else if (rankedGranularity === 'day' && !hasVeille && rankedSlotIdx > 0) {
-        // Minuit-4h is anchor; aggregate yesterday's slot for rank reference
-        const prevSlot = rankedSlots[rankedSlotIdx - 1];
-        if (prevSlot?.periodKeys?.length) {
-          const sizeMap = new Map();
-          for (const pk of prevSlot.periodKeys) {
-            const g = getGD(currentCountry, pk);
-            for (const n of (g.nodes || [])) {
-              sizeMap.set(n.id, (sizeMap.get(n.id) || 0) + (Number(n.size) || 0));
-            }
-          }
-          const sorted = [...sizeMap.entries()].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-          prevRankMap = new Map(sorted.map(([id], i) => [id, i + 1]));
-        }
       } else if (rankedGranularity !== 'day' && rankedSlotIdx > 0) {
         const prevSlot = rankedSlots[rankedSlotIdx - 1];
         if (prevSlot?.periodKeys?.length) {
@@ -1688,7 +1673,9 @@
   function dayBlockHour(p) {
     if (!p || p.isVeille) return 0;
     const s = blockStartFromPeriod(p);
-    return Number.isFinite(s) ? s : 0;
+    // End-of-block positioning: Minuit-4h→h=4, 4h-8h→h=8, etc.
+    // Veille stays at h=0; each block appears where its 4h window closes.
+    return Number.isFinite(s) ? s + 4 : 0;
   }
 
   function renderDayModeChart(gd, hoverIdx = null) {
@@ -1751,9 +1738,8 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
-    const hasRealMinuit4h = winPeriods.some(p => !p.isVeille && !p.isSynthetic && !p.isFuture && blockStartFromPeriod(p) === 0);
     const DAY_LABELS = [
-      { h: 0, label: hasRealMinuit4h ? 'Minuit' : 'Hier', align: 'left' },
+      { h: 0, label: 'Hier', align: 'left' },
       { h: 4, label: '4h', align: 'center' },
       { h: 8, label: '8h', align: 'center' },
       { h: 12, label: 'Midi', align: 'center' },
@@ -1769,13 +1755,11 @@
       ctx.fillText(label, x, PAD.top + chartH + 18);
     });
 
-    // Séparateur Hier/Aujourd'hui uniquement quand le point h=0 est une référence veille (pas un vrai bloc Minuit-4h)
-    if (!hasRealMinuit4h) {
-      const sepX = (xOfHour(0) + xOfHour(4)) / 2;
-      ctx.strokeStyle = 'rgba(80,100,180,0.22)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
-      ctx.beginPath(); ctx.moveTo(sepX, PAD.top); ctx.lineTo(sepX, PAD.top + chartH); ctx.stroke();
-      ctx.setLineDash([]);
-    }
+    // Séparateur Hier / Aujourd'hui
+    const sepX = (xOfHour(0) + xOfHour(4)) / 2;
+    ctx.strokeStyle = 'rgba(80,100,180,0.22)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]);
+    ctx.beginPath(); ctx.moveTo(sepX, PAD.top); ctx.lineTo(sepX, PAD.top + chartH); ctx.stroke();
+    ctx.setLineDash([]);
 
     // Zone future (après le dernier bloc réel, aujourd'hui seulement)
     if (isToday) {
@@ -1785,7 +1769,7 @@
           const h = dayBlockHour(p); if (h > lastRealH) lastRealH = h;
         }
       });
-      const futureStartX = xOfHour(lastRealH + 4);
+      const futureStartX = xOfHour(lastRealH); // end-of-block: lastRealH is already the block's close
       if (futureStartX < PAD.left + chartW) {
         const grad = ctx.createLinearGradient(futureStartX, 0, PAD.left + chartW, 0);
         grad.addColorStop(0, 'rgba(15,25,70,0.0)'); grad.addColorStop(1, 'rgba(15,25,70,0.24)');
