@@ -820,6 +820,7 @@
   let currentMode = 'ranked';
   let evoMaxVal = 1;
   let rankedHoverIdx = null;
+  let selectedPeriodIdx = null;
   let hoveredNode = null;
   let rankedShowMore = false;
   let rankedGranularity = 'day';
@@ -1076,6 +1077,7 @@
 
   function clearAllTracked() {
     trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0; focusedNode = null;
+    selectedPeriodIdx = null;
     renderTrackedList();
     renderArticlesPanel(null);
     if (currentMode === 'tracking') {
@@ -1091,9 +1093,10 @@
     if (!label) return;
     if (currentMode === 'ranked') {
       const slot = rankedSlots[rankedSlotIdx];
-      if (rankedHoverIdx !== null && rankedHoverIdx >= 0) {
+      const activeIdx = rankedHoverIdx !== null ? rankedHoverIdx : selectedPeriodIdx;
+      if (activeIdx !== null && activeIdx >= 0) {
         const wp = getRankedWindowPeriods();
-        const period = wp[rankedHoverIdx];
+        const period = wp[activeIdx];
         if (period && !period.isSynthetic && !period.isFuture) {
           const blockLabel = rankedGranularity === 'day'
             ? blockRangeLabelFromPeriod(period)
@@ -1755,40 +1758,38 @@
     ctx.lineTo(PAD.left + chartW, PAD.top + chartH);
     ctx.stroke();
 
-    // Index de la période courante dans winPeriods (avant le tracé des dots)
+    // Index de la période courante dans winPeriods
     const currentPKey = periods[currentIdx]?.key;
     const winCurrentIdx = winPeriods.findIndex(p => p.isDay ? (p.periodKeys?.includes(currentPKey)) : p.key === currentPKey);
 
-    // Lignes des objets Top 10
+    // "Période sélectionnée" : hoverIdx > selectedPeriodIdx > null
+    const effectiveHoverIdx = hoverIdx !== null ? hoverIdx : selectedPeriodIdx;
+    const hasPeriodSelection = selectedPeriodIdx !== null && hoverIdx === null;
+
+    // Dimming : objet actif OU sélection de période (sans objet actif)
     const hasVisibleFocused = focusedNode !== null && series.some(s => s.id === focusedNode);
     const hasVisibleHovered = hoveredNode !== null && series.some(s => s.id === hoveredNode);
     const hasVisibleTracked = series.some(s => trackedObjects.has(s.id));
     const hasActiveNode = hasVisibleFocused || hasVisibleHovered || hasVisibleTracked;
+
     series.forEach(s => {
       const [r, g, b] = hexToRgb(s.color);
-      const isFocused  = focusedNode  === s.id;
-      const isHovered  = hoveredNode  === s.id;
-      const isTracked  = trackedObjects.has(s.id);
-      const isActive   = isFocused || isHovered || isTracked;
-      const isDimmed   = hasActiveNode && !isActive;
-      const lineAlpha  = isDimmed ? 0.18 : 1;
+      const isFocused = focusedNode === s.id;
+      const isHovered = hoveredNode === s.id;
+      const isTracked = trackedObjects.has(s.id);
+      const isActive  = isFocused || isHovered || isTracked;
+      // Lignes atténuées : objet actif (autres atténués) OU sélection de période sans objet actif
+      const isDimmed  = (hasActiveNode && !isActive) || (hasPeriodSelection && !hasActiveNode);
 
       ctx.beginPath();
       let first = true;
       s.data.forEach((v, i) => {
-        if (v === null) {
-          first = true;
-          return;
-        }
-        const x = xOf(i);
-        const y = yOf(v);
-        if (first) { ctx.moveTo(x, y); first = false; }
-        else ctx.lineTo(x, y);
+        if (v === null) { first = true; return; }
+        const x = xOf(i), y = yOf(v);
+        if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
       });
-      ctx.strokeStyle = isDimmed
-        ? `rgba(${r},${g},${b},0.18)`
-        : s.color;
-      ctx.lineWidth  = isActive ? 3.2 : 2;
+      ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.15)` : s.color;
+      ctx.lineWidth   = isActive ? 3.2 : 2;
       ctx.shadowColor = s.color;
       ctx.shadowBlur  = isActive ? 14 : (isDimmed ? 0 : 7);
       ctx.stroke();
@@ -1796,63 +1797,71 @@
 
       s.data.forEach((v, i) => {
         if (v === null) return;
-        const x = xOf(i);
-        const y = yOf(v);
-        const isCurrent = i === winCurrentIdx;
-        const radius = isCurrent ? (isActive ? 5 : 4) : 2.2;
+        const x = xOf(i), y = yOf(v);
+        const isCurrent  = i === winCurrentIdx;
+        const isSelected = hasPeriodSelection && i === selectedPeriodIdx;
+        // Points sélectionnés : gros + brillants (même si ligne atténuée)
+        const radius = isSelected ? 6 : (isCurrent ? (isActive ? 5 : 4) : 2.2);
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = isDimmed
-          ? `rgba(${r},${g},${b},0.18)`
-          : (isCurrent ? `rgba(${r},${g},${b},0.98)` : `rgba(${r},${g},${b},0.76)`);
+        if (isSelected) {
+          ctx.fillStyle = `rgba(${r},${g},${b},0.98)`;
+          ctx.shadowColor = s.color; ctx.shadowBlur = 16;
+        } else {
+          ctx.fillStyle = isDimmed
+            ? `rgba(${r},${g},${b},0.15)`
+            : (isCurrent ? `rgba(${r},${g},${b},0.98)` : `rgba(${r},${g},${b},0.72)`);
+        }
         ctx.fill();
+        if (isSelected) {
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
       });
     });
 
-    // Appel légende dynamique (sans boucle infinie)
-    requestAnimationFrame(() => renderRankedLegend(series, hoverIdx));
+    // Appel légende dynamique avec effectiveHoverIdx (hover ou sélection)
+    requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
 
-    // Marqueur de période courante
-    if (winCurrentIdx >= 0) {
+    // Marqueur de période courante (discret)
+    if (winCurrentIdx >= 0 && !hasPeriodSelection) {
       const cx = xOf(winCurrentIdx);
       ctx.strokeStyle = 'rgba(180,210,255,0.25)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 5]);
-      ctx.beginPath();
-      ctx.moveTo(cx, PAD.top - 8);
-      ctx.lineTo(cx, PAD.top + chartH);
-      ctx.stroke();
+      ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
+      ctx.beginPath(); ctx.moveTo(cx, PAD.top - 8); ctx.lineTo(cx, PAD.top + chartH); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(180,210,255,0.5)';
-      ctx.font = '9px "Space Mono", monospace';
-      ctx.textAlign = 'center';
+      ctx.font = '9px "Space Mono", monospace'; ctx.textAlign = 'center';
       ctx.fillText('▼', cx, PAD.top - 10);
     }
 
-    // Marqueur de hover
+    // Marqueur de période sélectionnée (persistante, plus visible)
+    if (hasPeriodSelection && selectedPeriodIdx >= 0 && selectedPeriodIdx < n) {
+      const sx = xOf(selectedPeriodIdx);
+      ctx.strokeStyle = 'rgba(200,225,255,0.4)';
+      ctx.lineWidth = 1.5; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(sx, PAD.top); ctx.lineTo(sx, PAD.top + chartH); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(200,225,255,0.8)';
+      ctx.font = '9px "Space Mono", monospace'; ctx.textAlign = 'center';
+      ctx.fillText('▼', sx, PAD.top - 10);
+    }
+
+    // Marqueur de hover (temporaire)
     if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < n) {
       const hx = xOf(hoverIdx);
       ctx.strokeStyle = 'rgba(200,220,255,0.18)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([3, 4]);
-      ctx.beginPath();
-      ctx.moveTo(hx, PAD.top);
-      ctx.lineTo(hx, PAD.top + chartH);
-      ctx.stroke();
+      ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(hx, PAD.top); ctx.lineTo(hx, PAD.top + chartH); ctx.stroke();
       ctx.setLineDash([]);
       series.forEach(s => {
-        const v = s.data[hoverIdx];
-        if (v === null) return;
+        const v = s.data[hoverIdx]; if (v === null) return;
         ctx.beginPath();
         ctx.arc(hx, yOf(v), focusedNode === s.id ? 6.2 : 5, 0, Math.PI * 2);
-        ctx.fillStyle = s.color;
-        ctx.shadowColor = s.color;
-        ctx.shadowBlur = 12;
-        ctx.fill();
+        ctx.fillStyle = s.color; ctx.shadowColor = s.color; ctx.shadowBlur = 12; ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
       });
     }
   }
@@ -2083,7 +2092,7 @@
     if (currentMode === 'ranked') graphIdx = currentIdx;
     else tsIdx = currentIdx;
 
-    // Préserver le focus autant que possible; loadPeriod tranchera si l'objet n'existe plus.
+    selectedPeriodIdx = null;
     hoveredNode = null;
 
     currentMode = mode;
@@ -2142,6 +2151,7 @@
   document.querySelectorAll('.win-btn').forEach(btn => btn.addEventListener('click', () => {
     rankedGranularity = btn.dataset.gran || 'day';
     rankedHoverIdx = null;
+    selectedPeriodIdx = null;
     rankedShowMore = false;
     clearRankedSeriesCache();
     if (currentMode === 'tracking') {
@@ -2172,7 +2182,8 @@
     rankedShowMore = !rankedShowMore;
     const gd = getGD(currentCountry, periods[currentIdx]?.key);
     const series = getRankedSeries(gd, Infinity);
-    renderRankedLegend(series, rankedHoverIdx);
+    const effectiveIdx = rankedHoverIdx !== null ? rankedHoverIdx : selectedPeriodIdx;
+    renderRankedLegend(series, effectiveIdx);
   });
 
   // Evolution canvas events
@@ -2193,53 +2204,65 @@
   });
   evoCanvas.addEventListener('click', e => {
     if (currentMode === 'ranked') {
-      // Sélectionne l'objet le plus proche du clic à la période visée.
       const period = periods[currentIdx];
       const gd = getGD(currentCountry, period?.key);
       const winPeriods = getRankedWindowPeriods();
       const series = getRankedChartSeries(gd, winPeriods);
-      if (!series.length) return;
       const rect = evoCanvas.getBoundingClientRect();
       const { PAD, chartW, chartH } = getRankedChartLayout(rect);
       const n = winPeriods.length;
-      const xOf = i => PAD.left + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
-      const allVals = series.flatMap(s => s.data.filter(v => v !== null));
-      const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
-      const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
       const canvasX = e.clientX - rect.left;
       const canvasY = e.clientY - rect.top;
-      if (canvasX < PAD.left || canvasX > PAD.left + chartW) { renderArticlesPanel(null); return; }
 
-      let hitId = null;
-      let hitIdx = -1;
-      let bestDist = Infinity;
-      const HIT_R = 26;
-      series.forEach(s => {
-        s.data.forEach((v, i) => {
-          if (v === null) return;
-          const dist = Math.hypot(canvasX - xOf(i), canvasY - yOf(v));
-          if (dist < bestDist) {
-            bestDist = dist;
-            hitId = s.id;
-            hitIdx = i;
-          }
-        });
-      });
-      if (hitId && hitIdx >= 0 && bestDist <= HIT_R) {
-        focusedNode = hitId;
-        addTracked(hitId);
-        const clickedPeriod = winPeriods[hitIdx];
-        const periodGraph = getGD(currentCountry, clickedPeriod?.key);
-        const node = (periodGraph.nodes || []).find(n2 => n2.id === hitId);
-        const exactIdx = periods.findIndex(p => p.key === clickedPeriod?.key);
-        if (exactIdx >= 0) {
-          currentIdx = exactIdx;
-          updatePeriodSummary(currentCountry, currentIdx);
-        }
-        if (node) renderArticlesPanel(node);
-        else renderArticlesPanelUnavailable(hitId);
-        renderRankedChart(gd, rankedHoverIdx);
+      // Clic hors du graphe : tout désélectionner
+      if (canvasX < PAD.left || canvasX > PAD.left + chartW) {
+        selectedPeriodIdx = null;
+        focusedNode = null;
+        renderArticlesPanel(null);
+        renderRankedChart(gd, null);
+        updatePeriodNavLabel();
+        return;
       }
+
+      // Sélectionner la colonne la plus proche
+      selectedPeriodIdx = n > 1
+        ? Math.max(0, Math.min(n - 1, Math.round(((canvasX - PAD.left) / chartW) * (n - 1))))
+        : 0;
+
+      // Chercher un point proche du clic
+      if (series.length) {
+        const xOf = i => PAD.left + (n > 1 ? (i / (n - 1)) * chartW : chartW / 2);
+        const allVals = series.flatMap(s => s.data.filter(v => v !== null));
+        const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
+        const yOf = v => PAD.top + chartH - (v / maxVal) * chartH;
+        let hitId = null, hitIdx = -1, bestDist = Infinity;
+        const HIT_R = 26;
+        series.forEach(s => {
+          s.data.forEach((v, i) => {
+            if (v === null) return;
+            const dist = Math.hypot(canvasX - xOf(i), canvasY - yOf(v));
+            if (dist < bestDist) { bestDist = dist; hitId = s.id; hitIdx = i; }
+          });
+        });
+        if (hitId && hitIdx >= 0 && bestDist <= HIT_R) {
+          const clickedWinPeriod = winPeriods[hitIdx];
+          const periodGd = getWinPeriodGD(currentCountry,
+            clickedWinPeriod?.isSynthetic
+              ? { isDay: true, periodKeys: rankedSlots[rankedSlotIdx]?.periodKeys || [] }
+              : clickedWinPeriod
+          );
+          const articleNode = (periodGd.nodes || []).find(n2 => n2.id === hitId);
+          if (articleNode) renderArticlesPanel(articleNode);
+          else renderArticlesPanelUnavailable(hitId);
+        } else {
+          renderArticlesPanel(null);
+        }
+      } else {
+        renderArticlesPanel(null);
+      }
+
+      renderRankedChart(gd, null);
+      updatePeriodNavLabel();
       return;
     }
     const rect = evoCanvas.getBoundingClientRect();
@@ -2288,6 +2311,7 @@
   slider.max = periods.length-1; slider.value = currentIdx;
   slider.addEventListener('input', () => {
     if (currentMode === 'ranked') {
+      selectedPeriodIdx = null;
       rankedSlotIdx = +slider.value;
       setCurrentPeriodFromRankedSlot();
     } else {
@@ -2299,6 +2323,7 @@
   function navigatePrev() {
     if (currentMode === 'ranked') {
       if (rankedSlotIdx <= 0) return;
+      selectedPeriodIdx = null;
       rankedSlotIdx--;
       slider.value = rankedSlotIdx;
       setCurrentPeriodFromRankedSlot();
@@ -2312,6 +2337,7 @@
   function navigateNext() {
     if (currentMode === 'ranked') {
       if (rankedSlotIdx >= rankedSlots.length - 1) return;
+      selectedPeriodIdx = null;
       rankedSlotIdx++;
       slider.value = rankedSlotIdx;
       setCurrentPeriodFromRankedSlot();
@@ -2370,6 +2396,7 @@
       });
       tab.classList.add('active'); currentCountry=tab.dataset.country;
       tab.setAttribute('aria-selected', 'true');
+      selectedPeriodIdx = null;
       clearRankedSeriesCache();
       applyTimelineHeat(currentCountry);
       if (currentMode === 'ranked') {
@@ -2390,12 +2417,19 @@
 
   document.addEventListener('click', e => {
     const panel = document.getElementById('object-panel');
-    if (!panel || !panel.classList.contains('visible')) return;
-    if (panel.contains(e.target)) return;
-    if (e.target.closest('.rleg-item')) return;
-    if (e.target.closest('.tracked-item')) return;
-    if (e.target.closest('.left-tracked-item')) return;
-    renderArticlesPanel(null);
+    const clickOnCanvas = !!e.target.closest('#evo-canvas');
+    if (panel && panel.classList.contains('visible') &&
+        !panel.contains(e.target) && !e.target.closest('.rleg-item') &&
+        !e.target.closest('.tracked-item') && !e.target.closest('.left-tracked-item')) {
+      renderArticlesPanel(null);
+    }
+    // Clic hors du canvas : désélectionner la période
+    if (currentMode === 'ranked' && selectedPeriodIdx !== null && !clickOnCanvas) {
+      selectedPeriodIdx = null;
+      const gd = getGD(currentCountry, periods[currentIdx]?.key);
+      renderRankedChart(gd, rankedHoverIdx);
+      updatePeriodNavLabel();
+    }
   });
 
   document.querySelectorAll('.tab').forEach(tab => {
