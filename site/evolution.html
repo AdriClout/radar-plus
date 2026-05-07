@@ -125,12 +125,29 @@
     /* #media-panel supprimé */
     /* styles media-panel supprimés */
     #object-panel {
-      position: absolute; right: 20px; bottom: calc(var(--ticker-height, 44px) + 92px); width: min(360px, 35vw); max-height: 38vh;
-      overflow: auto; padding: 12px 14px; border: 1px solid rgba(80,120,255,0.35);
-      border-radius: 6px; background: rgba(3,6,26,0.93); z-index: 12; display: none;
-      box-shadow: 0 0 24px rgba(40,70,180,0.15);
+      position: fixed; right: 0; top: 0; bottom: 0;
+      width: 380px; max-width: 92vw;
+      overflow-y: auto; overflow-x: hidden;
+      padding: 64px 20px calc(var(--ticker-height, 44px) + 24px) 20px;
+      border-left: 1px solid rgba(80,120,255,0.35);
+      border-radius: 0;
+      background: rgba(3,6,26,0.96);
+      z-index: 12; display: none;
+      box-shadow: -4px 0 32px rgba(40,70,180,0.18);
     }
     #object-panel.visible { display: block; }
+    #object-panel-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(80,120,255,0.32);
+      border-radius: 4px;
+      background: rgba(8,15,46,0.72);
+      color: rgba(180,210,255,0.85);
+      font-family: 'Space Mono', monospace; font-size: 14px;
+      cursor: pointer; z-index: 2;
+    }
+    #object-panel-close:hover { border-color: rgba(140,180,255,0.8); color: #e3efff; }
     #object-panel .h { color: #dcecff; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
     #object-panel .meta { color: #7f9fd8; font-size: 11px; margin-bottom: 10px; }
     #object-panel .list { display: flex; flex-direction: column; gap: 8px; }
@@ -184,11 +201,8 @@
       #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
       .side-nav { width: 280px; right: -280px; }
       #object-panel {
-        left: 10px;
-        right: 10px;
-        width: auto;
-        max-height: 42vh;
-        bottom: calc(var(--ticker-height, 44px) + 92px);
+        width: 92vw;
+        padding: 56px 14px calc(var(--ticker-height, 44px) + 16px) 14px;
       }
       #controls { bottom: calc(var(--ticker-height, 44px) + 2px); }
       #period-current { font-size: 11px; letter-spacing: 0.9px; }
@@ -704,6 +718,7 @@
     const links = panelLinksFor(nodeId);
 
     panel.innerHTML = `
+      <button id="object-panel-close" aria-label="Fermer">×</button>
       <div class="h">${escapeHtml(nodeId)}</div>
       <div class="meta">Bloc: ${escapeHtml(panelPeriodLabel())}</div>
       <div class="meta">Données: indisponibles pour ce bloc</div>
@@ -716,7 +731,20 @@
       <div class="panel-subtle">Ouvre un nouvel onglet</div>
     `;
     panel.classList.add('visible');
+    reRenderActiveChart();
     bindPanelTrackButton(nodeId);
+    const closeBtn = document.getElementById('object-panel-close');
+    if (closeBtn) closeBtn.addEventListener('click', () => renderArticlesPanel(null));
+  }
+
+  function reRenderActiveChart() {
+    requestAnimationFrame(() => {
+      if (currentMode === 'tracking') renderEvolutionChart();
+      else {
+        const period = periods[currentIdx];
+        if (period) renderRankedChart(getGD(currentCountry, period.key), rankedHoverIdx);
+      }
+    });
   }
 
   function renderArticlesPanel(node, contextPeriod = null) {
@@ -727,6 +755,7 @@
       panelState.contextPeriod = null;
       panel.classList.remove('visible');
       panel.innerHTML = '';
+      reRenderActiveChart();
       return;
     }
 
@@ -753,6 +782,7 @@
       : '';
 
     panel.innerHTML = `
+      <button id="object-panel-close" aria-label="Fermer">×</button>
       <div class="h">${escapeHtml(node.id)}</div>
       <div class="meta">Bloc: ${escapeHtml(panelPeriodLabel())}</div>
       <div class="meta">Saillance: ${Number(node.size || 0).toFixed(2)} · Mentions: ${Number(node.n || 0)}</div>
@@ -766,7 +796,10 @@
       <div class="panel-subtle">Ouvre un nouvel onglet</div>
     `;
     panel.classList.add('visible');
+    reRenderActiveChart();
     bindPanelTrackButton(node.id);
+    const closeBtn = document.getElementById('object-panel-close');
+    if (closeBtn) closeBtn.addEventListener('click', () => renderArticlesPanel(null));
     const toggle = document.getElementById('panel-toggle-articles');
     if (toggle) {
       toggle.addEventListener('click', () => {
@@ -1594,10 +1627,15 @@
       color: getObjectColor(id),
       maxVal: 0,
       data: wp.map(p => {
+        // Synthetic/future blocks: no real data → null (skipped in rendering)
+        if (p.isSynthetic || p.isFuture) return null;
         const g = getWinPeriodGD(currentCountry, p);
-        const size = g.nodes.find(nd => nd.id === id)?.size ?? null;
+        const node = g.nodes.find(nd => nd.id === id);
+        // Real period without this object → 0 (dot at axis bottom, line connects through)
+        if (!node) return 0;
+        const size = Number(node.size) || 0;
         // Veille = somme des blocs d'hier → normaliser en moyenne par bloc pour garder la même échelle
-        if (p.isVeille && size !== null) {
+        if (p.isVeille && size > 0) {
           const nBlocks = Array.isArray(p.periodKeys) ? (p.periodKeys.length || 1) : 6;
           return size / nBlocks;
         }
@@ -1638,7 +1676,7 @@
     const compact = W < 960;
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
-    const rightPad = 38;
+    const rightPad = getRightPanelPad(rect, ['object-panel'], 38);
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -2311,8 +2349,8 @@
     const compact = W < 960;
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
-    const fallbackPanelPad = Math.min(310, W * 0.30) + 30;
-    const panelW = getRightPanelPad(rect, [], fallbackPanelPad);
+    const fallbackPanelPad = 38;
+    const panelW = getRightPanelPad(rect, ['object-panel'], fallbackPanelPad);
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -2704,7 +2742,11 @@
     }
     const rect = evoCanvas.getBoundingClientRect();
     const { PAD, chartW, chartH } = getEvolutionChartLayout(rect);
-    const n = periods.length;
+    // Use displayPeriods (filtered to current slot) like renderEvolutionChart
+    const displayPeriods = (rankedSlots.length > 0 && rankedSlots[rankedSlotIdx]?.periods?.length)
+      ? rankedSlots[rankedSlotIdx].periods
+      : periods;
+    const n = displayPeriods.length;
     const canvasX = e.clientX - rect.left;
     const canvasY = e.clientY - rect.top;
     if (canvasX < PAD.left || canvasX > PAD.left + chartW) { renderArticlesPanel(null); return; }
@@ -2720,16 +2762,26 @@
       for (let di = -1; di <= 1; di++) {
         const pi = idx + di;
         if (pi < 0 || pi >= n) continue;
-        const node = graphs[currentCountry]?.[periods[pi]?.key]?.nodes.find(nd => nd.id === id);
+        // Use getWinPeriodGD to handle day-level aggregated periods (isDay=true)
+        const g = getWinPeriodGD(currentCountry, displayPeriods[pi]);
+        const node = (g.nodes || []).find(nd => nd.id === id);
         if (!node) continue;
         if (Math.hypot(canvasX - xOf(pi), canvasY - yOf(node.size)) < HIT_R) { hitNode = node; hitPi = pi; break outer; }
       }
     }
 
-    currentIdx = hitPi !== null ? hitPi : idx;
-    slider.value = currentIdx;
-    loadPeriod(currentCountry, currentIdx);
-    if (hitNode) renderArticlesPanel(hitNode);
+    // Map clicked period back to global periods index (only for non-aggregated periods)
+    const clickedPeriod = displayPeriods[hitPi !== null ? hitPi : idx];
+    if (clickedPeriod && !clickedPeriod.isDay) {
+      const realIdx = periods.findIndex(p => p.key === clickedPeriod.key);
+      if (realIdx >= 0) {
+        currentIdx = realIdx;
+        slider.value = currentIdx;
+        loadPeriod(currentCountry, currentIdx);
+      }
+    }
+    if (hitNode) renderArticlesPanel(hitNode, clickedPeriod);
+    else renderArticlesPanel(null);
   });
 
 
