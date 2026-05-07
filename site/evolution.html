@@ -626,14 +626,17 @@
   }
 
   function applyTimelineHeat(country) {
-    if (currentMode !== 'ranked') {
-      applyTimelineNeutral();
-      return;
+    // En mode Chercher, calculer la convergence par période individuelle
+    let scores;
+    if (currentMode === 'ranked') {
+      scores = rankedSlots.length
+        ? getRankedSlotConvergenceScores(country)
+        : periods.map(p => periodConvergenceScore(country, p.key));
+    } else {
+      // tracking : convergence par période 4h (sous-échantillonné pour la perf)
+      const step = Math.max(1, Math.floor(periods.length / 120));
+      scores = periods.filter((_, i) => i % step === 0).map(p => periodConvergenceScore(country, p.key));
     }
-
-    const scores = rankedSlots.length
-      ? getRankedSlotConvergenceScores(country)
-      : periods.map(p => periodConvergenceScore(country, p.key));
     if (!scores.length) {
       applyTimelineNeutral();
       return;
@@ -1620,7 +1623,7 @@
     if (controls) {
       const controlsRect = controls.getBoundingClientRect();
       const controlsTop = controlsRect.top - rect.top;
-      if (Number.isFinite(controlsTop)) bottomPad = Math.max(bottomPad, rect.height - controlsTop + 12);
+      if (Number.isFinite(controlsTop)) bottomPad = Math.max(bottomPad, rect.height - controlsTop + 38);
     }
     const PAD = { top: compact ? 112 : 94, right: rightPad, bottom: bottomPad, left: leftPad };
     const chartW = Math.max(90, rect.width - PAD.left - PAD.right);
@@ -2002,7 +2005,7 @@
       const controlsRect = controls.getBoundingClientRect();
       const controlsTop = controlsRect.top - rect.top;
       if (Number.isFinite(controlsTop)) {
-        bottomPad = Math.max(bottomPad, rect.height - controlsTop + 12);
+        bottomPad = Math.max(bottomPad, rect.height - controlsTop + 38);
       }
     }
     const PAD = { top: compact ? 112 : 94, right: panelW, bottom: bottomPad, left: leftPad };
@@ -2240,7 +2243,7 @@
       trackedEl.style.display = '';
       rankedHoverIdx = null;
       document.getElementById('evo-tooltip').style.display = 'none';
-      applyTimelineNeutral();
+      applyTimelineHeat(currentCountry);
       renderTrackedList(); renderEvolutionChart();
       syncArticlesPanel();
     } else {
@@ -2273,7 +2276,7 @@
       currentIdx = Math.min(currentIdx, Math.max(0, periods.length - 1));
       slider.max = Math.max(0, periods.length - 1);
       slider.value = currentIdx;
-      applyTimelineNeutral();
+      applyTimelineHeat(currentCountry);
       renderTrackedList();
       renderEvolutionChart();
     } else {
@@ -2564,7 +2567,9 @@
   document.addEventListener('click', e => {
     const panel = document.getElementById('object-panel');
     const clickOnCanvas = !!e.target.closest('#evo-canvas');
-    if (panel && panel.classList.contains('visible') &&
+    // Fermer le panneau seulement si clic hors du panneau ET hors du canvas
+    // (le canvas gère lui-même l'ouverture/fermeture du panneau)
+    if (!clickOnCanvas && panel && panel.classList.contains('visible') &&
         !panel.contains(e.target) && !e.target.closest('.rleg-item') &&
         !e.target.closest('.tracked-item') && !e.target.closest('.left-tracked-item')) {
       renderArticlesPanel(null);
