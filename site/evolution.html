@@ -15,7 +15,7 @@
     #graph { display: none; }
     #left-panel {
       position: absolute; top: 0; left: 0; bottom: calc(var(--ticker-height, 44px) + 100px);
-      width: 220px;
+      width: 256px;
       display: flex; flex-direction: column; gap: 0;
       padding: 18px 14px 14px;
       background: linear-gradient(to right, rgba(0,0,15,0.96) 80%, transparent);
@@ -90,39 +90,37 @@
       -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
       background: #7090ff; box-shadow: 0 0 10px rgba(80,120,255,1), 0 0 20px rgba(80,120,255,0.5); cursor: pointer;
     }
-    #top10-panel {
-      position: absolute; top: 68px; right: 20px;
-      font-family: 'Orbitron', 'Space Mono', monospace;
-      z-index: 11;
-      width: min(360px, 35vw);
-      letter-spacing: 1px;
-      border: 1px solid rgba(95, 140, 255, 0.28);
-      border-radius: 7px;
-      background: linear-gradient(to left, rgba(8,14,40,0.75), rgba(6,10,30,0.48));
-      box-shadow: 0 0 20px rgba(60, 100, 210, 0.14);
-      padding: 10px 10px 8px;
-      backdrop-filter: blur(2px);
-    }
-    body.has-shared-menu #top10-panel {
-      right: 20px;
-    }
     body.has-shared-menu #tracked-panel {
       right: 20px;
     }
     body.has-shared-menu .menu-discover-hint {
       display: none;
     }
-    #top10-title {
-      font-size: 13px;
-      color: rgba(182, 208, 255, 0.98);
-      text-transform: uppercase;
-      text-shadow: 0 0 10px rgba(78, 125, 245, 0.26);
-    }
     #top10-country {
-      font-size: 22px;
-      color: rgba(200, 224, 255, 0.96);
-      text-shadow: 0 0 12px rgba(78, 125, 245, 0.30);
+      font-size: 11px;
+      color: rgba(160, 200, 255, 0.72);
+      letter-spacing: 1px;
+      font-family: 'Space Mono', monospace;
     }
+    #left-hot10-section {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    #left-hot10-section #ranked-legend-list {
+      flex: 1;
+      min-height: 0;
+      max-height: none;
+    }
+    #left-hot10-section #ranked-search-wrap {
+      margin: 2px 0 2px;
+    }
+    #left-hot10-section .rleg-delta { display: none; }
+    #left-hot10-section .rleg-val { min-width: 28px; }
     /* #media-panel supprimé */
     /* styles media-panel supprimés */
     #object-panel {
@@ -184,7 +182,6 @@
       #left-panel { width: 160px; padding: 12px 10px 10px; }
       #evo-title { font-size: 16px; letter-spacing: 3px; margin-bottom: 14px; }
       .side-nav { width: 280px; right: -280px; }
-      body.has-shared-menu #top10-panel { right: 10px; }
       body.has-shared-menu #tracked-panel { right: 10px; }
       #object-panel {
         left: 10px;
@@ -262,9 +259,6 @@
     #window-granularity { font-size: 8px; letter-spacing: 0.7px; color: rgba(90,130,180,0.50); margin-top: 2px; }
 
     /* ── Légende classement évolutif ──────────────────────────────────────── */
-    #ranked-legend-head {
-      display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 6px;
-    }
     #ranked-legend-period {
       font-size: 10px; letter-spacing: 0.7px; color: rgba(120,160,220,0.55); text-transform: uppercase; flex: 1;
       transition: color 0.15s;
@@ -438,12 +432,12 @@
       </div>
     </div>
     <div class="lpanel-section" id="window-section">
-      <div class="lpanel-label">Granularité</div>
+      <div class="lpanel-label">Période</div>
       <div id="window-row">
-        <button class="win-btn active" data-gran="day" type="button" aria-label="Granularité jour">Jour</button>
-        <button class="win-btn" data-gran="week" type="button" aria-label="Granularité semaine">Semaine</button>
-        <button class="win-btn" data-gran="month" type="button" aria-label="Granularité mois">Mois</button>
-        <button class="win-btn" data-gran="year" type="button" aria-label="Granularité année">Année</button>
+        <button class="win-btn active" data-gran="day" type="button" aria-label="Période jour">Jour</button>
+        <button class="win-btn" data-gran="week" type="button" aria-label="Période semaine">Semaine</button>
+        <button class="win-btn" data-gran="month" type="button" aria-label="Période mois">Mois</button>
+        <button class="win-btn" data-gran="year" type="button" aria-label="Période année">Année</button>
       </div>
       <div id="window-granularity"></div>
     </div>
@@ -456,27 +450,19 @@
         </div>
       </div>
     </div>
-    <div class="lpanel-section" id="left-tracked-section">
+    <div id="left-hot10-section">
       <div class="lpanel-label-row">
-        <span class="lpanel-label">Suivi</span>
-        <button class="lpanel-clear-btn" id="left-tracked-clear" type="button">Vider</button>
+        <span class="lpanel-label">Hot 10</span>
+        <span id="top10-country">CAN</span>
       </div>
-      <div id="left-tracked-list"></div>
+      <div id="ranked-search-wrap">
+        <input type="text" id="ranked-search-input" placeholder="Chercher des objets…" autocomplete="off" spellcheck="false" />
+        <div id="ranked-search-results"></div>
+      </div>
+      <div id="ranked-legend-period"></div>
+      <div id="ranked-legend-list"></div>
+      <button id="ranked-legend-more" type="button">+ Voir plus</button>
     </div>
-  </div>
-  <div id="top10-panel">
-    <!-- Mode classement : légende dynamique -->
-    <div id="ranked-legend-head">
-      <div id="top10-title">Hot 10</div>
-      <div id="top10-country">CAN</div>
-    </div>
-    <div id="ranked-search-wrap">
-      <input type="text" id="ranked-search-input" placeholder="Chercher un objet…" autocomplete="off" spellcheck="false" />
-      <div id="ranked-search-results"></div>
-    </div>
-    <div id="ranked-legend-period"></div>
-    <div id="ranked-legend-list"></div>
-    <button id="ranked-legend-more" type="button">+ Voir plus</button>
   </div>
   <div id="object-panel"></div>
   <div id="tooltip"></div>
@@ -1484,10 +1470,8 @@
       item.addEventListener('pointerdown', e => {
         e.stopPropagation();
         e.preventDefault();
-        const gd = getGD(currentCountry, periods[currentIdx]?.key);
         focusedNode = r.id;
         addTracked(r.id);
-        // En cumul (pas de hover), agréger les articles de tous les blocs du slot.
         let sourceGraph;
         if (isHoverBlock) {
           sourceGraph = getWinPeriodGD(currentCountry, winPeriods[safeIdx]);
@@ -1498,8 +1482,12 @@
         const sourceNode = (sourceGraph.nodes || []).find(n => n.id === r.id);
         if (sourceNode) renderArticlesPanel(sourceNode);
         else renderArticlesPanelUnavailable(r.id);
-        renderRankedChart(gd, rankedHoverIdx);
-        renderRankedLegend(series, rankedHoverIdx);
+        if (currentMode === 'ranked') {
+          setMode('tracking');
+        } else {
+          renderEvolutionChart();
+          renderTrackedList();
+        }
       });
 
       list.appendChild(item);
@@ -1617,7 +1605,7 @@
     const compact = W < 960;
     const leftPanelWidth = leftPanel ? leftPanel.getBoundingClientRect().width : 0;
     const leftPad = Math.max(compact ? 140 : 180, Math.ceil(leftPanelWidth + 22));
-    const rightPad = getRightPanelPad(rect, ['top10-panel'], 24);
+    const rightPad = 24;
     let bottomPad = 72;
     const controls = document.getElementById('controls');
     if (controls) {
@@ -2246,12 +2234,10 @@
     }
 
     const evoView = document.getElementById('evolution-view');
-    const top10El = document.getElementById('top10-panel');
     const trackedEl = document.getElementById('tracked-panel');
     updatePeriodSummary(currentCountry, currentIdx);
     if (mode === 'tracking') {
       evoView.classList.add('visible');
-      if (top10El) top10El.style.display = 'none';
       trackedEl.style.display = '';
       rankedHoverIdx = null;
       document.getElementById('evo-tooltip').style.display = 'none';
@@ -2260,7 +2246,6 @@
       syncArticlesPanel();
     } else {
       evoView.classList.add('visible');
-      if (top10El) top10El.style.display = '';
       trackedEl.style.display = 'none';
       applyTimelineHeat(currentCountry);
       loadPeriod(currentCountry, currentIdx);
@@ -2512,8 +2497,6 @@
   document.getElementById('prev-btn').addEventListener('click', navigatePrev);
   document.getElementById('next-btn').addEventListener('click', navigateNext);
 
-  document.getElementById('left-tracked-clear').addEventListener('click', clearAllTracked);
-
   document.getElementById('ranked-legend-list').addEventListener('mouseleave', () => {
     if (hoveredNode !== null) {
       hoveredNode = null;
@@ -2583,7 +2566,7 @@
     // (le canvas gère lui-même l'ouverture/fermeture du panneau)
     if (!clickOnCanvas && panel && panel.classList.contains('visible') &&
         !panel.contains(e.target) && !e.target.closest('.rleg-item') &&
-        !e.target.closest('.tracked-item') && !e.target.closest('.left-tracked-item')) {
+        !e.target.closest('.tracked-item')) {
       renderArticlesPanel(null);
     }
     // Clic hors du canvas : désélectionner la période
