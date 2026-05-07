@@ -1110,8 +1110,9 @@
         label.textContent = slot?.label || '';
       }
     } else {
-      const period = periods[currentIdx];
-      label.textContent = period ? toDayLabel(periodDisplayDate(period)) : '';
+      // Utilise le label du slot ranked (respecte la granularité sélectionnée)
+      const slot = rankedSlots[rankedSlotIdx];
+      label.textContent = slot?.label || (periods[currentIdx] ? toDayLabel(periodDisplayDate(periods[currentIdx])) : '');
     }
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
@@ -1304,9 +1305,22 @@
     const resultsEl = document.getElementById('evo-search-results');
     if (!resultsEl) return;
     resultsEl.innerHTML = '';
-    if (!q.trim()) return;
-    const ql = q.toLowerCase();
-    const matches = getAllObjectIds().filter(id => id.toLowerCase().includes(ql) && !trackedObjects.has(id)).slice(0, 7);
+    let matches;
+    if (!q.trim()) {
+      // Suggestions : top 10 du classement (graphData, période la plus récente)
+      const latestKey = graphData?.meta?.periods?.slice(-1)[0]?.key;
+      const gdHot = graphData?.graphs?.[currentCountry]?.[latestKey] || { nodes: [] };
+      const hot = (gdHot.nodes || []).slice(0, 10).map(n => n.id).filter(id => !trackedObjects.has(id));
+      if (!hot.length) return;
+      const hint = document.createElement('div');
+      hint.style.cssText = 'font-size:9px;color:rgba(100,140,200,0.55);padding:1px 3px 3px;letter-spacing:0.8px;';
+      hint.textContent = `HOT 10 · ${currentCountry}`;
+      resultsEl.appendChild(hint);
+      matches = hot;
+    } else {
+      const ql = q.toLowerCase();
+      matches = getAllObjectIds().filter(id => id.toLowerCase().includes(ql) && !trackedObjects.has(id)).slice(0, 7);
+    }
     matches.forEach(id => {
       const div = document.createElement('div');
       div.className = 'evo-result';
@@ -2392,8 +2406,18 @@
   });
 
   // Evolution search
+  document.getElementById('evo-search').addEventListener('focus', e => { if (!e.target.value.trim()) renderEvoSearchResults(''); });
+  document.getElementById('evo-search').addEventListener('blur', () => { setTimeout(() => { const r = document.getElementById('evo-search-results'); if (r) r.innerHTML = ''; }, 150); });
   document.getElementById('evo-search').addEventListener('input', e => renderEvoSearchResults(e.target.value));
-  document.getElementById('evo-search').addEventListener('keydown', e => { if (e.key === 'Escape') { e.target.value = ''; renderEvoSearchResults(''); } e.stopPropagation(); });
+  document.getElementById('evo-search').addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.target.value = ''; renderEvoSearchResults(''); e.target.blur(); }
+    else if (e.key === 'Enter') {
+      const q = e.target.value.trim().toLowerCase();
+      const id = getAllObjectIds().find(v => v.toLowerCase().includes(q) && !trackedObjects.has(v));
+      if (id) { addTracked(id); e.target.value = ''; renderEvoSearchResults(''); }
+    }
+    e.stopPropagation();
+  });
   document.getElementById('tracked-clear').addEventListener('click', () => {
     trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
     renderTrackedList();
