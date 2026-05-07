@@ -43,6 +43,7 @@ SITE_DIR <- file.path(dirname(OUT_DIR), "site")
 
 GRAPH_FILE <- file.path(SITE_DIR, "graph.json")
 TS_FILE    <- file.path(SITE_DIR, "timeseries.json")
+ARTICLES_FILE <- file.path(SITE_DIR, "articles.json")
 MONITOR_INPUT_FILE <- file.path(SITE_DIR, "monitor_input.json")
 
 # ─── Lecture des CSV produits par fetch_data.py ────────────────────────────────
@@ -289,33 +290,51 @@ cat("✓ graph.json      :", round(file.size(GRAPH_FILE) / 1024 / 1024, 2), "Mo 
 
 # ─── timeseries.json ───────────────────────────────────────────────────────────
 
-cat("\nAssemblage timeseries.json (", HISTORY_DAYS, "jours)...\n")
+cat("\nAssemblage timeseries.json (", HISTORY_DAYS, "jours, sans articles)...\n")
 
 periods_ts <- make_periods_df(df_nodes)
 
-graphs_ts <- purrr::map(countries, function(country) {
-  purrr::map(seq_len(nrow(periods_ts)), function(i) {
+# On bâtit en parallèle :
+#   - graphs_ts : nœuds (id/size/n) sans articles → fichier léger pour le chart
+#   - articles_ts : articles indexés par country / period / node_id → fichier lourd lazy-load
+graphs_ts <- list()
+articles_ts <- list()
+
+for (country in countries) {
+  excl <- EXCLUSION_BY_COUNTRY[[country]]
+  graphs_country <- list()
+  articles_country <- list()
+  for (i in seq_len(nrow(periods_ts))) {
     d  <- periods_ts$date_utc[i]
     ti <- periods_ts$time_interval_utc[i]
-
-    excl <- EXCLUSION_BY_COUNTRY[[country]]  # NULL si pays inconnu → aucune exclusion
+    pk <- periods_ts$key[i]
 
     nodes_i <- df_nodes |>
       dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |>
       dplyr::filter(!tolower(extracted_objects) %in% excl) |>
       dplyr::arrange(dplyr::desc(absolute_normalized_index))
 
-    list(
-      nodes = purrr::map(seq_len(nrow(nodes_i)), function(j) list(
-        id       = nodes_i$extracted_objects[j],
-        size     = round(nodes_i$absolute_normalized_index[j], 3),
-        n        = nodes_i$n[j],
-        articles = build_articles(nodes_i$urls[j], nodes_i$titles[j])
-      )),
-      links = list()
-    )
-  }) |> setNames(periods_ts$key)
-}) |> setNames(countries)
+    period_nodes <- list()
+    period_articles <- list()
+    if (nrow(nodes_i) > 0) {
+      for (j in seq_len(nrow(nodes_i))) {
+        nid <- nodes_i$extracted_objects[j]
+        period_nodes[[length(period_nodes) + 1]] <- list(
+          id   = nid,
+          size = round(nodes_i$absolute_normalized_index[j], 3),
+          n    = nodes_i$n[j]
+        )
+        arts <- build_articles(nodes_i$urls[j], nodes_i$titles[j])
+        if (length(arts) > 0) period_articles[[nid]] <- arts
+      }
+    }
+
+    graphs_country[[pk]] <- list(nodes = period_nodes, links = list())
+    articles_country[[pk]] <- period_articles
+  }
+  graphs_ts[[country]] <- graphs_country
+  articles_ts[[country]] <- articles_country
+}
 
 result_ts <- list(
   meta = list(
@@ -331,6 +350,19 @@ result_ts <- list(
 
 jsonlite::write_json(result_ts, TS_FILE, auto_unbox = TRUE, pretty = FALSE)
 cat("✓ timeseries.json :", round(file.size(TS_FILE) / 1024 / 1024, 2), "Mo —",
+    nrow(periods_ts), "périodes\n")
+
+# ─── articles.json (lazy-loadé côté client) ───────────────────────────────────
+
+result_articles <- list(
+  meta = list(
+    generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+    history_days = HISTORY_DAYS
+  ),
+  articles = articles_ts
+)
+jsonlite::write_json(result_articles, ARTICLES_FILE, auto_unbox = TRUE, pretty = FALSE)
+cat("✓ articles.json   :", round(file.size(ARTICLES_FILE) / 1024 / 1024, 2), "Mo —",
     nrow(periods_ts), "périodes\n")
 
 # ─── monitor_input.json (tops entrée complets) ───────────────────────────────

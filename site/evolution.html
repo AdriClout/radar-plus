@@ -526,12 +526,30 @@
 (async () => {
   try {
   // ── Données ───────────────────────────────────────────────────────────────
-  let graphData, tsData;
+  let tsData;
+  let articlesData = null;
+  let articlesLoadingPromise = null;
+  function ensureArticlesLoaded() {
+    if (articlesData) return Promise.resolve(articlesData);
+    if (articlesLoadingPromise) return articlesLoadingPromise;
+    articlesLoadingPromise = fetch('./articles.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { articlesData = d; return d; })
+      .catch(() => null);
+    return articlesLoadingPromise;
+  }
+  function getArticlesFor(country, periodKey, nodeId, fallbackNodeArticles) {
+    const a = articlesData?.articles?.[country]?.[periodKey]?.[nodeId];
+    if (Array.isArray(a) && a.length) return a;
+    return Array.isArray(fallbackNodeArticles) ? fallbackNodeArticles : [];
+  }
   try {
-    const [gRes, tRes] = await Promise.all([fetch('./graph.json'), fetch('./timeseries.json')]);
-    if (!gRes.ok) throw new Error('graph.json: ' + gRes.statusText);
+    const tRes = await fetch('./timeseries.json');
     if (!tRes.ok) throw new Error('timeseries.json: ' + tRes.statusText);
-    [graphData, tsData] = await Promise.all([gRes.json(), tRes.json()]);
+    tsData = await tRes.json();
+    // Préchargement non-bloquant des articles → panel s'ouvrira instantanément
+    // dès qu'ils arrivent (sinon affiche "Chargement…" temporairement).
+    ensureArticlesLoaded();
   } catch(e) {
     const loading = document.getElementById('loading-text');
     if (window.location.protocol === 'file:') {
@@ -771,27 +789,26 @@
     document.getElementById('object-overlay')?.classList.add('open');
   }
 
-  // Articles précédents : descend dans periods array, dédupe par URL, groupe par période
+  // Articles précédents : descend dans periods array, dédupe par URL, groupe par période.
+  // Source articles : articlesData (chargé async) avec fallback sur node.articles inline (legacy).
   function buildPreviousArticleGroups(nodeId, currentSeenUrls, contextPeriod) {
     const groups = [];
     const seen = new Set(currentSeenUrls);
-    // Skip period keys belonging to current context (slot or single period)
     const skipKeys = new Set();
     if (contextPeriod?.isDay && Array.isArray(contextPeriod.periodKeys)) {
       contextPeriod.periodKeys.forEach(k => skipKeys.add(k));
     } else if (contextPeriod?.key) {
       skipKeys.add(contextPeriod.key);
     }
-    const allPeriods = (tsData?.meta?.periods?.length ? tsData.meta.periods : periods) || [];
-    const sourceGraphs = (tsData?.graphs?.[currentCountry]) || graphs?.[currentCountry] || {};
+    const allPeriods = tsData?.meta?.periods || periods || [];
+    const sourceGraphs = tsData?.graphs?.[currentCountry] || {};
     for (let i = allPeriods.length - 1; i >= 0 && groups.length < 8; i--) {
       const pk = allPeriods[i].key;
       if (skipKeys.has(pk)) continue;
-      const pd = sourceGraphs[pk];
-      if (!pd?.nodes) continue;
-      const pnode = pd.nodes.find(n => n.id === nodeId);
-      if (!pnode?.articles?.length) continue;
-      const fresh = pnode.articles.filter(a => a.url && !seen.has(a.url));
+      const inlineNode = sourceGraphs[pk]?.nodes?.find(n => n.id === nodeId);
+      const arts = getArticlesFor(currentCountry, pk, nodeId, inlineNode?.articles);
+      if (!arts.length) continue;
+      const fresh = arts.filter(a => a.url && !seen.has(a.url));
       if (!fresh.length) continue;
       fresh.forEach(a => seen.add(a.url));
       const day = toDayLabel(periodDisplayDate(allPeriods[i]));
@@ -829,13 +846,33 @@
     const periodLabel = panelPeriodLabel(ctx);
     const metaLine = `Bloc: ${periodLabel} · Saillance: ${Number(node.size || 0).toFixed(2)} · Mentions: ${Number(node.n || 0)}`;
 
-    const articles = Array.isArray(node.articles) ? node.articles : [];
-    const seenUrls = new Set();
-    articles.forEach(a => { if (a.url) seenUrls.add(a.url); });
+    // Articles du bloc courant : depuis articlesData (par bloc agrégé ou simple)
+    let currentArticles = [];
+    const fallbackInline = Array.isArray(node.articles) ? node.articles : [];
+    if (ctx?.isDay && Array.isArray(ctx.periodKeys)) {
+      const seen = new Set();
+      ctx.periodKeys.forEach(pk => {
+        getArticlesFor(currentCountry, pk, node.id, null).forEach(a => {
+          if (a.url && !seen.has(a.url)) { seen.add(a.url); currentArticles.push(a); }
+        });
+      });
+      if (!currentArticles.length) currentArticles = fallbackInline;
+    } else if (ctx?.key) {
+      currentArticles = getArticlesFor(currentCountry, ctx.key, node.id, fallbackInline);
+    } else {
+      currentArticles = fallbackInline;
+    }
 
-    const currentItems = articles.length
-      ? articles.map(articleItemHtml).join('')
-      : '<div class="empty">Aucun article pour cette période.</div>';
+    const seenUrls = new Set();
+    currentArticles.forEach(a => { if (a.url) seenUrls.add(a.url); });
+
+    const articlesLoading = !articlesData;
+    const loadingNotice = articlesLoading
+      ? '<div class="empty">Chargement de l\'historique des articles…</div>'
+      : '';
+    const currentItems = currentArticles.length
+      ? currentArticles.map(articleItemHtml).join('')
+      : (articlesLoading ? '' : '<div class="empty">Aucun article pour cette période.</div>');
 
     const prevGroups = buildPreviousArticleGroups(node.id, seenUrls, ctx);
     let prevHtml = '';
@@ -850,10 +887,17 @@
     const panel = document.getElementById('object-panel');
     panel.innerHTML = `
       ${renderObjectPanelHeader(node.id, metaLine)}
-      <div id="object-panel-body">${currentItems}${prevHtml}</div>
+      <div id="object-panel-body">${currentItems}${prevHtml}${loadingNotice}</div>
     `;
     openObjectPanelDom();
     bindObjectPanelControls(node.id);
+
+    // Si articles pas encore chargés, re-render dès que prêt
+    if (articlesLoading) {
+      ensureArticlesLoaded().then(() => {
+        if (panelState.nodeId === node.id) renderArticlesPanel(node, panelState.contextPeriod);
+      });
+    }
   }
 
   function syncArticlesPanel() {
