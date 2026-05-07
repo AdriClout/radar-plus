@@ -1809,7 +1809,7 @@
         const x = xOfHour(h), y = yOf(v);
         if (pi === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       });
-      ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.15)` : s.color;
+      ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.28)` : s.color;
       ctx.lineWidth = lineW; ctx.shadowColor = s.color; ctx.shadowBlur = shadowB;
       ctx.stroke(); ctx.shadowBlur = 0;
 
@@ -1819,7 +1819,7 @@
         if (liveHour > last.h) {
           const endH = Math.min(liveHour, 24);
           ctx.beginPath(); ctx.moveTo(xOfHour(last.h), yOf(last.v)); ctx.lineTo(xOfHour(endH), yOf(last.v));
-          ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.08)` : `rgba(${r},${g},${b},0.48)`;
+          ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.20)` : `rgba(${r},${g},${b},0.48)`;
           ctx.lineWidth = lineW * 0.7; ctx.setLineDash([4, 5]);
           ctx.shadowColor = s.color; ctx.shadowBlur = isDimmed ? 0 : 4;
           ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
@@ -1830,13 +1830,13 @@
       pts.forEach(({ h, v, wi }) => {
         const x = xOfHour(h), y = yOf(v);
         const isSelected = hasPeriodSelection && selectedPeriodIdx === wi;
-        const dotR = isSelected ? 6 : (isActive ? 5 : (h === 0 ? 3 : 3.5));
+        const dotR = isSelected ? 6 : (isActive ? 5.5 : (h === 0 ? 3.5 : 4.5));
         ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI * 2);
         if (isSelected) {
           ctx.fillStyle = `rgba(${r},${g},${b},0.98)`;
           ctx.shadowColor = s.color; ctx.shadowBlur = 16;
         } else {
-          ctx.fillStyle = isDimmed ? `rgba(${r},${g},${b},0.15)` : `rgba(${r},${g},${b},${isActive ? 0.98 : 0.82})`;
+          ctx.fillStyle = isDimmed ? `rgba(${r},${g},${b},0.42)` : `rgba(${r},${g},${b},${isActive ? 0.98 : 0.88})`;
           if (isActive) { ctx.shadowColor = s.color; ctx.shadowBlur = 12; }
         }
         ctx.fill();
@@ -1848,8 +1848,8 @@
       if (isToday && pts.length && liveHour > pts[pts.length - 1].h) {
         const lastV = pts[pts.length - 1].v;
         const lx = xOfHour(Math.min(liveHour, 24));
-        ctx.beginPath(); ctx.arc(lx, yOf(lastV), isActive ? 4.5 : 3, 0, Math.PI * 2);
-        ctx.fillStyle = isDimmed ? `rgba(${r},${g},${b},0.12)` : `rgba(${r},${g},${b},0.78)`;
+        ctx.beginPath(); ctx.arc(lx, yOf(lastV), isActive ? 4.5 : 4, 0, Math.PI * 2);
+        ctx.fillStyle = isDimmed ? `rgba(${r},${g},${b},0.38)` : `rgba(${r},${g},${b},0.78)`;
         if (isActive && !isDimmed) { ctx.shadowColor = s.color; ctx.shadowBlur = 8; }
         ctx.fill(); ctx.shadowBlur = 0;
       }
@@ -2171,7 +2171,7 @@
         const x = xOf(i), y = yOf(v);
         if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
       });
-      ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.15)` : s.color;
+      ctx.strokeStyle = isDimmed ? `rgba(${r},${g},${b},0.28)` : s.color;
       ctx.lineWidth   = isActive ? 3.2 : 2;
       ctx.shadowColor = s.color;
       ctx.shadowBlur  = isActive ? 14 : (isDimmed ? 0 : 7);
