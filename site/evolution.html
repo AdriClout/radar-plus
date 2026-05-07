@@ -2527,6 +2527,7 @@
 
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
+      rankedGranularity = 'year';
       graphs  = tsData.graphs;
       const trackingBasePeriods = (tsData?.meta?.periods || []);
       buildRankedSlots(trackingBasePeriods);
