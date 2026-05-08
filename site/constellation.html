@@ -68,13 +68,17 @@
     }
     #cst-title {
       font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 22px;
-      letter-spacing: 4px;
+      font-size: 16px;
+      letter-spacing: 2.5px;
       color: rgba(195, 220, 255, 0.92);
       text-transform: uppercase;
       text-shadow: 0 0 10px rgba(90,140,255,0.36), 0 0 26px rgba(70,110,230,0.22);
       line-height: 1.1;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1 1 auto;
+      min-width: 0;
     }
     .lpanel-section {
       display: flex; flex-direction: column; gap: 6px;
@@ -601,6 +605,11 @@
   setIfFn('width', window.innerWidth);
   setIfFn('height', window.innerHeight);
   setIfFn('backgroundColor', '#00000f');
+  // Constellation figée: pas de pan, pas de zoom, pas de drag de nœuds.
+  // Le layout s'auto-cadre via zoomToFit après stabilisation.
+  setIfFn('enableZoomInteraction', false);
+  setIfFn('enablePanInteraction', false);
+  setIfFn('enableNodeDrag', false);
   // Nœuds par défaut (cercles) — couleur + taille via API standard
   setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
   setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
@@ -697,33 +706,28 @@
   const SPEED_LABELS = ['1×', '2×', '5×'];
   let speedIdx       = 0;
 
-  let hasAppliedInitialCenter = false;
-
-  function centerMostSalientNode(durationMs = 0) {
-    const nodes = Graph.graphData().nodes || [];
-    if (!nodes.length || typeof Graph.centerAt !== 'function') return false;
-
-    const topNode = nodes.reduce((best, n) => ((Number(n.size) || 0) > (Number(best.size) || 0) ? n : best), nodes[0]);
-    if (!topNode || !Number.isFinite(topNode.x) || !Number.isFinite(topNode.y)) return false;
-
-    Graph.centerAt(topNode.x, topNode.y, durationMs);
-    return true;
+  // Auto-fit: cadre l'ensemble des nœuds et liens dans la viewport.
+  // Le panneau gauche (~280px) chevauche le bord gauche du canvas — c'est
+  // accepté car le panneau est translucide et la majorité du graphe
+  // reste visible. Padding 60 = marge confortable côté droit, haut, bas.
+  function fitGraphToView(durationMs = 0) {
+    if (typeof Graph.zoomToFit !== 'function') return;
+    Graph.zoomToFit(durationMs, 60);
   }
 
-  function scheduleInitialCenter(maxAttempts = 120) {
+  function scheduleFit(maxAttempts = 90) {
     let attempts = 0;
-
-    function tryCenter() {
-      if (hasAppliedInitialCenter) return;
-      if (centerMostSalientNode(0)) {
-        hasAppliedInitialCenter = true;
+    function tryFit() {
+      const nodes = Graph.graphData().nodes || [];
+      const ready = nodes.length && nodes.every(n => Number.isFinite(n.x) && Number.isFinite(n.y));
+      if (ready) {
+        fitGraphToView(0);
         return;
       }
       attempts += 1;
-      if (attempts < maxAttempts) requestAnimationFrame(tryCenter);
+      if (attempts < maxAttempts) requestAnimationFrame(tryFit);
     }
-
-    requestAnimationFrame(tryCenter);
+    requestAnimationFrame(tryFit);
   }
 
   function clearFocusAndRecenter() {
@@ -734,7 +738,7 @@
     document.getElementById('focus-hint').classList.remove('visible');
     renderArticlesPanel(null);
     setTop10Active(null);
-    if (typeof Graph.zoomToFit === 'function') Graph.zoomToFit(400, 60);
+    fitGraphToView(400);
   }
 
   function loadPeriod(country, idx) {
@@ -747,9 +751,7 @@
     gd.nodes.forEach(n => { n._highlighted = true; });
     gd.links.forEach(l => { l._highlighted = true; });
     Graph.graphData(gd);
-    if (!hasAppliedInitialCenter) {
-      scheduleInitialCenter();
-    }
+    scheduleFit();
     const conv = periodConvergenceScore(country, period.key);
     document.getElementById('period-label').innerHTML =
       `<span>${period.label}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${conv.toFixed(1)}`;
