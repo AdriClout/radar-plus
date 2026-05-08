@@ -258,6 +258,7 @@
 <li>Validation et fiabilité</li>
 <li>Limites méthodologiques</li>
 <li>Reproductibilité et accès aux données</li>
+<li><a href="#alertes">Alertes de saillance</a></li>
 <li>Sources</li>
 </ol>
 <hr />
@@ -532,7 +533,42 @@
 </blockquote>
 <p>Une publication méthodologique détaillée <a href="#fn27" class="footnote-ref" id="fnref27" role="doc-noteref"><sup>27</sup></a> est en préparation et viendra compléter la documentation officielle.</p>
 <hr />
-<h2 id="sources">10. Sources</h2>
+<h2 id="alertes">10. Alertes de saillance</h2>
+<p>Les <strong>alertes de saillance</strong> détectent automatiquement les objets dont la couverture médiatique change brusquement <em>et</em> qui pèsent réellement sur le radar. Trois niveaux gradués sont publiés en continu : <strong>Veille</strong> (signal faible), <strong>Alerte</strong> (signal marqué), <strong>Alerte forte</strong> (signal majeur). La logique combine quatre filtres complémentaires.</p>
+
+<h3 id="alertes-anomalie">10.1 Anomalie statistique (z-score robuste)</h3>
+<p>Pour chaque objet et chaque période de 4 h, la saillance courante est comparée à la <strong>médiane glissante</strong> et au <strong>MAD</strong> (median absolute deviation) des 30 derniers jours sur la même tranche horaire. Le z-score robuste s’écrit :</p>
+<blockquote>
+<p>z = (log(saillance courante + 1) − médiane log) / max(MAD log, plancher d’échelle)</p>
+</blockquote>
+<p>L’usage de <code>log1p</code> rend le score symétrique entre montées et descentes, et la médiane + MAD résistent aux valeurs extrêmes (anciennes pointes ne saturent pas la mesure). Le plancher d’échelle (par défaut 0.08 sur la base log) évite les explosions de z sur les séries quasi constantes.</p>
+<p>Seuils gradués : <strong>Veille z ≥ 1.8</strong>, <strong>Alerte z ≥ 2.6</strong>, <strong>Alerte forte z ≥ 3.8</strong>. Ces valeurs sont calibrées pour produire un nombre raisonnable d’alertes sur les corpus actuels (CAN, QC, USA) sans noyer le signal.</p>
+
+<h3 id="alertes-importance">10.2 Importance vs le radar (part du Top)</h3>
+<p>Le z-score à lui seul détecte des <em>anomalies pour l’objet lui-même</em> — un objet normalement absent qui passe à 1.0 voit son z grimper rapidement, sans pour autant peser dans la couverture médiatique réelle. Pour qu’une alerte signale aussi quelque chose de <strong>visible</strong> sur le radar, on calcule la <strong>part du Top</strong> :</p>
+<blockquote>
+<p>part_top = saillance courante / saillance du Top 1 du pays·période</p>
+</blockquote>
+<p>Si la part est insuffisante, le niveau d’alerte est <strong>rétrogradé d’un cran</strong> (Forte → Alerte → Veille → aucune). Seuils par défaut : <strong>Veille ≥ 10 %</strong>, <strong>Alerte ≥ 20 %</strong>, <strong>Alerte forte ≥ 35 %</strong>. Un objet dont l’anomalie est très significative mais qui ne pèse que 5 % du Top n’apparaîtra pas comme alerte — un choix éditorial visant à privilégier les signaux <em>réellement consommés</em> par le public.</p>
+
+<h3 id="alertes-pic-annuel">10.3 Pic annuel propre + plancher absolu</h3>
+<p>Deux garde-fous supplémentaires complètent la classification :</p>
+<ul>
+<li><strong>Ratio vs pic annuel</strong> : la saillance courante doit représenter au moins une fraction du <em>pic atteint par l’objet sur l’année en cours</em>. Seuils par défaut : 15 % (Veille), 30 % (Alerte), 55 % (Forte). Empêche un objet dont la pointe historique est passée depuis longtemps de redéclencher une alerte sur un micro-soubresaut.</li>
+<li><strong>Plancher absolu de saillance</strong> : la saillance courante doit dépasser un seuil minimum (par défaut 1.0). Filtre les objets si peu présents que leur signal reste sous le bruit éditorial.</li>
+</ul>
+
+<h3 id="alertes-mentions">10.4 Mentions minimales</h3>
+<p>Une alerte requiert un nombre minimum de <strong>médias distincts</strong> ayant traité l’objet dans la période courante : <strong>2 (Veille)</strong>, <strong>3 (Alerte)</strong>, <strong>4 (Alerte forte)</strong>. Cette contrainte évite qu’un seul média qui martèle un sujet ne déclenche à lui seul une alerte d’écosystème.</p>
+
+<h3 id="alertes-fenetre">10.5 Fenêtre de calcul et latence</h3>
+<p>La fenêtre glissante des 30 jours se traduit par <strong>180 périodes de 4 h</strong>. Un historique minimal de 18 périodes (≈ 3 jours) est requis avant qu’un score robuste soit calculé — en deçà, les objets émergents reçoivent un statut <em>Émergent</em> distinct, signalant simplement leur arrivée. Toutes les métriques d’alerte (score, baseline, ratio vs pic, part du Top, mentions, niveau, état actif) sont publiées par objet et par période dans <code>graph.json</code> et <code>timeseries.json</code>, et rafraîchies automatiquement à chaque cycle de 4 h.</p>
+
+<h3 id="alertes-portee">10.6 Portée et limites</h3>
+<p>Les alertes sont conçues comme un <strong>signal de priorité éditoriale</strong>, pas comme un jugement de qualité ou de véracité. Une montée détectée signale que <em>la couverture médiatique change</em>, jamais que l’objet est nécessairement plus important ou véridique. Les valeurs des seuils sont disponibles en clair dans les données (<code>meta.alert_thresholds</code>) et peuvent être réajustées par configuration sans toucher au code de calcul.</p>
+
+<hr />
+<h2 id="sources">11. Sources</h2>
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>

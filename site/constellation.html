@@ -509,22 +509,13 @@
   setIfFn('enableZoomInteraction', false);
   setIfFn('enablePanInteraction', false);
   setIfFn('enableNodeDrag', false);
-  // 180 ticks suffisent pour que charge + link + collide convergent
-  // (~3s à 60fps). Le 1er onEngineStop cadre le graphe et masque le
-  // loading screen — l'utilisateur ne voit jamais la simulation
-  // s'animer, juste la constellation déjà figée.
+  // 180 ticks (~3s à 60fps) pour que charge+link+collide convergent.
+  // La simulation est volontairement visible — on voit les nœuds se
+  // placer intelligemment dans l'espace — puis onEngineStop fige le
+  // layout et l'anime doucement vers la zone visible (transition
+  // 600ms, hors panneau gauche et hors timeline/ticker du bas).
   setIfFn('cooldownTicks', 180);
-  let firstFitDone = false;
-  setIfFn('onEngineStop', () => {
-    // Masquer en premier pour ne jamais bloquer l'utilisateur sur
-    // le loading screen, même si le fit jette une erreur inattendue.
-    if (!firstFitDone) {
-      firstFitDone = true;
-      const el = document.getElementById('loading');
-      if (el) el.style.display = 'none';
-    }
-    fitGraphToView(0);
-  });
+  setIfFn('onEngineStop', () => fitGraphToView(600));
   // Nœuds par défaut (cercles) — couleur + taille via API standard
   setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
   setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
@@ -657,14 +648,52 @@
   const SPEED_LABELS = ['1×', '2×', '5×'];
   let speedIdx       = 0;
 
-  // Auto-fit: cadre l'ensemble des nœuds et liens dans la viewport.
-  // Appelé via onEngineStop une fois la simulation force stabilisée,
-  // et lors d'un resize navigateur. Padding 60 = marge confortable.
-  // Le panneau gauche (~280px, translucide) recouvre le bord gauche
-  // du canvas — accepté car la majorité du graphe reste visible.
+  // Auto-fit: cadre les nœuds dans la zone réellement visible (hors
+  // panneau gauche 280px et hors timeline+ticker bas ~130px). On
+  // calcule manuellement le zoom et le centre pour gérer un padding
+  // asymétrique — zoomToFit ne supporte qu'un padding uniforme.
+  const LEFT_PANEL_W   = 280;
+  const BOTTOM_OVERLAY = 130;
+  const TOP_MARGIN     = 60;
+  const SIDE_MARGIN    = 60;
+
   function fitGraphToView(durationMs = 0) {
-    if (typeof Graph.zoomToFit !== 'function') return;
-    Graph.zoomToFit(durationMs, 60);
+    if (typeof Graph.zoom !== 'function' || typeof Graph.centerAt !== 'function') return;
+    const nodes = Graph.graphData().nodes || [];
+    if (!nodes.length) return;
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const n of nodes) {
+      if (!Number.isFinite(n.x) || !Number.isFinite(n.y)) continue;
+      if (n.x < minX) minX = n.x;
+      if (n.x > maxX) maxX = n.x;
+      if (n.y < minY) minY = n.y;
+      if (n.y > maxY) maxY = n.y;
+    }
+    if (!Number.isFinite(minX)) return;
+
+    const bboxW  = Math.max(1, maxX - minX);
+    const bboxH  = Math.max(1, maxY - minY);
+    const bboxCx = (minX + maxX) / 2;
+    const bboxCy = (minY + maxY) / 2;
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const visibleW = Math.max(200, W - LEFT_PANEL_W - SIDE_MARGIN);
+    const visibleH = Math.max(200, H - BOTTOM_OVERLAY - TOP_MARGIN);
+
+    // Zoom: le bbox doit tenir dans la zone visible.
+    const zoom = Math.min(visibleW / bboxW, visibleH / bboxH);
+
+    // Décalage caméra en coords-monde pour que bbox.center s'affiche
+    // au centre de la zone visible (et non au centre de la window).
+    const visibleCenterX = LEFT_PANEL_W + visibleW / 2;
+    const visibleCenterY = TOP_MARGIN + visibleH / 2;
+    const dxScreen = visibleCenterX - W / 2;
+    const dyScreen = visibleCenterY - H / 2;
+
+    Graph.zoom(zoom, durationMs);
+    Graph.centerAt(bboxCx - dxScreen / zoom, bboxCy - dyScreen / zoom, durationMs);
   }
 
   function clearFocusAndRecenter() {
@@ -873,8 +902,10 @@
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
   });
 
-  // Note: le loading reste visible jusqu'à ce que onEngineStop ait
-  // figé le layout — voir setIfFn('onEngineStop', ...) plus haut.
+  // Loading masqué tout de suite: l'utilisateur voit la simulation
+  // placer les nœuds intelligemment dans l'espace, puis onEngineStop
+  // cadre le tout dans la zone visible.
+  document.getElementById('loading').style.display = 'none';
   applyTimelineHeat(currentCountry);
   loadPeriod(currentCountry, currentIdx);
 

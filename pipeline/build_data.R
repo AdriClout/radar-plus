@@ -25,7 +25,10 @@ ALERT_MIN_HISTORY      <- 18   # Historique minimal avant score robuste
 ALERT_MIN_MENTIONS_WATCH  <- 2 # Évite les signaux trop faibles
 ALERT_MIN_MENTIONS_ALERT  <- 3
 ALERT_MIN_MENTIONS_STRONG <- 4
-ALERT_MIN_ABS_SCORE    <- 0.08 # Plancher minimal de saillance courante
+# Plancher absolu de saillance courante. Relevé de 0.08 à 1.0 pour
+# éliminer les alertes sur des objets qui pèsent à peine sur le radar
+# (un objet à 0.3 absolu reste invisible par rapport à un Top à ~10).
+ALERT_MIN_ABS_SCORE    <- 1.0
 ALERT_SCALE_FLOOR      <- 0.08 # Évite les explosions sur séries quasi constantes
 ALERT_THRESHOLD_WATCH  <- 1.8
 ALERT_THRESHOLD_ALERT  <- 2.6
@@ -33,6 +36,13 @@ ALERT_THRESHOLD_STRONG <- 3.8
 ALERT_PEAK_RATIO_WATCH  <- 0.15
 ALERT_PEAK_RATIO_ALERT  <- 0.30
 ALERT_PEAK_RATIO_STRONG <- 0.55
+# Part minimum du Top de la période — filtre cross-object pour s'assurer
+# qu'une alerte signale un objet réellement visible AUJOURD'HUI, pas
+# seulement inhabituel pour son propre historique. La part = saillance
+# courante / saillance du Top 1 du pays·période.
+ALERT_TOP_SHARE_WATCH  <- 0.10
+ALERT_TOP_SHARE_ALERT  <- 0.20
+ALERT_TOP_SHARE_STRONG <- 0.35
 
 # Objets génériques exclus par pays (même logique que radar-hot-20)
 EXCLUSION_BY_COUNTRY <- list(
@@ -232,6 +242,34 @@ df_index <- df_index |>
     )
   }) |>
   dplyr::ungroup()
+
+# Filtre cross-object: une alerte ne tient que si l'objet pèse réellement
+# sur le radar de la période. On compare sa saillance courante à celle du
+# Top 1 du pays·période. Si la part est insuffisante, le niveau est
+# rétrogradé d'un cran (strong → alert → watch → none).
+downgrade_by_top_share <- function(level, top_share) {
+  if (is.na(level) || is.na(top_share)) return(level)
+  if (level == "strong" && top_share < ALERT_TOP_SHARE_STRONG) level <- "alert"
+  if (level == "alert"  && top_share < ALERT_TOP_SHARE_ALERT)  level <- "watch"
+  if (level == "watch"  && top_share < ALERT_TOP_SHARE_WATCH)  level <- "none"
+  level
+}
+
+df_index <- df_index |>
+  dplyr::group_by(country_id, date_utc, time_interval_utc) |>
+  dplyr::mutate(
+    alert_top_share = dplyr::if_else(
+      max(absolute_normalized_index, na.rm = TRUE) > 0,
+      absolute_normalized_index / max(absolute_normalized_index, na.rm = TRUE),
+      NA_real_
+    )
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(
+    alert_level = purrr::map2_chr(alert_level, alert_top_share, downgrade_by_top_share),
+    alert_active = alert_level %in% c("strong", "alert", "watch")
+  )
+
 cat("  →", sum(df_index$alert_active, na.rm = TRUE), "points d'alerte actifs sur", nrow(df_index), "lignes\n")
 
 # ─── Nœuds : top N par période × pays (toute la fenêtre historique) ───────────
@@ -422,6 +460,7 @@ graphs_graph <- purrr::map(countries, function(country) {
         alert_baseline = if (is.na(nodes_i$alert_baseline[j])) NULL else round(nodes_i$alert_baseline[j], 3),
         alert_peak_ratio = if (is.na(nodes_i$alert_peak_ratio[j])) NULL else round(nodes_i$alert_peak_ratio[j], 3),
         alert_year_peak = if (is.na(nodes_i$alert_year_peak[j])) NULL else round(nodes_i$alert_year_peak[j], 3),
+        alert_top_share = if (is.na(nodes_i$alert_top_share[j])) NULL else round(nodes_i$alert_top_share[j], 3),
         alert_level = nodes_i$alert_level[j],
         alert_active = isTRUE(nodes_i$alert_active[j]),
         articles  = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
@@ -462,6 +501,11 @@ result_graph <- list(
         watch = ALERT_PEAK_RATIO_WATCH,
         alert = ALERT_PEAK_RATIO_ALERT,
         strong = ALERT_PEAK_RATIO_STRONG
+      ),
+      min_top_share = list(
+        watch = ALERT_TOP_SHARE_WATCH,
+        alert = ALERT_TOP_SHARE_ALERT,
+        strong = ALERT_TOP_SHARE_STRONG
       ),
       min_abs_score = ALERT_MIN_ABS_SCORE,
       # Fenêtre glissante utilisée pour le calcul du z-score d'alerte
@@ -519,6 +563,7 @@ for (country in countries) {
           alert_baseline = if (is.na(nodes_i$alert_baseline[j])) NULL else round(nodes_i$alert_baseline[j], 3),
           alert_peak_ratio = if (is.na(nodes_i$alert_peak_ratio[j])) NULL else round(nodes_i$alert_peak_ratio[j], 3),
           alert_year_peak = if (is.na(nodes_i$alert_year_peak[j])) NULL else round(nodes_i$alert_year_peak[j], 3),
+          alert_top_share = if (is.na(nodes_i$alert_top_share[j])) NULL else round(nodes_i$alert_top_share[j], 3),
           alert_level    = nodes_i$alert_level[j],
           alert_active   = isTRUE(nodes_i$alert_active[j])
         )
@@ -553,6 +598,11 @@ result_ts <- list(
         watch = ALERT_PEAK_RATIO_WATCH,
         alert = ALERT_PEAK_RATIO_ALERT,
         strong = ALERT_PEAK_RATIO_STRONG
+      ),
+      min_top_share = list(
+        watch = ALERT_TOP_SHARE_WATCH,
+        alert = ALERT_TOP_SHARE_ALERT,
+        strong = ALERT_TOP_SHARE_STRONG
       ),
       min_abs_score = ALERT_MIN_ABS_SCORE,
       # Fenêtre glissante utilisée pour le calcul du z-score d'alerte

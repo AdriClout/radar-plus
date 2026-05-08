@@ -119,21 +119,40 @@
       border: 1px solid rgba(90,140,255,0.2);
       border-radius: 6px;
       background: rgba(8,16,42,0.65);
-      padding: 10px 12px;
-      font-size: 9px;
-      color: rgba(170,200,245,0.8);
-      line-height: 1.45;
+      padding: 10px 14px 12px;
+      font-size: 10px;
+      color: rgba(180,210,250,0.85);
+      line-height: 1.5;
+    }
+    .alertes-methodology em {
+      color: rgba(214,229,255,0.96);
+      font-style: normal;
+      font-weight: 600;
     }
     .alertes-methodology strong {
-      color: rgba(214,229,255,0.96);
+      color: rgba(220,234,255,0.98);
+    }
+    .alertes-methodology-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 4px 10px;
       font-family: var(--orbitron);
       font-size: 8px;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.9px;
       text-transform: uppercase;
-      margin-right: 8px;
+      text-decoration: none;
+      color: rgba(190,220,255,0.92);
+      border: 1px solid rgba(120,170,255,0.4);
+      border-radius: 999px;
+      background: rgba(20,40,90,0.45);
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
     }
-    .alertes-methodology-line + .alertes-methodology-line {
-      margin-top: 4px;
+    .alertes-methodology-link:hover {
+      border-color: rgba(160,200,255,0.7);
+      background: rgba(30,60,140,0.55);
+      color: rgba(230,240,255,1);
     }
 
     /* ── Groupes de périodes ── */
@@ -540,45 +559,22 @@
     }
 
     var thr = graphData.meta.alert_thresholds || {};
-    var zWatch = numOrNull(thr.watch);
-    var zAlert = numOrNull(thr.alert);
-    var zStrong = numOrNull(thr.strong);
-    var peak = thr.min_peak_ratio || {};
-    var m = thr.min_mentions || {};
-    // Fenêtre du calcul d'alertes = ALERT_LOOKBACK_PERIODS × 4h (30 jours).
-    // Le champ graph_days est la fenêtre de la constellation, pas celle des alertes.
     var lookbackDays = numOrNull(thr.lookback_days);
     if (lookbackDays === null) lookbackDays = 30;
-    var lookbackTxt = lookbackDays + ' jours';
     var subtitleEl = document.getElementById('alertes-subtitle-window');
     if (subtitleEl) subtitleEl.textContent = lookbackDays + ' derniers jours';
 
-    var peakWatch = numOrNull(peak.watch);
-    var peakAlert = numOrNull(peak.alert);
-    var peakStrong = numOrNull(peak.strong);
-
-    var mWatch = numOrNull(m.watch);
-    var mAlert = numOrNull(m.alert);
-    var mStrong = numOrNull(m.strong);
-
     box.innerHTML = ''
-      + '<div class="alertes-methodology-line"><strong>Méthode</strong>'
-      + 'Le niveau combine un z-score robuste (médiane + MAD glissants) et le ratio courant vs pic annuel de l’objet.'
+      + '<div class="alertes-methodology-line">'
+      + 'Une alerte signale un objet à la fois <em>inhabituel pour lui-même</em> '
+      + '(montée brusque vs ses ' + lookbackDays + ' derniers jours) <em>et réellement '
+      + 'visible</em> sur le radar (poids significatif vs le Top du pays). Trois '
+      + 'niveaux gradués : <strong>Veille</strong>, <strong>Alerte</strong>, '
+      + '<strong>Alerte forte</strong>.'
       + '</div>'
-      + '<div class="alertes-methodology-line"><strong>Seuils</strong>'
-      + 'Veille z ≥ ' + (zWatch !== null ? zWatch.toFixed(1) : '—')
-      + ' · Alerte z ≥ ' + (zAlert !== null ? zAlert.toFixed(1) : '—')
-      + ' · Forte z ≥ ' + (zStrong !== null ? zStrong.toFixed(1) : '—') + '.'
-      + '</div>'
-      + '<div class="alertes-methodology-line"><strong>Contexte</strong>'
-      + 'Ratio minimum vs pic annuel: Veille ' + (peakWatch !== null ? Math.round(peakWatch * 100) + '%' : '—')
-      + ', Alerte ' + (peakAlert !== null ? Math.round(peakAlert * 100) + '%' : '—')
-      + ', Forte ' + (peakStrong !== null ? Math.round(peakStrong * 100) + '%' : '—')
-      + ' · Mentions mini: ' + (mWatch !== null ? mWatch : '—')
-      + '/' + (mAlert !== null ? mAlert : '—')
-      + '/' + (mStrong !== null ? mStrong : '—')
-      + ' · Fenêtre: ' + escapeHtml(lookbackTxt) + '.'
-      + '</div>';
+      + '<a class="alertes-methodology-link" href="./methodologie.html#alertes">'
+      + 'Voir la méthodologie complète <span aria-hidden="true">→</span>'
+      + '</a>';
   }
 
   function getAlertGroups() {
@@ -620,7 +616,8 @@
           var delta = numOrNull(node.alert_delta);
           var baseline = numOrNull(node.alert_baseline);
           var peakRatio = numOrNull(node.alert_peak_ratio);
-          var yearPeak = numOrNull(node.alert_year_peak);
+          var yearPeak  = numOrNull(node.alert_year_peak);
+          var topShare  = numOrNull(node.alert_top_share);
           alertsInPeriod.push({
             id:       node.id,
             level:    level,
@@ -628,7 +625,8 @@
             delta:    delta,
             baseline: baseline,
             peakRatio: peakRatio,
-            yearPeak: yearPeak,
+            yearPeak:  yearPeak,
+            topShare:  topShare,
             n:        node.n || 0,
             active:   active,
             status:   isCurrent ? 'current' : (isEnded ? 'ended' : 'other'),
@@ -658,6 +656,9 @@
     var baselineStr = alert.baseline !== null ? alert.baseline.toFixed(2) : '\u2014';
     var peakRatioStr = alert.peakRatio !== null ? Math.round(alert.peakRatio * 100) + '%' : '\u2014';
     var peakTitle = alert.yearPeak !== null ? 'Pic annuel: ' + alert.yearPeak.toFixed(2) : 'Pic annuel indisponible';
+    var topShareStr = alert.topShare !== null ? Math.round(alert.topShare * 100) + '%' : '\u2014';
+    var topShareTitle = 'Part de la saillance du Top 1 du pays\u00b7p\u00e9riode. '
+      + 'Mesure l\u2019importance r\u00e9elle de l\u2019objet sur le radar maintenant.';
     var countryStr = COUNTRY_LABELS[alert.country] || alert.country;
 
     var articlesHtml = '';
@@ -683,9 +684,9 @@
       + '</div>'
       + '<div class="alert-card-stats">'
       +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">score z</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">delta mentions</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(topShareTitle) + '">' + escapeHtml(topShareStr) + '</span><span class="alert-card-stat-lbl">part du top</span></div>'
       +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(peakTitle) + '">' + escapeHtml(peakRatioStr) + '</span><span class="alert-card-stat-lbl">vs pic annuel</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(baselineStr) + '</span><span class="alert-card-stat-lbl">baseline</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">delta mentions</span></div>'
       +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(String(alert.n)) + '</span><span class="alert-card-stat-lbl">mentions</span></div>'
       + '</div>'
       + (articlesHtml ? '<div class="alert-card-articles">' + articlesHtml + '</div>' : '')
