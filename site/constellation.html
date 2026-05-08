@@ -790,21 +790,32 @@
   }
   Graph.d3Force('collide', collideForce);
 
-  // Force radiale: tire chaque nœud vers (0,0) avec une intensité
-  // proportionnelle à sa distance. Empêche les clusters disconnectés
-  // de partir à l'infini et concentre l'ensemble sur la zone visible.
-  function gentleCenter(strength) {
+  // Force de rappel aspect-aware: tire les nœuds vers (0,0) avec une
+  // intensité plus forte en Y qu'en X, proportionnellement à
+  // l'aspect ratio de la zone visible. Conséquence: le bounding box
+  // du graphe s'étire horizontalement pour remplir l'écran large
+  // (typiquement ~1.86:1 sur desktop landscape) plutôt que de rester
+  // carré et laisser de l'espace vide à droite/gauche.
+  function visibleAspect() {
+    const visW = Math.max(200, window.innerWidth  - LEFT_PANEL_W - SIDE_MARGIN);
+    const visH = Math.max(200, window.innerHeight - BOTTOM_OVERLAY - TOP_MARGIN);
+    return visW / visH;
+  }
+  function aspectAwareCenter(strength) {
     return function(alpha) {
       const nodes = Graph.graphData().nodes;
+      const aspect = visibleAspect();
       const k = strength * alpha;
+      const kx = k / aspect; // moins fort → les nœuds peuvent s'étaler en X
+      const ky = k * aspect; // plus fort → ils restent compacts en Y
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
-        n.vx = (n.vx || 0) - n.x * k;
-        n.vy = (n.vy || 0) - n.y * k;
+        n.vx = (n.vx || 0) - n.x * kx;
+        n.vy = (n.vy || 0) - n.y * ky;
       }
     };
   }
-  Graph.d3Force('gentleCenter', gentleCenter(0.09));
+  Graph.d3Force('gentleCenter', aspectAwareCenter(0.09));
 
   window.addEventListener('resize', () => {
     Graph.width(window.innerWidth).height(window.innerHeight);
@@ -1038,16 +1049,21 @@
     (Graph.graphData().nodes || []).forEach(n => { prev[n.id] = {x: n.x, y: n.y}; });
     gd.nodes.forEach(n => { if (prev[n.id]) Object.assign(n, prev[n.id]); });
 
-    // Pré-positionnement circulaire des nouveaux nœuds: cercle régulier
-    // autour de (0,0), bien plus élégant que des positions random.
+    // Pré-positionnement elliptique des nouveaux nœuds, ratio aligné
+    // sur l'aspect de la zone visible — démarrage cohérent avec ce
+    // que la force aspectAwareCenter va maintenir au final, donc pas
+    // de "réajustement" visible vers une ellipse étirée.
     const newNodes = gd.nodes.filter(n => !Number.isFinite(n.x) || !Number.isFinite(n.y));
     if (newNodes.length) {
-      const radius = Math.max(80, 22 * Math.sqrt(gd.nodes.length));
+      const baseR  = Math.max(80, 22 * Math.sqrt(gd.nodes.length));
+      const aspect = visibleAspect();
+      const rX     = baseR * Math.sqrt(aspect);
+      const rY     = baseR / Math.sqrt(aspect);
       const angleStart = Math.random() * Math.PI * 2;
       newNodes.forEach((n, i) => {
         const angle = angleStart + (i / newNodes.length) * Math.PI * 2;
-        n.x = radius * Math.cos(angle);
-        n.y = radius * Math.sin(angle);
+        n.x = rX * Math.cos(angle);
+        n.y = rY * Math.sin(angle);
       });
     }
 
