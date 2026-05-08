@@ -389,37 +389,80 @@
     }
     #stats { display: none; }
     #focus-hint { display: none; }
+    /* Slide-in panel (calque sur evolution.html) */
+    #object-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,10,0.55);
+      z-index: 300; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #object-overlay.open { opacity: 1; pointer-events: auto; }
     #object-panel {
-      position: absolute; right: 20px; bottom: calc(var(--ticker-height, 44px) + 92px); width: min(360px, 35vw); max-height: 38vh;
-      overflow: auto; padding: 12px 14px; border: 1px solid rgba(80,120,255,0.35);
-      border-radius: 6px; background: rgba(3,6,26,0.93); z-index: 12; display: none;
-      box-shadow: 0 0 24px rgba(40,70,180,0.15);
+      position: fixed; top: 0; right: -460px; width: min(440px, 92vw);
+      height: 100vh; z-index: 310;
+      background: linear-gradient(175deg, rgba(6,12,38,0.98), rgba(3,6,20,0.99));
+      border-left: 1px solid rgba(80,130,255,0.35);
+      backdrop-filter: blur(20px);
+      transition: right 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      overflow-y: auto;
+      padding: 0;
     }
-    #object-panel.visible { display: block; }
-    #object-panel .h { color: #dcecff; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
-    #object-panel .meta { color: #7f9fd8; font-size: 11px; margin-bottom: 10px; }
-    #object-panel .list { display: flex; flex-direction: column; gap: 8px; }
-    #object-panel .it {
-      display: block; text-decoration: none; border: 1px solid rgba(80,120,255,0.24);
-      background: rgba(8,15,46,0.72); border-radius: 4px; padding: 8px 10px;
-      color: #aecdff; font-size: 11px; line-height: 1.4;
+    #object-panel.open { right: 0; }
+    #object-panel-header {
+      position: sticky; top: 0; z-index: 2;
+      background: linear-gradient(180deg, rgba(6,12,38,0.99) 80%, transparent);
+      padding: 24px 24px 16px;
     }
-    #object-panel .it:hover { border-color: rgba(140,180,255,0.72); color: #e3efff; }
-    #object-panel .it-media { display: block; color: #4a7aaa; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
-    #object-panel .empty { color: #5872a8; font-size: 11px; }
-    #object-panel .panel-actions { display: flex; gap: 8px; margin-bottom: 10px; }
-    #object-panel .panel-link {
-      display: inline-flex;
-      align-items: center;
-      border: 1px solid rgba(95,140,255,0.4);
-      border-radius: 4px;
-      padding: 4px 8px;
-      color: #b9d6ff;
-      font-size: 10px;
-      text-decoration: none;
-      background: rgba(10,20,50,0.55);
+    #object-panel-close {
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: 1px solid rgba(80,130,255,0.35); border-radius: 4px;
+      color: #cbe0ff; font-size: 18px; width: 32px; height: 32px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
     }
-    #object-panel .panel-link:hover { border-color: rgba(145,182,255,0.8); color: #e3efff; }
+    #object-panel-close:hover { border-color: rgba(140,180,255,0.85); color: #fff; }
+    #object-panel .h {
+      font-family: 'Orbitron', sans-serif; font-size: 16px;
+      color: #e8f0ff; text-transform: capitalize;
+      letter-spacing: 1px; max-width: calc(100% - 50px);
+      margin: 0;
+    }
+    #object-panel .meta {
+      font-size: 11px; color: rgba(140,170,220,0.75); margin-top: 4px;
+    }
+    #object-panel .panel-links {
+      display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+    }
+    #object-panel .panel-link,
+    #object-panel .panel-link:link,
+    #object-panel .panel-link:visited {
+      display: inline-flex; align-items: center;
+      font-size: 10px; font-family: 'Orbitron', sans-serif; letter-spacing: 1.5px;
+      color: #8ab4f8; text-decoration: none; text-transform: uppercase;
+      background: rgba(80,130,255,0.08);
+      border: 1px solid rgba(80,130,255,0.35); border-radius: 5px;
+      padding: 6px 14px; transition: all 0.2s;
+    }
+    #object-panel .panel-link:hover,
+    #object-panel .panel-link:focus {
+      border-color: rgba(120,170,255,0.8); color: #fff;
+      background: rgba(80,130,255,0.2); outline: none;
+    }
+    #object-panel-body { padding: 0 24px 32px; }
+    #object-panel .article-item {
+      display: block; padding: 14px 0;
+      border-bottom: 1px solid rgba(80,130,255,0.1);
+      text-decoration: none; color: #cdddf5;
+      transition: all 0.2s;
+    }
+    #object-panel .article-item:hover { color: #fff; padding-left: 6px; }
+    #object-panel .article-item-media {
+      font-size: 10px; font-weight: 700; color: #8ab4f8;
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;
+    }
+    #object-panel .article-item-title { font-size: 13px; line-height: 1.5; }
+    #object-panel .empty {
+      color: rgba(140,170,220,0.55); font-size: 12px; padding: 16px 0;
+    }
     #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #00000f; z-index: 100; }
     #loading-text { font-size: 11px; letter-spacing: 3px; color: rgba(80,120,255,0.5); text-transform: uppercase; animation: pulse 1.8s ease-in-out infinite; }
     @media (max-width: 900px) {
@@ -514,7 +557,16 @@
   </div>
   <div id="stats"></div>
   <div id="focus-hint">clic hors graphe pour revenir · <span id="focus-name"></span></div>
-  <div id="object-panel"></div>
+  <div id="object-overlay"></div>
+  <aside id="object-panel" aria-hidden="true">
+    <div id="object-panel-header">
+      <button id="object-panel-close" type="button" aria-label="Fermer le panneau">×</button>
+      <h2 class="h" id="object-panel-title"></h2>
+      <div class="meta" id="object-panel-meta"></div>
+      <div class="panel-links" id="object-panel-links"></div>
+    </div>
+    <div id="object-panel-body"></div>
+  </aside>
   <div id="tooltip"></div>
   <div id="controls">
     <div id="period-label">—</div>
@@ -662,31 +714,43 @@
   }
 
   function renderArticlesPanel(node) {
-    const panel = document.getElementById('object-panel');
+    const panel   = document.getElementById('object-panel');
+    const overlay = document.getElementById('object-overlay');
+    const titleEl = document.getElementById('object-panel-title');
+    const metaEl  = document.getElementById('object-panel-meta');
+    const linksEl = document.getElementById('object-panel-links');
+    const bodyEl  = document.getElementById('object-panel-body');
+
     if (!node) {
-      panel.classList.remove('visible');
-      panel.innerHTML = '';
+      panel.classList.remove('open');
+      overlay.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+      // On ne vide pas le contenu tout de suite pour conserver une
+      // animation de sortie propre (le panneau slide à droite).
       return;
     }
 
     const articles = Array.isArray(node.articles) ? node.articles : [];
-    const items = articles.map(a => {
-      const title = escapeHtml(a.title || a.url || 'Article');
-      const url = escapeHtml(a.url || '#');
-      const media = a.media_id ? `<span class="it-media">${escapeHtml(a.media_id)}</span>` : '';
-      return `<a class="it" href="${url}" target="_blank" rel="noopener noreferrer">${media}${title}</a>`;
-    }).join('');
-    const evolutionUrl = `./evolution.html?country=${encodeURIComponent(currentCountry)}&node=${encodeURIComponent(node.id)}`;
+    titleEl.textContent = node.id;
+    metaEl.textContent  = `${(Number(node.size) || 0).toFixed(2)} pts · ${node.n || 0} mentions · ${articles.length} article${articles.length > 1 ? 's' : ''}`;
 
-    panel.innerHTML = `
-      <div class="h">${escapeHtml(node.id)}</div>
-      <div class="meta">${node.size.toFixed(2)} pts · ${node.n} mentions · ${articles.length} articles</div>
-      <div class="panel-actions">
-        <a class="panel-link" href="${evolutionUrl}">Voir dans Évolution</a>
-      </div>
-      <div class="list">${items || '<div class="empty">Aucun article associé dans ce jeu de données.</div>'}</div>
-    `;
-    panel.classList.add('visible');
+    const evolutionUrl = `./evolution.html?country=${encodeURIComponent(currentCountry)}&gran=${encodeURIComponent(rankedGranularity)}&nodes=${encodeURIComponent(node.id)}&mode=tracking`;
+    linksEl.innerHTML = `<a class="panel-link" href="${escapeHtml(evolutionUrl)}">Voir dans Évolution →</a>`;
+
+    if (articles.length) {
+      bodyEl.innerHTML = articles.map(a => {
+        const title = escapeHtml(a.title || a.url || 'Article');
+        const url   = escapeHtml(a.url || '#');
+        const media = a.media_id ? `<div class="article-item-media">${escapeHtml(a.media_id)}</div>` : '';
+        return `<a class="article-item" href="${url}" target="_blank" rel="noopener noreferrer">${media}<div class="article-item-title">${title}</div></a>`;
+      }).join('');
+    } else {
+      bodyEl.innerHTML = '<div class="empty">Aucun article associé dans ce jeu de données.</div>';
+    }
+
+    panel.classList.add('open');
+    overlay.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
   }
 
   // ── Étoiles ───────────────────────────────────────────────────────────────
@@ -1136,6 +1200,29 @@
     Graph.centerAt(bboxCx - dxScreen / zoom, bboxCy - dyScreen / zoom, durationMs);
   }
 
+  // Cadre un nœud spécifique au centre-gauche de l'écran, en réservant
+  // 460px à droite pour le panneau slide-in. Garde le zoom courant si
+  // raisonnable, sinon zoome légèrement pour le focus.
+  const SLIDE_PANEL_W = 460;
+  function panToNodeLeftCenter(node, durationMs = 500) {
+    if (!node || !Number.isFinite(node.x) || !Number.isFinite(node.y)) return;
+    if (typeof Graph.zoom !== 'function' || typeof Graph.centerAt !== 'function') return;
+
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    // Zone visible quand le panneau est ouvert: à gauche du panneau,
+    // à droite du panneau lateral gauche.
+    const visibleW = Math.max(200, W - LEFT_PANEL_W - SLIDE_PANEL_W);
+    const visibleH = Math.max(200, H - BOTTOM_OVERLAY - TOP_MARGIN);
+    const targetScreenX = LEFT_PANEL_W + visibleW / 2;
+    const targetScreenY = TOP_MARGIN  + visibleH / 2;
+
+    const z = (typeof Graph.zoom === 'function' && Graph.zoom()) || 1;
+    const dxScreen = targetScreenX - W / 2;
+    const dyScreen = targetScreenY - H / 2;
+    Graph.centerAt(node.x - dxScreen / z, node.y - dyScreen / z, durationMs);
+  }
+
   function clearFocusAndRecenter() {
     const gd = Graph.graphData();
     (gd.nodes || []).forEach(n => { n._highlighted = true; });
@@ -1144,7 +1231,9 @@
     document.getElementById('focus-hint').classList.remove('visible');
     renderArticlesPanel(null);
     setTop10Active(null);
-    fitGraphToView(400);
+    // Réapplique le highlight de comparaison s'il y a des objets sélectionnés
+    if (comparedNodes && comparedNodes.size) applyComparisonHighlight();
+    fitGraphToView(500);
   }
 
   // Charge un slot (créneau à la granularité courante) dans le graphe.
@@ -1314,6 +1403,9 @@
     document.getElementById('tooltip').style.display = 'none';
     renderArticlesPanel(node);
     setTop10Active(node.id);
+    // Pan le nœud focusé au centre-gauche pour libérer l'espace du
+    // panneau slide-in qui occupe les 460px à droite.
+    panToNodeLeftCenter(node, 500);
   }
 
   function handleHover(node) {
@@ -1348,6 +1440,12 @@
     if (Date.now() - lastNodeClickTs < 250) return;
     clearFocusAndRecenter();
   });
+
+  // Fermeture explicite du panneau slide-in (bouton × et clic overlay)
+  const panelCloseBtn = document.getElementById('object-panel-close');
+  const panelOverlay  = document.getElementById('object-overlay');
+  if (panelCloseBtn) panelCloseBtn.addEventListener('click', () => clearFocusAndRecenter());
+  if (panelOverlay)  panelOverlay.addEventListener('click', () => clearFocusAndRecenter());
 
   // Initialise les slots à la granularité courante
   buildSlots();
