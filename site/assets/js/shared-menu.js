@@ -231,9 +231,9 @@
         strip.innerHTML = multi;
         halfW = strip.scrollWidth / 2 || halfW;
       }
-      // Vitesse uniforme ~22 px/s (lecture confortable). Plancher à 30s.
-      var pxPerSec = 22;
-      var dur = Math.max(30, Math.round(halfW / pxPerSec));
+      // Vitesse uniforme ~10 px/s (lecture très confortable). Plancher 60s.
+      var pxPerSec = 10;
+      var dur = Math.max(60, Math.round(halfW / pxPerSec));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
       bar.classList.add('ready');
     });
