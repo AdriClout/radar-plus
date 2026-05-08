@@ -1466,6 +1466,26 @@
     });
   }
 
+  function updateRankedLegendHoverState() {
+    const list = document.getElementById('ranked-legend-list');
+    if (!list) return;
+    const items = list.querySelectorAll('.rleg-item');
+    let hasAnyState = !!hoveredNode || !!focusedNode;
+    if (!hasAnyState) {
+      items.forEach(el => {
+        if (trackedObjects.has(el.dataset.nodeId)) hasAnyState = true;
+      });
+    }
+    items.forEach(el => {
+      const id = el.dataset.nodeId;
+      const isFocused = focusedNode === id;
+      const isHovered = hoveredNode === id;
+      const isTracked = trackedObjects.has(id);
+      el.classList.toggle('hovered', isHovered && !isFocused && !isTracked);
+      el.classList.toggle('dimmed', hasAnyState && !isFocused && !isHovered && !isTracked);
+    });
+  }
+
   function renderRankedLegend(series, hoverIdx) {
     const list = document.getElementById('ranked-legend-list');
     const periodEl = document.getElementById('ranked-legend-period');
@@ -1622,13 +1642,13 @@
 
       item.addEventListener('mouseenter', () => {
         hoveredNode = r.id;
-        item.classList.add('hovered');
-        renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+        updateRankedLegendHoverState();
+        renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx, true);
       });
       item.addEventListener('mouseleave', () => {
         hoveredNode = null;
-        item.classList.remove('hovered');
-        renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx);
+        updateRankedLegendHoverState();
+        renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), rankedHoverIdx, true);
       });
       item.addEventListener('pointerdown', e => {
         e.stopPropagation();
@@ -1859,7 +1879,7 @@
     return Number.isFinite(s) ? s + 4 : 0;
   }
 
-  function renderDayModeChart(gd, hoverIdx = null) {
+  function renderDayModeChart(gd, hoverIdx = null, skipLegend = false) {
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -2099,7 +2119,9 @@
     }
 
     const effectiveHoverIdx = hasPeriodSelection ? selectedPeriodIdx : hoverIdx;
-    requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
+    if (!skipLegend) {
+      requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
+    }
   }
 
   function periodTickParts(period) {
@@ -2126,8 +2148,8 @@
     return { major: label, minor: '' };
   }
 
-  function renderRankedChart(gd, hoverIdx = null) {
-    if (rankedGranularity === 'day') { renderDayModeChart(gd, hoverIdx); return; }
+  function renderRankedChart(gd, hoverIdx = null, skipLegend = false) {
+    if (rankedGranularity === 'day') { renderDayModeChart(gd, hoverIdx, skipLegend); return; }
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -2401,7 +2423,9 @@
     });
 
     // Appel légende dynamique avec effectiveHoverIdx (hover ou sélection)
-    requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
+    if (!skipLegend) {
+      requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
+    }
 
     // Marqueur de période courante (discret)
     if (winCurrentIdx >= 0 && !hasPeriodSelection) {
