@@ -678,8 +678,7 @@
   }
 
   // Score de convergence d'un slot = moyenne des scores de ses blocs 4h.
-  // Ainsi, un slot "Jour" reflète la convergence moyenne de la journée
-  // (6 blocs 4h), un slot "Semaine" celle de la semaine, etc.
+  // Utilisé pour le label "convergence X.X" du créneau courant.
   function slotConvergenceScore(country, slot) {
     if (!slot || !slot.periodKeys.length) return 0;
     let sum = 0, count = 0;
@@ -690,15 +689,35 @@
     return count > 0 ? sum / count : 0;
   }
 
+  // Convergence agrégée par jour calendrier — pour la barre temporelle.
+  // Indépendante de la granularité de slot: la heat reflète toujours
+  // l'activité réelle dans le temps, pas le découpage Jour/Sem/Mois/Total.
+  function getDailyConvergenceScores(country) {
+    const byDay = new Map();
+    for (const p of periods) {
+      const ds = String(p.key).split('_')[0];
+      const c = periodConvergenceScore(country, p.key);
+      if (!Number.isFinite(c) || c <= 0) continue;
+      if (!byDay.has(ds)) byDay.set(ds, { sum: 0, count: 0 });
+      const e = byDay.get(ds);
+      e.sum += c;
+      e.count++;
+    }
+    return [...byDay.entries()]
+      .map(([ds, { sum, count }]) => ({ date: ds, score: count ? sum / count : 0 }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(d => d.score);
+  }
+
   function applyTimelineHeat(country) {
-    if (!slots.length) return;
-    const scores = slots.map(s => slotConvergenceScore(country, s));
+    const scores = getDailyConvergenceScores(country);
+    if (!scores.length) return;
     const min = Math.min(...scores);
     const max = Math.max(...scores);
     const denom = Math.max(1e-9, max - min);
     const norm = scores.map(s => (s - min) / denom);
 
-    if (slots.length === 1) {
+    if (scores.length === 1) {
       slider.style.background = `linear-gradient(to right, ${heatColor(norm[0])}, ${heatColor(norm[0])})`;
       slider.dataset.convScores = JSON.stringify(scores);
       return;

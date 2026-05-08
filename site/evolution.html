@@ -809,28 +809,32 @@
     delete slider.dataset.convScores;
   }
 
-  function getRankedSlotConvergenceScores(country) {
-    if (!rankedSlots.length) return [];
-    return rankedSlots.map(slot => {
-      const keys = Array.isArray(slot?.periodKeys) ? slot.periodKeys : [];
-      if (!keys.length) return 0;
-      const vals = keys.map(k => periodConvergenceScore(country, k));
-      return vals.reduce((a, b) => a + b, 0) / vals.length;
-    });
+  // Convergence agrégée par jour calendrier — granularité d'affichage
+  // de la barre temporelle, indépendante du mode (ranked/tracking) et
+  // de la granularité de slot. Donne un signal lisible et cohérent
+  // avec l'axe temporel du chart au-dessus.
+  function getDailyConvergenceScores(country) {
+    const byDay = new Map();
+    for (const p of periods) {
+      const ds = String(p.key).split('_')[0];
+      const c = periodConvergenceScore(country, p.key);
+      if (!Number.isFinite(c) || c <= 0) continue;
+      if (!byDay.has(ds)) byDay.set(ds, { sum: 0, count: 0 });
+      const e = byDay.get(ds);
+      e.sum += c;
+      e.count++;
+    }
+    return [...byDay.entries()]
+      .map(([ds, { sum, count }]) => ({ date: ds, score: count ? sum / count : 0 }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(d => d.score);
   }
 
   function applyTimelineHeat(country) {
-    // En mode Chercher, calculer la convergence par période individuelle
-    let scores;
-    if (currentMode === 'ranked') {
-      scores = rankedSlots.length
-        ? getRankedSlotConvergenceScores(country)
-        : periods.map(p => periodConvergenceScore(country, p.key));
-    } else {
-      // tracking : convergence par période 4h (sous-échantillonné pour la perf)
-      const step = Math.max(1, Math.floor(periods.length / 120));
-      scores = periods.filter((_, i) => i % step === 0).map(p => periodConvergenceScore(country, p.key));
-    }
+    // Toujours grouper par jour calendrier: la barre reflète l'activité
+    // temporelle réelle (alignée avec le chart au-dessus), pas la
+    // granularité du slot sélectionné.
+    const scores = getDailyConvergenceScores(country);
     if (!scores.length) {
       applyTimelineNeutral();
       return;
@@ -841,7 +845,7 @@
     const denom = Math.max(1e-9, max - min);
     const norm = scores.map(s => (s - min) / denom);
 
-    if (periods.length === 1) {
+    if (scores.length === 1) {
       slider.style.background = `linear-gradient(to right, ${heatColor(norm[0])}, ${heatColor(norm[0])})`;
       slider.dataset.convScores = JSON.stringify(scores);
       return;
