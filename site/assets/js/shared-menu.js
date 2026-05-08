@@ -231,9 +231,12 @@
         strip.innerHTML = multi;
         halfW = strip.scrollWidth / 2 || halfW;
       }
-      // Vitesse uniforme ~10 px/s (lecture très confortable). Plancher 60s.
-      var pxPerSec = 10;
-      var dur = Math.max(60, Math.round(halfW / pxPerSec));
+      // Vitesse uniforme ~5 px/s (lecture très confortable). Plancher 120s.
+      // La vitesse en px/s est identique quel que soit le nombre d'alertes:
+      // halfW grandit avec le nombre de copies, dur grandit
+      // proportionnellement → même vitesse perçue.
+      var pxPerSec = 5;
+      var dur = Math.max(120, Math.round(halfW / pxPerSec));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
       bar.classList.add('ready');
     });
