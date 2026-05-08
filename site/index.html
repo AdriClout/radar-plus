@@ -1354,6 +1354,23 @@
 /* ===== HOT 20 ===== */
 var graphData = null;
 var timeseriesData = null;
+var articlesData = null;
+var articlesLoadingPromise = null;
+function ensureArticlesLoaded() {
+  if (articlesData) return Promise.resolve(articlesData);
+  if (articlesLoadingPromise) return articlesLoadingPromise;
+  articlesLoadingPromise = fetch('./articles.json')
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) { articlesData = d; return d; })
+    .catch(function() { return null; });
+  return articlesLoadingPromise;
+}
+function getArticlesFor(country, periodKey, nodeId, fallback) {
+  var a = articlesData && articlesData.articles && articlesData.articles[country] &&
+          articlesData.articles[country][periodKey] && articlesData.articles[country][periodKey][nodeId];
+  if (Array.isArray(a) && a.length) return a;
+  return Array.isArray(fallback) ? fallback : [];
+}
 var allPeriods = [];
 var currentCountry = 'QC';
 var currentPeriodIdx = 0;
@@ -1376,6 +1393,8 @@ async function loadData() {
     graphData = results[0];
     timeseriesData = results[1];
   } catch (e) { console.error('Data load error', e); }
+  // Prefetch articles non-bloquant → panel s'ouvre instant si déjà prêt, sinon "Chargement…"
+  ensureArticlesLoaded();
   buildPeriods();
   renderHot20();
 }
@@ -1936,40 +1955,53 @@ function openArticlePanel(node) {
     '<a class="article-panel-link" href="./evolution.html?node=' + enc + '" target="_blank">\u00c9volution ↗</a>';
 
   /* Période courante */
-  var currentArticles = node.articles || [];
-  var seenUrls = {};
-  currentArticles.forEach(function(a) { if (a.url) seenUrls[a.url] = true; });
+  /* Skip period keys belonging to the current slot */
+  var slotKeys = (aggregatedSlots.length && aggregatedSlots[currentSlotIdx])
+    ? aggregatedSlots[currentSlotIdx].periodKeys : [];
+  var currentSlotKeys = {};
+  slotKeys.forEach(function(k) { currentSlotKeys[k] = true; });
 
+  /* P\u00e9riode courante : agr\u00e9ger via articles.json (avec fallback inline) */
+  var seenUrls = {};
+  var currentArticles = [];
+  slotKeys.forEach(function(pk) {
+    getArticlesFor(currentCountry, pk, node.id, null).forEach(function(a) {
+      if (a.url && !seenUrls[a.url]) { seenUrls[a.url] = true; currentArticles.push(a); }
+    });
+  });
+  if (currentArticles.length === 0 && Array.isArray(node.articles)) {
+    node.articles.forEach(function(a) {
+      if (a.url && !seenUrls[a.url]) { seenUrls[a.url] = true; currentArticles.push(a); }
+    });
+  }
+
+  var articlesLoading = !articlesData;
   var html = currentArticles.length
     ? currentArticles.map(articleItemHtml).join('')
-    : '<p style="color:var(--muted);padding:20px 0;font-size:13px;">Aucun article disponible pour cette p\u00e9riode.</p>';
+    : (articlesLoading
+        ? '<p style="color:var(--muted);padding:20px 0;font-size:13px;">Chargement des articles\u2026</p>'
+        : '<p style="color:var(--muted);padding:20px 0;font-size:13px;">Aucun article disponible pour cette p\u00e9riode.</p>');
 
   /* Périodes précédentes — décroissant, dédupliqué par URL */
   var src = timeseriesData || graphData;
   var countryGraphs = src && src.graphs ? src.graphs[currentCountry] : null;
   var prevGroups = [];
-  if (countryGraphs) {
-    /* Skip period keys belonging to the current slot */
-    var currentSlotKeys = {};
-    if (aggregatedSlots.length && aggregatedSlots[currentSlotIdx]) {
-      aggregatedSlots[currentSlotIdx].periodKeys.forEach(function(k) { currentSlotKeys[k] = true; });
+  for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
+    if (currentSlotKeys[allPeriods[pi].key]) continue;
+    var pk = allPeriods[pi].key;
+    var arts = getArticlesFor(currentCountry, pk, node.id, null);
+    if (!arts.length && countryGraphs && countryGraphs[pk]) {
+      var pd = countryGraphs[pk];
+      var pnode = (pd.nodes || []).find(function(n) { return n.id === node.id; });
+      if (pnode && pnode.articles) arts = pnode.articles;
     }
-    for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
-      if (currentSlotKeys[allPeriods[pi].key]) continue;
-      var pd = countryGraphs[allPeriods[pi].key];
-      if (!pd || !pd.nodes) continue;
-      var pnode = null;
-      for (var ni = 0; ni < pd.nodes.length; ni++) {
-        if (pd.nodes[ni].id === node.id) { pnode = pd.nodes[ni]; break; }
-      }
-      if (!pnode || !pnode.articles || !pnode.articles.length) continue;
-      var fresh = pnode.articles.filter(function(a) { return a.url && !seenUrls[a.url]; });
-      if (!fresh.length) continue;
-      fresh.forEach(function(a) { seenUrls[a.url] = true; });
-      var pf = parsePeriodLabel(allPeriods[pi].label || allPeriods[pi].key);
-      prevGroups.push({ label: pf.date + ' · ' + pf.interval, articles: fresh });
-      if (prevGroups.length >= 8) break;
-    }
+    if (!arts.length) continue;
+    var fresh = arts.filter(function(a) { return a.url && !seenUrls[a.url]; });
+    if (!fresh.length) continue;
+    fresh.forEach(function(a) { seenUrls[a.url] = true; });
+    var pf = parsePeriodLabel(allPeriods[pi].label || pk);
+    prevGroups.push({ label: pf.date + ' · ' + pf.interval, articles: fresh });
+    if (prevGroups.length >= 8) break;
   }
 
   if (prevGroups.length > 0) {
@@ -1978,11 +2010,23 @@ function openArticlePanel(node) {
       html += '<div class="article-period-label">' + escapeHtml(g.label) + '</div>';
       html += g.articles.map(articleItemHtml).join('');
     });
+  } else if (articlesLoading) {
+    html += '<div class="article-section-header">Pr\u00e9c\u00e9demment</div>';
+    html += '<p style="color:var(--muted);padding:14px 0;font-size:12px;">Chargement de l\'historique\u2026</p>';
   }
 
   body.innerHTML = html;
   overlay.classList.add('open');
   panel.classList.add('open');
+
+  /* Re-render d\u00e8s que articles.json est dispo */
+  if (articlesLoading) {
+    ensureArticlesLoaded().then(function() {
+      if (panel.classList.contains('open') && title.textContent === name) {
+        openArticlePanel(node);
+      }
+    });
+  }
 }
 
 function closeArticlePanel() {
