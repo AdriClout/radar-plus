@@ -423,56 +423,56 @@
 
 <div id="alertes-wrap">
   <div class="alertes-header">
-    <div class="alertes-title">Alertes de <span>saillance</span></div>
-    <div class="alertes-subtitle">Signaux anormaux détectés dans la couverture médiatique · <span id="alertes-subtitle-window">30 derniers jours</span></div>
+    <div class="alertes-title"><span data-i18n="alertes.title">Alertes de</span> <span data-i18n="alertes.title_accent">saillance</span></div>
+    <div class="alertes-subtitle"><span data-i18n="alertes.subtitle">Signaux anormaux détectés dans la couverture médiatique</span> · <span id="alertes-subtitle-window">30 derniers jours</span></div>
     <div class="alertes-live-pill" id="alertes-live-pill">
       <span class="alertes-live-dot"></span>
-      <span id="alertes-live-text">chargement…</span>
+      <span id="alertes-live-text" data-i18n="common.loading">chargement…</span>
     </div>
-    <a id="alertes-evo-cta" class="alertes-evo-cta disabled" href="./evolution.html" aria-label="Voir l'évolution des alertes">
-      <span>Voir l'évolution dans le temps</span>
+    <a id="alertes-evo-cta" class="alertes-evo-cta disabled" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta_aria" aria-label="Voir l'évolution des alertes">
+      <span data-i18n="alertes.evo_cta">Voir l'évolution dans le temps</span>
       <span class="alertes-evo-cta-count" id="alertes-evo-cta-count">0</span>
       <span class="alertes-evo-cta-arrow" aria-hidden="true">→</span>
     </a>
   </div>
 
   <div id="alertes-filters">
-    <span class="filter-label">Pays</span>
+    <span class="filter-label" data-i18n="alertes.filter_country">Pays</span>
     <select id="filter-country">
-      <option value="all">Tous</option>
-      <option value="CAN" selected>Canada</option>
-      <option value="QC">Québec</option>
-      <option value="USA">États-Unis</option>
+      <option value="all" data-i18n="common.all_countries">Tous</option>
+      <option value="CAN" selected data-i18n="country.CAN">Canada</option>
+      <option value="QC" data-i18n="country.QC">Québec</option>
+      <option value="USA" data-i18n="country.USA">États-Unis</option>
     </select>
     <div class="filter-sep"></div>
-    <span class="filter-label">Statut</span>
+    <span class="filter-label" data-i18n="alertes.filter_status">Statut</span>
     <select id="filter-status">
-      <option value="current" selected>En cours</option>
-      <option value="ended">Terminées</option>
-      <option value="all">Toutes</option>
+      <option value="current" selected data-i18n="alertes.status_current">En cours</option>
+      <option value="ended" data-i18n="alertes.status_ended">Terminées</option>
+      <option value="all" data-i18n="alertes.status_all">Toutes</option>
     </select>
     <div class="filter-sep"></div>
-    <span class="filter-label">Niveau</span>
+    <span class="filter-label" data-i18n="alertes.filter_level">Niveau</span>
     <select id="filter-level">
-      <option value="all" selected>Tous niveaux</option>
-      <option value="strong">Alerte forte</option>
-      <option value="alert">Alerte</option>
-      <option value="watch">Veille</option>
-      <option value="emerging">Émergent</option>
+      <option value="all" selected data-i18n="alertes.level_all">Tous niveaux</option>
+      <option value="strong" data-i18n="alertes.level_strong">Alerte forte</option>
+      <option value="alert" data-i18n="alertes.level_alert">Alerte</option>
+      <option value="watch" data-i18n="alertes.level_watch">Veille</option>
+      <option value="emerging" data-i18n="alertes.level_emerging">Émergent</option>
     </select>
     <div class="filter-sep"></div>
-    <input type="text" id="filter-search" placeholder="Filtrer un objet…" autocomplete="off" spellcheck="false" />
+    <input type="text" id="filter-search" data-i18n-placeholder="alertes.filter_search_placeholder" placeholder="Filtrer un objet…" autocomplete="off" spellcheck="false" />
   </div>
 
   <div id="alertes-methodology" class="alertes-methodology"></div>
 
-  <div id="alertes-list"><div id="alertes-loading">Chargement des alertes…</div></div>
+  <div id="alertes-list"><div id="alertes-loading" data-i18n="common.loading">Chargement des alertes…</div></div>
 </div>
 
 <!-- Ticker manchettes -->
 <section class="ticker-section" id="ticker-section" aria-label="Manchettes récentes">
-  <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir les manchettes">
-    <span class="ticker-label-title" id="ticker-updated">Les Unes</span>
+  <a class="ticker-label ticker-label-link" href="./unes.html" data-i18n-aria-label="ticker.view_aria" aria-label="Voir les manchettes">
+    <span class="ticker-label-title" id="ticker-updated" data-i18n="ticker.label">Les Unes</span>
     <span class="ticker-radar" aria-hidden="true"></span>
   </a>
   <div class="ticker-viewport">
