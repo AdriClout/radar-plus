@@ -1147,12 +1147,18 @@
         const populated = series.filter(function(item) {
           return item.score > 0;
         });
-        const current = populated.length ? populated[populated.length - 1] : null;
-        if (!populated.length || !current) {
+        if (!populated.length) {
           return null;
         }
 
-        const graphNode = getCurrentGraphNode(country, objectId, current.key);
+        // "now" = LATEST period in dataset (active or not). Détermine si l'objet
+        // est actif présentement vs juste-vu-récemment.
+        const now = series[series.length - 1] || null;
+        const lastActive = populated[populated.length - 1];
+        const isActiveNow = !!(now && now.score > 0);
+
+        // graphNode lookup pour totalNodes/totalScore (doit utiliser la période courante)
+        const graphNode = getCurrentGraphNode(country, objectId, now?.key);
 
         const peak = populated.reduce(function(best, item) {
           return item.score > best.score ? item : best;
@@ -1164,16 +1170,18 @@
 
         const average = totalScore / populated.length;
         const cumulativeScore = totalScore;
-        const previous = populated.length > 1 ? populated[populated.length - 2] : null;
-        const delta = previous && previous.score > 0
-          ? ((current.score - previous.score) / previous.score) * 100
+        // Comparaison "récente" : vs période précédente UNIQUEMENT si l'objet est actif maintenant
+        const previousActive = populated.length > 1 ? populated[populated.length - 2] : null;
+        const previous = isActiveNow ? previousActive : null;
+        const delta = isActiveNow && previous && previous.score > 0
+          ? ((now.score - previous.score) / previous.score) * 100
           : null;
-        const currentShare = graphNode?.totalScore
-          ? (current.score / graphNode.totalScore) * 100
+        const currentShare = isActiveNow && graphNode?.totalScore
+          ? (now.score / graphNode.totalScore) * 100
           : null;
 
-        // Indice relatif: % du score pic
-        const relativeIndex = peak.score > 0 ? (current.score / peak.score) * 100 : 0;
+        // Indice relatif: % du score pic — basé sur le dernier score actif (utile même si inactif maintenant)
+        const relativeIndex = peak.score > 0 ? (lastActive.score / peak.score) * 100 : 0;
 
         let consecutivePeriods = 1;
         for (let i = populated.length - 2; i >= 0; i--) {
@@ -1198,10 +1206,14 @@
         });
 
         const first = populated[0];
-        const recentMentions = current.mentions;
-        const latestArticles = ((graphNode?.node?.articles && graphNode.node.articles.length)
-          ? graphNode.node.articles
-          : current.articles || []).slice(0, 6);
+        // recentMentions / latestArticles : reflètent la période courante uniquement si l'objet y est actif
+        const recentMentions = isActiveNow ? (now.mentions || 0) : 0;
+        const latestArticles = (isActiveNow
+          ? ((graphNode?.node?.articles && graphNode.node.articles.length)
+              ? graphNode.node.articles
+              : now.articles || [])
+          : (lastActive.articles || [])
+        ).slice(0, 6);
         const peakArticles = (peak.articles || []).slice(0, 4);
         const uniqueMedia = (graphNode?.node?.media_ids && graphNode.node.media_ids.length)
           ? graphNode.node.media_ids
@@ -1232,18 +1244,21 @@
         const top10Count = populated.filter(function(item) { return item.rank && item.rank <= 10; }).length;
         const top5Count = populated.filter(function(item) { return item.rank && item.rank <= 5; }).length;
         const numberOneCount = populated.filter(function(item) { return item.rank === 1; }).length;
-        const rankDelta = previous && current.rank && previous.rank ? previous.rank - current.rank : null;
-        const currentLabel = current.label;
+        // rankDelta : seulement si actif maintenant ET avait une position avant
+        const rankDelta = isActiveNow && previous && now.rank && previous.rank ? previous.rank - now.rank : null;
+        const currentLabel = now ? now.label : null;
         const previousLabel = previous ? previous.label : null;
-        const lastSeen = populated[populated.length - 1];
+        const lastSeen = lastActive;
 
         return {
           country: country,
-          objectId: graphNode?.node?.id || current.id || objectId,
-          currentScore: current.score,
+          objectId: graphNode?.node?.id || lastActive.id || objectId,
+          isActiveNow: isActiveNow,
+          currentScore: isActiveNow ? now.score : 0,
           currentMentions: recentMentions,
-          currentRank: graphNode?.rank || current.rank,
-          totalNodes: graphNode?.totalNodes || null,
+          // currentRank: rang dans la période courante uniquement (null si inactif maintenant)
+          currentRank: isActiveNow ? (graphNode?.rank || now.rank || null) : null,
+          totalNodes: isActiveNow ? (graphNode?.totalNodes || null) : null,
           firstSeen: first,
           peak: peak,
           average: average,
@@ -1364,9 +1379,11 @@
 
         if (metricKey === 'current_rank') {
           base.title = 'Rang actuel';
-          base.value = stats.currentRank ? '#' + stats.currentRank : '—';
-          base.definition = 'Position de l’objet dans la dernière période active.';
-          base.scope = 'Périmètre: dernière période active.';
+          base.value = stats.currentRank ? '#' + stats.currentRank : 'n/d';
+          base.definition = stats.isActiveNow
+            ? 'Position de l’objet dans le bloc courant.'
+            : 'L’objet n’est pas dans le bloc courant. Le rang affiché ailleurs est sa dernière trace connue.';
+          base.scope = stats.isActiveNow ? 'Périmètre: bloc courant.' : 'Périmètre: historique (objet inactif maintenant).';
           if (current) {
             base.periods.push({
               label: current.label,
@@ -1385,9 +1402,11 @@
 
         if (metricKey === 'current_score') {
           base.title = 'Score actuel';
-          base.value = formatNumber(stats.currentScore);
-          base.definition = 'Score de saillance de l’objet dans la dernière période active.';
-          base.scope = 'Périmètre: dernière période active.';
+          base.value = stats.isActiveNow ? formatNumber(stats.currentScore) : 'n/d';
+          base.definition = stats.isActiveNow
+            ? 'Score de saillance de l’objet dans le bloc courant.'
+            : 'Aucun score actuel — l’objet est inactif dans le bloc courant.';
+          base.scope = stats.isActiveNow ? 'Périmètre: bloc courant.' : 'Périmètre: historique.';
           if (current) {
             base.periods.push({
               label: current.label,
@@ -1768,7 +1787,14 @@
         if (!stats) {
           return 'Aucune série exploitable';
         }
-        return 'dernier score ' + formatNumber(stats.currentScore) + ' · rang #' + (stats.currentRank || '—') + ' · ' + stats.activePeriods + ' périodes actives';
+        // Si actif maintenant, montre rang/score courant. Sinon, montre dernier rang/score connu (lastSeen).
+        if (stats.isActiveNow) {
+          return 'score ' + formatNumber(stats.currentScore) + ' · rang #' + (stats.currentRank || '—') + ' · ' + stats.activePeriods + ' périodes actives';
+        }
+        const ls = stats.lastSeen;
+        const lastRank = ls && ls.rank ? '#' + ls.rank : '—';
+        const lastScore = ls ? formatNumber(ls.score) : '—';
+        return 'inactif · dernière trace: rang ' + lastRank + ' · score ' + lastScore + ' · ' + stats.activePeriods + ' périodes actives';
       }
 
       function renderEmptyState(message) {
@@ -1822,38 +1848,48 @@
       }
 
       function renderNowMetrics(stats) {
-        const movementMeta = stats.rankDelta === null
-          ? 'pas de comparaison disponible'
-          : stats.rankDelta > 0
-            ? 'gagne ' + stats.rankDelta + ' rang' + (stats.rankDelta > 1 ? 's' : '') + ' depuis ' + stats.previousLabel
-            : stats.rankDelta < 0
-              ? 'perd ' + Math.abs(stats.rankDelta) + ' rang' + (Math.abs(stats.rankDelta) > 1 ? 's' : '') + ' depuis ' + stats.previousLabel
-              : 'rang inchangé depuis ' + stats.previousLabel;
+        const inactiveMeta = stats.lastSeen
+          ? 'absent du bloc courant — dernière trace ' + stats.lastSeen.label
+          : 'absent du bloc courant';
+
+        const movementMeta = !stats.isActiveNow
+          ? inactiveMeta
+          : stats.rankDelta === null
+            ? 'pas de comparaison disponible'
+            : stats.rankDelta > 0
+              ? 'gagne ' + stats.rankDelta + ' rang' + (stats.rankDelta > 1 ? 's' : '') + ' depuis ' + stats.previousLabel
+              : stats.rankDelta < 0
+                ? 'perd ' + Math.abs(stats.rankDelta) + ' rang' + (Math.abs(stats.rankDelta) > 1 ? 's' : '') + ' depuis ' + stats.previousLabel
+                : 'rang inchangé depuis ' + stats.previousLabel;
 
         const cards = [
           {
             label: 'Rang actuel',
-            value: stats.currentRank ? '#' + stats.currentRank : '—',
-            meta: stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets dans ce bloc' : 'rang indisponible',
+            value: stats.currentRank ? '#' + stats.currentRank : 'n/d',
+            meta: stats.isActiveNow
+              ? (stats.totalNodes ? 'sur ' + stats.totalNodes + ' objets dans ce bloc' : 'rang indisponible')
+              : inactiveMeta,
             key: 'current_rank'
           },
           {
             label: 'Score actuel',
-            value: formatNumber(stats.currentScore),
-            meta: stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '') + ' dans la dernière période active',
+            value: stats.isActiveNow ? formatNumber(stats.currentScore) : 'n/d',
+            meta: stats.isActiveNow
+              ? (stats.currentMentions + ' manchette' + (stats.currentMentions > 1 ? 's' : '') + ' dans le bloc courant')
+              : inactiveMeta,
             key: 'current_score'
           },
           {
             label: 'Part du radar',
-            value: stats.currentShare === null ? 'n/d' : numberFormat.format(stats.currentShare) + '%',
-            meta: 'poids de l’objet dans le bloc courant',
+            value: !stats.isActiveNow || stats.currentShare === null ? 'n/d' : numberFormat.format(stats.currentShare) + '%',
+            meta: stats.isActiveNow ? 'poids de l’objet dans le bloc courant' : inactiveMeta,
             key: 'current_share'
           },
           {
             label: 'Mouvement récent',
-            value: stats.rankDelta === null ? 'n/d' : stats.rankDelta > 0 ? '↗' : stats.rankDelta < 0 ? '↘' : '→',
+            value: !stats.isActiveNow || stats.rankDelta === null ? 'n/d' : stats.rankDelta > 0 ? '↗' : stats.rankDelta < 0 ? '↘' : '→',
             meta: movementMeta,
-            metaClass: stats.rankDelta === null ? 'neutral' : stats.rankDelta > 0 ? 'good' : stats.rankDelta < 0 ? 'bad' : 'neutral',
+            metaClass: !stats.isActiveNow ? 'neutral' : stats.rankDelta === null ? 'neutral' : stats.rankDelta > 0 ? 'good' : stats.rankDelta < 0 ? 'bad' : 'neutral',
             key: 'recent_movement'
           }
         ];
