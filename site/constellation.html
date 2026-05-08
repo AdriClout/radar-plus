@@ -508,11 +508,11 @@
 </head>
 <body>
   <div id="constellation-bg" aria-hidden="true"></div>
-  <div id="loading"><div id="loading-text">initialisation · constellation</div></div>
+  <div id="loading"><div id="loading-text" data-i18n="constellation.loading_text">initialisation · constellation</div></div>
   <div id="graph"></div>
   <div id="left-panel">
     <div id="cst-titlebar">
-      <a id="cst-logo" href="./" aria-label="Retour à l'accueil Radar+">
+      <a id="cst-logo" href="./" data-i18n-aria-label="nav.home_logo_aria" aria-label="Retour à l'accueil Radar+">
         <svg viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g transform="translate(0,700) scale(0.1,-0.1)" stroke="none">
             <path class="rp-r" d="M262 3666 l3 -2051 338 0 c292 0 340 2 346 15 4 8 6 385 6 838 -1 821 -1 823 20 827 11 2 274 3 585 2 505 -3 572 -5 630 -21 94 -25 178 -70 235 -124 65 -60 98 -111 126 -192 24 -70 23 -50 33 -715 3 -265 5 -285 30 -380 15 -55 43 -134 63 -175 l36 -75 356 2 c196 0 366 1 379 2 22 1 22 3 -17 73 -59 108 -110 232 -136 333 -23 86 -24 105 -25 460 -1 204 -3 381 -5 395 -15 113 -25 159 -51 239 -62 187 -206 360 -361 436 -46 22 -83 43 -83 47 0 3 17 16 38 29 57 35 171 128 231 188 186 192 291 453 286 716 -4 164 -43 323 -120 481 -122 251 -309 434 -580 566 -127 62 -251 99 -420 124 -27 4 -476 8 -998 9 l-947 1 2 -2050z m1682 1463 c123 -1 174 -5 228 -20 271 -75 448 -306 451 -589 1 -101 -7 -159 -32 -231 -63 -182 -198 -310 -401 -381 -64 -22 -73 -22 -651 -26 l-585 -3 0 623 c-1 343 3 625 7 628 6 4 471 4 983 -1z"/>
@@ -520,10 +520,10 @@
           </g>
         </svg>
       </a>
-      <div id="cst-title">Constellation</div>
+      <div id="cst-title" data-i18n="constellation.title">Constellation</div>
     </div>
     <div class="lpanel-section">
-      <div class="lpanel-label">Pays</div>
+      <div class="lpanel-label" data-i18n="hot20.country_label">Pays</div>
       <div id="country-tabs">
         <button class="tab" data-country="QC">QC</button>
         <button class="tab active" data-country="CAN">CAN</button>
@@ -531,35 +531,35 @@
       </div>
     </div>
     <div class="lpanel-section" id="window-section">
-      <div class="lpanel-label">Période</div>
+      <div class="lpanel-label" data-i18n="period.label">Période</div>
       <div id="window-row">
-        <button class="win-btn active" data-gran="day"   type="button" aria-label="Période jour">Jour</button>
-        <button class="win-btn"        data-gran="week"  type="button" aria-label="Période semaine">Semaine</button>
-        <button class="win-btn"        data-gran="month" type="button" aria-label="Période mois">Mois</button>
-        <button class="win-btn"        data-gran="year"  type="button" aria-label="Période année">Année</button>
-        <button class="win-btn"        data-gran="total" type="button" aria-label="Période totale">Total</button>
+        <button class="win-btn active" data-gran="day"   type="button" data-i18n="period.day">Jour</button>
+        <button class="win-btn"        data-gran="week"  type="button" data-i18n="period.week">Semaine</button>
+        <button class="win-btn"        data-gran="month" type="button" data-i18n="period.month">Mois</button>
+        <button class="win-btn"        data-gran="year"  type="button" data-i18n="period.year">Année</button>
+        <button class="win-btn"        data-gran="total" type="button" data-i18n="period.total">Total</button>
       </div>
       <div id="window-meta"></div>
     </div>
     <div class="lpanel-section">
-      <div class="lpanel-label">Recherche</div>
+      <div class="lpanel-label" data-i18n="constellation.search_label">Recherche</div>
       <div id="search-wrap">
-        <input type="text" id="search-input" placeholder="Rechercher un objet…" autocomplete="off" spellcheck="false" />
+        <input type="text" id="search-input" data-i18n-placeholder="common.search_placeholder" placeholder="Rechercher un objet…" autocomplete="off" spellcheck="false" />
         <div id="search-results"></div>
         <div id="compare-list"></div>
       </div>
     </div>
     <div class="lpanel-section" id="top10-section">
-      <div class="lpanel-label">Hot 10 <span id="top10-country">CAN</span></div>
+      <div class="lpanel-label"><span data-i18n="constellation.hot10_label">Hot 10</span> <span id="top10-country">CAN</span></div>
       <div id="top10-list"></div>
     </div>
   </div>
   <div id="stats"></div>
-  <div id="focus-hint">clic hors graphe pour revenir · <span id="focus-name"></span></div>
+  <div id="focus-hint">&nbsp;<span id="focus-name"></span></div>
   <div id="object-overlay"></div>
   <aside id="object-panel" aria-hidden="true">
     <div id="object-panel-header">
-      <button id="object-panel-close" type="button" aria-label="Fermer le panneau">×</button>
+      <button id="object-panel-close" type="button" data-i18n-aria-label="common.close_panel_aria" aria-label="Fermer le panneau">×</button>
       <h2 class="h" id="object-panel-title"></h2>
       <div class="meta" id="object-panel-meta"></div>
       <div class="panel-links" id="object-panel-links"></div>
@@ -570,20 +570,20 @@
   <div id="controls">
     <div id="period-label">—</div>
     <div id="slider-row">
-      <button id="prev-btn" type="button" aria-label="Créneau précédent">‹</button>
+      <button id="prev-btn" type="button" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Créneau précédent">‹</button>
       <input type="range" id="timeline" min="0" value="0" step="1" />
-      <button id="next-btn" type="button" aria-label="Créneau suivant">›</button>
+      <button id="next-btn" type="button" data-i18n-aria-label="evolution.next_period_aria" aria-label="Créneau suivant">›</button>
     </div>
   </div>
   <section class="ticker-section" id="ticker-section" aria-live="polite">
-    <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir toutes les dernières Unes">
-      <span class="ticker-label-title">Dans le radar ↗</span>
+    <a class="ticker-label ticker-label-link" href="./unes.html" data-i18n-aria-label="ticker.view_aria" aria-label="Voir toutes les dernières Unes">
+      <span class="ticker-label-title" data-i18n="ticker.label_arrow">Dans le radar ↗</span>
       <span class="ticker-updated" id="ticker-updated">Les Unes de --:--</span>
       <span class="ticker-radar" aria-hidden="true"></span>
     </a>
     <div class="ticker-viewport">
       <div class="ticker-track" id="ticker-track">
-        <span class="ticker-empty">Chargement des manchettes...</span>
+        <span class="ticker-empty" data-i18n="ticker.empty">Chargement des manchettes...</span>
       </div>
     </div>
   </section>
@@ -766,7 +766,8 @@
     metaEl.textContent  = `${(Number(node.size) || 0).toFixed(2)} pts · ${node.n || 0} mentions · ${articles.length} article${articles.length > 1 ? 's' : ''}`;
 
     const evolutionUrl = `./evolution.html?country=${encodeURIComponent(currentCountry)}&gran=${encodeURIComponent(rankedGranularity)}&nodes=${encodeURIComponent(node.id)}&mode=tracking`;
-    linksEl.innerHTML = `<a class="panel-link" href="${escapeHtml(evolutionUrl)}">Voir dans Évolution →</a>`;
+    var Tcst = window.t || function(k){ return k; };
+    linksEl.innerHTML = `<a class="panel-link" href="${escapeHtml(evolutionUrl)}">${escapeHtml(Tcst('object_panel.view_in_evolution'))}</a>`;
 
     function articleHtml(a) {
       const title = escapeHtml(a.title || a.url || 'Article');
@@ -787,7 +788,7 @@
 
     let html = currentArticlesHtml.length
       ? currentArticlesHtml.join('')
-      : '<div class="empty">Aucun article associé dans ce créneau.</div>';
+      : '<div class="empty">' + escapeHtml(Tcst('object_panel.no_articles_period')) + '</div>';
 
     // Section "Précédemment": parcourt les slots antérieurs au courant,
     // récupère les articles de cet objet (dédupliqués par URL globalement).
@@ -814,7 +815,7 @@
     }
 
     if (prevGroups.length) {
-      html += '<div class="article-section-header">Précédemment</div>';
+      html += '<div class="article-section-header">' + escapeHtml(Tcst('object_panel.previous_section')) + '</div>';
       prevGroups.forEach(g => {
         html += `<div class="article-period-label">${escapeHtml(g.label)}</div>`;
         html += g.articles.map(articleHtml).join('');
@@ -1368,8 +1369,9 @@
 
     // Convergence du créneau (cohérente avec la heat de la timeline)
     const convAvg = slotConvergenceScore(country, slot);
+    var Tlbl = window.t || function(k){ return k; };
     document.getElementById('period-label').innerHTML =
-      `<span>${escapeHtml(slot.label)}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${convAvg.toFixed(1)}`;
+      `<span>${escapeHtml(slot.label)}</span> &nbsp;·&nbsp; ${gd.nodes.length} ${escapeHtml(gd.nodes.length === 1 ? Tlbl('common.object') : Tlbl('common.objects'))} &nbsp;·&nbsp; ${gd.links.length} ${escapeHtml(Tlbl('common.links'))} &nbsp;·&nbsp; ${escapeHtml(Tlbl('common.convergence'))} ${convAvg.toFixed(1)}`;
 
     const metaEl = document.getElementById('window-meta');
     if (metaEl) {
@@ -1412,7 +1414,7 @@
 
     const top = (gd.nodes || []).slice(0, 10);
     if (!top.length) {
-      list.innerHTML = '<div id="top10-empty">Aucun objet pour ce créneau.</div>';
+      list.innerHTML = '<div id="top10-empty">' + escapeHtml((window.t || function(k){return k;})('constellation.no_objects')) + '</div>';
       return;
     }
 
@@ -1799,6 +1801,11 @@
   // cadre le tout dans la zone visible.
   document.getElementById('loading').style.display = 'none';
   applyTimelineHeat(currentCountry);
+
+  // Re-render au changement de langue (textes générés dynamiquement)
+  document.addEventListener('i18n:applied', function () {
+    if (slots && slots.length) loadSlot(currentCountry, currentSlotIdx);
+  });
   loadSlot(currentCountry, currentSlotIdx);
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
