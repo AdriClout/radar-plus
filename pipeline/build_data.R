@@ -463,7 +463,10 @@ result_graph <- list(
         alert = ALERT_PEAK_RATIO_ALERT,
         strong = ALERT_PEAK_RATIO_STRONG
       ),
-      min_abs_score = ALERT_MIN_ABS_SCORE
+      min_abs_score = ALERT_MIN_ABS_SCORE,
+      # Fenêtre glissante utilisée pour le calcul du z-score d'alerte
+      # (180 périodes × 4h ÷ 24 = 30 jours).
+      lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24
     ),
     media_ids    = all_media_ids,
     periods      = make_periods_list(periods_graph),
@@ -551,7 +554,10 @@ result_ts <- list(
         alert = ALERT_PEAK_RATIO_ALERT,
         strong = ALERT_PEAK_RATIO_STRONG
       ),
-      min_abs_score = ALERT_MIN_ABS_SCORE
+      min_abs_score = ALERT_MIN_ABS_SCORE,
+      # Fenêtre glissante utilisée pour le calcul du z-score d'alerte
+      # (180 périodes × 4h ÷ 24 = 30 jours).
+      lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24
     ),
     periods       = make_periods_list(periods_ts),
     countries     = countries

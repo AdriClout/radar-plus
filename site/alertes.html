@@ -356,6 +356,48 @@
       .alerts-grid { grid-template-columns: 1fr; }
       #alertes-filters { gap: 8px; }
     }
+
+    /* ── CTA "Voir l'évolution" ── */
+    .alertes-evo-cta {
+      display: flex;
+      width: fit-content;
+      max-width: 100%;
+      align-items: center;
+      gap: 12px;
+      margin: 14px 0 4px;
+      padding: 14px 22px;
+      font-family: var(--orbitron);
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: rgba(220,235,255,0.96);
+      background: linear-gradient(120deg, rgba(40,80,180,0.42), rgba(60,120,220,0.32));
+      border: 1px solid rgba(120,180,255,0.55);
+      border-radius: 6px;
+      box-shadow: 0 0 18px rgba(80,130,255,0.20), inset 0 0 12px rgba(80,130,255,0.08);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .alertes-evo-cta:hover {
+      border-color: rgba(150,200,255,0.85);
+      box-shadow: 0 0 26px rgba(110,170,255,0.35), inset 0 0 14px rgba(110,170,255,0.12);
+      transform: translateY(-1px);
+    }
+    .alertes-evo-cta-arrow { font-size: 16px; color: rgba(180,215,255,0.95); }
+    .alertes-evo-cta-count {
+      font-size: 9px;
+      letter-spacing: 1.4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(10,28,72,0.65);
+      border: 1px solid rgba(120,180,255,0.4);
+      color: rgba(190,220,255,0.92);
+    }
+    .alertes-evo-cta.disabled {
+      opacity: 0.45;
+      pointer-events: none;
+      box-shadow: none;
+    }
   </style>
 </head>
 <body>
@@ -363,11 +405,16 @@
 <div id="alertes-wrap">
   <div class="alertes-header">
     <div class="alertes-title">Alertes de <span>saillance</span></div>
-    <div class="alertes-subtitle">Signaux anormaux détectés dans la couverture médiatique · 14 derniers jours</div>
+    <div class="alertes-subtitle">Signaux anormaux détectés dans la couverture médiatique · <span id="alertes-subtitle-window">30 derniers jours</span></div>
     <div class="alertes-live-pill" id="alertes-live-pill">
       <span class="alertes-live-dot"></span>
       <span id="alertes-live-text">chargement…</span>
     </div>
+    <a id="alertes-evo-cta" class="alertes-evo-cta disabled" href="./evolution.html" aria-label="Voir l'évolution des alertes">
+      <span>Voir l'évolution dans le temps</span>
+      <span class="alertes-evo-cta-count" id="alertes-evo-cta-count">0</span>
+      <span class="alertes-evo-cta-arrow" aria-hidden="true">→</span>
+    </a>
   </div>
 
   <div id="alertes-filters">
@@ -498,8 +545,13 @@
     var zStrong = numOrNull(thr.strong);
     var peak = thr.min_peak_ratio || {};
     var m = thr.min_mentions || {};
-    var days = Number(graphData.meta.graph_days);
-    var lookbackTxt = isFinite(days) ? (days + ' jours') : 'fenêtre active';
+    // Fenêtre du calcul d'alertes = ALERT_LOOKBACK_PERIODS × 4h (30 jours).
+    // Le champ graph_days est la fenêtre de la constellation, pas celle des alertes.
+    var lookbackDays = numOrNull(thr.lookback_days);
+    if (lookbackDays === null) lookbackDays = 30;
+    var lookbackTxt = lookbackDays + ' jours';
+    var subtitleEl = document.getElementById('alertes-subtitle-window');
+    if (subtitleEl) subtitleEl.textContent = lookbackDays + ' derniers jours';
 
     var peakWatch = numOrNull(peak.watch);
     var peakAlert = numOrNull(peak.alert);
@@ -675,12 +727,57 @@
       + ' \u00b7 ' + (groups[0].period.label || groups[0].period.key);
   }
 
+  function updateEvolutionCta(groups) {
+    var cta = document.getElementById('alertes-evo-cta');
+    var countEl = document.getElementById('alertes-evo-cta-count');
+    if (!cta || !countEl) return;
+
+    // Pays cible: filtre courant si spécifique, sinon celui qui a le plus
+    // d'alertes visibles (evolution.html est mono-pays).
+    var perCountry = {}; // country -> array of unique node ids
+    for (var gi = 0; gi < groups.length; gi++) {
+      var alerts = groups[gi].alerts;
+      for (var ai = 0; ai < alerts.length; ai++) {
+        var a = alerts[ai];
+        if (!perCountry[a.country]) perCountry[a.country] = [];
+        if (perCountry[a.country].indexOf(a.id) === -1) perCountry[a.country].push(a.id);
+      }
+    }
+
+    var country = filterCountry;
+    if (country === 'all') {
+      var best = null, bestN = -1;
+      for (var c in perCountry) {
+        if (perCountry[c].length > bestN) { best = c; bestN = perCountry[c].length; }
+      }
+      country = best;
+    }
+
+    var nodes = country && perCountry[country] ? perCountry[country] : [];
+    if (!nodes.length) {
+      cta.classList.add('disabled');
+      cta.setAttribute('aria-disabled', 'true');
+      cta.removeAttribute('href');
+      countEl.textContent = '0';
+      return;
+    }
+
+    cta.classList.remove('disabled');
+    cta.setAttribute('aria-disabled', 'false');
+    countEl.textContent = String(nodes.length);
+    var url = './evolution.html?country=' + encodeURIComponent(country)
+      + '&mode=tracking&gran=month'
+      + '&nodes=' + encodeURIComponent(nodes.join(','));
+    cta.setAttribute('href', url);
+  }
+
   function render() {
     var container = document.getElementById('alertes-list');
     if (!container) return;
     var groups = getAlertGroups();
     renderMethodology();
     updateLivePill(groups);
+    updateEvolutionCta(groups);
 
     if (!groups.length) {
       if (filterStatus === 'ended') {

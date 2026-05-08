@@ -3390,27 +3390,62 @@
     setTimeout(() => window.location.reload(), minDiff * 1000 + 12000);
   })();
 
-  // ── Lien entrant ?node= ───────────────────────────────────────────────────
-  // Après l'auto-track, on nettoie l'URL pour qu'un hard-refresh revienne en HOT 10 propre.
-  const urlNode = urlParams.get('node');
-  if (urlNode) {
-    const q = urlNode.toLowerCase();
-    let foundId = null;
-    for (let i = periods.length - 1; i >= 0 && !foundId; i--) {
+  // ── Lien entrant: ?node= (legacy) ou ?nodes=a,b,c + ?mode= + ?gran= ───────
+  // Après l'auto-apply, on nettoie l'URL pour qu'un hard-refresh revienne en
+  // HOT 10 propre.
+  function resolveNodeId(q) {
+    const ql = String(q || '').toLowerCase().trim();
+    if (!ql) return null;
+    for (let i = periods.length - 1; i >= 0; i--) {
       const g = graphs[currentCountry]?.[periods[i].key];
       if (!g) continue;
-      const m = (g.nodes || []).find(n => n.id.toLowerCase() === q) ||
-                (g.nodes || []).find(n => n.id.toLowerCase().includes(q));
-      if (m) foundId = m.id;
+      const exact = (g.nodes || []).find(n => n.id.toLowerCase() === ql);
+      if (exact) return exact.id;
     }
-    if (foundId) {
-      addTracked(foundId);
-      setMode('tracking');
+    // Fallback "contient" si pas de match exact
+    for (let i = periods.length - 1; i >= 0; i--) {
+      const g = graphs[currentCountry]?.[periods[i].key];
+      if (!g) continue;
+      const partial = (g.nodes || []).find(n => n.id.toLowerCase().includes(ql));
+      if (partial) return partial.id;
     }
-    // Retire ?node= (et ?q=) de l'URL sans recharger la page
+    return null;
+  }
+
+  const urlNode  = urlParams.get('node');
+  const urlNodes = urlParams.get('nodes');
+  const urlMode  = (urlParams.get('mode') || '').toLowerCase();
+  const urlGran  = (urlParams.get('gran') || '').toLowerCase();
+
+  const requestedIds = [];
+  if (urlNodes) {
+    urlNodes.split(',').forEach(q => {
+      const id = resolveNodeId(q);
+      if (id && requestedIds.indexOf(id) === -1) requestedIds.push(id);
+    });
+  } else if (urlNode) {
+    const id = resolveNodeId(urlNode);
+    if (id) requestedIds.push(id);
+  }
+
+  if (requestedIds.length || urlMode === 'tracking') {
+    requestedIds.forEach(addTracked);
+    setMode('tracking');
+  }
+
+  // Granularité: simuler un clic pour réutiliser tout le pipeline de recompute.
+  if (urlGran && ['day','week','month','year'].indexOf(urlGran) !== -1) {
+    const granBtn = document.querySelector('.win-btn[data-gran="' + urlGran + '"]');
+    if (granBtn) granBtn.click();
+  }
+
+  if (urlNode || urlNodes || urlMode || urlGran) {
     try {
       const u = new URL(window.location.href);
       u.searchParams.delete('node');
+      u.searchParams.delete('nodes');
+      u.searchParams.delete('mode');
+      u.searchParams.delete('gran');
       u.searchParams.delete('q');
       window.history.replaceState({}, '', u.pathname + (u.search ? u.search : '') + u.hash);
     } catch (_) { /* noop */ }
