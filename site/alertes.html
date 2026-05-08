@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RADAR+ · Alertes de saillance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/shared-menu.css" />
+  <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
+  <style>
+    :root {
+      --bg: #020010;
+      --text: #d0e0ff;
+      --muted: rgba(140,170,220,0.6);
+      --accent: #5588ff;
+      --card-bg: rgba(10,18,50,0.7);
+      --border: rgba(90,140,255,0.22);
+      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+    }
+
+    #alertes-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 80px 24px 90px;
+    }
+
+    /* ── Header ── */
+    .alertes-header {
+      margin-bottom: 32px;
+    }
+    .alertes-title {
+      font-family: var(--orbitron);
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #e8f0ff;
+      margin-bottom: 6px;
+    }
+    .alertes-title span { color: var(--accent); }
+    .alertes-subtitle {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.7px;
+      margin-bottom: 14px;
+    }
+    .alertes-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      background: rgba(255,100,100,0.08);
+      border: 1px solid rgba(255,100,100,0.28);
+      border-radius: 999px;
+      font-size: 9px;
+      color: rgba(255,200,200,0.9);
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+    }
+    .alertes-live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,120,120,0.95);
+      flex-shrink: 0;
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.72); }
+    }
+
+    /* ── Filtres ── */
+    #alertes-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+      align-items: center;
+    }
+    .filter-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+    }
+    #alertes-filters select,
+    #alertes-filters input {
+      background: rgba(10,18,50,0.7);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 10px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    #alertes-filters select:hover,
+    #alertes-filters input:hover { border-color: rgba(90,140,255,0.5); }
+    #alertes-filters select:focus,
+    #alertes-filters input:focus { border-color: var(--accent); }
+    #filter-search { min-width: 180px; cursor: text; }
+    #filter-search::placeholder { color: var(--muted); }
+    .filter-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
+
+    /* ── Groupes de périodes ── */
+    .period-group { margin-bottom: 36px; }
+    .period-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(90,140,255,0.14);
+    }
+    .period-header-label {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: rgba(160,195,255,0.85);
+      text-transform: uppercase;
+    }
+    .period-header-count {
+      font-size: 8px;
+      color: var(--muted);
+      padding: 2px 7px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .period-header-latest {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255,100,100,0.1);
+      border: 1px solid rgba(255,100,100,0.3);
+      color: rgba(255,190,190,0.85);
+    }
+
+    /* ── Grille de cartes ── */
+    .alerts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+      gap: 10px;
+    }
+
+    /* ── Carte alerte ── */
+    .alert-card {
+      position: relative;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border);
+      border-radius: 6px;
+      background: var(--card-bg);
+      padding: 12px 14px 10px;
+      cursor: default;
+      transition: background 0.2s;
+    }
+    .alert-card.level-strong {
+      border-color: rgba(255,110,110,0.45);
+      border-left-color: rgba(255,100,100,0.9);
+      background: rgba(92,24,28,0.26);
+    }
+    .alert-card.level-strong:hover { background: rgba(92,24,28,0.42); }
+    .alert-card.level-alert {
+      border-color: rgba(255,143,92,0.38);
+      border-left-color: rgba(255,143,92,0.85);
+      background: rgba(86,38,24,0.26);
+    }
+    .alert-card.level-alert:hover { background: rgba(86,38,24,0.40); }
+    .alert-card.level-watch {
+      border-color: rgba(212,188,88,0.32);
+      border-left-color: rgba(212,188,88,0.8);
+      background: rgba(72,58,20,0.26);
+    }
+    .alert-card.level-watch:hover { background: rgba(72,58,20,0.40); }
+    .alert-card.level-emerging {
+      border-color: rgba(112,186,245,0.24);
+      border-left-color: rgba(112,186,245,0.65);
+      background: rgba(18,56,92,0.26);
+    }
+    .alert-card.level-emerging:hover { background: rgba(18,56,92,0.40); }
+
+    .alert-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .alert-card-badge {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 7px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-family: var(--orbitron);
+      border: 1px solid;
+    }
+    .level-strong .alert-card-badge {
+      color: rgba(255,196,196,0.98); border-color: rgba(255,110,110,0.64); background: rgba(98,22,28,0.66);
+    }
+    .level-alert .alert-card-badge {
+      color: rgba(255,186,136,0.98); border-color: rgba(255,143,92,0.58); background: rgba(88,40,24,0.60);
+    }
+    .level-watch .alert-card-badge {
+      color: rgba(255,224,112,0.96); border-color: rgba(224,196,88,0.48); background: rgba(74,60,16,0.56);
+    }
+    .level-emerging .alert-card-badge {
+      color: rgba(134,214,255,0.94); border-color: rgba(112,186,245,0.48); background: rgba(18,56,92,0.58);
+    }
+
+    .alert-card-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(220,235,255,0.97);
+      text-transform: capitalize;
+      line-height: 1.3;
+      word-break: break-word;
+      flex: 1;
+    }
+    .alert-card-country {
+      font-size: 8px;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: flex-start;
+      padding-top: 3px;
+    }
+
+    .alert-card-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .alert-card-stat { display: flex; flex-direction: column; gap: 1px; }
+    .alert-card-stat-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(210,228,255,0.92);
+      line-height: 1.1;
+    }
+    .alert-card-stat-lbl {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Articles */
+    .alert-card-articles {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(90,140,255,0.12);
+      margin-top: 2px;
+    }
+    .alert-article-link {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 9px;
+      color: rgba(160,195,255,0.72);
+      text-decoration: none;
+      line-height: 1.35;
+      transition: color 0.15s;
+    }
+    .alert-article-link:hover { color: rgba(200,225,255,0.95); }
+    .alert-article-media {
+      flex-shrink: 0;
+      font-size: 7px;
+      letter-spacing: 0.7px;
+      padding: 1px 4px;
+      border: 1px solid rgba(90,140,255,0.22);
+      border-radius: 2px;
+      color: rgba(140,175,240,0.65);
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+    .alert-article-title {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .alert-card-evo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 8px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: rgba(120,170,255,0.6);
+      text-decoration: none;
+      margin-top: 8px;
+      transition: color 0.2s;
+    }
+    .alert-card-evo-link:hover { color: rgba(160,210,255,0.9); }
+
+    /* Vide / chargement */
+    #alertes-empty, #alertes-loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    #alertes-loading {
+      font-family: var(--orbitron);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 600px) {
+      #alertes-wrap { padding: 70px 12px 80px; }
+      .alerts-grid { grid-template-columns: 1fr; }
+      #alertes-filters { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="alertes-wrap">
+  <div class="alertes-header">
+    <div class="alertes-title">Alertes de <span>saillance</span></div>
+    <div class="alertes-subtitle">Signaux anormaux détectés dans la couverture médiatique · 14 derniers jours</div>
+    <div class="alertes-live-pill" id="alertes-live-pill">
+      <span class="alertes-live-dot"></span>
+      <span id="alertes-live-text">chargement…</span>
+    </div>
+  </div>
+
+  <div id="alertes-filters">
+    <span class="filter-label">Pays</span>
+    <select id="filter-country">
+      <option value="all">Tous</option>
+      <option value="CAN" selected>Canada</option>
+      <option value="QC">Québec</option>
+      <option value="USA">États-Unis</option>
+    </select>
+    <div class="filter-sep"></div>
+    <span class="filter-label">Niveau</span>
+    <select id="filter-level">
+      <option value="all" selected>Tous niveaux</option>
+      <option value="strong">Alerte forte</option>
+      <option value="alert">Alerte</option>
+      <option value="watch">Veille</option>
+      <option value="emerging">Émergent</option>
+    </select>
+    <div class="filter-sep"></div>
+    <input type="text" id="filter-search" placeholder="Filtrer un objet…" autocomplete="off" spellcheck="false" />
+  </div>
+
+  <div id="alertes-list"><div id="alertes-loading">Chargement des alertes…</div></div>
+</div>
+
+<!-- Ticker manchettes -->
+<section class="ticker-section" id="ticker-section" aria-label="Manchettes récentes">
+  <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir les manchettes">
+    <span class="ticker-label-title" id="ticker-updated">Les Unes</span>
+    <span class="ticker-radar" aria-hidden="true"></span>
+  </a>
+  <div class="ticker-track" id="ticker-track" aria-live="off"></div>
+</section>
+
+<script src="./assets/js/shared-menu.js"></script>
+<script src="./assets/js/shared-ticker.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  const LEVEL_ORDER  = ['strong', 'alert', 'watch', 'emerging'];
+  const LEVEL_LABELS = { strong: 'Alerte forte', alert: 'Alerte', watch: 'Veille', emerging: 'Émergent' };
+  const COUNTRY_LABELS = { CAN: 'CAN', QC: 'QC', USA: 'USA' };
+
+  let graphData    = null;
+  let filterCountry = 'CAN';
+  let filterLevel   = 'all';
+  let filterSearch  = '';
+
+  function escapeHtml(v) {
+    return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch('./graph.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      graphData = await res.json();
+      render();
+    } catch (e) {
+      document.getElementById('alertes-list').innerHTML =
+        '<div id="alertes-empty">Erreur de chargement des données.</div>';
+    }
+  }
+
+  function getActiveCountries() {
+    if (!graphData) return [];
+    return Object.keys(graphData.graphs || {});
+  }
+
+  function getAlertGroups() {
+    if (!graphData) return [];
+    const periods   = (graphData.meta && graphData.meta.periods ? graphData.meta.periods : []).slice().reverse();
+    const countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+    const searchLow = filterSearch.trim().toLowerCase();
+    const groups    = [];
+
+    for (var pi = 0; pi < periods.length; pi++) {
+      var period = periods[pi];
+      var alertsInPeriod = [];
+
+      for (var ci = 0; ci < countries.length; ci++) {
+        var country = countries[ci];
+        var gd = graphData.graphs[country] && graphData.graphs[country][period.key];
+        if (!gd) continue;
+
+        var nodes = gd.nodes || [];
+        for (var ni = 0; ni < nodes.length; ni++) {
+          var node  = nodes[ni];
+          var level = node.alert_level;
+          if (!level || level === 'normal' || level === 'none') continue;
+          if (filterLevel !== 'all' && level !== filterLevel) continue;
+          if (searchLow && node.id.toLowerCase().indexOf(searchLow) === -1) continue;
+
+          var score = Number(node.alert_score);
+          var delta = Number(node.alert_delta);
+          alertsInPeriod.push({
+            id:       node.id,
+            level:    level,
+            score:    isFinite(score) ? score : null,
+            delta:    isFinite(delta) ? delta : null,
+            n:        node.n || 0,
+            active:   !!node.alert_active,
+            articles: Array.isArray(node.articles) ? node.articles : [],
+            country:  country,
+          });
+        }
+      }
+
+      if (!alertsInPeriod.length) continue;
+
+      alertsInPeriod.sort(function(a, b) {
+        var lo = LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level);
+        if (lo !== 0) return lo;
+        return (b.score || 0) - (a.score || 0);
+      });
+
+      groups.push({ period: period, alerts: alertsInPeriod, isFirst: groups.length === 0 });
+    }
+    return groups;
+  }
+
+  function renderCard(alert) {
+    var levelLabel = LEVEL_LABELS[alert.level] || alert.level;
+    var scoreStr   = alert.score !== null ? alert.score.toFixed(1) + '\u00d7' : '\u2014';
+    var deltaStr   = alert.delta !== null ? (alert.delta >= 0 ? '+' : '') + alert.delta.toFixed(1) : '\u2014';
+    var countryStr = COUNTRY_LABELS[alert.country] || alert.country;
+
+    var articlesHtml = '';
+    var arts = alert.articles.slice(0, 3);
+    for (var i = 0; i < arts.length; i++) {
+      var a = arts[i];
+      var url   = (typeof a.url   === 'string' && a.url)   ? escapeHtml(a.url)   : '#';
+      var title = (typeof a.title === 'string' && a.title) ? escapeHtml(a.title) : 'Article';
+      var media = (typeof a.media_id === 'string')         ? escapeHtml(a.media_id) : '';
+      articlesHtml += '<a class="alert-article-link" href="' + url + '" target="_blank" rel="noopener">'
+        + (media ? '<span class="alert-article-media">' + media + '</span>' : '')
+        + '<span class="alert-article-title">' + title + '</span>'
+        + '</a>';
+    }
+
+    var evoUrl = './evolution.html';
+
+    return '<div class="alert-card level-' + escapeHtml(alert.level) + '">'
+      + '<div class="alert-card-top">'
+      +   '<span class="alert-card-badge">' + escapeHtml(levelLabel) + '</span>'
+      +   '<span class="alert-card-name">'  + escapeHtml(alert.id)   + '</span>'
+      +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
+      + '</div>'
+      + '<div class="alert-card-stats">'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">score z</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">delta mentions</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(String(alert.n)) + '</span><span class="alert-card-stat-lbl">mentions</span></div>'
+      + '</div>'
+      + (articlesHtml ? '<div class="alert-card-articles">' + articlesHtml + '</div>' : '')
+      + '<a class="alert-card-evo-link" href="' + escapeHtml(evoUrl) + '">Voir dans \u00c9volution \u2192</a>'
+      + '</div>';
+  }
+
+  function updateLivePill(groups) {
+    var text = document.getElementById('alertes-live-text');
+    if (!text) return;
+    if (!groups.length) { text.textContent = 'Aucun signal actif'; return; }
+    var latestActive = (groups[0].alerts || []).filter(function(a) { return a.active; }).length;
+    var totalSignals = groups.reduce(function(acc, g) { return acc + g.alerts.length; }, 0);
+    text.textContent = latestActive + ' signal' + (latestActive > 1 ? 's' : '') + ' actif' + (latestActive > 1 ? 's' : '')
+      + ' \u00b7 ' + (groups[0].period.label || groups[0].period.key)
+      + ' \u00b7 ' + totalSignals + ' signaux sur 14j';
+  }
+
+  function render() {
+    var container = document.getElementById('alertes-list');
+    if (!container) return;
+    var groups = getAlertGroups();
+    updateLivePill(groups);
+
+    if (!groups.length) {
+      container.innerHTML = '<div id="alertes-empty">Aucune alerte pour les filtres sélectionnés.</div>';
+      return;
+    }
+
+    var html = '';
+    for (var gi = 0; gi < groups.length; gi++) {
+      var g       = groups[gi];
+      var count   = g.alerts.length;
+      var latest  = g.isFirst ? '<span class="period-header-latest">En cours</span>' : '';
+      var cards   = g.alerts.map(renderCard).join('');
+      html += '<div class="period-group">'
+        + '<div class="period-header">'
+        +   '<span class="period-header-label">' + escapeHtml(g.period.label || g.period.key) + '</span>'
+        +   '<span class="period-header-count">'  + escapeHtml(String(count)) + ' signal' + (count > 1 ? 's' : '') + '</span>'
+        +   latest
+        + '</div>'
+        + '<div class="alerts-grid">' + cards + '</div>'
+        + '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  document.getElementById('filter-country').addEventListener('change', function() { filterCountry = this.value; render(); });
+  document.getElementById('filter-level').addEventListener('change',   function() { filterLevel   = this.value; render(); });
+  document.getElementById('filter-search').addEventListener('input',   function() { filterSearch  = this.value; render(); });
+
+  loadData();
+})();
+</script>
+</body>
+</html>

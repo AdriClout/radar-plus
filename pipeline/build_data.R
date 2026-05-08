@@ -20,6 +20,15 @@ HISTORY_DAYS     <- 130  # Fenêtre timeseries.json (évolution) — couvre tout
 TOP_N_OBJECTS    <- 30   # Nœuds max par période × pays
 MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
 
+ALERT_LOOKBACK_PERIODS <- 180  # 30 jours glissants de périodes 4h
+ALERT_MIN_HISTORY      <- 18   # Historique minimal avant score robuste
+ALERT_MIN_MENTIONS     <- 2    # Évite les signaux trop faibles
+ALERT_MIN_ABS_SCORE    <- 0.08 # Plancher minimal de saillance courante
+ALERT_SCALE_FLOOR      <- 0.08 # Évite les explosions sur séries quasi constantes
+ALERT_THRESHOLD_WATCH  <- 1.8
+ALERT_THRESHOLD_ALERT  <- 2.6
+ALERT_THRESHOLD_STRONG <- 3.8
+
 # Objets génériques exclus par pays (même logique que radar-hot-20)
 EXCLUSION_BY_COUNTRY <- list(
   QC  = c("quebec", "montreal", "canada"),
@@ -46,6 +55,88 @@ TS_FILE    <- file.path(SITE_DIR, "timeseries.json")
 ARTICLES_FILE <- file.path(SITE_DIR, "articles.json")
 MONITOR_INPUT_FILE <- file.path(SITE_DIR, "monitor_input.json")
 
+# ─── Fonctions utilitaires (définies avant usage) ─────────────────────────────
+
+compute_alert_metrics <- function(scores, mentions) {
+  n_scores <- length(scores)
+  alert_score <- rep(NA_real_, n_scores)
+  alert_delta <- rep(NA_real_, n_scores)
+  alert_baseline <- rep(NA_real_, n_scores)
+  alert_level <- rep("none", n_scores)
+  alert_active <- rep(FALSE, n_scores)
+
+  if (n_scores == 0) {
+    return(list(
+      alert_score = alert_score,
+      alert_delta = alert_delta,
+      alert_baseline = alert_baseline,
+      alert_level = alert_level,
+      alert_active = alert_active
+    ))
+  }
+
+  safe_scores <- pmax(as.numeric(scores), 0)
+  safe_mentions <- pmax(as.integer(mentions), 0L)
+  log_scores <- log1p(safe_scores)
+
+  for (i in seq_len(n_scores)) {
+    current_score <- safe_scores[i]
+    current_mentions <- safe_mentions[i]
+
+    history_start <- max(1L, i - ALERT_LOOKBACK_PERIODS)
+    history_end <- i - 1L
+    if (history_end < history_start) {
+      next
+    }
+
+    history_values <- log_scores[history_start:history_end]
+    history_values <- history_values[is.finite(history_values)]
+    if (length(history_values) < ALERT_MIN_HISTORY) {
+      if (current_mentions >= ALERT_MIN_MENTIONS && current_score >= ALERT_MIN_ABS_SCORE) {
+        alert_level[i] <- "emerging"
+      }
+      next
+    }
+
+    baseline <- stats::median(history_values)
+    scale <- stats::mad(history_values, center = baseline, constant = 1.4826)
+    if (!is.finite(scale) || scale < ALERT_SCALE_FLOOR) {
+      scale <- stats::sd(history_values)
+    }
+    scale <- max(scale, ALERT_SCALE_FLOOR, na.rm = TRUE)
+
+    delta <- log_scores[i] - baseline
+    score <- delta / scale
+
+    alert_score[i] <- score
+    alert_delta[i] <- expm1(delta)
+    alert_baseline[i] <- expm1(baseline)
+
+    if (current_mentions < ALERT_MIN_MENTIONS || current_score < ALERT_MIN_ABS_SCORE || !is.finite(score)) {
+      next
+    }
+
+    if (score >= ALERT_THRESHOLD_STRONG) {
+      alert_level[i] <- "strong"
+      alert_active[i] <- TRUE
+    } else if (score >= ALERT_THRESHOLD_ALERT) {
+      alert_level[i] <- "alert"
+      alert_active[i] <- TRUE
+    } else if (score >= ALERT_THRESHOLD_WATCH) {
+      alert_level[i] <- "watch"
+      alert_active[i] <- TRUE
+    }
+  }
+
+  list(
+    alert_score = alert_score,
+    alert_delta = alert_delta,
+    alert_baseline = alert_baseline,
+    alert_level = alert_level,
+    alert_active = alert_active
+  )
+}
+
 # ─── Lecture des CSV produits par fetch_data.py ────────────────────────────────
 
 history_start <- format(Sys.Date() - HISTORY_DAYS, "%Y-%m-%d")
@@ -68,6 +159,24 @@ df_objects <- readr::read_csv(file.path(OUT_DIR, "salient_objects.csv"),
   dplyr::mutate(date_utc = as.Date(substr(as.character(headline_stop_utc), 1, 10))) |>
   dplyr::filter(date_utc >= as.Date(history_start))
 cat("  →", nrow(df_objects), "lignes médias chargées\n")
+
+cat("Calcul des scores d'alerte de saillance...\n")
+df_index <- df_index |>
+  dplyr::arrange(country_id, extracted_objects, date_utc, time_interval_utc) |>
+  dplyr::group_by(country_id, extracted_objects) |>
+  dplyr::group_modify(function(.x, .y) {
+    metrics <- compute_alert_metrics(.x$absolute_normalized_index, .x$n)
+    dplyr::mutate(
+      .x,
+      alert_score = metrics$alert_score,
+      alert_delta = metrics$alert_delta,
+      alert_baseline = metrics$alert_baseline,
+      alert_level = metrics$alert_level,
+      alert_active = metrics$alert_active
+    )
+  }) |>
+  dplyr::ungroup()
+cat("  →", sum(df_index$alert_active, na.rm = TRUE), "points d'alerte actifs sur", nrow(df_index), "lignes\n")
 
 # ─── Nœuds : top N par période × pays (toute la fenêtre historique) ───────────
 
@@ -252,6 +361,11 @@ graphs_graph <- purrr::map(countries, function(country) {
         id        = nodes_i$extracted_objects[j],
         size      = round(nodes_i$absolute_normalized_index[j], 3),
         n         = nodes_i$n[j],
+        alert_score = if (is.na(nodes_i$alert_score[j])) NULL else round(nodes_i$alert_score[j], 2),
+        alert_delta = if (is.na(nodes_i$alert_delta[j])) NULL else round(nodes_i$alert_delta[j], 3),
+        alert_baseline = if (is.na(nodes_i$alert_baseline[j])) NULL else round(nodes_i$alert_baseline[j], 3),
+        alert_level = nodes_i$alert_level[j],
+        alert_active = isTRUE(nodes_i$alert_active[j]),
         articles  = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
         media_ids = {
           mm <- node_med_i |> dplyr::filter(extracted_objects == nodes_i$extracted_objects[j])
@@ -277,6 +391,11 @@ result_graph <- list(
     mode         = "graph",
     graph_days   = GRAPH_DAYS,
     top_n        = TOP_N_OBJECTS,
+    alert_thresholds = list(
+      watch = ALERT_THRESHOLD_WATCH,
+      alert = ALERT_THRESHOLD_ALERT,
+      strong = ALERT_THRESHOLD_STRONG
+    ),
     media_ids    = all_media_ids,
     periods      = make_periods_list(periods_graph),
     countries    = countries
@@ -320,9 +439,14 @@ for (country in countries) {
       for (j in seq_len(nrow(nodes_i))) {
         nid <- nodes_i$extracted_objects[j]
         period_nodes[[length(period_nodes) + 1]] <- list(
-          id   = nid,
-          size = round(nodes_i$absolute_normalized_index[j], 3),
-          n    = nodes_i$n[j]
+          id             = nid,
+          size           = round(nodes_i$absolute_normalized_index[j], 3),
+          n              = nodes_i$n[j],
+          alert_score    = if (is.na(nodes_i$alert_score[j])) NULL else round(nodes_i$alert_score[j], 2),
+          alert_delta    = if (is.na(nodes_i$alert_delta[j])) NULL else round(nodes_i$alert_delta[j], 3),
+          alert_baseline = if (is.na(nodes_i$alert_baseline[j])) NULL else round(nodes_i$alert_baseline[j], 3),
+          alert_level    = nodes_i$alert_level[j],
+          alert_active   = isTRUE(nodes_i$alert_active[j])
         )
         arts <- build_articles(nodes_i$urls[j], nodes_i$titles[j])
         if (length(arts) > 0) period_articles[[nid]] <- arts
@@ -342,6 +466,11 @@ result_ts <- list(
     mode          = "timeseries",
     history_days  = HISTORY_DAYS,
     top_n         = TOP_N_OBJECTS,
+    alert_thresholds = list(
+      watch = ALERT_THRESHOLD_WATCH,
+      alert = ALERT_THRESHOLD_ALERT,
+      strong = ALERT_THRESHOLD_STRONG
+    ),
     periods       = make_periods_list(periods_ts),
     countries     = countries
   ),

@@ -409,6 +409,28 @@
       background: rgba(8,18,48,0.48);
       padding: 5px 7px;
     }
+    .left-tracked-item.alert-watch {
+      border-color: rgba(212, 188, 88, 0.55);
+      background: rgba(72, 58, 20, 0.40);
+      box-shadow: 0 0 10px rgba(212, 188, 88, 0.12);
+    }
+    .left-tracked-item.alert-alert {
+      border-color: rgba(255, 143, 92, 0.62);
+      background: rgba(86, 38, 24, 0.42);
+      box-shadow: 0 0 12px rgba(255, 143, 92, 0.14);
+    }
+    .left-tracked-item.alert-strong {
+      border-color: rgba(255, 110, 110, 0.72);
+      background: rgba(92, 24, 28, 0.48);
+      box-shadow: 0 0 16px rgba(255, 110, 110, 0.18);
+    }
+    .left-tracked-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
     .left-track-check {
       width: 14px;
       height: 14px;
@@ -430,6 +452,55 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    .left-track-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .left-track-badge {
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(110, 150, 210, 0.28);
+      background: rgba(18, 34, 74, 0.62);
+      color: rgba(174, 202, 248, 0.72);
+      font-size: 8px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+    }
+    .left-track-badge.level-normal,
+    .left-track-badge.level-off {
+      color: rgba(150, 182, 226, 0.68);
+      border-color: rgba(110, 150, 210, 0.24);
+    }
+    .left-track-badge.level-emerging {
+      color: rgba(134, 214, 255, 0.94);
+      border-color: rgba(112, 186, 245, 0.48);
+      background: rgba(18, 56, 92, 0.58);
+    }
+    .left-track-badge.level-watch {
+      color: rgba(255, 224, 112, 0.96);
+      border-color: rgba(224, 196, 88, 0.48);
+      background: rgba(74, 60, 16, 0.56);
+    }
+    .left-track-badge.level-alert {
+      color: rgba(255, 186, 136, 0.98);
+      border-color: rgba(255, 143, 92, 0.58);
+      background: rgba(88, 40, 24, 0.60);
+    }
+    .left-track-badge.level-strong {
+      color: rgba(255, 196, 196, 0.98);
+      border-color: rgba(255, 110, 110, 0.64);
+      background: rgba(98, 22, 28, 0.66);
+    }
+    .left-track-score {
+      font-size: 9px;
+      color: rgba(186, 206, 242, 0.68);
+      white-space: nowrap;
+    }
     .left-track-rm {
       border: none;
       background: none;
@@ -447,10 +518,59 @@
       line-height: 1.45;
       padding: 2px 0;
     }
+    #left-alert-summary {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 2px 0 6px;
+      padding: 6px 8px;
+      border: 1px solid rgba(100, 150, 255, 0.18);
+      border-radius: 5px;
+      background: rgba(8, 18, 48, 0.44);
+      font-size: 9px;
+      color: rgba(168, 198, 242, 0.72);
+      letter-spacing: 0.4px;
+    }
+    body.mode-tracking #left-alert-summary.has-tracked {
+      display: flex;
+    }
+    #left-alert-count {
+      color: rgba(226, 238, 255, 0.94);
+      font-size: 11px;
+    }
+    #left-alert-summary.has-active #left-alert-count {
+      color: rgba(255, 206, 140, 0.98);
+    }
     .rleg-item.tracked {
       border-color: rgba(110,210,155,0.72);
       background: rgba(20,72,52,0.50);
       box-shadow: 0 0 6px rgba(110,210,155,0.35);
+    }
+    /* Badges d'alerte dans le HOT 10 */
+    .rleg-alert-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 5px;
+      border-radius: 999px;
+      font-size: 7px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      border: 1px solid;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .rleg-alert-badge.level-strong {
+      color: rgba(255,196,196,0.98); border-color: rgba(255,110,110,0.6); background: rgba(98,22,28,0.60);
+    }
+    .rleg-alert-badge.level-alert {
+      color: rgba(255,186,136,0.98); border-color: rgba(255,143,92,0.55); background: rgba(88,40,24,0.54);
+    }
+    .rleg-alert-badge.level-watch {
+      color: rgba(255,224,112,0.96); border-color: rgba(224,196,88,0.45); background: rgba(74,60,16,0.50);
+    }
+    .rleg-alert-badge.level-emerging {
+      color: rgba(134,214,255,0.9); border-color: rgba(112,186,245,0.42); background: rgba(18,56,92,0.50);
     }
     .rleg-check {
       font-size: 10px;
@@ -521,6 +641,10 @@
         <div id="ranked-search-results"></div>
       </div>
       <button class="lpanel-clear-btn" id="left-tracked-clear">Vider la sélection</button>
+      <div id="left-alert-summary" aria-live="polite">
+        <span id="left-alert-count">0 signal</span>
+        <span id="left-alert-caption">dans la période courante</span>
+      </div>
       <div id="ranked-legend-period"></div>
       <div id="ranked-legend-list"></div>
       <div id="left-tracked-list"></div>
@@ -776,10 +900,32 @@
     });
   }
 
+  function normalizeArticle(art) {
+    const rec = (art && typeof art === 'object') ? art : {};
+    const asText = (v) => (typeof v === 'string' ? v.trim() : '');
+
+    const title = asText(rec.title);
+    const url = asText(rec.url);
+
+    let mediaId = asText(rec.media_id);
+    if (!mediaId && rec.media_id && typeof rec.media_id === 'object') {
+      mediaId = asText(rec.media_id.id || rec.media_id.media_id || rec.media_id.name);
+    }
+
+    return {
+      title: title || url || 'Article',
+      url,
+      mediaId,
+    };
+  }
+
   function articleItemHtml(art) {
-    const title = escapeHtml(art.title || art.url || 'Article');
-    const safeUrl = String(art.url || '').trim();
-    const media = art.media_id ? `<div class="article-item-media">${escapeHtml(art.media_id)}</div>` : '';
+    const normalized = normalizeArticle(art);
+    const title = escapeHtml(normalized.title);
+    const safeUrl = normalized.url;
+    const media = normalized.mediaId
+      ? `<div class="article-item-media">${escapeHtml(normalized.mediaId)}</div>`
+      : '';
     if (!safeUrl) return `<div class="article-item">${media}<div class="article-item-title">${title}</div></div>`;
     return `<a class="article-item" href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer">${media}<div class="article-item-title">${title}</div></a>`;
   }
@@ -1418,27 +1564,92 @@
     leftList.innerHTML = '';
     if (leftClearBtn) leftClearBtn.classList.toggle('visible', trackedObjects.size > 0);
     if (!trackedObjects.size) {
+      updateTrackedAlertSummary(0, 0);
       leftList.innerHTML = '<div id="left-tracked-empty">Aucun objet suivi.<br>Cliquez un objet du Top 10 ou utilisez la recherche.</div>';
       return;
     }
+    let activeAlerts = 0;
     trackedObjects.forEach(id => {
+      const alertState = getTrackedAlertState(id);
+      if (alertState.active) activeAlerts++;
       const item = document.createElement('div');
-      item.className = 'left-tracked-item';
+      item.className = `left-tracked-item ${alertState.itemClass}`.trim();
       item.innerHTML = `
         <div class="left-track-check">✓</div>
-        <div class="left-track-name" title="${escapeHtml(id)}">${escapeHtml(id)}</div>
+        <div class="left-tracked-body">
+          <div class="left-track-name" title="${escapeHtml(id)}">${escapeHtml(id)}</div>
+          <div class="left-track-meta">
+            <span class="left-track-badge level-${escapeHtml(alertState.level)}">${escapeHtml(alertState.label)}</span>
+            ${alertState.scoreText ? `<span class="left-track-score">${escapeHtml(alertState.scoreText)}</span>` : ''}
+          </div>
+        </div>
         <button class="left-track-rm" title="Retirer">×</button>
       `;
       item.querySelector('.left-track-rm').addEventListener('click', e => { e.stopPropagation(); removeTracked(id); });
       item.addEventListener('click', () => focusNodeById(id));
       leftList.appendChild(item);
     });
+    updateTrackedAlertSummary(activeAlerts, trackedObjects.size);
   }
 
 
   function addTrackedAndSwitch(id) {
     if (!id) return;
     addTracked(id);
+  }
+
+  function getTrackedAlertState(nodeId) {
+    const period = periods[currentIdx];
+    const gd = getGD(currentCountry, period?.key);
+    const node = (gd.nodes || []).find(n => n.id === nodeId);
+    if (!node) {
+      return {
+        level: 'off',
+        label: 'Hors radar',
+        scoreText: '',
+        itemClass: '',
+        active: false,
+      };
+    }
+
+    const score = Number(node.alert_score);
+    const scoreText = Number.isFinite(score) ? `z ${score.toFixed(1)}` : '';
+    const level = String(node.alert_level || 'none');
+
+    if (level === 'strong') {
+      return { level, label: 'Alerte forte', scoreText, itemClass: 'alert-strong', active: true };
+    }
+    if (level === 'alert') {
+      return { level, label: 'Alerte', scoreText, itemClass: 'alert-alert', active: true };
+    }
+    if (level === 'watch') {
+      return { level, label: 'Veille', scoreText, itemClass: 'alert-watch', active: true };
+    }
+    if (level === 'emerging') {
+      return { level, label: 'Émergent', scoreText: node.n ? `${node.n} mentions` : '', itemClass: '', active: false };
+    }
+    return {
+      level: 'normal',
+      label: 'Normal',
+      scoreText,
+      itemClass: '',
+      active: false,
+    };
+  }
+
+  function updateTrackedAlertSummary(activeCount, trackedCount) {
+    const summaryEl = document.getElementById('left-alert-summary');
+    const countEl = document.getElementById('left-alert-count');
+    if (!summaryEl || !countEl) return;
+
+    summaryEl.classList.toggle('has-tracked', trackedCount > 0);
+    summaryEl.classList.toggle('has-active', activeCount > 0);
+    if (!trackedCount) {
+      countEl.textContent = '0 signal';
+      return;
+    }
+
+    countEl.textContent = `${activeCount} signal${activeCount > 1 ? 's' : ''}`;
   }
 
   function renderRankedSearchResults(q) {
@@ -1598,6 +1809,10 @@
     const hasVisibleHoveredL = hoveredNode !== null && rows.some(r => r.id === hoveredNode);
     const hasVisibleTrackedL = rows.some(r => trackedObjects.has(r.id));
     const hasHover = hasVisibleFocusedL || hasVisibleHoveredL || hasVisibleTrackedL;
+    // Map id → node pour les badges d'alerte de la période courante
+    const curAlertGd = getGD(currentCountry, periods[currentIdx]?.key);
+    const nodeAlertMap = new Map((curAlertGd.nodes || []).map(n => [n.id, n]));
+    const ALERT_BADGE_LABELS = { strong: 'Fort', alert: 'Alerte', watch: 'Veille', emerging: 'Émerg.' };
     list.innerHTML = '';
     rows.forEach((r, i) => {
       const isFocused  = focusedNode  === r.id;
@@ -1631,10 +1846,17 @@
         (isDimmed ? ' dimmed' : '') +
         (isTracked ? ' tracked' : '');
       item.dataset.nodeId = r.id;
+      const curAlertNode = nodeAlertMap.get(r.id);
+      const curAlertLevel = curAlertNode?.alert_level;
+      const showAlertBadge = curAlertLevel && curAlertLevel !== 'normal' && curAlertLevel !== 'none';
+      const alertBadgeHtml = showAlertBadge
+        ? `<span class="rleg-alert-badge level-${escapeHtml(curAlertLevel)}">${escapeHtml(ALERT_BADGE_LABELS[curAlertLevel] || curAlertLevel)}</span>`
+        : '';
       item.innerHTML = `
         <div class="rleg-swatch" style="background:${r.color};box-shadow:0 0 5px ${r.color}88"></div>
         <span class="rleg-rank">${i + 1}.</span>
         <span class="rleg-name" title="${escapeHtml(r.id)}">${escapeHtml(r.id)}</span>
+        ${alertBadgeHtml}
         <span class="rleg-check">${isTracked ? '✓' : ''}</span>
         <span class="rleg-val${r.displayVal === null ? ' null-val' : ''}">${r.displayVal !== null ? r.displayVal.toFixed(1) : '—'}</span>
         <span class="rleg-delta ${deltaClass}" title="${escapeHtml(compLabel)}">${deltaTxt}</span>

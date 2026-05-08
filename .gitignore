@@ -72,6 +72,7 @@ tmp/
 
 # Python
 __pycache__/
+!site/alertes.html
 !site/statistiques.html
 *.py.bak
 *.pyc
