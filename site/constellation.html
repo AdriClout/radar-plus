@@ -302,7 +302,7 @@
       background: rgba(20,36,86,0.7);
     }
 
-    /* ── Liste des objets comparés (max 2) ── */
+    /* ── Liste de l'objet sélectionné ── */
     #compare-list {
       display: flex;
       flex-direction: column;
@@ -336,12 +336,6 @@
       line-height: 1; padding: 0 2px; flex-shrink: 0;
     }
     .compare-item .compare-rm:hover { color: rgba(255,120,120,0.95); }
-    #compare-hint {
-      font-size: 9px;
-      letter-spacing: 0.4px;
-      color: rgba(120,160,210,0.55);
-      margin-top: 4px;
-    }
     .top10-item {
       width: 100%;
       border: 1px solid rgba(90, 130, 250, 0.18);
@@ -534,12 +528,11 @@
       <div id="window-meta"></div>
     </div>
     <div class="lpanel-section">
-      <div class="lpanel-label">Recherche &amp; comparaison</div>
+      <div class="lpanel-label">Recherche</div>
       <div id="search-wrap">
         <input type="text" id="search-input" placeholder="Rechercher un objet…" autocomplete="off" spellcheck="false" />
         <div id="search-results"></div>
         <div id="compare-list"></div>
-        <div id="compare-hint">Sélectionne jusqu'à 2 objets pour les comparer côte à côte.</div>
       </div>
     </div>
     <div class="lpanel-section" id="top10-section">
@@ -1505,16 +1498,14 @@
   // ── Recherche ─────────────────────────────────────────────────────────────
   const searchInput = document.getElementById('search-input');
 
-  // ── Comparaison max 2 objets ──────────────────────────────────────────────
-  // Sélection persistante (entre slots) qui met en évidence 1 ou 2 objets
-  // dans le graphe et leurs voisins, dim le reste. Couleurs distinctes
-  // (cyan/rose) pour distinguer les 2 quand on en a 2.
-  const COMPARE_COLORS = ['rgba(120,200,255,0.95)', 'rgba(255,120,200,0.95)'];
-  const comparedNodes = new Map(); // nodeId → color slot index (0 ou 1)
+  // ── Sélection d'un objet à mettre en évidence ────────────────────────────
+  // Sélection persistante entre slots (1 objet max), met en évidence
+  // l'objet et ses voisins directs dans le graphe, dim le reste.
+  const COMPARE_COLORS = ['rgba(120,200,255,0.95)'];
+  const comparedNodes = new Map(); // nodeId → 0
 
   function compareColor(nodeId) {
-    const idx = comparedNodes.get(nodeId);
-    return idx == null ? null : COMPARE_COLORS[idx];
+    return comparedNodes.has(nodeId) ? COMPARE_COLORS[0] : null;
   }
 
   function toggleCompared(nodeId) {
@@ -1522,19 +1513,12 @@
     if (comparedNodes.has(nodeId)) {
       comparedNodes.delete(nodeId);
     } else {
-      if (comparedNodes.size >= 2) {
-        // Remplace le plus ancien (Map garde l'ordre d'insertion)
-        const firstKey = comparedNodes.keys().next().value;
-        comparedNodes.delete(firstKey);
-      }
-      // Trouve un slot couleur disponible
-      const used = new Set(comparedNodes.values());
-      const slot = used.has(0) ? 1 : 0;
-      comparedNodes.set(nodeId, slot);
+      // Un seul objet sélectionné à la fois — vider la sélection avant
+      comparedNodes.clear();
+      comparedNodes.set(nodeId, 0);
     }
     applyComparisonHighlight();
     renderCompareList();
-    // Rerender Hot 10 pour mettre à jour les checkmarks
     renderHot10(Graph.graphData(), currentCountry);
   }
 
@@ -1668,16 +1652,9 @@
             currentSlotIdx = targetSlot;
             const sliderEl = document.getElementById('timeline');
             if (sliderEl) sliderEl.value = currentSlotIdx;
-            // Pré-ajoute à compared AVANT loadSlot pour que loadSlot
-            // applique le highlight directement sur le bon objet
-            if (!comparedNodes.has(id)) {
-              if (comparedNodes.size >= 2) {
-                const firstKey = comparedNodes.keys().next().value;
-                comparedNodes.delete(firstKey);
-              }
-              const used = new Set(comparedNodes.values());
-              comparedNodes.set(id, used.has(0) ? 1 : 0);
-            }
+            // Pré-ajoute à compared AVANT loadSlot (sélection unique)
+            comparedNodes.clear();
+            comparedNodes.set(id, 0);
             loadSlot(currentCountry, currentSlotIdx);
             renderCompareList();
             return;
