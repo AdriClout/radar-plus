@@ -1117,9 +1117,20 @@
         else cur.value += Number(l.value) || 0;
       }
     }
-    let nodes = [...nodeMap.values()].sort((a, b) => b.size - a.size);
+    let allSorted = [...nodeMap.values()].sort((a, b) => b.size - a.size);
     const cap = SLOT_TOP_N[rankedGranularity] || 30;
-    nodes = nodes.slice(0, cap);
+    let nodes = allSorted.slice(0, cap);
+    // Force-inclut les objets en comparaison s'ils existent dans le slot
+    // mais sont hors du cap — sinon ils seraient invisibles et le
+    // highlight les ferait tous disparaître.
+    if (typeof comparedNodes !== 'undefined' && comparedNodes && comparedNodes.size) {
+      const present = new Set(nodes.map(n => n.id));
+      for (const id of comparedNodes.keys()) {
+        if (!present.has(id) && nodeMap.has(id)) {
+          nodes.push(nodeMap.get(id));
+        }
+      }
+    }
     nodes.forEach((n, i) => { n._rank = i; });
     const visibleIds = new Set(nodes.map(n => n.id));
     const visibleLinks = [...linkMap.values()].filter(l =>
