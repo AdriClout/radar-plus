@@ -389,11 +389,16 @@
     }
     #stats { display: none; }
     #focus-hint { display: none; }
-    /* Slide-in panel (calque sur evolution.html) */
+    /* Slide-in panel (calque sur evolution.html, mais overlay
+       transparent: on veut voir le réseau focusé en pleine clarté,
+       pas dimmé). L'overlay sert seulement de zone de clic
+       transparente pour fermer le panneau, pas à assombrir.
+       Le panneau lui-même couvre 460px à droite — c'est suffisant
+       pour signaler que la page est en mode focus. */
     #object-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,10,0.55);
+      position: fixed; inset: 0; background: transparent;
       z-index: 300; opacity: 0; pointer-events: none;
-      transition: opacity 0.3s;
+      transition: opacity 0.2s;
     }
     #object-overlay.open { opacity: 1; pointer-events: auto; }
     #object-panel {
@@ -1585,12 +1590,36 @@
   }
 
   // ── Search avec dropdown de suggestions (calque evolution.html) ──────────
-  // Les suggestions sont calculées sur l'union de tous les nœuds du slot
-  // courant. Click sur une suggestion → ajoute à la comparaison (max 2).
-  function getSearchableIds() {
-    const gd = Graph.graphData();
-    const ids = new Set((gd.nodes || []).map(n => n.id));
-    return [...ids].sort();
+  // Les suggestions couvrent TOUS les objets vus dans le pays sur la
+  // période chargée (toutes périodes 4h confondues), pas seulement le
+  // slot courant. Si l'objet sélectionné n'est pas dans le slot actuel,
+  // on saute au slot le plus récent où il apparaît, puis on le compare.
+  let _searchableCache = { country: null, ids: null };
+  function getAllSearchableIds(country) {
+    if (_searchableCache.country === country && _searchableCache.ids) {
+      return _searchableCache.ids;
+    }
+    const ids = new Set();
+    const cg = graphs[country] || {};
+    for (const k in cg) {
+      const g = cg[k];
+      if (!g || !g.nodes) continue;
+      for (const n of g.nodes) ids.add(n.id);
+    }
+    const list = [...ids].sort();
+    _searchableCache = { country, ids: list };
+    return list;
+  }
+
+  // Trouve le slot le plus récent où l'objet apparaît
+  function findSlotIdxWithNode(country, nodeId) {
+    for (let i = slots.length - 1; i >= 0; i--) {
+      for (const pk of slots[i].periodKeys) {
+        const g = graphs[country]?.[pk];
+        if (g && (g.nodes || []).some(n => n.id === nodeId)) return i;
+      }
+    }
+    return -1;
   }
 
   function renderSearchResults(q) {
@@ -1599,18 +1628,56 @@
     resultsEl.innerHTML = '';
     if (!q.trim()) return;
     const ql = q.toLowerCase();
-    const matches = getSearchableIds()
-      .filter(id => id.toLowerCase().includes(ql))
-      .filter(id => !comparedNodes.has(id))
-      .slice(0, 8);
+    // Pondère: matches qui commencent par la requête en premier
+    const all = getAllSearchableIds(currentCountry);
+    const starts = [];
+    const contains = [];
+    for (const id of all) {
+      if (comparedNodes.has(id)) continue;
+      const lo = id.toLowerCase();
+      if (lo.startsWith(ql)) starts.push(id);
+      else if (lo.includes(ql)) contains.push(id);
+    }
+    const matches = starts.concat(contains).slice(0, 10);
+
+    // IDs présents dans le slot courant pour signaler les autres
+    const inCurrentSlot = new Set((Graph.graphData().nodes || []).map(n => n.id));
+
     matches.forEach(id => {
       const div = document.createElement('div');
       div.className = 'evo-result';
-      div.textContent = id;
-      div.addEventListener('click', () => {
+      const inSlot = inCurrentSlot.has(id);
+      div.innerHTML = inSlot
+        ? escapeHtml(id)
+        : `${escapeHtml(id)} <span style="color:rgba(120,160,210,0.5);font-size:9px;">↳ autre créneau</span>`;
+      // mousedown au lieu de click: feu avant le blur de l'input
+      div.addEventListener('mousedown', (e) => {
+        e.preventDefault();
         const input = document.getElementById('search-input');
         if (input) input.value = '';
         renderSearchResults('');
+        if (!inSlot) {
+          // Saute au slot le plus récent qui contient cet objet
+          const targetSlot = findSlotIdxWithNode(currentCountry, id);
+          if (targetSlot !== -1 && targetSlot !== currentSlotIdx) {
+            currentSlotIdx = targetSlot;
+            const sliderEl = document.getElementById('timeline');
+            if (sliderEl) sliderEl.value = currentSlotIdx;
+            // Pré-ajoute à compared AVANT loadSlot pour que loadSlot
+            // applique le highlight directement sur le bon objet
+            if (!comparedNodes.has(id)) {
+              if (comparedNodes.size >= 2) {
+                const firstKey = comparedNodes.keys().next().value;
+                comparedNodes.delete(firstKey);
+              }
+              const used = new Set(comparedNodes.values());
+              comparedNodes.set(id, used.has(0) ? 1 : 0);
+            }
+            loadSlot(currentCountry, currentSlotIdx);
+            renderCompareList();
+            return;
+          }
+        }
         toggleCompared(id);
       });
       resultsEl.appendChild(div);
@@ -1641,8 +1708,11 @@
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentCountry = tab.dataset.country;
+      _searchableCache = { country: null, ids: null }; // change de pays → invalide
+      comparedNodes.clear();                              // pays différent → reset compare
       applyTimelineHeat(currentCountry);
       loadSlot(currentCountry, currentSlotIdx);
+      renderCompareList();
     });
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
   });
