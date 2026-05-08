@@ -456,6 +456,20 @@
       letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;
     }
     #object-panel .article-item-title { font-size: 13px; line-height: 1.5; }
+    #object-panel .article-section-header {
+      margin: 20px 0 4px;
+      padding: 8px 0 6px;
+      border-top: 1px solid rgba(80,130,255,0.18);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px; letter-spacing: 2px;
+      color: rgba(140,170,220,0.65); text-transform: uppercase;
+    }
+    #object-panel .article-period-label {
+      margin: 14px 0 0;
+      font-size: 10px;
+      color: rgba(120,160,255,0.55);
+      letter-spacing: 0.5px;
+    }
     #object-panel .empty {
       color: rgba(140,170,220,0.55); font-size: 12px; padding: 16px 0;
     }
@@ -663,15 +677,28 @@
     return `rgba(${r},${g},${b},${a})`;
   }
 
+  // Score de convergence d'un slot = moyenne des scores de ses blocs 4h.
+  // Ainsi, un slot "Jour" reflète la convergence moyenne de la journée
+  // (6 blocs 4h), un slot "Semaine" celle de la semaine, etc.
+  function slotConvergenceScore(country, slot) {
+    if (!slot || !slot.periodKeys.length) return 0;
+    let sum = 0, count = 0;
+    for (const pk of slot.periodKeys) {
+      const c = periodConvergenceScore(country, pk);
+      if (Number.isFinite(c) && c > 0) { sum += c; count++; }
+    }
+    return count > 0 ? sum / count : 0;
+  }
+
   function applyTimelineHeat(country) {
-    if (!periods.length) return;
-    const scores = periods.map(p => periodConvergenceScore(country, p.key));
+    if (!slots.length) return;
+    const scores = slots.map(s => slotConvergenceScore(country, s));
     const min = Math.min(...scores);
     const max = Math.max(...scores);
     const denom = Math.max(1e-9, max - min);
     const norm = scores.map(s => (s - min) / denom);
 
-    if (periods.length === 1) {
+    if (slots.length === 1) {
       slider.style.background = `linear-gradient(to right, ${heatColor(norm[0])}, ${heatColor(norm[0])})`;
       slider.dataset.convScores = JSON.stringify(scores);
       return;
@@ -722,16 +749,60 @@
     const evolutionUrl = `./evolution.html?country=${encodeURIComponent(currentCountry)}&gran=${encodeURIComponent(rankedGranularity)}&nodes=${encodeURIComponent(node.id)}&mode=tracking`;
     linksEl.innerHTML = `<a class="panel-link" href="${escapeHtml(evolutionUrl)}">Voir dans Évolution →</a>`;
 
-    if (articles.length) {
-      bodyEl.innerHTML = articles.map(a => {
-        const title = escapeHtml(a.title || a.url || 'Article');
-        const url   = escapeHtml(a.url || '#');
-        const media = a.media_id ? `<div class="article-item-media">${escapeHtml(a.media_id)}</div>` : '';
-        return `<a class="article-item" href="${url}" target="_blank" rel="noopener noreferrer">${media}<div class="article-item-title">${title}</div></a>`;
-      }).join('');
-    } else {
-      bodyEl.innerHTML = '<div class="empty">Aucun article associé dans ce jeu de données.</div>';
+    function articleHtml(a) {
+      const title = escapeHtml(a.title || a.url || 'Article');
+      const url   = escapeHtml(a.url || '#');
+      const media = a.media_id ? `<div class="article-item-media">${escapeHtml(a.media_id)}</div>` : '';
+      return `<a class="article-item" href="${url}" target="_blank" rel="noopener noreferrer">${media}<div class="article-item-title">${title}</div></a>`;
     }
+
+    // Articles du créneau courant
+    const seenUrls = new Set();
+    const currentArticlesHtml = [];
+    articles.forEach(a => {
+      if (a && a.url && !seenUrls.has(a.url)) {
+        seenUrls.add(a.url);
+        currentArticlesHtml.push(articleHtml(a));
+      }
+    });
+
+    let html = currentArticlesHtml.length
+      ? currentArticlesHtml.join('')
+      : '<div class="empty">Aucun article associé dans ce créneau.</div>';
+
+    // Section "Précédemment": parcourt les slots antérieurs au courant,
+    // récupère les articles de cet objet (dédupliqués par URL globalement).
+    const prevGroups = [];
+    for (let si = currentSlotIdx - 1; si >= 0 && prevGroups.length < 8; si--) {
+      const prevSlot = slots[si];
+      if (!prevSlot) continue;
+      const fresh = [];
+      for (const pk of prevSlot.periodKeys) {
+        const g = graphs[currentCountry]?.[pk];
+        if (!g) continue;
+        const pn = (g.nodes || []).find(n => n.id === node.id);
+        if (!pn || !Array.isArray(pn.articles)) continue;
+        for (const a of pn.articles) {
+          if (a && a.url && !seenUrls.has(a.url)) {
+            seenUrls.add(a.url);
+            fresh.push(a);
+          }
+        }
+      }
+      if (fresh.length) {
+        prevGroups.push({ label: prevSlot.label, articles: fresh });
+      }
+    }
+
+    if (prevGroups.length) {
+      html += '<div class="article-section-header">Précédemment</div>';
+      prevGroups.forEach(g => {
+        html += `<div class="article-period-label">${escapeHtml(g.label)}</div>`;
+        html += g.articles.map(articleHtml).join('');
+      });
+    }
+
+    bodyEl.innerHTML = html;
 
     panel.classList.add('open');
     overlay.classList.add('open');
@@ -1271,14 +1342,8 @@
     if (comparedNodes.size) applyComparisonHighlight();
     // Le cadrage final se fait dans onEngineStop, après stabilisation.
 
-    // Convergence: moyenne des scores de convergence sur les blocs 4h
-    // du créneau — proxy raisonnable pour un graphe agrégé.
-    let convSum = 0, convCount = 0;
-    for (const pk of slot.periodKeys) {
-      const c = periodConvergenceScore(country, pk);
-      if (Number.isFinite(c) && c > 0) { convSum += c; convCount++; }
-    }
-    const convAvg = convCount > 0 ? convSum / convCount : 0;
+    // Convergence du créneau (cohérente avec la heat de la timeline)
+    const convAvg = slotConvergenceScore(country, slot);
     document.getElementById('period-label').innerHTML =
       `<span>${escapeHtml(slot.label)}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${convAvg.toFixed(1)}`;
 
