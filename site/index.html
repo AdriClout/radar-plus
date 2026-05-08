@@ -399,9 +399,15 @@
     .hot20-row-streak { font-size: 9px; color: var(--muted); margin-top: 3px; }
     .hot20-row-score { padding: 0 12px; }
     .hot20-row-pct {
-      font-family: var(--mono); font-size: 11px; color: var(--text); margin-bottom: 4px;
+      font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 4px;
+      display: flex; align-items: baseline; gap: 8px;
     }
-    .hot20-row-pct strong { color: #e8f0ff; font-size: 13px; }
+    .hot20-row-pct strong { color: #e8f0ff; font-size: 14px; }
+    .hot20-row-increase {
+      color: rgba(80,220,140,0.92);
+      font-size: 11px;
+      letter-spacing: 0.3px;
+    }
     .hot20-bar-track {
       height: 3px; background: rgba(60,100,200,0.15);
       border-radius: 2px; overflow: hidden;
@@ -1405,6 +1411,29 @@
 /* ===== HOT 20 ===== */
 var graphData = null;
 var timeseriesData = null;
+// Score cumulé depuis le début (somme de size sur toutes les périodes 4h
+// disponibles), précalculé après chargement de timeseriesData.
+// Forme: { CAN: { 'donald trump': 123.4, ... }, QC: {...}, USA: {...} }
+var allTimeScores = null;
+function buildAllTimeScores() {
+  var src = timeseriesData || graphData;
+  if (!src || !src.graphs) { allTimeScores = null; return; }
+  var out = {};
+  for (var country in src.graphs) {
+    var cg = src.graphs[country] || {};
+    var sums = {};
+    for (var pk in cg) {
+      var nodes = cg[pk] && cg[pk].nodes;
+      if (!nodes) continue;
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        sums[n.id] = (sums[n.id] || 0) + (Number(n.size) || 0);
+      }
+    }
+    out[country] = sums;
+  }
+  allTimeScores = out;
+}
 var articlesData = null;
 var articlesLoadingPromise = null;
 function ensureArticlesLoaded() {
@@ -1443,6 +1472,7 @@ async function loadData() {
     ]);
     graphData = results[0];
     timeseriesData = results[1];
+    buildAllTimeScores();
   } catch (e) { console.error('Data load error', e); }
   // Prefetch articles non-bloquant → panel s'ouvre instant si déjà prêt, sinon "Chargement…"
   // Re-render le HOT 20 quand les articles arrivent pour mettre à jour les compteurs
@@ -1789,7 +1819,7 @@ function renderHot20() {
       '<span>Rang</span>' +
       '<span>Mouvement</span>' +
       '<span style="padding-left:12px;">Sujet</span>' +
-      '<span style="padding-left:12px;">Score</span>' +
+      '<span style="padding-left:12px;">Score · Augmentation</span>' +
       '<span>Articles</span>' +
     '</div>' +
     nodes.map(function(node, i) {
@@ -1863,6 +1893,22 @@ function renderHot20() {
         ? '<span class="hot20-alert-badge level-' + alertLvl + '" data-tip="Alerte de saillance en cours sur cet objet.">' + escapeHtml(ALERT_BADGE_LABELS[alertLvl] || alertLvl) + '</span>'
         : '';
 
+      // Score cumulé depuis le début (toutes périodes 4h confondues) +
+      // augmentation pendant le créneau sélectionné (slot agrégé).
+      var totalAllTime = (allTimeScores && allTimeScores[currentCountry])
+        ? (allTimeScores[currentCountry][node.id] || 0) : null;
+      var slotIncrease = Number(node.size) || 0;
+      var totalStr = totalAllTime !== null ? totalAllTime.toFixed(1) : '—';
+      var increaseStr = '+' + slotIncrease.toFixed(1);
+      var increaseTipMap = {
+        '4h':     'Saillance gagnée pendant ce bloc 4h',
+        day:      'Saillance gagnée depuis le début de la journée',
+        week:     'Saillance gagnée depuis le début de la semaine',
+        month:    'Saillance gagnée depuis le début du mois',
+        quarter:  'Saillance gagnée depuis le début de l\'année'
+      };
+      var increaseTip = increaseTipMap[currentGranularity] || 'Saillance gagnée pendant ce créneau';
+
       return '<div class="hot20-row' + rankClass + alertClass + '" data-node-idx="' + i + '" data-node-id="' + escapeHtml(node.id) + '">' +
         '<div class="hot20-row-rank">' + (i + 1) + '</div>' +
         '<div class="hot20-row-trend">' + trendHtml + '</div>' +
@@ -1874,7 +1920,7 @@ function renderHot20() {
           streakHtml +
         '</div>' +
         '<div class="hot20-row-score">' +
-          '<div class="hot20-row-pct"><strong>' + pct + '%</strong> du radar</div>' +
+          '<div class="hot20-row-pct hot20-hint" data-tip="Saillance cumulée depuis le début de la collecte (toutes périodes confondues)."><strong>' + totalStr + '</strong> pts <span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span></div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
         '</div>' +
         '<div class="hot20-row-media hot20-hint" data-tip="' + articlesTip + '">' + articleCount + ' article' + (articleCount > 1 ? 's' : '') + '</div>' +
