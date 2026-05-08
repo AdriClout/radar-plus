@@ -181,49 +181,59 @@
       padding-left: 1px;
     }
 
-    /* ── Hot 10 row (calque sur evolution.html .rleg-item) ── */
+    /* ── Hot 10 row — calque exact sur evolution.html ── */
     .rleg-item {
       display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 4px 7px;
-      border: 1px solid rgba(90,130,250,0.22);
-      border-radius: 4px;
-      background: rgba(8,18,48,0.55);
+      align-items: flex-start;
+      gap: 6px;
+      border: 1px solid rgba(90,130,250,0.14);
+      border-radius: 5px;
+      background: rgba(8,18,48,0.50);
+      padding: 5px 8px;
       cursor: pointer;
-      transition: all 0.16s ease;
+      transition: all 0.15s;
     }
     .rleg-item:hover, .rleg-item.hovered {
-      border-color: rgba(145,182,255,0.75);
-      background: rgba(20,36,86,0.7);
-      transform: translateX(-2px);
+      border-color: rgba(145,182,255,0.55);
+      background: rgba(20,36,86,0.65);
     }
     .rleg-item.focused {
-      border-color: rgba(186,211,255,0.95);
-      background: rgba(40,74,150,0.42);
-      box-shadow: 0 0 10px rgba(90,135,255,0.32);
+      border-color: rgba(186,211,255,0.88);
+      background: rgba(40,70,150,0.40);
+      box-shadow: 0 0 8px rgba(90,135,255,0.28);
     }
-    .rleg-item.dimmed { opacity: 0.45; }
-    .rleg-item.alert-watch    { border-color: rgba(212,188,88,0.55);  background: rgba(72,58,20,0.4);  }
-    .rleg-item.alert-alert    { border-color: rgba(255,143,92,0.62); background: rgba(86,38,24,0.42); }
-    .rleg-item.alert-strong   { border-color: rgba(255,110,110,0.72); background: rgba(92,24,28,0.48); box-shadow: 0 0 12px rgba(255,90,90,0.14); }
-    .rleg-item.alert-emerging { border-color: rgba(112,186,245,0.55); background: rgba(18,56,92,0.5); }
+    .rleg-item.tracked {
+      border-color: rgba(120,200,255,0.65);
+      background: rgba(18,52,90,0.55);
+    }
+    .rleg-item.dimmed { opacity: 0.40; }
+    .rleg-swatch {
+      width: 11px; height: 11px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 2px;
+      background: rgba(120,160,220,0.55);
+    }
+    .rleg-swatch.level-watch    { background: rgba(255,210,90,0.85); box-shadow: 0 0 6px rgba(255,210,90,0.45); }
+    .rleg-swatch.level-alert    { background: rgba(255,143,92,0.92); box-shadow: 0 0 6px rgba(255,143,92,0.5); }
+    .rleg-swatch.level-strong   { background: rgba(255,110,110,0.95); box-shadow: 0 0 8px rgba(255,110,110,0.55); }
+    .rleg-swatch.level-emerging { background: rgba(120,190,255,0.90); box-shadow: 0 0 6px rgba(120,190,255,0.45); }
     .rleg-rank {
-      font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 10px;
-      color: rgba(160,195,255,0.85);
+      font-size: 11px;
+      color: rgba(110,150,210,0.65);
       flex-shrink: 0;
-      min-width: 16px;
+      min-width: 18px;
       text-align: right;
+      padding-top: 1px;
     }
     .rleg-name {
       flex: 1;
-      min-width: 0;
-      font-size: 10px;
-      color: rgba(190,215,255,0.95);
+      font-size: 13px;
+      color: rgba(185,215,255,0.92);
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      white-space: normal;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
     .rleg-alert-badge {
       font-family: 'Orbitron', monospace;
@@ -233,31 +243,108 @@
       border-radius: 999px;
       flex-shrink: 0;
       text-transform: uppercase;
+      align-self: center;
     }
     .rleg-alert-badge.level-watch    { color: rgba(255,224,112,0.96); border: 1px solid rgba(224,196,88,0.55); background: rgba(74,60,16,0.62); }
     .rleg-alert-badge.level-alert    { color: rgba(255,186,136,0.98); border: 1px solid rgba(255,143,92,0.65); background: rgba(88,40,24,0.68); }
     .rleg-alert-badge.level-strong   { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.72); background: rgba(98,22,28,0.72); }
     .rleg-alert-badge.level-emerging { color: rgba(160,210,255,0.96); border: 1px solid rgba(112,186,245,0.55); background: rgba(18,56,92,0.62); }
     .rleg-val {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(140,180,255,0.78);
+      flex-shrink: 0;
+      min-width: 38px;
+      text-align: right;
+      padding-top: 1px;
+    }
+    .rleg-delta {
+      font-size: 11px;
       flex-shrink: 0;
       min-width: 32px;
       text-align: right;
+      letter-spacing: 0.3px;
+      padding-top: 1px;
     }
-    .rleg-delta {
-      font-size: 9px;
-      letter-spacing: 0.4px;
-      flex-shrink: 0;
-      min-width: 28px;
-      text-align: right;
-    }
-    .rleg-delta.up   { color: rgba(80,220,140,0.88); }
-    .rleg-delta.down { color: rgba(255,100,100,0.82); }
-    .rleg-delta.flat { color: rgba(110,150,200,0.55); }
+    .rleg-delta.up   { color: rgba(80,220,140,0.85); }
+    .rleg-delta.down { color: rgba(255,100,100,0.80); }
+    .rleg-delta.flat { color: rgba(110,150,200,0.50); }
     .rleg-delta.new-entry { color: rgba(255, 220, 60, 0.92); }
     .rleg-delta.ret-entry { color: rgba(120, 200, 255, 0.88); }
+    .rleg-check {
+      font-size: 11px;
+      color: rgba(120,200,255,0.85);
+      flex-shrink: 0;
+      width: 12px;
+      text-align: center;
+      padding-top: 1px;
+    }
+
+    /* ── Search dropdown (calque evolution.html) ── */
+    #search-wrap { display: flex; flex-direction: column; gap: 4px; pointer-events: all; width: 100%; }
+    #search-results {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      max-height: 140px;
+      overflow-y: auto;
+      margin-top: 1px;
+    }
+    .evo-result {
+      padding: 5px 8px;
+      border-radius: 3px;
+      background: rgba(8,18,48,0.62);
+      border: 1px solid rgba(90,130,250,0.2);
+      color: rgba(170,200,255,0.9);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .evo-result:hover {
+      border-color: rgba(145,182,255,0.7);
+      color: #e0f0ff;
+      background: rgba(20,36,86,0.7);
+    }
+
+    /* ── Liste des objets comparés (max 2) ── */
+    #compare-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .compare-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      background: rgba(18,42,80,0.65);
+      border: 1px solid rgba(120,180,255,0.5);
+      font-size: 11px;
+      color: rgba(220,235,255,0.95);
+    }
+    .compare-item .compare-swatch {
+      width: 9px; height: 9px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .compare-item .compare-name {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .compare-item .compare-rm {
+      border: none; background: none; cursor: pointer;
+      color: rgba(190,90,90,0.75); font-size: 14px;
+      line-height: 1; padding: 0 2px; flex-shrink: 0;
+    }
+    .compare-item .compare-rm:hover { color: rgba(255,120,120,0.95); }
+    #compare-hint {
+      font-size: 9px;
+      letter-spacing: 0.4px;
+      color: rgba(120,160,210,0.55);
+      margin-top: 4px;
+    }
     .top10-item {
       width: 100%;
       border: 1px solid rgba(90, 130, 250, 0.18);
@@ -412,10 +499,12 @@
       </div>
     </div>
     <div class="lpanel-section">
-      <div class="lpanel-label">Recherche</div>
+      <div class="lpanel-label">Recherche &amp; comparaison</div>
       <div id="search-wrap">
-        <input type="text" id="search-input" placeholder="/ rechercher un objet…" autocomplete="off" spellcheck="false" />
-        <div id="search-status"></div>
+        <input type="text" id="search-input" placeholder="Rechercher un objet…" autocomplete="off" spellcheck="false" />
+        <div id="search-results"></div>
+        <div id="compare-list"></div>
+        <div id="compare-hint">Sélectionne jusqu'à 2 objets pour les comparer côte à côte.</div>
       </div>
     </div>
     <div class="lpanel-section" id="top10-section">
@@ -631,7 +720,12 @@
   setIfFn('cooldownTicks', 180);
   setIfFn('onEngineStop', () => fitGraphToView(900));
   // Nœuds par défaut (cercles) — couleur + taille via API standard
-  setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
+  setIfFn('nodeColor', n => {
+    // Couleur distincte pour les objets comparés (cyan ou rose)
+    const c = compareColor(n.id);
+    if (c) return c;
+    return nodeColorStr(n.size, n._highlighted);
+  });
   setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
   setIfFn('nodeRelSize', 3);
   setIfFn('nodeLabel', () => '');
@@ -1088,6 +1182,8 @@
     gd.links.forEach(l => { l._highlighted = true; });
     focusedNode = null;
     Graph.graphData(gd);
+    // Si on a des objets comparés, ré-applique le highlight.
+    if (comparedNodes.size) applyComparisonHighlight();
     // Le cadrage final se fait dans onEngineStop, après stabilisation.
 
     document.getElementById('period-label').innerHTML =
@@ -1104,8 +1200,28 @@
     renderArticlesPanel(null);
   }
 
-  // Hot 10 — format calqué sur evolution.html (.rleg-item) avec dot
-  // d'alerte, badge niveau, valeur de saillance, delta vs slot précédent.
+  // Récupère les états d'alerte de la PÉRIODE COURANTE (dernier bloc 4h
+  // du slot affiché). Pour le Hot 10, on signale ce qui est en alerte
+  // EN CE MOMENT, pas le pire niveau jamais atteint dans le slot — bien
+  // plus parlant et cohérent avec evolution.html.
+  function currentPeriodAlertMap(country, slot) {
+    const map = new Map();
+    if (!slot || !slot.periodKeys.length) return map;
+    const lastKey = slot.periodKeys[slot.periodKeys.length - 1];
+    const g = graphs[country]?.[lastKey];
+    if (!g) return map;
+    for (const n of (g.nodes || [])) {
+      const lvl = n.alert_level;
+      if (n.alert_active && lvl && lvl !== 'normal' && lvl !== 'none') {
+        map.set(n.id, lvl);
+      }
+    }
+    return map;
+  }
+
+  // Hot 10 — format calqué sur evolution.html (.rleg-item) avec swatch
+  // coloré (selon alerte courante), valeur de saillance, delta vs slot
+  // précédent.
   const ALERT_BADGE_LABELS = { strong: 'Fort', alert: 'Alerte', watch: 'Veille', emerging: 'Émerg.' };
   function renderHot10(gd, country) {
     const list = document.getElementById('top10-list');
@@ -1118,18 +1234,21 @@
       return;
     }
 
-    // Rangs du slot précédent pour calculer les deltas
+    const alertMap = currentPeriodAlertMap(country, slots[currentSlotIdx]);
     const prevNodes = prevSlotNodes(country);
     const prevRanks = new Map();
     if (prevNodes) prevNodes.slice(0, 10).forEach((n, i) => prevRanks.set(n.id, i + 1));
 
     list.innerHTML = '';
     top.forEach((n, i) => {
-      const lvl = n.alert_level;
-      const showBadge = n.alert_active && lvl && lvl !== 'normal' && lvl !== 'none';
+      const lvl = alertMap.get(n.id);
+      const isCompared = comparedNodes.has(n.id);
+      const isFocused  = focusedNode === n.id;
 
       const item = document.createElement('div');
-      item.className = 'rleg-item' + (showBadge ? ' alert-' + lvl : '');
+      item.className = 'rleg-item'
+        + (isFocused ? ' focused' : '')
+        + (isCompared ? ' tracked' : '');
       item.dataset.nodeId = n.id;
 
       let deltaTxt = '', deltaClass = 'flat';
@@ -1143,20 +1262,24 @@
         else            { deltaTxt = '='; deltaClass = 'flat'; }
       }
 
-      const badgeHtml = showBadge
+      const swatchClass = lvl ? `rleg-swatch level-${lvl}` : 'rleg-swatch';
+      const badgeHtml = lvl
         ? `<span class="rleg-alert-badge level-${escapeHtml(lvl)}">${escapeHtml(ALERT_BADGE_LABELS[lvl] || lvl)}</span>`
         : '';
+      const checkHtml = isCompared ? '<span class="rleg-check">✓</span>' : '';
 
       item.innerHTML =
+        `<div class="${swatchClass}"></div>` +
         `<span class="rleg-rank">${i + 1}.</span>` +
         `<span class="rleg-name" title="${escapeHtml(n.id)}">${escapeHtml(n.id)}</span>` +
         badgeHtml +
+        checkHtml +
         `<span class="rleg-val">${(Number(n.size) || 0).toFixed(1)}</span>` +
         `<span class="rleg-delta ${deltaClass}">${deltaTxt}</span>`;
 
       item.addEventListener('click', (e) => {
         e.stopPropagation();
-        focusNodeById(n.id);
+        toggleCompared(n.id);
       });
       list.appendChild(item);
     });
@@ -1272,58 +1395,139 @@
     btn.classList.toggle('active', btn.dataset.gran === rankedGranularity);
   });
   // ── Recherche ─────────────────────────────────────────────────────────────
-  const searchInput  = document.getElementById('search-input');
-  const searchStatus = document.getElementById('search-status');
+  const searchInput = document.getElementById('search-input');
 
-  function handleSearch(raw) {
-    const q = raw.trim().toLowerCase();
-    searchStatus.textContent = '';
-    searchStatus.className   = '';
-    if (!q) { clearFocusAndRecenter(); return; }
+  // ── Comparaison max 2 objets ──────────────────────────────────────────────
+  // Sélection persistante (entre slots) qui met en évidence 1 ou 2 objets
+  // dans le graphe et leurs voisins, dim le reste. Couleurs distinctes
+  // (cyan/rose) pour distinguer les 2 quand on en a 2.
+  const COMPARE_COLORS = ['rgba(120,200,255,0.95)', 'rgba(255,120,200,0.95)'];
+  const comparedNodes = new Map(); // nodeId → color slot index (0 ou 1)
 
-    // 1) Match dans le slot courant déjà rendu
-    const gd = Graph.graphData();
-    const matchNow = (gd.nodes || []).find(n => n.id.toLowerCase().includes(q));
-    if (matchNow) {
-      focusNodeById(matchNow.id);
-      searchStatus.textContent = matchNow.id;
-      searchStatus.className   = 'found';
-      return;
-    }
-
-    // 2) Cherche dans tous les slots, du plus récent au plus ancien
-    let foundSlotIdx = -1, foundId = null;
-    for (let i = slots.length - 1; i >= 0; i--) {
-      const slot = slots[i];
-      // On scanne les périodes 4h du slot pour ne pas avoir à tout agréger
-      let m = null;
-      for (const pk of slot.periodKeys) {
-        const g = graphs[currentCountry]?.[pk];
-        if (!g) continue;
-        m = (g.nodes || []).find(n => n.id.toLowerCase().includes(q));
-        if (m) break;
-      }
-      if (m) { foundSlotIdx = i; foundId = m.id; break; }
-    }
-
-    if (foundSlotIdx !== -1) {
-      currentSlotIdx = foundSlotIdx;
-      slider.value = currentSlotIdx;
-      loadSlot(currentCountry, currentSlotIdx);
-      focusNodeById(foundId);
-      searchStatus.textContent = '↳ ' + slots[foundSlotIdx].label;
-      searchStatus.className   = 'jumped';
-    } else {
-      clearFocusAndRecenter();
-      searchStatus.textContent = '— non trouvé';
-      searchStatus.className   = 'notfound';
-    }
+  function compareColor(nodeId) {
+    const idx = comparedNodes.get(nodeId);
+    return idx == null ? null : COMPARE_COLORS[idx];
   }
 
-  searchInput.addEventListener('input', () => handleSearch(searchInput.value));
+  function toggleCompared(nodeId) {
+    if (!nodeId) return;
+    if (comparedNodes.has(nodeId)) {
+      comparedNodes.delete(nodeId);
+    } else {
+      if (comparedNodes.size >= 2) {
+        // Remplace le plus ancien (Map garde l'ordre d'insertion)
+        const firstKey = comparedNodes.keys().next().value;
+        comparedNodes.delete(firstKey);
+      }
+      // Trouve un slot couleur disponible
+      const used = new Set(comparedNodes.values());
+      const slot = used.has(0) ? 1 : 0;
+      comparedNodes.set(nodeId, slot);
+    }
+    applyComparisonHighlight();
+    renderCompareList();
+    // Rerender Hot 10 pour mettre à jour les checkmarks
+    renderHot10(Graph.graphData(), currentCountry);
+  }
+
+  function clearCompared() {
+    comparedNodes.clear();
+    applyComparisonHighlight();
+    renderCompareList();
+    renderHot10(Graph.graphData(), currentCountry);
+  }
+
+  // Met en évidence les nœuds comparés et leurs voisins directs;
+  // dim le reste. Si aucun comparé et pas de focus, tout est highlighté.
+  function applyComparisonHighlight() {
+    const gd = Graph.graphData();
+    if (!comparedNodes.size && !focusedNode) {
+      (gd.nodes || []).forEach(n => { n._highlighted = true; });
+      (gd.links || []).forEach(l => { l._highlighted = true; });
+      return;
+    }
+    const keep = new Set(comparedNodes.keys());
+    if (focusedNode) keep.add(focusedNode);
+    // Ajoute les voisins directs
+    (gd.links || []).forEach(l => {
+      const s = l.source?.id ?? l.source;
+      const t = l.target?.id ?? l.target;
+      if (keep.has(s)) keep.add(t);
+      if (keep.has(t)) keep.add(s);
+    });
+    (gd.nodes || []).forEach(n => { n._highlighted = keep.has(n.id); });
+    (gd.links || []).forEach(l => {
+      const s = l.source?.id ?? l.source;
+      const t = l.target?.id ?? l.target;
+      l._highlighted = (keep.has(s) && keep.has(t)) && (
+        comparedNodes.has(s) || comparedNodes.has(t) ||
+        focusedNode === s   || focusedNode === t
+      );
+    });
+  }
+
+  function renderCompareList() {
+    const list = document.getElementById('compare-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const items = [...comparedNodes.entries()];
+    items.forEach(([id, colorIdx]) => {
+      const div = document.createElement('div');
+      div.className = 'compare-item';
+      div.innerHTML =
+        `<span class="compare-swatch" style="background:${COMPARE_COLORS[colorIdx]};box-shadow:0 0 6px ${COMPARE_COLORS[colorIdx]}aa;"></span>` +
+        `<span class="compare-name">${escapeHtml(id)}</span>` +
+        `<button class="compare-rm" type="button" aria-label="Retirer">×</button>`;
+      div.querySelector('.compare-rm').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleCompared(id);
+      });
+      list.appendChild(div);
+    });
+  }
+
+  // ── Search avec dropdown de suggestions (calque evolution.html) ──────────
+  // Les suggestions sont calculées sur l'union de tous les nœuds du slot
+  // courant. Click sur une suggestion → ajoute à la comparaison (max 2).
+  function getSearchableIds() {
+    const gd = Graph.graphData();
+    const ids = new Set((gd.nodes || []).map(n => n.id));
+    return [...ids].sort();
+  }
+
+  function renderSearchResults(q) {
+    const resultsEl = document.getElementById('search-results');
+    if (!resultsEl) return;
+    resultsEl.innerHTML = '';
+    if (!q.trim()) return;
+    const ql = q.toLowerCase();
+    const matches = getSearchableIds()
+      .filter(id => id.toLowerCase().includes(ql))
+      .filter(id => !comparedNodes.has(id))
+      .slice(0, 8);
+    matches.forEach(id => {
+      const div = document.createElement('div');
+      div.className = 'evo-result';
+      div.textContent = id;
+      div.addEventListener('click', () => {
+        const input = document.getElementById('search-input');
+        if (input) input.value = '';
+        renderSearchResults('');
+        toggleCompared(id);
+      });
+      resultsEl.appendChild(div);
+    });
+  }
+
+  searchInput.addEventListener('input', () => renderSearchResults(searchInput.value));
   searchInput.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { searchInput.value = ''; handleSearch(''); searchInput.blur(); }
+    if (e.key === 'Escape') { searchInput.value = ''; renderSearchResults(''); searchInput.blur(); }
     e.stopPropagation();
+  });
+  // Cache les résultats quand on perd le focus (avec léger délai pour
+  // permettre le clic sur une suggestion).
+  searchInput.addEventListener('blur', () => {
+    setTimeout(() => renderSearchResults(''), 180);
   });
 
   document.addEventListener('keydown', e => {
@@ -1332,7 +1536,7 @@
     if      (e.key==='ArrowRight'){ currentSlotIdx = Math.min(currentSlotIdx + 1, slots.length - 1); slider.value = currentSlotIdx; loadSlot(currentCountry, currentSlotIdx); }
     else if (e.key==='ArrowLeft') { currentSlotIdx = Math.max(currentSlotIdx - 1, 0);                slider.value = currentSlotIdx; loadSlot(currentCountry, currentSlotIdx); }
     else if (e.key===' ')         { e.preventDefault(); togglePlay(); }
-    else if (e.key==='Escape')    { if(searchInput.value){ searchInput.value=''; handleSearch(''); } }
+    else if (e.key==='Escape')    { if (comparedNodes.size) clearCompared(); else if (searchInput.value) { searchInput.value=''; renderSearchResults(''); } }
   });
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1367,7 +1571,13 @@
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
   const urlNode = urlParams.get('node');
-  if (urlNode) setTimeout(() => handleSearch(urlNode), 350);
+  if (urlNode) setTimeout(() => {
+    // Trouve le 1er match dans le slot courant et l'ajoute en compare
+    const ql = String(urlNode).toLowerCase().trim();
+    const gd = Graph.graphData();
+    const m = (gd.nodes || []).find(n => n.id.toLowerCase().includes(ql));
+    if (m) toggleCompared(m.id);
+  }, 350);
 
   } catch(e) {
     document.getElementById('loading-text').textContent = 'ERREUR: ' + e.message;
