@@ -259,6 +259,64 @@
     "copyright": "© CLESSN · Université Laval · Transparence médiatique 24/7"
   },
 
+  "modules": {
+    "title": "Outils d’analyse",
+    "explore": "Explorer →",
+    "view_evolution": "Voir l’évolution →",
+    "analyze": "Analyser →",
+    "constellation": {
+      "name": "Constellation",
+      "desc": "Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques."
+    },
+    "evolution": {
+      "name": "Évolution",
+      "desc": "Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n’importe quel sujet sur l’ensemble de l’historique."
+    },
+    "statistiques": {
+      "name": "Statistiques",
+      "desc": "Analyse détaillée par objet : pics de saillance, distribution médiatique, historique complet et articles associés."
+    }
+  },
+
+  "homepage": {
+    "loading_hot20": "Chargement…",
+    "loading_articles": "Chargement des articles…",
+    "no_articles_period": "Aucun article disponible pour cette période.",
+    "no_articles": "Aucun article disponible.",
+    "previous_period_btn_title": "Période précédente",
+    "next_period_btn_title": "Période suivante",
+    "next_update_label": "Prochaine mise à jour",
+    "trend_new_label": "Nouveau",
+    "trend_return_label": "Retour",
+    "streak_suffix_one": "{n} {gran} de suite",
+    "streak_suffix_many": "{n} {grans} de suite",
+    "no_data_for": "Aucune donnée pour {label}",
+    "no_data_4h": "Aucune donnée pour ce bloc horaire (4 h)",
+    "wl_until_24h": "Affichage 24 h",
+    "wl_label_day": "Jour",
+    "wl_label_week": "Semaine",
+    "wl_label_month": "Mois",
+    "wl_label_quarter": "Année"
+  },
+
+  "gran_singular": {
+    "4h": "bloc horaire (4 h)",
+    "day": "journée",
+    "week": "semaine",
+    "month": "mois",
+    "quarter": "année",
+    "total": "période totale"
+  },
+
+  "gran_plural": {
+    "4h": "blocs horaires",
+    "day": "jours",
+    "week": "semaines",
+    "month": "mois",
+    "quarter": "années",
+    "total": "période totale"
+  },
+
   "ranked_granularity": {
     "day_label": "Journée",
     "week_label": "Semaine",

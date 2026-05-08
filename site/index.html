@@ -974,9 +974,9 @@
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
     </div>
   </div>
-  <button type="button" class="scroll-hint" id="scroll-to-hot20" aria-label="Aller au HOT 20">
+  <button type="button" class="scroll-hint" id="scroll-to-hot20" data-i18n-aria-label="hero.scroll_aria" aria-label="Aller au HOT 20">
     <div class="arrow" aria-hidden="true"></div>
-    <span>Explorer</span>
+    <span data-i18n="hero.explore">Explorer</span>
   </button>
 </section>
 
@@ -1002,89 +1002,89 @@
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
     <div class="hot20-title-row">
-      <h2 class="hot20-title">HOT <span class="accent">20</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
-      <a class="hot20-evolution-cta" id="hot20-evolution-cta" href="./evolution.html" aria-label="Voir l'évolution dans le temps">
-        <span>Voir l&rsquo;évolution dans le temps</span>
+      <h2 class="hot20-title"><span data-i18n="hot20.title">HOT</span> <span class="accent" data-i18n="hot20.title_number">20</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
+      <a class="hot20-evolution-cta" id="hot20-evolution-cta" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta" aria-label="Voir l'évolution dans le temps">
+        <span data-i18n="alertes.evo_cta">Voir l&rsquo;évolution dans le temps</span>
         <span class="cta-arrow" aria-hidden="true">↗</span>
       </a>
     </div>
     <div class="hot20-controls">
       <div class="controls-left">
         <div class="country-tabs" id="country-tabs">
-          <button class="country-tab active" data-country="QC">Québec</button>
-          <button class="country-tab" data-country="CAN">Canada</button>
-          <button class="country-tab" data-country="USA">États-Unis</button>
+          <button class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
+          <button class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
+          <button class="country-tab" data-country="USA" data-i18n="country.USA">États-Unis</button>
         </div>
         <div class="granularity-tabs" id="granularity-tabs">
-          <button class="granularity-tab" data-gran="4h">4 h</button>
-          <button class="granularity-tab active" data-gran="day">Jour</button>
-          <button class="granularity-tab" data-gran="week">Semaine</button>
-          <button class="granularity-tab" data-gran="month">Mois</button>
-          <button class="granularity-tab" data-gran="quarter">Année</button>
-          <button class="granularity-tab" data-gran="total">Total</button>
+          <button class="granularity-tab" data-gran="4h" data-i18n="period.4h">4 h</button>
+          <button class="granularity-tab active" data-gran="day" data-i18n="period.day">Jour</button>
+          <button class="granularity-tab" data-gran="week" data-i18n="period.week">Semaine</button>
+          <button class="granularity-tab" data-gran="month" data-i18n="period.month">Mois</button>
+          <button class="granularity-tab" data-gran="quarter" data-i18n="period.quarter">Année</button>
+          <button class="granularity-tab" data-gran="total" data-i18n="period.total">Total</button>
         </div>
       </div>
       <div class="week-nav">
-        <button class="week-btn" id="week-prev" title="Semaine précédente">&#8249;</button>
+        <button class="week-btn" id="week-prev" data-i18n-title="homepage.previous_period_btn_title" title="Semaine précédente">&#8249;</button>
         <div class="week-label" id="week-label">
           <span class="week-label-date" id="wl-date">&mdash;</span>
           <span class="week-label-interval" id="wl-interval"></span>
-          <span class="week-label-countdown">Prochaine mise &agrave; jour&nbsp;: <span class="cdval" id="wl-countdown">&mdash;</span></span>
+          <span class="week-label-countdown"><span data-i18n="homepage.next_update_label">Prochaine mise à jour</span>&nbsp;: <span class="cdval" id="wl-countdown">&mdash;</span></span>
         </div>
-        <button class="week-btn" id="week-next" title="Semaine suivante">&#8250;</button>
+        <button class="week-btn" id="week-next" data-i18n-title="homepage.next_period_btn_title" title="Semaine suivante">&#8250;</button>
       </div>
     </div>
   </div>
   <div class="hot20-search">
     <span class="hot20-search-icon">&#128269;</span>
-    <input type="text" id="hot20-search-input" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
+    <input type="text" id="hot20-search-input" data-i18n-placeholder="common.search_radar_placeholder" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
   </div>
   <div class="hot20-search-result" id="search-result"></div>
   <div class="hot20-list" id="hot20-grid">
-    <div class="hot20-empty">Chargement&hellip;</div>
+    <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
   </div>
 </section>
 
 <!-- ========== MODULES ========== -->
 <section class="modules-section" id="modules">
-  <h2 class="modules-title">Outils d&rsquo;analyse</h2>
+  <h2 class="modules-title" data-i18n="modules.title">Outils d&rsquo;analyse</h2>
   <div class="modules-grid">
     <a class="module-card" href="./constellation.html">
       <div class="module-card-icon">&#9678;</div>
-      <div class="module-card-name">Constellation</div>
-      <div class="module-card-desc">Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques.</div>
-      <div class="module-card-cta">Explorer &rarr;</div>
+      <div class="module-card-name" data-i18n="modules.constellation.name">Constellation</div>
+      <div class="module-card-desc" data-i18n="modules.constellation.desc">Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques.</div>
+      <div class="module-card-cta" data-i18n="modules.explore">Explorer &rarr;</div>
     </a>
     <a class="module-card module-card-featured" href="./evolution.html">
       <div class="module-card-icon">&#9672;</div>
-      <div class="module-card-name">Évolution</div>
-      <div class="module-card-desc">Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n&rsquo;importe quel sujet sur l&rsquo;ensemble de l&rsquo;historique.</div>
-      <div class="module-card-cta">Voir l&rsquo;évolution &rarr;</div>
+      <div class="module-card-name" data-i18n="modules.evolution.name">Évolution</div>
+      <div class="module-card-desc" data-i18n="modules.evolution.desc">Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n&rsquo;importe quel sujet sur l&rsquo;ensemble de l&rsquo;historique.</div>
+      <div class="module-card-cta" data-i18n="modules.view_evolution">Voir l&rsquo;évolution &rarr;</div>
     </a>
     <a class="module-card" href="./statistiques.html">
       <div class="module-card-icon">&#9638;</div>
-      <div class="module-card-name">Statistiques</div>
-      <div class="module-card-desc">Analyse détaillée par objet&nbsp;: pics de saillance, distribution médiatique, historique complet et articles associés.</div>
-      <div class="module-card-cta">Analyser &rarr;</div>
+      <div class="module-card-name" data-i18n="modules.statistiques.name">Statistiques</div>
+      <div class="module-card-desc" data-i18n="modules.statistiques.desc">Analyse détaillée par objet&nbsp;: pics de saillance, distribution médiatique, historique complet et articles associés.</div>
+      <div class="module-card-cta" data-i18n="modules.analyze">Analyser &rarr;</div>
     </a>
   </div>
 </section>
 
 <!-- ========== TICKER ========== -->
 <section class="ticker-section" id="ticker-section">
-  <a class="ticker-label ticker-label-link" href="./unes.html" aria-label="Voir toutes les dernières Unes">
-    <span class="ticker-label-title">Dans le radar ↗</span>
+  <a class="ticker-label ticker-label-link" href="./unes.html" data-i18n-aria-label="ticker.view_aria" aria-label="Voir toutes les dernières Unes">
+    <span class="ticker-label-title" data-i18n="ticker.label_arrow">Dans le radar ↗</span>
     <span class="ticker-updated" id="ticker-updated">Les Unes de --:--</span>
     <span class="ticker-radar" aria-hidden="true"></span>
   </a>
   <div class="ticker-viewport">
     <div class="ticker-track" id="ticker-track">
-      <span class="ticker-empty">Chargement des manchettes&hellip;</span>
+      <span class="ticker-empty" data-i18n="ticker.empty">Chargement des manchettes&hellip;</span>
     </div>
   </div>
 </section>
 
-<footer>&copy; CLESSN &bull; Université Laval &bull; Transparence médiatique 24/7</footer>
+<footer data-i18n="footer.copyright">&copy; CLESSN &bull; Université Laval &bull; Transparence médiatique 24/7</footer>
 
 <!-- Article panel overlay -->
 <div class="article-overlay" id="article-overlay"></div>
@@ -1681,8 +1681,7 @@ function renderHot20() {
   var subtitleEl = document.getElementById('hot20-subtitle');
 
   // Update subtitle
-  var subtitleMap = { '4h': 'Édition (4h)', day: 'Aujourd\'hui', week: 'Cette semaine', month: 'Ce mois-ci', quarter: 'Cette année', total: 'Depuis le début' };
-  subtitleEl.textContent = subtitleMap[currentGranularity] || '';
+  subtitleEl.textContent = (window.t ? window.t('subtitle.' + currentGranularity) : '') || '';
 
   if (!aggregatedSlots.length) {
     grid.innerHTML = '<div class="hot20-empty">Données non disponibles</div>';
@@ -1812,11 +1811,10 @@ function renderHot20() {
     });
   } catch (_) { /* noop */ }
 
-  /* Granularity-specific labels for tooltips */
-  var granLabel = { '4h': 'bloc horaire (4 h)', day: 'journée', week: 'semaine', month: 'mois', quarter: 'année', total: 'période totale' };
-  var granLabelPlural = { '4h': 'blocs horaires', day: 'jours', week: 'semaines', month: 'mois', quarter: 'années', total: 'période totale' };
-  var gl = granLabel[currentGranularity] || 'période';
-  var glp = granLabelPlural[currentGranularity] || 'périodes';
+  /* Granularity-specific labels for tooltips (i18n) */
+  var T = window.t || function(k){ return k; };
+  var gl  = T('gran_singular.' + currentGranularity);
+  var glp = T('gran_plural.'   + currentGranularity);
 
   /* FLIP — capture old row positions before re-render */
   var oldPos = {};
@@ -1827,11 +1825,11 @@ function renderHot20() {
 
   grid.innerHTML =
     '<div class="hot20-list-header">' +
-      '<span>Rang</span>' +
-      '<span>Mouvement</span>' +
-      '<span style="padding-left:12px;">Sujet</span>' +
-      '<span style="padding-left:12px;">Score · Augmentation</span>' +
-      '<span>Articles</span>' +
+      '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
+      '<span>' + escapeHtml(T('hot20.header_movement')) + '</span>' +
+      '<span style="padding-left:12px;">' + escapeHtml(T('hot20.header_subject')) + '</span>' +
+      '<span style="padding-left:12px;">' + escapeHtml(T('hot20.header_score_increase')) + '</span>' +
+      '<span>' + escapeHtml(T('hot20.header_articles')) + '</span>' +
     '</div>' +
     nodes.map(function(node, i) {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
@@ -1864,35 +1862,37 @@ function renderHot20() {
         mediaIds = node.media_ids;
       }
       var articlesTip = articleCount
-        ? articleCount + ' article' + (articleCount > 1 ? 's' : '') + ' associ' + (articleCount > 1 ? 'és' : 'é') +
-          (mediaIds.length ? ' • médias: ' + escapeHtml(mediaIds.join(', ')) : '')
-        : (articlesData ? 'Aucun article associé dans ce jeu de données.' : 'Chargement…');
+        ? T('hot20.articles_tip', { count: articleCount }) +
+          (mediaIds.length ? ' • ' + escapeHtml(T('hot20.media_tip', { list: mediaIds.join(', ') })) : '')
+        : (articlesData ? T('common.no_articles_dataset') : T('common.loading'));
 
-      /* Trend badge */
+      /* Trend badge (i18n) */
       var trendHtml = '';
       if (currentSlotIdx > 0) {
         var prevRank = prevRanks[node.id];
         if (!prevRank && comebacks[node.id]) {
-          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="Retour dans le Top 20 apr&egrave;s au moins 2 ' + glp + ' d\'absence.">&#128260; Retour</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('hot20.trend_return_tip', { gran: gl, grans: glp })) + '">&#128260; ' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
         } else if (!prevRank) {
-          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="Nouvelle entr&eacute;e dans le Top 20 pour cette ' + gl + '.">&#128293; Nouveau</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('hot20.trend_new_tip', { gran: gl, grans: glp })) + '">&#128293; ' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
         } else {
           var diff = prevRank - (i + 1);
           if (diff > 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="Gagne ' + diff + ' rang' + (diff > 1 ? 's' : '') + ' par rapport &agrave; la ' + gl + ' pr&eacute;c&eacute;dente (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9650;' + diff + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('hot20.trend_up_tip', { n: diff, gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9650;' + diff + '</span>';
           } else if (diff < 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="Perd ' + Math.abs(diff) + ' rang' + (Math.abs(diff) > 1 ? 's' : '') + ' par rapport &agrave; la ' + gl + ' pr&eacute;c&eacute;dente (de ' + prevRank + ' &agrave; ' + (i + 1) + ').">&#9660;' + Math.abs(diff) + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('hot20.trend_down_tip', { n: Math.abs(diff), gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9660;' + Math.abs(diff) + '</span>';
           } else {
-            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="Position inchang&eacute;e: rang ' + (i + 1) + ' comme &agrave; la ' + gl + ' pr&eacute;c&eacute;dente.">&mdash;</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_stable_tip', { gran: gl, grans: glp, now: i + 1 })) + '">&mdash;</span>';
           }
         }
       }
 
-      /* Streak */
+      /* Streak (i18n) */
       var streak = streaks[node.id] || 0;
-      var streakHtml = streak > 1
-        ? '<div class="hot20-row-streak hot20-hint" data-tip="Pr&eacute;sent dans le Top 20 depuis ' + streak + ' ' + glp + ' cons&eacute;cutifs.">&#128204; ' + streak + ' ' + glp + ' de suite</div>'
-        : '';
+      var streakHtml = '';
+      if (streak > 1) {
+        var streakKey = streak > 1 ? 'homepage.streak_suffix_many' : 'homepage.streak_suffix_one';
+        streakHtml = '<div class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">&#128204; ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</div>';
+      }
 
       /* Rank class */
       var rankClass = i < 3 ? ' rank-' + (i + 1) : '';
@@ -1901,7 +1901,7 @@ function renderHot20() {
       var alertLvl = currentAlertByName[node.id] || null;
       var alertClass = alertLvl ? ' alert-' + alertLvl : '';
       var alertBadgeHtml = alertLvl
-        ? '<span class="hot20-alert-badge level-' + alertLvl + '" data-tip="Alerte de saillance en cours sur cet objet.">' + escapeHtml(ALERT_BADGE_LABELS[alertLvl] || alertLvl) + '</span>'
+        ? '<span class="hot20-alert-badge level-' + alertLvl + '" data-tip="' + escapeHtml(T('object_panel.alert_in_progress_tip')) + '">' + escapeHtml(T('alertes.level_short.' + alertLvl) || alertLvl) + '</span>'
         : '';
 
       // Score cumulé depuis le début (toutes périodes 4h confondues) +
@@ -1911,15 +1911,9 @@ function renderHot20() {
       var slotIncrease = Number(node.size) || 0;
       var totalStr = totalAllTime !== null ? totalAllTime.toFixed(1) : '—';
       var increaseStr = '+' + slotIncrease.toFixed(1);
-      var increaseTipMap = {
-        '4h':     'Saillance gagnée pendant ce bloc 4h',
-        day:      'Saillance gagnée depuis le début de la journée',
-        week:     'Saillance gagnée depuis le début de la semaine',
-        month:    'Saillance gagnée depuis le début du mois',
-        quarter:  'Saillance gagnée depuis le début de l\'année',
-        total:    'Saillance cumulée totale (égale au score)'
-      };
-      var increaseTip = increaseTipMap[currentGranularity] || 'Saillance gagnée pendant ce créneau';
+      var increaseTip = T('increase_tip.' + currentGranularity);
+      var ptsLabel = T('hot20.points_label');
+      var articleLabel = articleCount > 1 ? T('common.articles') : T('common.article');
 
       return '<div class="hot20-row' + rankClass + alertClass + '" data-node-idx="' + i + '" data-node-id="' + escapeHtml(node.id) + '">' +
         '<div class="hot20-row-rank">' + (i + 1) + '</div>' +
@@ -1933,12 +1927,12 @@ function renderHot20() {
         '</div>' +
         '<div class="hot20-row-score">' +
           '<div class="hot20-row-pct">' +
-            '<span class="hot20-row-total hot20-hint" data-tip="Saillance cumulée depuis le début de la collecte (toutes périodes confondues)."><strong>' + totalStr + '</strong> pts</span>' +
+            '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '"><strong>' + totalStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>' +
             (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
         '</div>' +
-        '<div class="hot20-row-media hot20-hint" data-tip="' + articlesTip + '">' + articleCount + ' article' + (articleCount > 1 ? 's' : '') + '</div>' +
+        '<div class="hot20-row-media hot20-hint" data-tip="' + escapeHtml(articlesTip) + '">' + articleCount + ' ' + escapeHtml(articleLabel) + '</div>' +
       '</div>';
     }).join('');
 
@@ -2058,6 +2052,13 @@ document.getElementById('country-tabs').addEventListener('click', function(e) {
   buildSlots();
   currentSlotIdx = aggregatedSlots.length - 1;
   renderHot20();
+});
+
+// Re-render le HOT 20 quand la langue change (textes dynamiques)
+document.addEventListener('i18n:applied', function () {
+  if (typeof renderHot20 === 'function' && (timeseriesData || graphData)) {
+    renderHot20();
+  }
 });
 
 /* Granularity tabs */

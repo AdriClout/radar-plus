@@ -259,6 +259,64 @@
     "copyright": "© CLESSN · Université Laval · 24/7 media transparency"
   },
 
+  "modules": {
+    "title": "Analysis tools",
+    "explore": "Explore →",
+    "view_evolution": "View evolution →",
+    "analyze": "Analyze →",
+    "constellation": {
+      "name": "Constellation",
+      "desc": "Co-occurrence map for a given period. Explore connections between media topics and discover thematic clusters."
+    },
+    "evolution": {
+      "name": "Evolution",
+      "desc": "Time-evolving ranking of salient objects. Track the trajectory of any topic across the full history."
+    },
+    "statistiques": {
+      "name": "Statistics",
+      "desc": "Detailed per-object analysis: saliency peaks, media distribution, full history and associated articles."
+    }
+  },
+
+  "homepage": {
+    "loading_hot20": "Loading…",
+    "loading_articles": "Loading articles…",
+    "no_articles_period": "No article available for this period.",
+    "no_articles": "No article available.",
+    "previous_period_btn_title": "Previous period",
+    "next_period_btn_title": "Next period",
+    "next_update_label": "Next update",
+    "trend_new_label": "New",
+    "trend_return_label": "Back",
+    "streak_suffix_one": "{n} consecutive {gran}",
+    "streak_suffix_many": "{n} consecutive {grans}",
+    "no_data_for": "No data for {label}",
+    "no_data_4h": "No data for this 4h block",
+    "wl_until_24h": "24 h view",
+    "wl_label_day": "Day",
+    "wl_label_week": "Week",
+    "wl_label_month": "Month",
+    "wl_label_quarter": "Year"
+  },
+
+  "gran_singular": {
+    "4h": "4h block",
+    "day": "day",
+    "week": "week",
+    "month": "month",
+    "quarter": "year",
+    "total": "full period"
+  },
+
+  "gran_plural": {
+    "4h": "4h blocks",
+    "day": "days",
+    "week": "weeks",
+    "month": "months",
+    "quarter": "years",
+    "total": "full period"
+  },
+
   "ranked_granularity": {
     "day_label": "Day",
     "week_label": "Week",
