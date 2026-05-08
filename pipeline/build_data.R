@@ -22,12 +22,17 @@ MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
 
 ALERT_LOOKBACK_PERIODS <- 180  # 30 jours glissants de périodes 4h
 ALERT_MIN_HISTORY      <- 18   # Historique minimal avant score robuste
-ALERT_MIN_MENTIONS     <- 2    # Évite les signaux trop faibles
+ALERT_MIN_MENTIONS_WATCH  <- 2 # Évite les signaux trop faibles
+ALERT_MIN_MENTIONS_ALERT  <- 3
+ALERT_MIN_MENTIONS_STRONG <- 4
 ALERT_MIN_ABS_SCORE    <- 0.08 # Plancher minimal de saillance courante
 ALERT_SCALE_FLOOR      <- 0.08 # Évite les explosions sur séries quasi constantes
 ALERT_THRESHOLD_WATCH  <- 1.8
 ALERT_THRESHOLD_ALERT  <- 2.6
 ALERT_THRESHOLD_STRONG <- 3.8
+ALERT_PEAK_RATIO_WATCH  <- 0.15
+ALERT_PEAK_RATIO_ALERT  <- 0.30
+ALERT_PEAK_RATIO_STRONG <- 0.55
 
 # Objets génériques exclus par pays (même logique que radar-hot-20)
 EXCLUSION_BY_COUNTRY <- list(
@@ -57,11 +62,13 @@ MONITOR_INPUT_FILE <- file.path(SITE_DIR, "monitor_input.json")
 
 # ─── Fonctions utilitaires (définies avant usage) ─────────────────────────────
 
-compute_alert_metrics <- function(scores, mentions) {
+compute_alert_metrics <- function(scores, mentions, dates_utc = NULL) {
   n_scores <- length(scores)
   alert_score <- rep(NA_real_, n_scores)
   alert_delta <- rep(NA_real_, n_scores)
   alert_baseline <- rep(NA_real_, n_scores)
+  alert_peak_ratio <- rep(NA_real_, n_scores)
+  alert_year_peak <- rep(NA_real_, n_scores)
   alert_level <- rep("none", n_scores)
   alert_active <- rep(FALSE, n_scores)
 
@@ -70,6 +77,8 @@ compute_alert_metrics <- function(scores, mentions) {
       alert_score = alert_score,
       alert_delta = alert_delta,
       alert_baseline = alert_baseline,
+      alert_peak_ratio = alert_peak_ratio,
+      alert_year_peak = alert_year_peak,
       alert_level = alert_level,
       alert_active = alert_active
     ))
@@ -77,11 +86,40 @@ compute_alert_metrics <- function(scores, mentions) {
 
   safe_scores <- pmax(as.numeric(scores), 0)
   safe_mentions <- pmax(as.integer(mentions), 0L)
+  safe_dates <- tryCatch(as.Date(dates_utc), error = function(e) rep(as.Date(NA), n_scores))
+  if (length(safe_dates) != n_scores) {
+    safe_dates <- rep(as.Date(NA), n_scores)
+  }
   log_scores <- log1p(safe_scores)
 
   for (i in seq_len(n_scores)) {
     current_score <- safe_scores[i]
     current_mentions <- safe_mentions[i]
+    current_date <- safe_dates[i]
+
+    if (is.na(current_date)) {
+      year_slice <- safe_scores[seq_len(i)]
+    } else {
+      same_year_idx <- which(
+        !is.na(safe_dates) &
+          format(safe_dates, "%Y") == format(current_date, "%Y") &
+          seq_len(n_scores) <= i
+      )
+      if (!length(same_year_idx)) {
+        year_slice <- safe_scores[seq_len(i)]
+      } else {
+        year_slice <- safe_scores[same_year_idx]
+      }
+    }
+
+    year_peak <- suppressWarnings(max(year_slice, na.rm = TRUE))
+    if (!is.finite(year_peak) || year_peak <= 0) {
+      year_peak <- current_score
+    }
+    peak_ratio <- if (is.finite(year_peak) && year_peak > 0) current_score / year_peak else NA_real_
+
+    alert_year_peak[i] <- year_peak
+    alert_peak_ratio[i] <- peak_ratio
 
     history_start <- max(1L, i - ALERT_LOOKBACK_PERIODS)
     history_end <- i - 1L
@@ -92,7 +130,7 @@ compute_alert_metrics <- function(scores, mentions) {
     history_values <- log_scores[history_start:history_end]
     history_values <- history_values[is.finite(history_values)]
     if (length(history_values) < ALERT_MIN_HISTORY) {
-      if (current_mentions >= ALERT_MIN_MENTIONS && current_score >= ALERT_MIN_ABS_SCORE) {
+      if (current_mentions >= ALERT_MIN_MENTIONS_WATCH && current_score >= ALERT_MIN_ABS_SCORE) {
         alert_level[i] <- "emerging"
       }
       next
@@ -112,17 +150,31 @@ compute_alert_metrics <- function(scores, mentions) {
     alert_delta[i] <- expm1(delta)
     alert_baseline[i] <- expm1(baseline)
 
-    if (current_mentions < ALERT_MIN_MENTIONS || current_score < ALERT_MIN_ABS_SCORE || !is.finite(score)) {
+    if (current_mentions < ALERT_MIN_MENTIONS_WATCH || current_score < ALERT_MIN_ABS_SCORE || !is.finite(score)) {
       next
     }
 
-    if (score >= ALERT_THRESHOLD_STRONG) {
+    if (
+      score >= ALERT_THRESHOLD_STRONG &&
+      current_mentions >= ALERT_MIN_MENTIONS_STRONG &&
+      is.finite(peak_ratio) &&
+      peak_ratio >= ALERT_PEAK_RATIO_STRONG
+    ) {
       alert_level[i] <- "strong"
       alert_active[i] <- TRUE
-    } else if (score >= ALERT_THRESHOLD_ALERT) {
+    } else if (
+      score >= ALERT_THRESHOLD_ALERT &&
+      current_mentions >= ALERT_MIN_MENTIONS_ALERT &&
+      is.finite(peak_ratio) &&
+      peak_ratio >= ALERT_PEAK_RATIO_ALERT
+    ) {
       alert_level[i] <- "alert"
       alert_active[i] <- TRUE
-    } else if (score >= ALERT_THRESHOLD_WATCH) {
+    } else if (
+      score >= ALERT_THRESHOLD_WATCH &&
+      current_mentions >= ALERT_MIN_MENTIONS_WATCH &&
+      (is.na(peak_ratio) || peak_ratio >= ALERT_PEAK_RATIO_WATCH)
+    ) {
       alert_level[i] <- "watch"
       alert_active[i] <- TRUE
     }
@@ -132,6 +184,8 @@ compute_alert_metrics <- function(scores, mentions) {
     alert_score = alert_score,
     alert_delta = alert_delta,
     alert_baseline = alert_baseline,
+    alert_peak_ratio = alert_peak_ratio,
+    alert_year_peak = alert_year_peak,
     alert_level = alert_level,
     alert_active = alert_active
   )
@@ -165,12 +219,14 @@ df_index <- df_index |>
   dplyr::arrange(country_id, extracted_objects, date_utc, time_interval_utc) |>
   dplyr::group_by(country_id, extracted_objects) |>
   dplyr::group_modify(function(.x, .y) {
-    metrics <- compute_alert_metrics(.x$absolute_normalized_index, .x$n)
+    metrics <- compute_alert_metrics(.x$absolute_normalized_index, .x$n, .x$date_utc)
     dplyr::mutate(
       .x,
       alert_score = metrics$alert_score,
       alert_delta = metrics$alert_delta,
       alert_baseline = metrics$alert_baseline,
+      alert_peak_ratio = metrics$alert_peak_ratio,
+      alert_year_peak = metrics$alert_year_peak,
       alert_level = metrics$alert_level,
       alert_active = metrics$alert_active
     )
@@ -364,6 +420,8 @@ graphs_graph <- purrr::map(countries, function(country) {
         alert_score = if (is.na(nodes_i$alert_score[j])) NULL else round(nodes_i$alert_score[j], 2),
         alert_delta = if (is.na(nodes_i$alert_delta[j])) NULL else round(nodes_i$alert_delta[j], 3),
         alert_baseline = if (is.na(nodes_i$alert_baseline[j])) NULL else round(nodes_i$alert_baseline[j], 3),
+        alert_peak_ratio = if (is.na(nodes_i$alert_peak_ratio[j])) NULL else round(nodes_i$alert_peak_ratio[j], 3),
+        alert_year_peak = if (is.na(nodes_i$alert_year_peak[j])) NULL else round(nodes_i$alert_year_peak[j], 3),
         alert_level = nodes_i$alert_level[j],
         alert_active = isTRUE(nodes_i$alert_active[j]),
         articles  = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
@@ -394,7 +452,18 @@ result_graph <- list(
     alert_thresholds = list(
       watch = ALERT_THRESHOLD_WATCH,
       alert = ALERT_THRESHOLD_ALERT,
-      strong = ALERT_THRESHOLD_STRONG
+      strong = ALERT_THRESHOLD_STRONG,
+      min_mentions = list(
+        watch = ALERT_MIN_MENTIONS_WATCH,
+        alert = ALERT_MIN_MENTIONS_ALERT,
+        strong = ALERT_MIN_MENTIONS_STRONG
+      ),
+      min_peak_ratio = list(
+        watch = ALERT_PEAK_RATIO_WATCH,
+        alert = ALERT_PEAK_RATIO_ALERT,
+        strong = ALERT_PEAK_RATIO_STRONG
+      ),
+      min_abs_score = ALERT_MIN_ABS_SCORE
     ),
     media_ids    = all_media_ids,
     periods      = make_periods_list(periods_graph),
@@ -445,6 +514,8 @@ for (country in countries) {
           alert_score    = if (is.na(nodes_i$alert_score[j])) NULL else round(nodes_i$alert_score[j], 2),
           alert_delta    = if (is.na(nodes_i$alert_delta[j])) NULL else round(nodes_i$alert_delta[j], 3),
           alert_baseline = if (is.na(nodes_i$alert_baseline[j])) NULL else round(nodes_i$alert_baseline[j], 3),
+          alert_peak_ratio = if (is.na(nodes_i$alert_peak_ratio[j])) NULL else round(nodes_i$alert_peak_ratio[j], 3),
+          alert_year_peak = if (is.na(nodes_i$alert_year_peak[j])) NULL else round(nodes_i$alert_year_peak[j], 3),
           alert_level    = nodes_i$alert_level[j],
           alert_active   = isTRUE(nodes_i$alert_active[j])
         )
@@ -469,7 +540,18 @@ result_ts <- list(
     alert_thresholds = list(
       watch = ALERT_THRESHOLD_WATCH,
       alert = ALERT_THRESHOLD_ALERT,
-      strong = ALERT_THRESHOLD_STRONG
+      strong = ALERT_THRESHOLD_STRONG,
+      min_mentions = list(
+        watch = ALERT_MIN_MENTIONS_WATCH,
+        alert = ALERT_MIN_MENTIONS_ALERT,
+        strong = ALERT_MIN_MENTIONS_STRONG
+      ),
+      min_peak_ratio = list(
+        watch = ALERT_PEAK_RATIO_WATCH,
+        alert = ALERT_PEAK_RATIO_ALERT,
+        strong = ALERT_PEAK_RATIO_STRONG
+      ),
+      min_abs_score = ALERT_MIN_ABS_SCORE
     ),
     periods       = make_periods_list(periods_ts),
     countries     = countries

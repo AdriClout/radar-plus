@@ -114,6 +114,28 @@
     #filter-search::placeholder { color: var(--muted); }
     .filter-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
 
+    .alertes-methodology {
+      margin-bottom: 20px;
+      border: 1px solid rgba(90,140,255,0.2);
+      border-radius: 6px;
+      background: rgba(8,16,42,0.65);
+      padding: 10px 12px;
+      font-size: 9px;
+      color: rgba(170,200,245,0.8);
+      line-height: 1.45;
+    }
+    .alertes-methodology strong {
+      color: rgba(214,229,255,0.96);
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-right: 8px;
+    }
+    .alertes-methodology-line + .alertes-methodology-line {
+      margin-top: 4px;
+    }
+
     /* ── Groupes de périodes ── */
     .period-group { margin-bottom: 36px; }
     .period-header {
@@ -356,6 +378,13 @@
       <option value="USA">États-Unis</option>
     </select>
     <div class="filter-sep"></div>
+    <span class="filter-label">Statut</span>
+    <select id="filter-status">
+      <option value="current" selected>En cours</option>
+      <option value="ended">Terminées</option>
+      <option value="all">Toutes</option>
+    </select>
+    <div class="filter-sep"></div>
     <span class="filter-label">Niveau</span>
     <select id="filter-level">
       <option value="all" selected>Tous niveaux</option>
@@ -367,6 +396,8 @@
     <div class="filter-sep"></div>
     <input type="text" id="filter-search" placeholder="Filtrer un objet…" autocomplete="off" spellcheck="false" />
   </div>
+
+  <div id="alertes-methodology" class="alertes-methodology"></div>
 
   <div id="alertes-list"><div id="alertes-loading">Chargement des alertes…</div></div>
 </div>
@@ -392,6 +423,7 @@
 
   let graphData    = null;
   let filterCountry = 'CAN';
+  let filterStatus  = 'current';
   let filterLevel   = 'all';
   let filterSearch  = '';
 
@@ -418,10 +450,88 @@
     return Object.keys(graphData.graphs || {});
   }
 
+  function getLatestPeriodKey() {
+    if (!graphData || !graphData.meta || !Array.isArray(graphData.meta.periods)) return null;
+    var periods = graphData.meta.periods;
+    if (!periods.length) return null;
+    return periods[periods.length - 1].key;
+  }
+
+  function getLatestActiveMap(countries, latestKey) {
+    var out = {};
+    if (!latestKey) return out;
+    for (var ci = 0; ci < countries.length; ci++) {
+      var country = countries[ci];
+      var gd = graphData.graphs[country] && graphData.graphs[country][latestKey];
+      if (!gd) continue;
+      var nodes = gd.nodes || [];
+      for (var ni = 0; ni < nodes.length; ni++) {
+        var node = nodes[ni];
+        var level = String(node.alert_level || 'none');
+        if (!node.alert_active) continue;
+        if (level === 'none' || level === 'normal' || level === 'emerging') continue;
+        out[country + '::' + node.id] = true;
+      }
+    }
+    return out;
+  }
+
+  function numOrNull(value) {
+    var n = Number(value);
+    return isFinite(n) ? n : null;
+  }
+
+  function renderMethodology() {
+    var box = document.getElementById('alertes-methodology');
+    if (!box) return;
+    if (!graphData || !graphData.meta) {
+      box.innerHTML = '';
+      return;
+    }
+
+    var thr = graphData.meta.alert_thresholds || {};
+    var zWatch = numOrNull(thr.watch);
+    var zAlert = numOrNull(thr.alert);
+    var zStrong = numOrNull(thr.strong);
+    var peak = thr.min_peak_ratio || {};
+    var m = thr.min_mentions || {};
+    var days = Number(graphData.meta.graph_days);
+    var lookbackTxt = isFinite(days) ? (days + ' jours') : 'fenêtre active';
+
+    var peakWatch = numOrNull(peak.watch);
+    var peakAlert = numOrNull(peak.alert);
+    var peakStrong = numOrNull(peak.strong);
+
+    var mWatch = numOrNull(m.watch);
+    var mAlert = numOrNull(m.alert);
+    var mStrong = numOrNull(m.strong);
+
+    box.innerHTML = ''
+      + '<div class="alertes-methodology-line"><strong>Méthode</strong>'
+      + 'Le niveau combine un z-score robuste (médiane + MAD glissants) et le ratio courant vs pic annuel de l’objet.'
+      + '</div>'
+      + '<div class="alertes-methodology-line"><strong>Seuils</strong>'
+      + 'Veille z ≥ ' + (zWatch !== null ? zWatch.toFixed(1) : '—')
+      + ' · Alerte z ≥ ' + (zAlert !== null ? zAlert.toFixed(1) : '—')
+      + ' · Forte z ≥ ' + (zStrong !== null ? zStrong.toFixed(1) : '—') + '.'
+      + '</div>'
+      + '<div class="alertes-methodology-line"><strong>Contexte</strong>'
+      + 'Ratio minimum vs pic annuel: Veille ' + (peakWatch !== null ? Math.round(peakWatch * 100) + '%' : '—')
+      + ', Alerte ' + (peakAlert !== null ? Math.round(peakAlert * 100) + '%' : '—')
+      + ', Forte ' + (peakStrong !== null ? Math.round(peakStrong * 100) + '%' : '—')
+      + ' · Mentions mini: ' + (mWatch !== null ? mWatch : '—')
+      + '/' + (mAlert !== null ? mAlert : '—')
+      + '/' + (mStrong !== null ? mStrong : '—')
+      + ' · Fenêtre: ' + escapeHtml(lookbackTxt) + '.'
+      + '</div>';
+  }
+
   function getAlertGroups() {
     if (!graphData) return [];
     const periods   = (graphData.meta && graphData.meta.periods ? graphData.meta.periods : []).slice().reverse();
     const countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+    const latestKey = getLatestPeriodKey();
+    const latestActiveMap = getLatestActiveMap(countries, latestKey);
     const searchLow = filterSearch.trim().toLowerCase();
     const groups    = [];
 
@@ -439,18 +549,34 @@
           var node  = nodes[ni];
           var level = node.alert_level;
           if (!level || level === 'normal' || level === 'none') continue;
+          var active = !!node.alert_active;
+          var key = country + '::' + node.id;
+          var isCurrent = period.key === latestKey && active;
+          var isEnded = period.key !== latestKey && active && !latestActiveMap[key];
+
+          if (filterStatus === 'current' && !isCurrent) continue;
+          if (filterStatus === 'ended' && !isEnded) continue;
+
+          if ((filterStatus === 'current' || filterStatus === 'ended') && !active) continue;
           if (filterLevel !== 'all' && level !== filterLevel) continue;
           if (searchLow && node.id.toLowerCase().indexOf(searchLow) === -1) continue;
 
-          var score = Number(node.alert_score);
-          var delta = Number(node.alert_delta);
+          var score = numOrNull(node.alert_score);
+          var delta = numOrNull(node.alert_delta);
+          var baseline = numOrNull(node.alert_baseline);
+          var peakRatio = numOrNull(node.alert_peak_ratio);
+          var yearPeak = numOrNull(node.alert_year_peak);
           alertsInPeriod.push({
             id:       node.id,
             level:    level,
-            score:    isFinite(score) ? score : null,
-            delta:    isFinite(delta) ? delta : null,
+            score:    score,
+            delta:    delta,
+            baseline: baseline,
+            peakRatio: peakRatio,
+            yearPeak: yearPeak,
             n:        node.n || 0,
-            active:   !!node.alert_active,
+            active:   active,
+            status:   isCurrent ? 'current' : (isEnded ? 'ended' : 'other'),
             articles: Array.isArray(node.articles) ? node.articles : [],
             country:  country,
           });
@@ -474,6 +600,9 @@
     var levelLabel = LEVEL_LABELS[alert.level] || alert.level;
     var scoreStr   = alert.score !== null ? alert.score.toFixed(1) + '\u00d7' : '\u2014';
     var deltaStr   = alert.delta !== null ? (alert.delta >= 0 ? '+' : '') + alert.delta.toFixed(1) : '\u2014';
+    var baselineStr = alert.baseline !== null ? alert.baseline.toFixed(2) : '\u2014';
+    var peakRatioStr = alert.peakRatio !== null ? Math.round(alert.peakRatio * 100) + '%' : '\u2014';
+    var peakTitle = alert.yearPeak !== null ? 'Pic annuel: ' + alert.yearPeak.toFixed(2) : 'Pic annuel indisponible';
     var countryStr = COUNTRY_LABELS[alert.country] || alert.country;
 
     var articlesHtml = '';
@@ -500,6 +629,8 @@
       + '<div class="alert-card-stats">'
       +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">score z</span></div>'
       +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">delta mentions</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(peakTitle) + '">' + escapeHtml(peakRatioStr) + '</span><span class="alert-card-stat-lbl">vs pic annuel</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(baselineStr) + '</span><span class="alert-card-stat-lbl">baseline</span></div>'
       +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(String(alert.n)) + '</span><span class="alert-card-stat-lbl">mentions</span></div>'
       + '</div>'
       + (articlesHtml ? '<div class="alert-card-articles">' + articlesHtml + '</div>' : '')
@@ -510,22 +641,52 @@
   function updateLivePill(groups) {
     var text = document.getElementById('alertes-live-text');
     if (!text) return;
-    if (!groups.length) { text.textContent = 'Aucun signal actif'; return; }
-    var latestActive = (groups[0].alerts || []).filter(function(a) { return a.active; }).length;
+    if (!groups.length) {
+      if (filterStatus === 'ended') {
+        text.textContent = 'Aucune alerte terminée';
+      } else if (filterStatus === 'all') {
+        text.textContent = 'Aucun signal pour ces filtres';
+      } else {
+        text.textContent = 'Aucune alerte en cours';
+      }
+      return;
+    }
+
     var totalSignals = groups.reduce(function(acc, g) { return acc + g.alerts.length; }, 0);
-    text.textContent = latestActive + ' signal' + (latestActive > 1 ? 's' : '') + ' actif' + (latestActive > 1 ? 's' : '')
-      + ' \u00b7 ' + (groups[0].period.label || groups[0].period.key)
-      + ' \u00b7 ' + totalSignals + ' signaux sur 14j';
+    if (filterStatus === 'ended') {
+      text.textContent = totalSignals + ' alerte' + (totalSignals > 1 ? 's' : '') + ' terminée' + (totalSignals > 1 ? 's' : '')
+        + ' \u00b7 dernière: ' + (groups[0].period.label || groups[0].period.key);
+      return;
+    }
+
+    if (filterStatus === 'all') {
+      text.textContent = totalSignals + ' signal' + (totalSignals > 1 ? 's' : '')
+        + ' \u00b7 période la plus récente: ' + (groups[0].period.label || groups[0].period.key);
+      return;
+    }
+
+    var latestActive = groups.reduce(function(acc, g) {
+      return acc + (g.alerts || []).filter(function(a) { return a.status === 'current'; }).length;
+    }, 0);
+    text.textContent = latestActive + ' alerte' + (latestActive > 1 ? 's' : '') + ' en cours'
+      + ' \u00b7 ' + (groups[0].period.label || groups[0].period.key);
   }
 
   function render() {
     var container = document.getElementById('alertes-list');
     if (!container) return;
     var groups = getAlertGroups();
+    renderMethodology();
     updateLivePill(groups);
 
     if (!groups.length) {
-      container.innerHTML = '<div id="alertes-empty">Aucune alerte pour les filtres sélectionnés.</div>';
+      if (filterStatus === 'ended') {
+        container.innerHTML = '<div id="alertes-empty">Aucune alerte terminée pour les filtres sélectionnés.</div>';
+      } else if (filterStatus === 'current') {
+        container.innerHTML = '<div id="alertes-empty">Aucune alerte en cours pour les filtres sélectionnés.</div>';
+      } else {
+        container.innerHTML = '<div id="alertes-empty">Aucune alerte pour les filtres sélectionnés.</div>';
+      }
       return;
     }
 
@@ -533,7 +694,12 @@
     for (var gi = 0; gi < groups.length; gi++) {
       var g       = groups[gi];
       var count   = g.alerts.length;
-      var latest  = g.isFirst ? '<span class="period-header-latest">En cours</span>' : '';
+      var latest = '';
+      if (filterStatus === 'current' && g.isFirst) {
+        latest = '<span class="period-header-latest">En cours</span>';
+      } else if (filterStatus === 'ended') {
+        latest = '<span class="period-header-latest">Terminée</span>';
+      }
       var cards   = g.alerts.map(renderCard).join('');
       html += '<div class="period-group">'
         + '<div class="period-header">'
@@ -548,6 +714,7 @@
   }
 
   document.getElementById('filter-country').addEventListener('change', function() { filterCountry = this.value; render(); });
+  document.getElementById('filter-status').addEventListener('change',  function() { filterStatus  = this.value; render(); });
   document.getElementById('filter-level').addEventListener('change',   function() { filterLevel   = this.value; render(); });
   document.getElementById('filter-search').addEventListener('input',   function() { filterSearch  = this.value; render(); });
 
