@@ -847,12 +847,17 @@
   setIfFn('width', window.innerWidth);
   setIfFn('height', window.innerHeight);
   setIfFn('backgroundColor', '#00000f');
-  // Constellation figée: pas de pan, pas de zoom, pas de drag de nœuds.
-  // Le layout s'auto-cadre via zoomToFit après chaque stabilisation
-  // de la simulation force (onEngineStop).
-  setIfFn('enableZoomInteraction', false);
-  setIfFn('enablePanInteraction', false);
+  // Constellation explorable: zoom et pan activés (avec bornes), drag
+  // des nœuds désactivé (on ne veut pas que l'utilisateur casse le
+  // layout). minZoom 0.4 et maxZoom 6 → l'utilisateur peut zoomer
+  // jusqu'à 6× pour inspecter de près, et dézoomer modérément avant
+  // que ce ne devienne illisible. Le fit (onEngineStop) recadre
+  // automatiquement à chaque changement de slot.
+  setIfFn('enableZoomInteraction', true);
+  setIfFn('enablePanInteraction', true);
   setIfFn('enableNodeDrag', false);
+  setIfFn('minZoom', 0.4);
+  setIfFn('maxZoom', 6);
   // 180 ticks (~3s à 60fps) — animation longue assez pour être lue
   // comme un placement intelligent, courte assez pour ne pas faire
   // attendre. onEngineStop fige et cadre avec une transition douce.
@@ -1527,6 +1532,13 @@
     if (!focusedNode) return;
     if (Date.now() - lastNodeClickTs < 250) return;
     clearFocusAndRecenter();
+  });
+
+  // Double-clic sur le fond: recadre le graphe entier (utile pour
+  // revenir à la vue d'ensemble après avoir zoomé/pané).
+  graphEl.addEventListener('dblclick', () => {
+    if (Date.now() - lastNodeClickTs < 250) return;
+    fitGraphToView(500);
   });
 
   // Fermeture explicite du panneau slide-in (bouton × et clic overlay)
