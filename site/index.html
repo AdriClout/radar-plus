@@ -1445,7 +1445,10 @@ async function loadData() {
     timeseriesData = results[1];
   } catch (e) { console.error('Data load error', e); }
   // Prefetch articles non-bloquant → panel s'ouvre instant si déjà prêt, sinon "Chargement…"
-  ensureArticlesLoaded();
+  // Re-render le HOT 20 quand les articles arrivent pour mettre à jour les compteurs
+  ensureArticlesLoaded().then(function(d) {
+    if (d) renderHot20();
+  });
   buildPeriods();
   renderHot20();
 }
@@ -1793,16 +1796,36 @@ function renderHot20() {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
       var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
       var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
-      var articles = Array.isArray(node.articles) ? node.articles : [];
-      var articleCount = articles.length;
-      // Conserve la liste des médias en tooltip pour ne pas perdre l'info.
-      var mediaIds = node.media_ids && node.media_ids.length
-        ? node.media_ids
-        : articles.map(function(a) { return a.media_id; }).filter(function(v, i, s) { return v && s.indexOf(v) === i; });
+      // Compteur d'articles fiable: agrège sur tous les blocs 4h du
+      // slot via articles.json (dédupliqué par URL). Fallback sur
+      // node.articles si articles.json pas encore chargé.
+      var articleCount = 0;
+      var mediaSeen = {};
+      if (articlesData) {
+        var seenUrls = {};
+        slot.periodKeys.forEach(function(pk) {
+          var arts = getArticlesFor(currentCountry, pk, node.id, null);
+          arts.forEach(function(a) {
+            if (a.url && !seenUrls[a.url]) {
+              seenUrls[a.url] = true;
+              articleCount++;
+              if (a.media_id) mediaSeen[a.media_id] = true;
+            }
+          });
+        });
+      } else {
+        var inline = Array.isArray(node.articles) ? node.articles : [];
+        articleCount = inline.length;
+        inline.forEach(function(a) { if (a && a.media_id) mediaSeen[a.media_id] = true; });
+      }
+      var mediaIds = Object.keys(mediaSeen);
+      if (!mediaIds.length && node.media_ids && node.media_ids.length) {
+        mediaIds = node.media_ids;
+      }
       var articlesTip = articleCount
         ? articleCount + ' article' + (articleCount > 1 ? 's' : '') + ' associ' + (articleCount > 1 ? 'és' : 'é') +
           (mediaIds.length ? ' • médias: ' + escapeHtml(mediaIds.join(', ')) : '')
-        : 'Aucun article associé dans ce jeu de données.';
+        : (articlesData ? 'Aucun article associé dans ce jeu de données.' : 'Chargement…');
 
       /* Trend badge */
       var trendHtml = '';
