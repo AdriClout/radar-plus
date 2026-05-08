@@ -113,15 +113,25 @@
       transform: translateX(-50%); text-align: center;
       animation: float 2.5s ease-in-out infinite;
       z-index: 5;
+      background: none; border: none;
+      cursor: pointer; padding: 8px 16px;
+      display: inline-flex; flex-direction: column; align-items: center;
+      transition: opacity 0.2s ease;
     }
+    .scroll-hint:hover { opacity: 1; }
+    .scroll-hint:hover .arrow { opacity: 1; border-color: #cfe1ff; }
+    .scroll-hint:hover span { color: #cfe1ff; }
+    .scroll-hint:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
     .scroll-hint .arrow {
       width: 24px; height: 24px; margin: 0 auto 6px;
       border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent);
       transform: rotate(45deg); opacity: 0.6;
+      transition: opacity 0.2s ease, border-color 0.2s ease;
     }
     .scroll-hint span {
       font-size: 10px; letter-spacing: 2px; color: var(--muted);
       text-transform: uppercase; font-family: var(--orbitron);
+      transition: color 0.2s ease;
     }
     @keyframes float {
       0%, 100% { transform: translateX(-50%) translateY(0); }
@@ -916,10 +926,10 @@
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
     </div>
   </div>
-  <div class="scroll-hint">
-    <div class="arrow"></div>
+  <button type="button" class="scroll-hint" id="scroll-to-hot20" aria-label="Aller au HOT 20">
+    <div class="arrow" aria-hidden="true"></div>
     <span>Explorer</span>
-  </div>
+  </button>
 </section>
 
 <!-- Dotted bridge -->
@@ -1826,6 +1836,17 @@ function updateEvolutionCtaLink() {
   if (cta) cta.href = './evolution.html?country=' + encodeURIComponent(currentCountry);
 }
 updateEvolutionCtaLink();
+
+/* "Explorer" sous le hero → scroll fluide vers le HOT 20 */
+(function() {
+  var btn = document.getElementById('scroll-to-hot20');
+  if (!btn) return;
+  btn.addEventListener('click', function() {
+    var target = document.getElementById('hot20');
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
 
 document.getElementById('country-tabs').addEventListener('click', function(e) {
   var tab = e.target.closest('.country-tab');
