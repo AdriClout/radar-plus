@@ -888,8 +888,11 @@
   // - node[id]: size = somme, n = somme, alert_level = pire niveau,
   //   alert_score = max(score), articles/media_ids = union
   // - link[src→tgt]: value = somme
-  // Retourne {nodes, links} compatible avec ForceGraph.
+  // Cap au top N par granularité — au-delà le graphe devient illisible
+  // (ex: une année cumule >1000 objets uniques qui forment un blob).
+  // Liens aussi filtrés aux paires entre nodes retenus.
   const ALERT_RANK = { strong: 4, alert: 3, watch: 2, emerging: 1, none: 0, normal: 0 };
+  const SLOT_TOP_N = { day: 30, week: 40, month: 55, year: 70 };
   function aggregateSlot(country, slot) {
     if (!slot || !slot.periodKeys.length) return { nodes: [], links: [] };
     const nodeMap = new Map();
@@ -939,8 +942,14 @@
       }
     }
     let nodes = [...nodeMap.values()].sort((a, b) => b.size - a.size);
+    const cap = SLOT_TOP_N[rankedGranularity] || 30;
+    nodes = nodes.slice(0, cap);
     nodes.forEach((n, i) => { n._rank = i; });
-    const links = filterTopLinks([...linkMap.values()], MAX_LINKS_NODE);
+    const visibleIds = new Set(nodes.map(n => n.id));
+    const visibleLinks = [...linkMap.values()].filter(l =>
+      visibleIds.has(l.source) && visibleIds.has(l.target)
+    );
+    const links = filterTopLinks(visibleLinks, MAX_LINKS_NODE);
     return { nodes, links };
   }
 
