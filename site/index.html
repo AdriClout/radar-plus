@@ -1461,6 +1461,22 @@ function monthKeyToLabel(monthKey) {
   return FR_MONTHS[parseInt(parts[1]) - 1].charAt(0).toUpperCase() + FR_MONTHS[parseInt(parts[1]) - 1].slice(1) + ' ' + parts[0];
 }
 
+// Helpers de formatage "depuis le X" pour les intervalles
+function formatStartDateFr(day, monthIdx, year) {
+  var dayPart = day === 1 ? '1er' : String(day);
+  return dayPart + ' ' + FR_MONTHS[monthIdx] + ' ' + year;
+}
+function weekKeyStartDate(weekKey) {
+  // Returns Date of the Monday of that ISO week
+  var parts = weekKey.split('-W');
+  var year = parseInt(parts[0]);
+  var week = parseInt(parts[1]);
+  var jan4 = new Date(year, 0, 4);
+  var d = new Date(jan4.getTime());
+  d.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (week - 1) * 7);
+  return d;
+}
+
 function buildSlots() {
   var src = timeseriesData || graphData;
   if (!src || !allPeriods.length) { aggregatedSlots = []; return; }
@@ -1496,24 +1512,29 @@ function buildSlots() {
     buckets[bucketKey].push(p.key);
   });
 
+  // Pour le bucket "all" (année), on dérive l'année depuis la dernière période du dataset
+  var fallbackYear = (allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear());
+
   aggregatedSlots = bucketOrder.map(function(bk) {
     var keys = buckets[bk];
     var label, dateLabel, interval;
     if (currentGranularity === 'day') {
       var d = new Date(bk + 'T00:00:00');
-      var day = d.getDate();
-      var month = FR_MONTHS[d.getMonth()];
-      dateLabel = day + ' ' + month + ' ' + d.getFullYear();
-      interval = 'Saillance cumulée de la journée';
+      dateLabel = d.getDate() + ' ' + FR_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(d.getDate(), d.getMonth(), d.getFullYear());
     } else if (currentGranularity === 'week') {
       dateLabel = weekKeyToLabel(bk);
-      interval = 'Saillance cumulée de la semaine';
+      var ws = weekKeyStartDate(bk);
+      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(ws.getDate(), ws.getMonth(), ws.getFullYear());
     } else if (currentGranularity === 'month') {
       dateLabel = monthKeyToLabel(bk);
-      interval = 'Saillance cumulée du mois';
+      var mp = bk.split('-');
+      var mYear = parseInt(mp[0]);
+      var mIdx = parseInt(mp[1]) - 1;
+      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(1, mIdx, mYear);
     } else {
-      dateLabel = 'Cette année';
-      interval = 'Saillance cumulée de l’année';
+      dateLabel = String(fallbackYear);
+      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(1, 0, fallbackYear);
     }
     return { periodKeys: keys, dateLabel: dateLabel, interval: interval, bucketKey: bk };
   });
