@@ -509,11 +509,11 @@
   setIfFn('enableZoomInteraction', false);
   setIfFn('enablePanInteraction', false);
   setIfFn('enableNodeDrag', false);
-  // 120 ticks (~2s à 60fps) — combiné au pré-positionnement circulaire
-  // et aux forces affaiblies, le layout converge sans excursion
-  // visuelle disgracieuse. onEngineStop fige et cadre.
-  setIfFn('cooldownTicks', 120);
-  setIfFn('onEngineStop', () => fitGraphToView(700));
+  // 180 ticks (~3s à 60fps) — animation longue assez pour être lue
+  // comme un placement intelligent, courte assez pour ne pas faire
+  // attendre. onEngineStop fige et cadre avec une transition douce.
+  setIfFn('cooldownTicks', 180);
+  setIfFn('onEngineStop', () => fitGraphToView(900));
   // Nœuds par défaut (cercles) — couleur + taille via API standard
   setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
   setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
@@ -526,12 +526,12 @@
   setIfFn('linkDirectionalParticleWidth', 2);
   setIfFn('linkDirectionalParticleSpeed', 0.005);
   setIfFn('linkDirectionalParticleColor', l => { const t=Math.min(1,Math.log((l.value||1)+1)/Math.log(12)); return `rgba(${Math.round(100+t*155)},${Math.round(100+t*100)},255,0.9)`; });
-  // Amortissement: alphaDecay assez rapide pour converger en ~120 ticks,
-  // velocityDecay élevé pour amortir vivement les déplacements (évite
-  // l'effet "expulsion vers l'infini puis retour" causé par la
-  // répulsion charge sur des nœuds initialement proches).
-  setIfFn('d3AlphaDecay', 0.035);
-  setIfFn('d3VelocityDecay', 0.55);
+  // Amortissement: alphaDecay modéré pour une animation visible mais
+  // pas trop longue, velocityDecay modéré pour des mouvements fluides
+  // (avec le pré-positionnement circulaire on n'a plus besoin
+  // d'amortir fortement: pas d'expulsion brutale à contenir).
+  setIfFn('d3AlphaDecay', 0.022);
+  setIfFn('d3VelocityDecay', 0.42);
   // Étoiles (avant) + halos de nœuds (avant le cercle par défaut)
   setIfFn('onRenderFramePre', (ctx, gs) => {
       // 1. Étoiles en coords écran
@@ -709,11 +709,13 @@
   let speedIdx       = 0;
 
   // Auto-fit: cadre les nœuds dans la zone réellement visible (hors
-  // panneau gauche 280px et hors timeline+ticker bas ~130px). On
-  // calcule manuellement le zoom et le centre pour gérer un padding
-  // asymétrique — zoomToFit ne supporte qu'un padding uniforme.
+  // panneau gauche, hors timeline+ticker+legende-période en bas, hors
+  // marges). On calcule zoom + centre manuellement pour gérer un
+  // padding asymétrique — zoomToFit ne supporte qu'un padding unique.
+  // BOTTOM_OVERLAY couvre: ticker (44) + controls timeline (~80) +
+  // ligne "May 08 · X objets · Y liens · convergence Z" (~30) + marge.
   const LEFT_PANEL_W   = 280;
-  const BOTTOM_OVERLAY = 130;
+  const BOTTOM_OVERLAY = 175;
   const TOP_MARGIN     = 60;
   const SIDE_MARGIN    = 60;
 
