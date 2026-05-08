@@ -1,0 +1,279 @@
+{
+  "lang": {
+    "name_fr": "Français",
+    "name_en": "Anglais",
+    "switch_to_en": "EN",
+    "switch_to_fr": "FR",
+    "tooltip": "Changer de langue"
+  },
+
+  "nav": {
+    "home_logo_aria": "Retour à l’accueil Radar+",
+    "menu_open_aria": "Ouvrir le menu",
+    "menu_open_hint": "Ouvrir menu",
+    "main_nav_aria": "Navigation principale",
+    "section_navigation": "Navigation",
+    "section_about": "À propos",
+    "home": "Accueil",
+    "constellation": "Constellation",
+    "evolution": "Évolution",
+    "alertes": "Alertes",
+    "statistiques": "Statistiques",
+    "sonar": "Sonar",
+    "hot20": "Hot 20",
+    "unes": "Dans le radar",
+    "analyses": "Analyses",
+    "radarplus": "Radar+",
+    "methodologie": "Méthodologie",
+    "partenaires": "Partenaires & contributeurs",
+    "acces_donnees": "Accès aux données",
+    "github": "GitHub",
+    "badge_live": "LIVE",
+    "badge_timeline": "TIMELINE",
+    "badge_object": "OBJET",
+    "badge_monitoring": "MONITORING",
+    "alert_marker": "!"
+  },
+
+  "alertbar": {
+    "label": "ALERTE",
+    "view_alerts_aria": "Voir les alertes",
+    "active_aria": "Alertes de saillance actives",
+    "level": {
+      "strong": "Alerte forte",
+      "alert": "Alerte",
+      "watch": "Veille",
+      "emerging": "Émergent"
+    }
+  },
+
+  "common": {
+    "loading": "Chargement…",
+    "loading_constellation": "initialisation · constellation",
+    "loading_articles": "Chargement des articles…",
+    "loading_history": "Chargement de l’historique…",
+    "loading_ticker": "Chargement des manchettes…",
+    "no_articles": "Aucun article disponible pour cette période.",
+    "no_articles_dataset": "Aucun article associé dans ce jeu de données.",
+    "previous": "Précédemment",
+    "object": "objet",
+    "objects": "objets",
+    "links": "liens",
+    "convergence": "convergence",
+    "media": "média",
+    "medias": "médias",
+    "article": "article",
+    "articles": "articles",
+    "mention": "mention",
+    "mentions": "mentions",
+    "block_4h": "bloc 4h",
+    "blocks_4h": "blocs 4h",
+    "since_start": "Depuis le début",
+    "see_alerts": "Voir les alertes",
+    "view_in_evolution": "Voir dans Évolution",
+    "view_evolution_long": "Voir l’évolution dans le temps",
+    "view_full_methodology": "Voir la méthodologie complète",
+    "search_placeholder": "Rechercher un objet…",
+    "search_radar_placeholder": "Est-ce que X est dans le radar ?",
+    "no_match": "— non trouvé",
+    "other_period": "↳ autre créneau",
+    "remove": "Retirer",
+    "close_panel_aria": "Fermer le panneau",
+    "in_progress": "En cours",
+    "ended": "Terminée",
+    "all": "Toutes",
+    "all_levels": "Tous niveaux",
+    "all_countries": "Tous"
+  },
+
+  "country": {
+    "QC": "Québec",
+    "CAN": "Canada",
+    "USA": "États-Unis"
+  },
+
+  "period": {
+    "label": "Période",
+    "4h": "4 h",
+    "day": "Jour",
+    "week": "Semaine",
+    "month": "Mois",
+    "year": "Année",
+    "quarter": "Année",
+    "total": "Total",
+    "week_short": "Sem."
+  },
+
+  "subtitle": {
+    "4h": "Édition (4h)",
+    "day": "Aujourd’hui",
+    "week": "Cette semaine",
+    "month": "Ce mois-ci",
+    "quarter": "Cette année",
+    "total": "Depuis le début"
+  },
+
+  "increase_tip": {
+    "4h": "Saillance gagnée pendant ce bloc 4h",
+    "day": "Saillance gagnée depuis le début de la journée",
+    "week": "Saillance gagnée depuis le début de la semaine",
+    "month": "Saillance gagnée depuis le début du mois",
+    "quarter": "Saillance gagnée depuis le début de l’année",
+    "total": "Saillance cumulée totale (égale au score)"
+  },
+
+  "hero": {
+    "title": "RADAR+",
+    "beta": "BETA",
+    "explore": "Explorer",
+    "scroll_aria": "Aller au HOT 20"
+  },
+
+  "hot20": {
+    "title": "HOT",
+    "title_number": "20",
+    "header_rank": "Rang",
+    "header_movement": "Mouvement",
+    "header_subject": "Sujet",
+    "header_score_increase": "Score · Augmentation",
+    "header_articles": "Articles",
+    "country_label": "Pays",
+    "country_qc": "Québec",
+    "country_can": "Canada",
+    "country_usa": "États-Unis",
+    "next_update": "Prochaine mise à jour",
+    "previous_week_aria": "Période précédente",
+    "next_week_aria": "Période suivante",
+    "trend_new": "Nouveau",
+    "trend_return": "Retour",
+    "trend_new_tip": "Nouvelle entrée dans le Top 20 pour cette {gran}.",
+    "trend_return_tip": "Retour dans le Top 20 après au moins 2 {grans} d’absence.",
+    "trend_up_tip": "Gagne {n} rang(s) par rapport à la {gran} précédente (de {prev} à {now}).",
+    "trend_down_tip": "Perd {n} rang(s) par rapport à la {gran} précédente (de {prev} à {now}).",
+    "trend_stable_tip": "Position inchangée: rang {now} comme à la {gran} précédente.",
+    "streak_tip": "Présent dans le Top 20 depuis {n} {grans} consécutifs.",
+    "score_tip": "Saillance cumulée depuis le début de la collecte (toutes périodes confondues).",
+    "share_label": "du radar",
+    "points_label": "pts",
+    "no_data_period": "Aucune donnée pour cette {label}",
+    "no_data": "Aucune donnée disponible",
+    "media_tip": "Médias en cause: {list}",
+    "media_tip_none": "Aucun média identifié.",
+    "articles_tip": "{count} article(s) associé(s)"
+  },
+
+  "constellation": {
+    "title": "Constellation",
+    "view_label": "Vue",
+    "search_label": "Recherche",
+    "hot10_label": "Hot 10",
+    "no_objects": "Aucun objet pour ce créneau.",
+    "blocks_4h_count": "{label} · {count} bloc(s) 4h",
+    "label_summary": "{label} · {objects} objets · {links} liens · convergence {conv}",
+    "click_outside_focus": "clic hors graphe pour revenir · {name}",
+    "loading_text": "initialisation · constellation",
+    "tooltip_saliency": "saillance",
+    "tooltip_mentions": "mentions",
+    "tooltip_articles": "articles"
+  },
+
+  "evolution": {
+    "title": "Évolution",
+    "country_label": "Pays",
+    "search_label": "Recherche",
+    "mode_hot10": "HOT 10",
+    "mode_search": "RECHERCHE",
+    "search_objects_placeholder": "Rechercher des objets…",
+    "clear_selection": "Vider la sélection",
+    "signals_count": "{n} signal(s)",
+    "signals_caption": "dans la période courante",
+    "previous_period_aria": "Période précédente",
+    "next_period_aria": "Période suivante",
+    "blocks_completed": "{n} blocs complétés",
+    "no_data": "Aucune donnée pour ce créneau."
+  },
+
+  "alertes": {
+    "title": "Alertes de",
+    "title_accent": "saillance",
+    "subtitle": "Signaux anormaux détectés dans la couverture médiatique",
+    "subtitle_window": "{days} derniers jours",
+    "active_count": "{n} alertes en cours",
+    "filter_country": "Pays",
+    "filter_status": "Statut",
+    "filter_level": "Niveau",
+    "filter_search_placeholder": "Filtrer un objet…",
+    "status_current": "En cours",
+    "status_ended": "Terminées",
+    "status_all": "Toutes",
+    "level_all": "Tous niveaux",
+    "level_strong": "Alerte forte",
+    "level_alert": "Alerte",
+    "level_watch": "Veille",
+    "level_emerging": "Émergent",
+    "evo_cta": "Voir l’évolution dans le temps",
+    "evo_cta_aria": "Voir l’évolution des alertes",
+    "card_score": "score z",
+    "card_top_share": "part du top",
+    "card_top_share_tip": "Part de la saillance du Top 1 du pays·période. Mesure l’importance réelle de l’objet sur le radar maintenant.",
+    "card_peak_ratio": "vs pic annuel",
+    "card_peak_tip_year": "Pic annuel: {value}",
+    "card_peak_tip_none": "Pic annuel indisponible",
+    "card_delta": "delta mentions",
+    "card_mentions": "mentions",
+    "view_in_evolution": "Voir dans Évolution →",
+    "no_alerts_current": "Aucune alerte en cours pour les filtres sélectionnés.",
+    "no_alerts_ended": "Aucune alerte terminée pour les filtres sélectionnés.",
+    "no_alerts_all": "Aucune alerte pour les filtres sélectionnés.",
+    "methodology_intro": "Une alerte signale un objet à la fois <em>inhabituel pour lui-même</em> (montée brusque vs ses {days} derniers jours) <em>et réellement visible</em> sur le radar (poids significatif vs le Top du pays). Trois niveaux gradués&nbsp;: <strong>Veille</strong>, <strong>Alerte</strong>, <strong>Alerte forte</strong>.",
+    "methodology_link": "Voir la méthodologie complète",
+    "level_short": {
+      "strong": "Fort",
+      "alert": "Alerte",
+      "watch": "Veille",
+      "emerging": "Émerg."
+    },
+    "signal_one": "signal",
+    "signal_many": "signals"
+  },
+
+  "ticker": {
+    "label": "Dans le radar",
+    "label_arrow": "Dans le radar ↗",
+    "view_aria": "Voir toutes les dernières Unes",
+    "updated_label": "Les Unes de {time}",
+    "empty": "Chargement des manchettes…",
+    "error": "Erreur de chargement du ticker.",
+    "no_articles": "Aucune manchette récente."
+  },
+
+  "object_panel": {
+    "saliency_score": "{score} pts · {mentions} mentions · {articles} article(s)",
+    "view_in_evolution": "Voir dans Évolution →",
+    "no_articles_period": "Aucun article associé dans ce créneau.",
+    "previous_section": "Précédemment",
+    "alert_in_progress_tip": "Alerte de saillance en cours sur cet objet."
+  },
+
+  "footer": {
+    "copyright": "© CLESSN · Université Laval · Transparence médiatique 24/7"
+  },
+
+  "ranked_granularity": {
+    "day_label": "Journée",
+    "week_label": "Semaine",
+    "month_label": "Mois",
+    "year_label": "Année",
+    "total_label": "Depuis le début"
+  },
+
+  "fr_months": [
+    "janvier","février","mars","avril","mai","juin",
+    "juillet","août","septembre","octobre","novembre","décembre"
+  ],
+  "fr_months_short": [
+    "janv.","févr.","mars","avr.","mai","juin",
+    "juil.","août","sept.","oct.","nov.","déc."
+  ],
+  "fr_weekdays_short": ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."]
+}

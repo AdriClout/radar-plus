@@ -105,6 +105,36 @@
   margin-bottom: 20px;
 }
 
+/* Toggle FR / EN en haut du menu nav */
+.lang-switch {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(120, 170, 255, 0.32);
+  border-radius: 4px;
+  padding: 2px;
+  background: rgba(10, 18, 50, 0.6);
+}
+.lang-switch .lang-btn {
+  background: none;
+  border: none;
+  color: rgba(180, 210, 255, 0.7);
+  font-family: 'Space Mono', 'SF Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.18s ease;
+}
+.lang-switch .lang-btn:hover {
+  color: #d0e8ff;
+}
+.lang-switch .lang-btn.active {
+  background: rgba(40, 80, 180, 0.45);
+  color: #ffffff;
+}
+
 .side-nav a {
   display: block;
   padding: 14px 0;

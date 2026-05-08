@@ -49,6 +49,7 @@
     a.id = 'home-logo';
     a.className = 'home-logo';
     a.href = './';
+    a.setAttribute('data-i18n-aria-label', 'nav.home_logo_aria');
     a.setAttribute('aria-label', 'Retour à l’accueil Radar+');
     a.innerHTML = HOME_LOGO_SVG;
     document.body.insertBefore(a, document.body.firstChild);
@@ -63,6 +64,7 @@
     var navToggle = document.createElement('button');
     navToggle.className = 'nav-toggle';
     navToggle.id = 'navToggle';
+    navToggle.setAttribute('data-i18n-aria-label', 'nav.menu_open_aria');
     navToggle.setAttribute('aria-label', 'Ouvrir le menu');
     navToggle.innerHTML = '<span></span><span></span><span></span>';
 
@@ -70,30 +72,36 @@
     menuHint.href = '#';
     menuHint.className = 'menu-discover-hint';
     menuHint.id = 'menuDiscoverHint';
+    menuHint.setAttribute('data-i18n-aria-label', 'nav.menu_open_aria');
     menuHint.setAttribute('aria-label', 'Ouvrir le menu');
-    menuHint.innerHTML = 'Ouvrir menu <span class="menu-discover-arrow"></span>';
+    menuHint.innerHTML = '<span data-i18n="nav.menu_open_hint">Ouvrir menu</span> <span class="menu-discover-arrow"></span>';
 
     var sideNav = document.createElement('nav');
     sideNav.className = 'side-nav';
     sideNav.id = 'sideNav';
+    sideNav.setAttribute('data-i18n-aria-label', 'nav.main_nav_aria');
     sideNav.setAttribute('aria-label', 'Navigation principale');
     sideNav.innerHTML = [
-      '<h3>Navigation</h3>',
-      '<a href="./index.html" data-page="index.html">Accueil</a>',
-      '<a href="./constellation.html" data-page="constellation.html">Constellation <span class="nav-badge">LIVE</span></a>',
-      '<a href="./evolution.html" data-page="evolution.html">Évolution <span class="nav-badge">TIMELINE</span></a>',
-      '<a href="./alertes.html" data-page="alertes.html">Alertes <span class="nav-badge nav-badge-alert" id="nav-alert-badge">!</span></a>',
-      '<a href="./statistiques.html" data-page="statistiques.html">Statistiques <span class="nav-badge">OBJET</span></a>',
-      '<a href="./sonar.html" data-page="sonar.html">Sonar <span class="nav-badge">MONITORING</span></a>',
-      '<a href="./index.html#hot20">Hot 20</a>',
-      '<a href="./unes.html" data-page="unes.html">Dans le radar</a>',
-      '<a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>',
-      '<h3 style="margin-top: 30px;">À propos</h3>',
-      '<a href="./radarplus.html" data-page="radarplus.html">Radar+</a>',
-      '<a href="./methodologie.html" data-page="methodologie.html">Méthodologie</a>',
-      '<a href="./partenaires.html" data-page="partenaires.html">Partenaires &amp; contributeurs</a>',
-      '<a href="./acces-donnees.html" data-page="acces-donnees.html">Accès aux données</a>',
-      '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>'
+      '<div class="lang-switch" id="lang-switch" role="group" aria-label="Language">',
+      '  <button type="button" class="lang-btn" data-lang="fr" aria-label="Français">FR</button>',
+      '  <button type="button" class="lang-btn" data-lang="en" aria-label="English">EN</button>',
+      '</div>',
+      '<h3 data-i18n="nav.section_navigation">Navigation</h3>',
+      '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>',
+      '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
+      '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
+      '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
+      '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
+      '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_monitoring">MONITORING</span></a>',
+      '<a href="./index.html#hot20" data-i18n="nav.hot20">Hot 20</a>',
+      '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>',
+      '<a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener" data-i18n="nav.analyses">Analyses</a>',
+      '<h3 style="margin-top: 30px;" data-i18n="nav.section_about">À propos</h3>',
+      '<a href="./radarplus.html" data-page="radarplus.html" data-i18n="nav.radarplus">Radar+</a>',
+      '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>',
+      '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>',
+      '<a href="./acces-donnees.html" data-page="acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>',
+      '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener" data-i18n="nav.github">GitHub</a>'
     ].join('');
 
     document.body.insertBefore(sideNav, document.body.firstChild);
@@ -137,6 +145,24 @@
       }
       setNavOpen(false);
     });
+
+    // Toggle FR/EN: handler + état actif synchronisé avec __i18n.
+    function refreshLangButtons() {
+      var lang = (window.__i18n && window.__i18n.currentLang && window.__i18n.currentLang()) || 'fr';
+      sideNav.querySelectorAll('.lang-btn').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.lang === lang);
+      });
+    }
+    sideNav.querySelectorAll('.lang-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (window.__i18n && window.__i18n.setLang) {
+          window.__i18n.setLang(btn.dataset.lang).then(refreshLangButtons);
+        }
+      });
+    });
+    refreshLangButtons();
+    document.addEventListener('i18n:applied', refreshLangButtons);
   }
 
   if (document.readyState === 'loading') {
@@ -152,7 +178,15 @@
   ================================================================ */
 
   var ALERT_BAR_LEVELS = ['strong', 'alert'];
-  var ALERT_BAR_LABELS = { strong: 'Alerte forte', alert: 'Alerte' };
+
+  function alertBarLabel(level) {
+    if (window.t) {
+      var k = 'alertbar.level.' + level;
+      var v = window.t(k);
+      if (v && v !== k) return v;
+    }
+    return level;
+  }
 
   function escHtml(v) {
     return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
@@ -164,11 +198,12 @@
     if (document.getElementById('global-alert-bar')) return;
     var bar = document.createElement('div');
     bar.id = 'global-alert-bar';
+    bar.setAttribute('data-i18n-aria-label', 'alertbar.active_aria');
     bar.setAttribute('aria-label', 'Alertes de saillance actives');
     bar.innerHTML =
-      '<a class="alert-bar-label" href="./alertes.html" aria-label="Voir les alertes">' +
+      '<a class="alert-bar-label" href="./alertes.html" data-i18n-aria-label="alertbar.view_alerts_aria" aria-label="Voir les alertes">' +
         '<span class="alert-bar-dot" aria-hidden="true"></span>' +
-        '<span class="alert-bar-label-text">ALERTE</span>' +
+        '<span class="alert-bar-label-text" data-i18n="alertbar.label">ALERTE</span>' +
       '</a>' +
       '<div class="alert-bar-track" id="alert-bar-track">' +
         '<div class="alert-bar-strip" id="alert-bar-strip"></div>' +
@@ -179,7 +214,7 @@
 
   function buildBarItems(alerts) {
     return alerts.map(function(a) {
-      var lbl = ALERT_BAR_LABELS[a.level] || a.level;
+      var lbl = alertBarLabel(a.level);
       var sc  = a.score !== null ? ' \u00b7\u00a0z\u00a0' + a.score.toFixed(1) + '\u00d7' : '';
       return '<span class="alert-bar-item level-' + escHtml(a.level) + '">' +
         '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
@@ -271,17 +306,26 @@
     });
   }
 
+  var _lastAlertGraphData = null;
   function initAlertBar() {
     injectAlertBar();
     fetch('./graph.json', { cache: 'no-store' })
       .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-      .then(function(data) { populateAlertBar(data); })
+      .then(function(data) {
+        _lastAlertGraphData = data;
+        populateAlertBar(data);
+      })
       .catch(function() {
         var bar = document.getElementById('global-alert-bar');
         if (bar) bar.style.display = 'none';
         document.body.classList.remove('has-alert-bar');
       });
   }
+  // Re-render le bandeau si la langue change (les badges Alerte/Veille
+  // sont des chaînes traduites, pas des éléments data-i18n).
+  document.addEventListener('i18n:applied', function () {
+    if (_lastAlertGraphData) populateAlertBar(_lastAlertGraphData);
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAlertBar, { once: true });

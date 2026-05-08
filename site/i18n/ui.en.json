@@ -1,0 +1,279 @@
+{
+  "lang": {
+    "name_fr": "French",
+    "name_en": "English",
+    "switch_to_en": "EN",
+    "switch_to_fr": "FR",
+    "tooltip": "Switch language"
+  },
+
+  "nav": {
+    "home_logo_aria": "Back to Radar+ home",
+    "menu_open_aria": "Open menu",
+    "menu_open_hint": "Open menu",
+    "main_nav_aria": "Main navigation",
+    "section_navigation": "Navigation",
+    "section_about": "About",
+    "home": "Home",
+    "constellation": "Constellation",
+    "evolution": "Evolution",
+    "alertes": "Alerts",
+    "statistiques": "Statistics",
+    "sonar": "Sonar",
+    "hot20": "Hot 20",
+    "unes": "On the radar",
+    "analyses": "Analyses",
+    "radarplus": "Radar+",
+    "methodologie": "Methodology",
+    "partenaires": "Partners & contributors",
+    "acces_donnees": "Data access",
+    "github": "GitHub",
+    "badge_live": "LIVE",
+    "badge_timeline": "TIMELINE",
+    "badge_object": "OBJECT",
+    "badge_monitoring": "MONITORING",
+    "alert_marker": "!"
+  },
+
+  "alertbar": {
+    "label": "ALERT",
+    "view_alerts_aria": "View alerts",
+    "active_aria": "Active saliency alerts",
+    "level": {
+      "strong": "Strong alert",
+      "alert": "Alert",
+      "watch": "Watch",
+      "emerging": "Emerging"
+    }
+  },
+
+  "common": {
+    "loading": "Loading…",
+    "loading_constellation": "initializing · constellation",
+    "loading_articles": "Loading articles…",
+    "loading_history": "Loading history…",
+    "loading_ticker": "Loading headlines…",
+    "no_articles": "No articles available for this period.",
+    "no_articles_dataset": "No article associated in this dataset.",
+    "previous": "Previously",
+    "object": "object",
+    "objects": "objects",
+    "links": "links",
+    "convergence": "convergence",
+    "media": "media outlet",
+    "medias": "media outlets",
+    "article": "article",
+    "articles": "articles",
+    "mention": "mention",
+    "mentions": "mentions",
+    "block_4h": "4h block",
+    "blocks_4h": "4h blocks",
+    "since_start": "Since the beginning",
+    "see_alerts": "See alerts",
+    "view_in_evolution": "View in Evolution",
+    "view_evolution_long": "View evolution over time",
+    "view_full_methodology": "View full methodology",
+    "search_placeholder": "Search an object…",
+    "search_radar_placeholder": "Is X on the radar?",
+    "no_match": "— not found",
+    "other_period": "↳ other slot",
+    "remove": "Remove",
+    "close_panel_aria": "Close panel",
+    "in_progress": "Active",
+    "ended": "Ended",
+    "all": "All",
+    "all_levels": "All levels",
+    "all_countries": "All"
+  },
+
+  "country": {
+    "QC": "Quebec",
+    "CAN": "Canada",
+    "USA": "United States"
+  },
+
+  "period": {
+    "label": "Period",
+    "4h": "4 h",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "quarter": "Year",
+    "total": "Total",
+    "week_short": "Wk."
+  },
+
+  "subtitle": {
+    "4h": "Edition (4h)",
+    "day": "Today",
+    "week": "This week",
+    "month": "This month",
+    "quarter": "This year",
+    "total": "Since the beginning"
+  },
+
+  "increase_tip": {
+    "4h": "Saliency gained during this 4h block",
+    "day": "Saliency gained since the start of the day",
+    "week": "Saliency gained since the start of the week",
+    "month": "Saliency gained since the start of the month",
+    "quarter": "Saliency gained since the start of the year",
+    "total": "Total cumulated saliency (equals the score)"
+  },
+
+  "hero": {
+    "title": "RADAR+",
+    "beta": "BETA",
+    "explore": "Explore",
+    "scroll_aria": "Go to HOT 20"
+  },
+
+  "hot20": {
+    "title": "HOT",
+    "title_number": "20",
+    "header_rank": "Rank",
+    "header_movement": "Movement",
+    "header_subject": "Subject",
+    "header_score_increase": "Score · Increase",
+    "header_articles": "Articles",
+    "country_label": "Country",
+    "country_qc": "Quebec",
+    "country_can": "Canada",
+    "country_usa": "United States",
+    "next_update": "Next update",
+    "previous_week_aria": "Previous period",
+    "next_week_aria": "Next period",
+    "trend_new": "New",
+    "trend_return": "Return",
+    "trend_new_tip": "New entry in the Top 20 for this {gran}.",
+    "trend_return_tip": "Returning to the Top 20 after at least 2 {grans} of absence.",
+    "trend_up_tip": "Up {n} rank(s) compared to the previous {gran} (from {prev} to {now}).",
+    "trend_down_tip": "Down {n} rank(s) compared to the previous {gran} (from {prev} to {now}).",
+    "trend_stable_tip": "Unchanged position: rank {now} as in the previous {gran}.",
+    "streak_tip": "Present in the Top 20 for {n} consecutive {grans}.",
+    "score_tip": "Saliency cumulated since the beginning of data collection (all periods combined).",
+    "share_label": "of the radar",
+    "points_label": "pts",
+    "no_data_period": "No data for this {label}",
+    "no_data": "No data available",
+    "media_tip": "Media involved: {list}",
+    "media_tip_none": "No identified media outlet.",
+    "articles_tip": "{count} associated article(s)"
+  },
+
+  "constellation": {
+    "title": "Constellation",
+    "view_label": "View",
+    "search_label": "Search",
+    "hot10_label": "Hot 10",
+    "no_objects": "No object for this slot.",
+    "blocks_4h_count": "{label} · {count} 4h block(s)",
+    "label_summary": "{label} · {objects} objects · {links} links · convergence {conv}",
+    "click_outside_focus": "click outside the graph to return · {name}",
+    "loading_text": "initializing · constellation",
+    "tooltip_saliency": "saliency",
+    "tooltip_mentions": "mentions",
+    "tooltip_articles": "articles"
+  },
+
+  "evolution": {
+    "title": "Evolution",
+    "country_label": "Country",
+    "search_label": "Search",
+    "mode_hot10": "HOT 10",
+    "mode_search": "SEARCH",
+    "search_objects_placeholder": "Search objects…",
+    "clear_selection": "Clear selection",
+    "signals_count": "{n} signal(s)",
+    "signals_caption": "in the current period",
+    "previous_period_aria": "Previous period",
+    "next_period_aria": "Next period",
+    "blocks_completed": "{n} completed blocks",
+    "no_data": "No data for this slot."
+  },
+
+  "alertes": {
+    "title": "Saliency",
+    "title_accent": "alerts",
+    "subtitle": "Abnormal signals detected in media coverage",
+    "subtitle_window": "last {days} days",
+    "active_count": "{n} active alerts",
+    "filter_country": "Country",
+    "filter_status": "Status",
+    "filter_level": "Level",
+    "filter_search_placeholder": "Filter an object…",
+    "status_current": "Active",
+    "status_ended": "Ended",
+    "status_all": "All",
+    "level_all": "All levels",
+    "level_strong": "Strong alert",
+    "level_alert": "Alert",
+    "level_watch": "Watch",
+    "level_emerging": "Emerging",
+    "evo_cta": "View evolution over time",
+    "evo_cta_aria": "View alert evolution",
+    "card_score": "z-score",
+    "card_top_share": "share of top",
+    "card_top_share_tip": "Share of the Top 1 saliency for the country/period. Measures the real importance of the object on the radar right now.",
+    "card_peak_ratio": "vs annual peak",
+    "card_peak_tip_year": "Annual peak: {value}",
+    "card_peak_tip_none": "Annual peak unavailable",
+    "card_delta": "delta mentions",
+    "card_mentions": "mentions",
+    "view_in_evolution": "View in Evolution →",
+    "no_alerts_current": "No active alert for the selected filters.",
+    "no_alerts_ended": "No ended alert for the selected filters.",
+    "no_alerts_all": "No alert for the selected filters.",
+    "methodology_intro": "An alert flags an object that is both <em>unusual for itself</em> (sharp rise vs its last {days} days) <em>and genuinely visible</em> on the radar (significant weight vs the country’s Top). Three graded levels: <strong>Watch</strong>, <strong>Alert</strong>, <strong>Strong alert</strong>.",
+    "methodology_link": "View full methodology",
+    "level_short": {
+      "strong": "Strong",
+      "alert": "Alert",
+      "watch": "Watch",
+      "emerging": "Emerg."
+    },
+    "signal_one": "signal",
+    "signal_many": "signals"
+  },
+
+  "ticker": {
+    "label": "On the radar",
+    "label_arrow": "On the radar ↗",
+    "view_aria": "View all latest headlines",
+    "updated_label": "Headlines from {time}",
+    "empty": "Loading headlines…",
+    "error": "Ticker loading error.",
+    "no_articles": "No recent headline."
+  },
+
+  "object_panel": {
+    "saliency_score": "{score} pts · {mentions} mentions · {articles} article(s)",
+    "view_in_evolution": "View in Evolution →",
+    "no_articles_period": "No article associated in this slot.",
+    "previous_section": "Previously",
+    "alert_in_progress_tip": "Active saliency alert on this object."
+  },
+
+  "footer": {
+    "copyright": "© CLESSN · Université Laval · 24/7 media transparency"
+  },
+
+  "ranked_granularity": {
+    "day_label": "Day",
+    "week_label": "Week",
+    "month_label": "Month",
+    "year_label": "Year",
+    "total_label": "Since the beginning"
+  },
+
+  "fr_months": [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ],
+  "fr_months_short": [
+    "Jan","Feb","Mar","Apr","May","Jun",
+    "Jul","Aug","Sep","Oct","Nov","Dec"
+  ],
+  "fr_weekdays_short": ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+}
