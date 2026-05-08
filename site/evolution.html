@@ -14,7 +14,7 @@
     body { background: #00000f; font-family: 'Space Mono', 'SF Mono', monospace; overflow: hidden; height: 100vh; width: 100vw; }
     #graph { display: none; }
     #left-panel {
-      position: absolute; top: 0; left: 0; bottom: calc(var(--ticker-height, 44px) + 100px);
+      position: absolute; top: 0; left: 0; bottom: calc(var(--ticker-height, 44px) + 12px);
       width: 280px;
       display: flex; flex-direction: column; gap: 0;
       padding: 18px 14px 14px;
@@ -312,11 +312,11 @@
     }
     .lpanel-clear-btn.visible { display: block; }
     .lpanel-clear-btn:hover { border-color: rgba(200,80,80,0.5); color: rgba(220,100,100,0.9); }
-    #ranked-legend-list { display: flex; flex-direction: column; gap: 5px; overflow-y: auto; max-height: none; flex: 1; }
+    #ranked-legend-list { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; max-height: none; flex: 1; padding-bottom: 4px; }
     .rleg-item {
       display: flex; align-items: flex-start; gap: 6px;
       border: 1px solid rgba(90,130,250,0.14); border-radius: 5px;
-      background: rgba(8,18,48,0.50); padding: 7px 8px;
+      background: rgba(8,18,48,0.50); padding: 5px 8px;
       cursor: pointer; transition: all 0.15s;
     }
     .rleg-item:hover, .rleg-item.hovered {
