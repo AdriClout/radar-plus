@@ -509,13 +509,11 @@
   setIfFn('enableZoomInteraction', false);
   setIfFn('enablePanInteraction', false);
   setIfFn('enableNodeDrag', false);
-  // 180 ticks (~3s à 60fps) pour que charge+link+collide convergent.
-  // La simulation est volontairement visible — on voit les nœuds se
-  // placer intelligemment dans l'espace — puis onEngineStop fige le
-  // layout et l'anime doucement vers la zone visible (transition
-  // 600ms, hors panneau gauche et hors timeline/ticker du bas).
-  setIfFn('cooldownTicks', 180);
-  setIfFn('onEngineStop', () => fitGraphToView(600));
+  // 120 ticks (~2s à 60fps) — combiné au pré-positionnement circulaire
+  // et aux forces affaiblies, le layout converge sans excursion
+  // visuelle disgracieuse. onEngineStop fige et cadre.
+  setIfFn('cooldownTicks', 120);
+  setIfFn('onEngineStop', () => fitGraphToView(700));
   // Nœuds par défaut (cercles) — couleur + taille via API standard
   setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
   setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
@@ -528,11 +526,12 @@
   setIfFn('linkDirectionalParticleWidth', 2);
   setIfFn('linkDirectionalParticleSpeed', 0.005);
   setIfFn('linkDirectionalParticleColor', l => { const t=Math.min(1,Math.log((l.value||1)+1)/Math.log(12)); return `rgba(${Math.round(100+t*155)},${Math.round(100+t*100)},255,0.9)`; });
-  // Amortissement: alphaDecay assez rapide pour converger en ~150 ticks,
-  // velocityDecay élevé pour que les nœuds ne dérivent pas trop entre
-  // chaque tick. Combiné, le layout est stable et figé sur l'écran.
-  setIfFn('d3AlphaDecay', 0.025);
-  setIfFn('d3VelocityDecay', 0.45);
+  // Amortissement: alphaDecay assez rapide pour converger en ~120 ticks,
+  // velocityDecay élevé pour amortir vivement les déplacements (évite
+  // l'effet "expulsion vers l'infini puis retour" causé par la
+  // répulsion charge sur des nœuds initialement proches).
+  setIfFn('d3AlphaDecay', 0.035);
+  setIfFn('d3VelocityDecay', 0.55);
   // Étoiles (avant) + halos de nœuds (avant le cercle par défaut)
   setIfFn('onRenderFramePre', (ctx, gs) => {
       // 1. Étoiles en coords écran
@@ -594,15 +593,15 @@
   setIfFn('onNodeClick', handleClick);
 
   // ── Forces du layout ──────────────────────────────────────────────────────
-  // - charge: répulsion modérée pour ne pas trop éparpiller les clusters
-  // - link.distance: liaison courte (60px) → clusters compacts, le fit
-  //   final utilisera mieux la viewport
-  // - collide: force custom qui empêche le chevauchement des disques (et
-  //   par conséquent des labels collés à droite des disques) en
-  //   maintenant un padding autour de chaque nœud proportionnel à sa
-  //   taille + 8px constants pour la zone label.
-  Graph.d3Force('charge').strength(-180);
-  Graph.d3Force('link').distance(60);
+  // - charge: répulsion modérée. Plus faible qu'auparavant car combinée
+  //   au pré-positionnement circulaire, on n'a plus besoin de pousser
+  //   fort pour démêler les nœuds.
+  // - link.distance: liaisons courtes (50px) pour des clusters compacts.
+  // - collide: empêche le chevauchement disque+label.
+  // - center: force radiale douce qui ramène l'ensemble vers (0,0) —
+  //   évite que les clusters disconnectés ne dérivent à l'infini.
+  Graph.d3Force('charge').strength(-130);
+  Graph.d3Force('link').distance(50);
 
   function nodeRadius(n) { return 3 * Math.sqrt(Math.max(4, n.size * 0.5)); }
 
@@ -629,6 +628,22 @@
     }
   }
   Graph.d3Force('collide', collideForce);
+
+  // Force radiale: tire chaque nœud vers (0,0) avec une intensité
+  // proportionnelle à sa distance. Empêche les clusters disconnectés
+  // de partir à l'infini sous l'effet de charge.
+  function gentleCenter(strength) {
+    return function(alpha) {
+      const nodes = Graph.graphData().nodes;
+      const k = strength * alpha;
+      for (const n of nodes) {
+        if (n.x == null || n.y == null) continue;
+        n.vx = (n.vx || 0) - n.x * k;
+        n.vy = (n.vy || 0) - n.y * k;
+      }
+    };
+  }
+  Graph.d3Force('gentleCenter', gentleCenter(0.06));
 
   window.addEventListener('resize', () => {
     Graph.width(window.innerWidth).height(window.innerHeight);
@@ -715,6 +730,22 @@
     const prev = {};
     (Graph.graphData().nodes || []).forEach(n => { prev[n.id] = {x: n.x, y: n.y}; });
     gd.nodes.forEach(n => { if (prev[n.id]) Object.assign(n, prev[n.id]); });
+
+    // Pré-positionnement circulaire des nouveaux nœuds (sans coords
+    // héritées). Les place sur un cercle régulier autour de (0,0)
+    // plutôt qu'au hasard, ce qui rend la convergence du layout
+    // beaucoup plus élégante (pas d'expulsion brutale).
+    const newNodes = gd.nodes.filter(n => !Number.isFinite(n.x) || !Number.isFinite(n.y));
+    if (newNodes.length) {
+      const radius = Math.max(80, 22 * Math.sqrt(gd.nodes.length));
+      const angleStart = Math.random() * Math.PI * 2;
+      newNodes.forEach((n, i) => {
+        const angle = angleStart + (i / newNodes.length) * Math.PI * 2;
+        n.x = radius * Math.cos(angle);
+        n.y = radius * Math.sin(angle);
+      });
+    }
+
     gd.nodes.forEach(n => { n._highlighted = true; });
     gd.links.forEach(l => { l._highlighted = true; });
     focusedNode = null;

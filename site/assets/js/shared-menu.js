@@ -1,6 +1,34 @@
 (function(window, document) {
   'use strict';
 
+  /* ================================================================
+     GOOGLE ANALYTICS 4 (gtag.js)
+     Property "Radar+" sur le compte personnel Adrien Cloutier.
+     Inject ASAP pour ne perdre aucun pageview. Les événements custom
+     sont envoyés ailleurs dans le code via window.gtag('event', ...).
+  ================================================================ */
+  var GA_MEASUREMENT_ID = 'G-Y2X19DCWGZ';
+  (function loadGtag() {
+    if (window.gtag || !GA_MEASUREMENT_ID) return;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function() { window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', GA_MEASUREMENT_ID, {
+      // Anonymize IP par défaut, plus respectueux et conforme RGPD
+      anonymize_ip: true
+    });
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_MEASUREMENT_ID;
+    (document.head || document.documentElement).appendChild(s);
+  })();
+
+  // Helper exposé pour les pages: window.radarTrack('event_name', { ... })
+  window.radarTrack = function(eventName, params) {
+    if (typeof window.gtag !== 'function') return;
+    try { window.gtag('event', eventName, params || {}); } catch (_) { /* noop */ }
+  };
+
   var HOME_LOGO_SVG =
     '<svg viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
       '<g transform="translate(0,700) scale(0.1,-0.1)" stroke="none">' +
