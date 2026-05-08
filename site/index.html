@@ -339,6 +339,47 @@
     .hot20-row.rank-3 { border-left: 3px solid rgba(200,150,80,0.5); }
     .hot20-row.rank-1:hover { background: rgba(80,60,10,0.22); }
 
+    /* Alertes en cours — override visuel (priorité sur la médaille) */
+    .hot20-row.alert-watch    { border-left: 3px solid rgba(255,210,90,0.78); background: rgba(72,58,20,0.20); }
+    .hot20-row.alert-alert    { border-left: 3px solid rgba(255,143,92,0.85); background: rgba(86,38,24,0.22); }
+    .hot20-row.alert-strong   { border-left: 3px solid rgba(255,110,110,0.92); background: rgba(92,24,28,0.26); box-shadow: inset 3px 0 12px rgba(255,90,90,0.10); }
+    .hot20-row.alert-emerging { border-left: 3px solid rgba(120,190,255,0.72); background: rgba(18,56,92,0.20); }
+    .hot20-row.alert-watch:hover    { background: rgba(94,76,26,0.28); }
+    .hot20-row.alert-alert:hover    { background: rgba(112,50,30,0.30); }
+    .hot20-row.alert-strong:hover   { background: rgba(120,32,36,0.34); }
+    .hot20-row.alert-emerging:hover { background: rgba(24,72,118,0.28); }
+
+    .hot20-alert-badge {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 0.9px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      margin-left: 8px;
+      vertical-align: middle;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .hot20-alert-badge.level-watch    { color: rgba(255,224,112,0.96); border: 1px solid rgba(224,196,88,0.55); background: rgba(74,60,16,0.62); }
+    .hot20-alert-badge.level-alert    { color: rgba(255,186,136,0.98); border: 1px solid rgba(255,143,92,0.65); background: rgba(88,40,24,0.68); }
+    .hot20-alert-badge.level-strong   { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.72); background: rgba(98,22,28,0.72); animation: hot20-alert-pulse 1.6s ease-in-out infinite; }
+    .hot20-alert-badge.level-emerging { color: rgba(160,210,255,0.96); border: 1px solid rgba(112,186,245,0.55); background: rgba(18,56,92,0.62); }
+    @keyframes hot20-alert-pulse {
+      0%, 100% { box-shadow: 0 0 0 rgba(255,90,90,0); }
+      50%      { box-shadow: 0 0 10px rgba(255,90,90,0.45); }
+    }
+    .hot20-row-name-wrap {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    .hot20-row-name-wrap .hot20-row-name {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
     .hot20-row-rank {
       font-family: var(--orbitron); font-size: clamp(20px, 2.4vw, 28px);
       font-weight: 700; color: rgba(80,130,255,0.35);
@@ -1706,6 +1747,27 @@ function renderHot20() {
   /* Store nodes for click handler */
   window._hot20Nodes = nodes;
 
+  /* Alertes en cours: lookup sur la dernière période disponible de
+     graphData (la plus récente), indépendamment de la granularité
+     affichée. Permet de signaler "ALERTE / VEILLE / FORTE" pour les
+     objets actuellement en alerte, même quand on regarde une période
+     agrégée (semaine/mois/année). */
+  var currentAlertByName = {};
+  var ALERT_BADGE_LABELS = { strong: 'Forte', alert: 'Alerte', watch: 'Veille', emerging: 'Émergent' };
+  try {
+    var meta = (graphData && graphData.meta) || {};
+    var periodsList = meta.periods || [];
+    var latestKey = periodsList.length ? periodsList[periodsList.length - 1].key : null;
+    var latestGd = latestKey && graphData.graphs && graphData.graphs[currentCountry]
+      ? graphData.graphs[currentCountry][latestKey] : null;
+    var latestNodes = latestGd && latestGd.nodes ? latestGd.nodes : [];
+    latestNodes.forEach(function(n) {
+      var lvl = n.alert_level;
+      if (!n.alert_active || !lvl || lvl === 'normal' || lvl === 'none') return;
+      currentAlertByName[n.id] = lvl;
+    });
+  } catch (_) { /* noop */ }
+
   /* Granularity-specific labels for tooltips */
   var granLabel = { '4h': 'bloc horaire (4 h)', day: 'journée', week: 'semaine', month: 'mois', quarter: 'année' };
   var granLabelPlural = { '4h': 'blocs horaires', day: 'jours', week: 'semaines', month: 'mois', quarter: 'années' };
@@ -1768,11 +1830,21 @@ function renderHot20() {
       /* Rank class */
       var rankClass = i < 3 ? ' rank-' + (i + 1) : '';
 
-      return '<div class="hot20-row' + rankClass + '" data-node-idx="' + i + '" data-node-id="' + escapeHtml(node.id) + '">' +
+      /* Alerte en cours sur l'objet (lookup période la plus récente) */
+      var alertLvl = currentAlertByName[node.id] || null;
+      var alertClass = alertLvl ? ' alert-' + alertLvl : '';
+      var alertBadgeHtml = alertLvl
+        ? '<span class="hot20-alert-badge level-' + alertLvl + '" data-tip="Alerte de saillance en cours sur cet objet.">' + escapeHtml(ALERT_BADGE_LABELS[alertLvl] || alertLvl) + '</span>'
+        : '';
+
+      return '<div class="hot20-row' + rankClass + alertClass + '" data-node-idx="' + i + '" data-node-id="' + escapeHtml(node.id) + '">' +
         '<div class="hot20-row-rank">' + (i + 1) + '</div>' +
         '<div class="hot20-row-trend">' + trendHtml + '</div>' +
         '<div class="hot20-row-info">' +
-          '<div class="hot20-row-name">' + escapeHtml(name) + '</div>' +
+          '<div class="hot20-row-name-wrap">' +
+            '<div class="hot20-row-name">' + escapeHtml(name) + '</div>' +
+            alertBadgeHtml +
+          '</div>' +
           streakHtml +
         '</div>' +
         '<div class="hot20-row-score">' +
