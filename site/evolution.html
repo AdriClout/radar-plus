@@ -625,6 +625,7 @@
         <button class="win-btn" data-gran="week" type="button" aria-label="Période semaine">Semaine</button>
         <button class="win-btn" data-gran="month" type="button" aria-label="Période mois">Mois</button>
         <button class="win-btn" data-gran="year" type="button" aria-label="Période année">Année</button>
+        <button class="win-btn" data-gran="total" type="button" aria-label="Période totale">Total</button>
       </div>
       <div id="window-granularity"></div>
     </div>
@@ -1117,10 +1118,11 @@
   const panelState = { nodeId: null, expanded: false, contextPeriod: null };
 
   const RANKED_GRANULARITIES = {
-    day: { topN: 10, emptyLabel: 'Journée' },
-    week: { topN: 12, emptyLabel: 'Semaine' },
+    day:   { topN: 10, emptyLabel: 'Journée' },
+    week:  { topN: 12, emptyLabel: 'Semaine' },
     month: { topN: 14, emptyLabel: 'Mois' },
-    year: { topN: 16, emptyLabel: 'Année' },
+    year:  { topN: 16, emptyLabel: 'Année' },
+    total: { topN: 20, emptyLabel: 'Depuis le début' },
   };
   const FR_MONTHS = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
   const FR_MONTHS_SHORT = ['janv.', 'fevr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'aout', 'sept.', 'oct.', 'nov.', 'dec.'];
@@ -1187,18 +1189,20 @@
     sourcePeriods.forEach(p => {
       const dateStr = periodDisplayDate(p);
       let bucketKey = dateStr;
-      if (rankedGranularity === 'week') bucketKey = dateToWeekKey(dateStr);
+      if (rankedGranularity === 'week')       bucketKey = dateToWeekKey(dateStr);
       else if (rankedGranularity === 'month') bucketKey = dateToMonthKey(dateStr);
-      else if (rankedGranularity === 'year') bucketKey = dateToYearKey(dateStr);
+      else if (rankedGranularity === 'year')  bucketKey = dateToYearKey(dateStr);
+      else if (rankedGranularity === 'total') bucketKey = 'all';
       if (!buckets.has(bucketKey)) buckets.set(bucketKey, []);
       buckets.get(bucketKey).push(p);
     });
 
     rankedSlots = [...buckets.entries()].map(([bucketKey, slotPeriods]) => {
       let label = bucketKey;
-      if (rankedGranularity === 'day') label = toDayLabel(bucketKey);
-      else if (rankedGranularity === 'week') label = toWeekLabel(bucketKey);
+      if (rankedGranularity === 'day')        label = toDayLabel(bucketKey);
+      else if (rankedGranularity === 'week')  label = toWeekLabel(bucketKey);
       else if (rankedGranularity === 'month') label = toMonthLabel(bucketKey);
+      else if (rankedGranularity === 'total') label = 'Depuis le début';
       return {
         key: bucketKey,
         label,

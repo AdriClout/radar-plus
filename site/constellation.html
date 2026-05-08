@@ -536,6 +536,7 @@
         <button class="win-btn"        data-gran="week"  type="button" aria-label="Période semaine">Semaine</button>
         <button class="win-btn"        data-gran="month" type="button" aria-label="Période mois">Mois</button>
         <button class="win-btn"        data-gran="year"  type="button" aria-label="Période année">Année</button>
+        <button class="win-btn"        data-gran="total" type="button" aria-label="Période totale">Total</button>
       </div>
       <div id="window-meta"></div>
     </div>
@@ -999,9 +1000,11 @@
   const SPEEDS       = [1500, 700, 250];
   const SPEED_LABELS = ['1×', '2×', '5×'];
 
-  // Granularité: agrège les blocs 4h en jour/semaine/mois/année et
-  // navigue par créneaux à cette granularité (parité avec evolution.html).
-  const GRAN_SET = ['day', 'week', 'month', 'year'];
+  // Granularité: agrège les blocs 4h en jour/semaine/mois/année/total
+  // et navigue par créneaux à cette granularité (parité avec
+  // evolution.html). 'total' = un seul slot couvrant toutes les
+  // périodes disponibles.
+  const GRAN_SET = ['day', 'week', 'month', 'year', 'total'];
   let rankedGranularity = GRAN_SET.includes(urlGran) ? urlGran : 'day';
 
   // Mois/jours FR pour les labels de slots
@@ -1022,6 +1025,7 @@
     if (gran === 'week')  return dateToWeekKey(ds);
     if (gran === 'month') return ds.slice(0, 7);
     if (gran === 'year')  return ds.slice(0, 4);
+    if (gran === 'total') return 'all';
     return ds; // day
   }
   function labelForBucket(bucketKey, gran) {
@@ -1036,6 +1040,9 @@
     if (gran === 'month') {
       const [y, m] = bucketKey.split('-').map(Number);
       return `${FR_MONTHS[Math.max(0, m-1)]} ${y}`;
+    }
+    if (gran === 'total') {
+      return 'Depuis le début';
     }
     return bucketKey; // year
   }
@@ -1068,7 +1075,7 @@
   // (ex: une année cumule >1000 objets uniques qui forment un blob).
   // Liens aussi filtrés aux paires entre nodes retenus.
   const ALERT_RANK = { strong: 4, alert: 3, watch: 2, emerging: 1, none: 0, normal: 0 };
-  const SLOT_TOP_N = { day: 30, week: 40, month: 55, year: 70 };
+  const SLOT_TOP_N = { day: 30, week: 40, month: 55, year: 70, total: 80 };
   function aggregateSlot(country, slot) {
     if (!slot || !slot.periodKeys.length) return { nodes: [], links: [] };
     const nodeMap = new Map();

@@ -1020,6 +1020,7 @@
           <button class="granularity-tab" data-gran="week">Semaine</button>
           <button class="granularity-tab" data-gran="month">Mois</button>
           <button class="granularity-tab" data-gran="quarter">Année</button>
+          <button class="granularity-tab" data-gran="total">Total</button>
         </div>
       </div>
       <div class="week-nav">
@@ -1576,7 +1577,9 @@ function buildSlots() {
       bucketKey = dateToWeekKey(dateStr);
     } else if (currentGranularity === 'month') {
       bucketKey = dateToMonthKey(dateStr);
-    } else { // quarter
+    } else if (currentGranularity === 'quarter') {
+      bucketKey = dateStr.slice(0, 4); // bucket par année
+    } else { // 'total'
       bucketKey = 'all';
     }
     if (!buckets[bucketKey]) {
@@ -1606,9 +1609,16 @@ function buildSlots() {
       var mYear = parseInt(mp[0]);
       var mIdx = parseInt(mp[1]) - 1;
       interval = 'Saillance cumulée depuis le ' + formatStartDateFr(1, mIdx, mYear);
-    } else {
-      dateLabel = String(fallbackYear);
-      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(1, 0, fallbackYear);
+    } else if (currentGranularity === 'quarter') {
+      dateLabel = String(bk);
+      interval = 'Saillance cumulée pour l\'année ' + bk;
+    } else { // total
+      var firstKey = keys[0];
+      var firstDate = firstKey ? new Date(periodKeyToDate(firstKey) + 'T00:00:00') : null;
+      dateLabel = 'Depuis le début';
+      interval = firstDate
+        ? 'Saillance cumulée depuis le ' + formatStartDateFr(firstDate.getDate(), firstDate.getMonth(), firstDate.getFullYear())
+        : 'Saillance cumulée sur toutes les données disponibles';
     }
     return { periodKeys: keys, dateLabel: dateLabel, interval: interval, bucketKey: bk };
   });
@@ -1670,7 +1680,7 @@ function renderHot20() {
   var subtitleEl = document.getElementById('hot20-subtitle');
 
   // Update subtitle
-  var subtitleMap = { '4h': 'Édition (4h)', day: 'Aujourd\'hui', week: 'Cette semaine', month: 'Ce mois-ci', quarter: 'Cette année' };
+  var subtitleMap = { '4h': 'Édition (4h)', day: 'Aujourd\'hui', week: 'Cette semaine', month: 'Ce mois-ci', quarter: 'Cette année', total: 'Depuis le début' };
   subtitleEl.textContent = subtitleMap[currentGranularity] || '';
 
   if (!aggregatedSlots.length) {
@@ -1802,8 +1812,8 @@ function renderHot20() {
   } catch (_) { /* noop */ }
 
   /* Granularity-specific labels for tooltips */
-  var granLabel = { '4h': 'bloc horaire (4 h)', day: 'journée', week: 'semaine', month: 'mois', quarter: 'année' };
-  var granLabelPlural = { '4h': 'blocs horaires', day: 'jours', week: 'semaines', month: 'mois', quarter: 'années' };
+  var granLabel = { '4h': 'bloc horaire (4 h)', day: 'journée', week: 'semaine', month: 'mois', quarter: 'année', total: 'période totale' };
+  var granLabelPlural = { '4h': 'blocs horaires', day: 'jours', week: 'semaines', month: 'mois', quarter: 'années', total: 'période totale' };
   var gl = granLabel[currentGranularity] || 'période';
   var glp = granLabelPlural[currentGranularity] || 'périodes';
 
@@ -1905,7 +1915,8 @@ function renderHot20() {
         day:      'Saillance gagnée depuis le début de la journée',
         week:     'Saillance gagnée depuis le début de la semaine',
         month:    'Saillance gagnée depuis le début du mois',
-        quarter:  'Saillance gagnée depuis le début de l\'année'
+        quarter:  'Saillance gagnée depuis le début de l\'année',
+        total:    'Saillance cumulée totale (égale au score)'
       };
       var increaseTip = increaseTipMap[currentGranularity] || 'Saillance gagnée pendant ce créneau';
 
@@ -1920,7 +1931,10 @@ function renderHot20() {
           streakHtml +
         '</div>' +
         '<div class="hot20-row-score">' +
-          '<div class="hot20-row-pct hot20-hint" data-tip="Saillance cumulée depuis le début de la collecte (toutes périodes confondues)."><strong>' + totalStr + '</strong> pts <span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span></div>' +
+          '<div class="hot20-row-pct">' +
+            '<span class="hot20-row-total hot20-hint" data-tip="Saillance cumulée depuis le début de la collecte (toutes périodes confondues)."><strong>' + totalStr + '</strong> pts</span>' +
+            (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
+          '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
         '</div>' +
         '<div class="hot20-row-media hot20-hint" data-tip="' + articlesTip + '">' + articleCount + ' article' + (articleCount > 1 ? 's' : '') + '</div>' +
