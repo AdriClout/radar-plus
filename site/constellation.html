@@ -804,10 +804,12 @@
   function aspectAwareCenter(strength) {
     return function(alpha) {
       const nodes = Graph.graphData().nodes;
-      const aspect = visibleAspect();
+      // Ratio modéré: sqrt(aspect) au lieu de aspect — sinon le rappel
+      // est quadratique et le graphe déborde trop.
+      const stretch = Math.sqrt(visibleAspect());
       const k = strength * alpha;
-      const kx = k / aspect; // moins fort → les nœuds peuvent s'étaler en X
-      const ky = k * aspect; // plus fort → ils restent compacts en Y
+      const kx = k / stretch;
+      const ky = k * stretch;
       for (const n of nodes) {
         if (n.x == null || n.y == null) continue;
         n.vx = (n.vx || 0) - n.x * kx;
@@ -989,13 +991,30 @@
     const nodes = Graph.graphData().nodes || [];
     if (!nodes.length) return;
 
+    // Centroïde rapide pour deviner de quel côté chaque label sera
+    // dessiné (cohérent avec la logique onRenderFramePost).
+    let cx0 = 0, cn = 0;
+    for (const n of nodes) {
+      if (!Number.isFinite(n.x)) continue;
+      cx0 += n.x; cn++;
+    }
+    cx0 = cn ? cx0 / cn : 0;
+
+    // Bbox étendue: chaque nœud "occupe" en X non seulement son
+    // disque mais aussi son label (largeur ≈ 6px/char) du côté
+    // opposé au centroïde, pour que rien ne soit clipé après fit.
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const n of nodes) {
       if (!Number.isFinite(n.x) || !Number.isFinite(n.y)) continue;
-      if (n.x < minX) minX = n.x;
-      if (n.x > maxX) maxX = n.x;
-      if (n.y < minY) minY = n.y;
-      if (n.y > maxY) maxY = n.y;
+      const r = 3 * Math.sqrt(Math.max(4, (Number(n.size) || 0) * 0.5));
+      const labelW = (n.id || '').length * 6 + 8;
+      let nx0 = n.x - r, nx1 = n.x + r;
+      if (n.x < cx0) nx0 -= labelW; else nx1 += labelW;
+      const ny0 = n.y - r - 6, ny1 = n.y + r + 6;
+      if (nx0 < minX) minX = nx0;
+      if (nx1 > maxX) maxX = nx1;
+      if (ny0 < minY) minY = ny0;
+      if (ny1 > maxY) maxY = ny1;
     }
     if (!Number.isFinite(minX)) return;
 
@@ -1049,16 +1068,14 @@
     (Graph.graphData().nodes || []).forEach(n => { prev[n.id] = {x: n.x, y: n.y}; });
     gd.nodes.forEach(n => { if (prev[n.id]) Object.assign(n, prev[n.id]); });
 
-    // Pré-positionnement elliptique des nouveaux nœuds, ratio aligné
-    // sur l'aspect de la zone visible — démarrage cohérent avec ce
-    // que la force aspectAwareCenter va maintenir au final, donc pas
-    // de "réajustement" visible vers une ellipse étirée.
+    // Pré-positionnement elliptique modéré (stretch = sqrt(aspect) —
+    // pas exagéré). Démarre cohérent avec aspectAwareCenter.
     const newNodes = gd.nodes.filter(n => !Number.isFinite(n.x) || !Number.isFinite(n.y));
     if (newNodes.length) {
-      const baseR  = Math.max(80, 22 * Math.sqrt(gd.nodes.length));
-      const aspect = visibleAspect();
-      const rX     = baseR * Math.sqrt(aspect);
-      const rY     = baseR / Math.sqrt(aspect);
+      const baseR   = Math.max(80, 22 * Math.sqrt(gd.nodes.length));
+      const stretch = Math.sqrt(visibleAspect());
+      const rX      = baseR * stretch;
+      const rY      = baseR / stretch;
       const angleStart = Math.random() * Math.PI * 2;
       newNodes.forEach((n, i) => {
         const angle = angleStart + (i / newNodes.length) * Math.PI * 2;
