@@ -333,6 +333,14 @@ body.has-shared-menu .topbar {
   color: rgba(255,210,210,0.98) !important;
 }
 
+/* Pousse le contenu en flow naturel sous le bandeau (pages text:
+   radarplus, methodologie, partenaires, acces-donnees, unes, etc.).
+   Sans effet sur les enfants position:fixed/absolute, qui sont gérés
+   au cas par cas plus bas. */
+body.has-alert-bar {
+  padding-top: var(--alert-bar-h);
+}
+
 /* Décale le contenu de la page quand le bandeau est actif */
 body.has-alert-bar .nav-toggle {
   top: calc(20px + var(--alert-bar-h));
@@ -343,9 +351,24 @@ body.has-alert-bar .menu-discover-hint {
 body.has-alert-bar .home-logo {
   top: calc(18px + var(--alert-bar-h));
 }
-/* Pages avec un panneau latéral fixé au top (evolution.html) */
+/* evolution.html: panneau gauche + barre de navigation période */
 body.has-alert-bar #left-panel {
   top: var(--alert-bar-h);
+}
+body.has-alert-bar #period-nav-row {
+  top: calc(14px + var(--alert-bar-h));
+}
+/* constellation.html: header titres/boutons */
+body.has-alert-bar #header {
+  top: var(--alert-bar-h);
+}
+/* Slide-in panels qui prennent 100vh — header ne doit pas
+   passer sous le bandeau quand ils s'ouvrent */
+body.has-alert-bar .article-panel,
+body.has-alert-bar .detail-panel,
+body.has-alert-bar #object-panel {
+  top: var(--alert-bar-h);
+  height: calc(100vh - var(--alert-bar-h));
 }
 
 /* ================================================================
