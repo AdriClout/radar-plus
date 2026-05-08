@@ -509,11 +509,22 @@
   setIfFn('enableZoomInteraction', false);
   setIfFn('enablePanInteraction', false);
   setIfFn('enableNodeDrag', false);
-  // 150 ticks suffisent pour stabiliser le layout (~2.5s à 60fps),
-  // après quoi onEngineStop fige la simulation et on cadre le graphe
-  // entièrement dans la viewport.
-  setIfFn('cooldownTicks', 150);
-  setIfFn('onEngineStop', () => fitGraphToView(0));
+  // 180 ticks suffisent pour que charge + link + collide convergent
+  // (~3s à 60fps). Le 1er onEngineStop cadre le graphe et masque le
+  // loading screen — l'utilisateur ne voit jamais la simulation
+  // s'animer, juste la constellation déjà figée.
+  setIfFn('cooldownTicks', 180);
+  let firstFitDone = false;
+  setIfFn('onEngineStop', () => {
+    // Masquer en premier pour ne jamais bloquer l'utilisateur sur
+    // le loading screen, même si le fit jette une erreur inattendue.
+    if (!firstFitDone) {
+      firstFitDone = true;
+      const el = document.getElementById('loading');
+      if (el) el.style.display = 'none';
+    }
+    fitGraphToView(0);
+  });
   // Nœuds par défaut (cercles) — couleur + taille via API standard
   setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
   setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
@@ -591,10 +602,43 @@
   setIfFn('onNodeHover', handleHover);
   setIfFn('onNodeClick', handleClick);
 
-  // Forces du layout: répulsion modérée + distance de lien ~80px,
-  // suffisamment amorti pour stabiliser en ~150 ticks.
-  Graph.d3Force('charge').strength(-220);
-  Graph.d3Force('link').distance(80);
+  // ── Forces du layout ──────────────────────────────────────────────────────
+  // - charge: répulsion modérée pour ne pas trop éparpiller les clusters
+  // - link.distance: liaison courte (60px) → clusters compacts, le fit
+  //   final utilisera mieux la viewport
+  // - collide: force custom qui empêche le chevauchement des disques (et
+  //   par conséquent des labels collés à droite des disques) en
+  //   maintenant un padding autour de chaque nœud proportionnel à sa
+  //   taille + 8px constants pour la zone label.
+  Graph.d3Force('charge').strength(-180);
+  Graph.d3Force('link').distance(60);
+
+  function nodeRadius(n) { return 3 * Math.sqrt(Math.max(4, n.size * 0.5)); }
+
+  function collideForce(alpha) {
+    const nodes = Graph.graphData().nodes;
+    const n = nodes.length;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const a = nodes[i], b = nodes[j];
+        if (a.x == null || b.x == null) continue;
+        const ra = nodeRadius(a) + 8;
+        const rb = nodeRadius(b) + 8;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const distSq = dx * dx + dy * dy;
+        const minDist = ra + rb;
+        if (distSq < minDist * minDist && distSq > 1e-4) {
+          const dist = Math.sqrt(distSq);
+          const push = ((minDist - dist) / 2) * alpha;
+          const ux = dx / dist, uy = dy / dist;
+          a.x -= ux * push; a.y -= uy * push;
+          b.x += ux * push; b.y += uy * push;
+        }
+      }
+    }
+  }
+  Graph.d3Force('collide', collideForce);
+
   window.addEventListener('resize', () => {
     Graph.width(window.innerWidth).height(window.innerHeight);
     fitGraphToView(0);
@@ -829,7 +873,8 @@
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
   });
 
-  document.getElementById('loading').style.display = 'none';
+  // Note: le loading reste visible jusqu'à ce que onEngineStop ait
+  // figé le layout — voir setIfFn('onEngineStop', ...) plus haut.
   applyTimelineHeat(currentCountry);
   loadPeriod(currentCountry, currentIdx);
 
