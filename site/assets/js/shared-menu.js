@@ -1,9 +1,33 @@
 (function(window, document) {
   'use strict';
 
+  var HOME_LOGO_SVG =
+    '<svg viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<g transform="translate(0,700) scale(0.1,-0.1)" stroke="none">' +
+        '<path class="rp-r" d="M262 3666 l3 -2051 338 0 c292 0 340 2 346 15 4 8 6 385 6 838 -1 821 -1 823 20 827 11 2 274 3 585 2 505 -3 572 -5 630 -21 94 -25 178 -70 235 -124 65 -60 98 -111 126 -192 24 -70 23 -50 33 -715 3 -265 5 -285 30 -380 15 -55 43 -134 63 -175 l36 -75 356 2 c196 0 366 1 379 2 22 1 22 3 -17 73 -59 108 -110 232 -136 333 -23 86 -24 105 -25 460 -1 204 -3 381 -5 395 -15 113 -25 159 -51 239 -62 187 -206 360 -361 436 -46 22 -83 43 -83 47 0 3 17 16 38 29 57 35 171 128 231 188 186 192 291 453 286 716 -4 164 -43 323 -120 481 -122 251 -309 434 -580 566 -127 62 -251 99 -420 124 -27 4 -476 8 -998 9 l-947 1 2 -2050z m1682 1463 c123 -1 174 -5 228 -20 271 -75 448 -306 451 -589 1 -101 -7 -159 -32 -231 -63 -182 -198 -310 -401 -381 -64 -22 -73 -22 -651 -26 l-585 -3 0 623 c-1 343 3 625 7 628 6 4 471 4 983 -1z"/>' +
+        '<path class="rp-plus" d="M5000 4840 l-55 -5 1 -590 c0 -324 -1 -595 -3 -600 -2 -7 -214 -10 -618 -10 -405 0 -616 -3 -618 -10 -3 -9 -1 -493 2 -505 0 -3 279 -5 619 -5 l617 0 1 -590 c1 -325 2 -597 3 -605 1 -14 39 -16 294 -16 l293 0 -1 599 c0 389 4 601 10 605 6 4 287 7 625 7 l615 0 0 257 c1 171 -3 259 -10 261 -5 2 -286 3 -622 3 -401 -1 -614 2 -616 9 -1 5 -2 275 -2 599 1 405 -2 589 -9 592 -17 6 -464 10 -526 4z"/>' +
+      '</g>' +
+    '</svg>';
+
+  function injectHomeLogo() {
+    var page = window.location.pathname.split('/').pop() || 'index.html';
+    // Skip sur l'accueil (où le logo serait redondant) et sur evolution.html
+    // qui a son propre #evo-logo intégré dans le panneau gauche.
+    if (page === 'index.html' || page === '' || document.getElementById('evo-logo')) return;
+    if (document.getElementById('home-logo')) return;
+    var a = document.createElement('a');
+    a.id = 'home-logo';
+    a.className = 'home-logo';
+    a.href = './';
+    a.setAttribute('aria-label', 'Retour à l’accueil Radar+');
+    a.innerHTML = HOME_LOGO_SVG;
+    document.body.insertBefore(a, document.body.firstChild);
+  }
+
   function setupSharedMenu() {
     if (document.querySelector('.side-nav')) return;
 
+    injectHomeLogo();
     document.body.classList.add('has-shared-menu');
 
     var navToggle = document.createElement('button');
@@ -191,11 +215,23 @@
     bar.classList.add('bar-' + alerts[0].level);
 
     var itemsHtml = buildBarItems(alerts);
-    strip.innerHTML = itemsHtml + itemsHtml; // doublon pour défilement infini
+    strip.innerHTML = itemsHtml + itemsHtml; // doublon initial pour défilement infini
 
     window.requestAnimationFrame(function() {
-      var w   = strip.scrollWidth / 2 || 800;
-      var dur = Math.max(18, Math.round(w / 55));
+      // L'animation translateX(-50%) suppose 2 moitiés identiques. Si le
+      // strip est plus étroit que la zone visible, on voit du vide à
+      // droite — on rajoute des copies (paire) jusqu'à dépasser la piste.
+      var track = document.getElementById('alert-bar-track');
+      var trackW = track ? track.clientWidth : 800;
+      var halfW  = strip.scrollWidth / 2 || 1;
+      if (halfW < trackW + 40) {
+        var copies = Math.max(2, Math.ceil((trackW + 40) / halfW) * 2);
+        var multi = '';
+        for (var i = 0; i < copies; i++) multi += itemsHtml;
+        strip.innerHTML = multi;
+        halfW = strip.scrollWidth / 2 || halfW;
+      }
+      var dur = Math.max(18, Math.round(halfW / 55));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
       bar.classList.add('ready');
     });
