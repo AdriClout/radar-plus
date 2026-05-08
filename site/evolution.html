@@ -306,7 +306,10 @@
     .evo-tt-name { color: rgba(175,205,255,0.9); flex: 1; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
     .evo-tt-val { color: rgba(160,200,255,0.8); font-size: 10px; }
     /* ── Sélecteur de fenêtre temporelle (dans #left-panel) ─────────────────── */
-    #window-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    /* Flex-wrap pour que le 5e bouton (Total) s'étire automatiquement
+       à 100% quand il est seul sur sa ligne. */
+    #window-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    #window-row .win-btn { flex: 1 1 calc(50% - 3px); min-width: 0; }
     #window-section { display: none; }
     #window-section.visible { display: flex; }
     .win-btn {
