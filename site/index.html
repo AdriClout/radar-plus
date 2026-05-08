@@ -1429,11 +1429,12 @@ function periodKeyToDate(key) {
 }
 
 function dateToWeekKey(dateStr) {
-  // ISO week: Monday-based. Returns "2026-W15"
+  // ISO 8601 week. Returns "2026-W19".
   var d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7)); // Thursday of same week
-  var yearStart = new Date(d.getFullYear(), 0, 4);
-  var weekNum = Math.round(((d - yearStart) / 86400000 + yearStart.getDay() + 6) / 7);
+  // Move to Thursday of same ISO week (treat Sunday as day 7)
+  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+  var yearStart = new Date(d.getFullYear(), 0, 1);
+  var weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
 }
 
