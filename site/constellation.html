@@ -352,9 +352,7 @@
   }
   let graphs  = graphData.graphs;
   let periods = graphData.meta.periods;
-  const countries   = graphData.meta.countries;
-  const allMediaIds = Array.isArray(graphData.meta.media_ids) ? graphData.meta.media_ids : [];
-  let mediaPanelCollapsed = false;
+  const countries = graphData.meta.countries;
 
   const TOP_LABELS     = Number.POSITIVE_INFINITY;
   const MAX_LINKS_NODE = 5;
@@ -390,115 +388,15 @@
     return [...kept];
   }
 
-  function normalizeMediaIds(mediaIds) {
-    return Array.isArray(mediaIds) ? mediaIds.filter(Boolean) : (mediaIds ? [mediaIds] : []);
-  }
-
-  function collectCountryMediaIds(country) {
-    const mediaSet = new Set();
-    const countryGraphs = graphs[country] || {};
-    Object.values(countryGraphs).forEach(g => {
-      (g.nodes || []).forEach(n => normalizeMediaIds(n.media_ids).forEach(m => mediaSet.add(m)));
-      (g.links || []).forEach(l => normalizeMediaIds(l.media_ids).forEach(m => mediaSet.add(m)));
-    });
-    return [...mediaSet].sort();
-  }
-
-  const mediaIdsByCountry = Object.fromEntries(
-    countries.map(country => [country, collectCountryMediaIds(country)])
-  );
-
-  const selectedMediaByCountry = Object.fromEntries(
-    countries.map(country => [country, new Set(mediaIdsByCountry[country])])
-  );
-
-  function getAvailableMediaIds(country = currentCountry) {
-    return mediaIdsByCountry[country] || [];
-  }
-
-  function getSelectedMedia(country = currentCountry) {
-    if (!selectedMediaByCountry[country]) {
-      selectedMediaByCountry[country] = new Set(getAvailableMediaIds(country));
-    }
-    return selectedMediaByCountry[country];
-  }
-
-  function hasMediaIntersection(mediaIds) {
-    const ids = normalizeMediaIds(mediaIds);
-    const selectedMedia = getSelectedMedia();
-    if (!ids.length) return false;
-    if (!selectedMedia.size) return false;
-    for (const m of ids) {
-      if (selectedMedia.has(m)) return true;
-    }
-    return false;
-  }
 
   function getGD(country, key) {
     const g = graphs[country]?.[key];
-    if (!g) return { nodes:[], links:[] };
-    let nodes = g.nodes.map(n=>({...n}));
-    let links = g.links.map(l=>({...l}));
-
-    const selectedMedia = getSelectedMedia(country);
-    const availableMediaIds = getAvailableMediaIds(country);
-    const filterActive = selectedMedia.size > 0 && selectedMedia.size < availableMediaIds.length;
-    if (filterActive) {
-      nodes = nodes.filter(n => hasMediaIntersection(n.media_ids));
-      const nodeSet = new Set(nodes.map(n => n.id));
-      links = links.filter(l => {
-        const s = l.source?.id ?? l.source;
-        const t = l.target?.id ?? l.target;
-        return nodeSet.has(s) && nodeSet.has(t) && hasMediaIntersection(l.media_ids);
-      });
-    }
-
-    nodes.sort((a,b)=>b.size-a.size);
-    nodes.forEach((n,i)=>{ n._rank=i; });
+    if (!g) return { nodes: [], links: [] };
+    const nodes = g.nodes.map(n => ({ ...n }));
+    const links = g.links.map(l => ({ ...l }));
+    nodes.sort((a, b) => b.size - a.size);
+    nodes.forEach((n, i) => { n._rank = i; });
     return { nodes, links: filterTopLinks(links, MAX_LINKS_NODE) };
-  }
-
-  function renderMediaFilters() {
-    const list = document.getElementById('media-list');
-    const availableMediaIds = getAvailableMediaIds();
-    const selectedMedia = getSelectedMedia();
-
-    if (!availableMediaIds.length) {
-      list.innerHTML = '<div id="media-empty">Aucun média disponible.</div>';
-      return;
-    }
-
-    list.innerHTML = '';
-    availableMediaIds.forEach(m => {
-      const btn = document.createElement('button');
-      btn.className = 'media-item';
-      btn.dataset.mediaId = m;
-      btn.textContent = m;
-      if (selectedMedia.has(m)) btn.classList.add('active');
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (selectedMedia.has(m)) selectedMedia.delete(m);
-        else selectedMedia.add(m);
-        syncMediaButtons();
-        loadPeriod(currentCountry, currentIdx);
-      });
-      list.appendChild(btn);
-    });
-
-    syncMediaButtons();
-  }
-
-  function syncMediaButtons() {
-    const selectedMedia = getSelectedMedia();
-    document.querySelectorAll('.media-item').forEach(btn => {
-      if (selectedMedia.has(btn.dataset.mediaId)) btn.classList.add('active');
-      else btn.classList.remove('active');
-    });
-  }
-
-  function setMediaPanelCollapsed(collapsed) {
-    // No-op: panneau filtres médias retiré de l'UI.
-    mediaPanelCollapsed = Boolean(collapsed);
   }
 
   function periodConvergenceScore(country, key) {
@@ -611,7 +509,10 @@
   setIfFn('enableZoomInteraction', false);
   setIfFn('enablePanInteraction', false);
   setIfFn('enableNodeDrag', false);
-  setIfFn('cooldownTicks', 80);
+  // 150 ticks suffisent pour stabiliser le layout (~2.5s à 60fps),
+  // après quoi onEngineStop fige la simulation et on cadre le graphe
+  // entièrement dans la viewport.
+  setIfFn('cooldownTicks', 150);
   setIfFn('onEngineStop', () => fitGraphToView(0));
   // Nœuds par défaut (cercles) — couleur + taille via API standard
   setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
@@ -625,8 +526,11 @@
   setIfFn('linkDirectionalParticleWidth', 2);
   setIfFn('linkDirectionalParticleSpeed', 0.005);
   setIfFn('linkDirectionalParticleColor', l => { const t=Math.min(1,Math.log((l.value||1)+1)/Math.log(12)); return `rgba(${Math.round(100+t*155)},${Math.round(100+t*100)},255,0.9)`; });
-  setIfFn('d3AlphaDecay', 0.015);
-  setIfFn('d3VelocityDecay', 0.28);
+  // Amortissement: alphaDecay assez rapide pour converger en ~150 ticks,
+  // velocityDecay élevé pour que les nœuds ne dérivent pas trop entre
+  // chaque tick. Combiné, le layout est stable et figé sur l'écran.
+  setIfFn('d3AlphaDecay', 0.025);
+  setIfFn('d3VelocityDecay', 0.45);
   // Étoiles (avant) + halos de nœuds (avant le cercle par défaut)
   setIfFn('onRenderFramePre', (ctx, gs) => {
       // 1. Étoiles en coords écran
@@ -686,15 +590,15 @@
     });
   setIfFn('onNodeHover', handleHover);
   setIfFn('onNodeClick', handleClick);
-  setIfFn('onEngineStop', () => {
-    if (!hasAppliedInitialCenter && centerMostSalientNode(250)) {
-      hasAppliedInitialCenter = true;
-    }
-  });
 
+  // Forces du layout: répulsion modérée + distance de lien ~80px,
+  // suffisamment amorti pour stabiliser en ~150 ticks.
   Graph.d3Force('charge').strength(-220);
   Graph.d3Force('link').distance(80);
-  window.addEventListener('resize', () => { Graph.width(window.innerWidth).height(window.innerHeight); });
+  window.addEventListener('resize', () => {
+    Graph.width(window.innerWidth).height(window.innerHeight);
+    fitGraphToView(0);
+  });
 
   // ── État ──────────────────────────────────────────────────────────────────
   const urlParams = new URLSearchParams(window.location.search);
@@ -710,27 +614,13 @@
   let speedIdx       = 0;
 
   // Auto-fit: cadre l'ensemble des nœuds et liens dans la viewport.
-  // Le panneau gauche (~280px) chevauche le bord gauche du canvas — c'est
-  // accepté car le panneau est translucide et la majorité du graphe
-  // reste visible. Padding 60 = marge confortable côté droit, haut, bas.
+  // Appelé via onEngineStop une fois la simulation force stabilisée,
+  // et lors d'un resize navigateur. Padding 60 = marge confortable.
+  // Le panneau gauche (~280px, translucide) recouvre le bord gauche
+  // du canvas — accepté car la majorité du graphe reste visible.
   function fitGraphToView(durationMs = 0) {
     if (typeof Graph.zoomToFit !== 'function') return;
     Graph.zoomToFit(durationMs, 60);
-  }
-
-  function scheduleFit(maxAttempts = 90) {
-    let attempts = 0;
-    function tryFit() {
-      const nodes = Graph.graphData().nodes || [];
-      const ready = nodes.length && nodes.every(n => Number.isFinite(n.x) && Number.isFinite(n.y));
-      if (ready) {
-        fitGraphToView(0);
-        return;
-      }
-      attempts += 1;
-      if (attempts < maxAttempts) requestAnimationFrame(tryFit);
-    }
-    requestAnimationFrame(tryFit);
   }
 
   function clearFocusAndRecenter() {
@@ -747,14 +637,16 @@
   function loadPeriod(country, idx) {
     const period = periods[idx]; if (!period) return;
     const gd = getGD(country, period.key);
+    // Réutilise les positions précédentes pour les nœuds qui persistent
+    // d'une période à l'autre — évite que le layout reparte de zéro.
     const prev = {};
-    (Graph.graphData().nodes || []).forEach(n => { prev[n.id] = {x:n.x, y:n.y}; });
+    (Graph.graphData().nodes || []).forEach(n => { prev[n.id] = {x: n.x, y: n.y}; });
     gd.nodes.forEach(n => { if (prev[n.id]) Object.assign(n, prev[n.id]); });
-    focusedNode = null;
     gd.nodes.forEach(n => { n._highlighted = true; });
     gd.links.forEach(l => { l._highlighted = true; });
+    focusedNode = null;
     Graph.graphData(gd);
-    scheduleFit();
+    // Le cadrage final se fait dans onEngineStop, après stabilisation.
     const conv = periodConvergenceScore(country, period.key);
     document.getElementById('period-label').innerHTML =
       `<span>${period.label}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${conv.toFixed(1)}`;
@@ -928,22 +820,14 @@
   });
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-      tab.classList.add('active'); currentCountry=tab.dataset.country;
-      renderMediaFilters();
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentCountry = tab.dataset.country;
       applyTimelineHeat(currentCountry);
-      loadPeriod(currentCountry,currentIdx);
+      loadPeriod(currentCountry, currentIdx);
     });
-  });
-
-  document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
   });
-
-  // Filtre par médias retiré de l'UI: tous les médias restent
-  // sélectionnés par défaut via getSelectedMedia(). Aucun event
-  // listener à attacher (les boutons #media-all/#media-clear/
-  // #media-toggle n'existent plus dans le DOM).
 
   document.getElementById('loading').style.display = 'none';
   applyTimelineHeat(currentCountry);
