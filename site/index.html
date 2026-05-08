@@ -1967,13 +1967,15 @@ function openArticlePanel(node) {
 
   var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
   title.textContent = name;
-  meta.textContent = (node.n || 0) + ' articles \u00b7 score ' + (node.size || 0).toFixed(2);
+  // meta sera mis à jour après calcul des articles courants (count basé sur articles.json)
 
   var links = document.getElementById('article-panel-links');
   var enc = encodeURIComponent(node.id);
+  var encCountry = encodeURIComponent(currentCountry);
   links.innerHTML =
-    '<a class="article-panel-link" href="./constellation.html?node=' + enc + '" target="_blank">Constellation ↗</a>' +
-    '<a class="article-panel-link" href="./evolution.html?node=' + enc + '" target="_blank">\u00c9volution ↗</a>';
+    '<a class="article-panel-link" href="./evolution.html?country=' + encCountry + '&node=' + enc + '" target="_blank">\u00c9volution ↗</a>' +
+    '<a class="article-panel-link" href="./statistiques.html?objet=' + enc + '&pays=' + encCountry + '" target="_blank">Statistiques ↗</a>' +
+    '<a class="article-panel-link" href="./constellation.html?country=' + encCountry + '&node=' + enc + '" target="_blank">Constellation ↗</a>';
 
   /* Période courante */
   /* Skip period keys belonging to the current slot */
@@ -1997,6 +1999,12 @@ function openArticlePanel(node) {
   }
 
   var articlesLoading = !articlesData;
+  // meta avec le compteur R\u00c9EL d'articles courants + score
+  meta.textContent = (articlesLoading && currentArticles.length === 0
+    ? 'Chargement\u2026'
+    : currentArticles.length + ' article' + (currentArticles.length === 1 ? '' : 's')
+  ) + ' \u00b7 score ' + (node.size || 0).toFixed(2);
+
   var html = currentArticles.length
     ? currentArticles.map(articleItemHtml).join('')
     : (articlesLoading
