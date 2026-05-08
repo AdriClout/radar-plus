@@ -1787,19 +1787,22 @@ function renderHot20() {
       '<span>Mouvement</span>' +
       '<span style="padding-left:12px;">Sujet</span>' +
       '<span style="padding-left:12px;">Score</span>' +
-      '<span>M&eacute;dias</span>' +
+      '<span>Articles</span>' +
     '</div>' +
     nodes.map(function(node, i) {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
       var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
       var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+      var articles = Array.isArray(node.articles) ? node.articles : [];
+      var articleCount = articles.length;
+      // Conserve la liste des médias en tooltip pour ne pas perdre l'info.
       var mediaIds = node.media_ids && node.media_ids.length
         ? node.media_ids
-        : (node.articles || []).map(function(a) { return a.media_id; }).filter(function(v, i, s) { return v && s.indexOf(v) === i; });
-      var mediaCount = mediaIds.length;
-      var mediaTip = mediaIds.length
-        ? 'M&eacute;dias en cause: ' + escapeHtml(mediaIds.join(', '))
-        : 'Aucun m&eacute;dia identifi&eacute;.';
+        : articles.map(function(a) { return a.media_id; }).filter(function(v, i, s) { return v && s.indexOf(v) === i; });
+      var articlesTip = articleCount
+        ? articleCount + ' article' + (articleCount > 1 ? 's' : '') + ' associ' + (articleCount > 1 ? 'és' : 'é') +
+          (mediaIds.length ? ' • médias: ' + escapeHtml(mediaIds.join(', ')) : '')
+        : 'Aucun article associé dans ce jeu de données.';
 
       /* Trend badge */
       var trendHtml = '';
@@ -1851,7 +1854,7 @@ function renderHot20() {
           '<div class="hot20-row-pct"><strong>' + pct + '%</strong> du radar</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
         '</div>' +
-        '<div class="hot20-row-media hot20-hint" data-tip="' + mediaTip + '">' + mediaCount + ' m&eacute;dia' + (mediaCount > 1 ? 's' : '') + '</div>' +
+        '<div class="hot20-row-media hot20-hint" data-tip="' + articlesTip + '">' + articleCount + ' article' + (articleCount > 1 ? 's' : '') + '</div>' +
       '</div>';
     }).join('');
 
