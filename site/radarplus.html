@@ -21,6 +21,7 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       min-height: 100vh;
       background: var(--bg);
@@ -91,6 +92,68 @@
       color: var(--muted);
       font-size: 13px;
       line-height: 1.65;
+    }
+
+    .doc {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 18px;
+      color: rgba(186, 211, 249, 0.95);
+      line-height: 1.72;
+      font-size: 13px;
+    }
+    .doc h2,
+    .doc h3,
+    .doc h4 {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      color: rgba(206, 228, 255, 0.98);
+      margin-top: 22px;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+    .doc h2 { font-size: 18px; }
+    .doc h3 { font-size: 14px; }
+    .doc p,
+    .doc ul,
+    .doc ol,
+    .doc table,
+    .doc blockquote,
+    .doc hr { margin: 12px 0; }
+    .doc ul,
+    .doc ol { padding-left: 20px; }
+    .doc li { margin: 6px 0; }
+    .doc a { color: rgba(177, 211, 255, 0.98); }
+    .doc a:hover { color: #fff; }
+    .doc hr {
+      border: 0;
+      border-top: 1px solid rgba(95, 140, 255, 0.28);
+    }
+    .doc blockquote {
+      border-left: 3px solid rgba(125, 171, 255, 0.7);
+      background: rgba(7, 15, 41, 0.65);
+      padding: 10px 12px;
+      border-radius: 4px;
+      color: rgba(194, 218, 255, 0.94);
+    }
+    .doc table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      background: rgba(7, 15, 41, 0.55);
+    }
+    .doc th,
+    .doc td {
+      border: 1px solid rgba(95, 140, 255, 0.25);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .doc th { color: rgba(211, 232, 255, 0.98); }
+    .doc section.footnotes {
+      margin-top: 22px;
+      border-top: 1px solid rgba(95, 140, 255, 0.28);
+      padding-top: 12px;
     }
 
     .section-title {
@@ -167,9 +230,6 @@
       .title {
         text-align: left;
       }
-      .grid {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -183,52 +243,117 @@
     </header>
 
     <section class="lead">
-      Cette page présente les repères clés pour comprendre Radar+ et la saillance médiatique.
-      Elle résume la méthode, les indices et l'objectif scientifique du projet.
+      Comprendre ce que les médias mettent (vraiment) de l'avant.
     </section>
 
-    <h2 class="section-title">Repères clés</h2>
-    <section class="grid" aria-label="Repères Radar+">
-      <article class="card">
-        <h3>Radar+</h3>
-        <p>
-          Un outil développé à l'Université Laval qui archive les pages d'accueil de grands médias canadiens et
-          américains toutes les 15 minutes depuis 2019. Il permet de retracer quelles nouvelles étaient mises de
-          l'avant, à quel moment et pendant combien de temps.
-        </p>
-      </article>
-
-      <article class="card">
-        <h3>Saillance médiatique</h3>
-        <p>
-          La visibilité qu'un média accorde à un sujet : sa position sur la page, l'espace qu'il occupe, la durée
-          pendant laquelle il y reste. C'est ce qui distingue une nouvelle traitée en priorité d'une autre reléguée
-          en périphérie.
-        </p>
-      </article>
-
-      <article class="card">
-        <h3>Indices de saillance</h3>
-        <p>
-          Un indice élevé indique qu'un sujet occupe une place proéminente sur la page d'accueil d'un média, tant
-          par son positionnement que par sa persistance dans le temps. Un indice faible signale un traitement plus
-          discret ou éphémère.
-        </p>
-      </article>
-
-      <article class="card">
-        <h3>Recherche scientifique</h3>
-        <p>
-          Les choix éditoriaux des médias influencent les priorités du public, mais ces choix sont rarement documentés
-          de façon systématique. Radar+ fournit les données nécessaires pour étudier ce phénomène de manière rigoureuse.
-        </p>
-      </article>
+    <section class="doc" aria-label="Contenu détaillé Radar+">
+<h2 id="tldr">TL;DR</h2>
+<p>Radar+ archive les pages d’accueil de 15 grands médias canadiens et américains <strong>toutes les 10 minutes, sans interruption depuis septembre 2019</strong>. Pour chaque sujet — Donald Trump, l’immigration, le climat, Hydro-Québec — un <strong>indice de saillance</strong> combine trois choses : où le sujet est placé, combien d’espace il occupe, combien de temps il y reste. Le résultat : une carte vivante des priorités médiatiques, qui permet de voir comment un événement monte, dure, puis disparaît — et de comparer les choix d’un média à ceux d’un autre. Radar+ fait partie de la <strong>Vitrine démocratique</strong>, un projet de la CLESSN (Université Laval) qui mesure le pouls de la démocratie sous trois angles : médias, opinion publique et promesses électorales. Les données sont ouvertes, la méthode est documentée, et l’outil est utilisable par tout le monde.</p>
+<hr />
+<h2 id="pour-tout-savoir">Pour tout savoir</h2>
+<h3 id="pourquoi-mesurer-la-saillance-médiatique">1. Pourquoi mesurer la saillance médiatique?</h3>
+<p>Depuis les travaux fondateurs de McCombs et Shaw, on sait que les médias ne disent pas seulement <em>quoi</em> penser : ils disent surtout <em>à quoi</em> penser <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Plus un sujet revient en grands titres, plus il a de chances de devenir une priorité dans l’esprit du public. C’est l’effet d’<strong>agenda-setting</strong>, étudié et confirmé dans une multitude de contextes, y compris au Canada <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>Or, dans un environnement médiatique de plus en plus fragmenté <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, les publics ne consomment plus tous les mêmes nouvelles. Ils s’exposent surtout à des sources qui confirment leurs vues <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a><a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a><a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, ce qui alimente une polarisation politique et même affective — une hostilité qui dépasse le simple désaccord d’opinions <a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a><a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>. Cette dynamique fragilise ce que Habermas appelait la <strong>sphère publique</strong> : un espace partagé où les citoyens débattent à partir d’une réalité commune <a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>.</p>
+<p>Pour étudier ce phénomène sérieusement, il faut des <strong>données systématiques</strong> sur ce que chaque média met en avant, à quel moment, et pendant combien de temps. C’est exactement ce que Radar+ fournit.</p>
+<h3 id="comment-radar-mesure">2. Comment Radar+ mesure</h3>
+<p><strong>Capture continue.</strong> Toutes les 10 minutes, depuis septembre 2019, Radar+ photographie la page d’accueil de chaque média suivi. Aucune interruption, aucun jour manqué — près de sept ans d’archive et plus de <strong>5 millions de captures</strong> cumulées sur 15 médias.</p>
+<p><strong>Identification automatique des objets.</strong> Sur chaque capture, deux modèles d’intelligence artificielle tournant localement entrent en action : un premier repère les <strong>entités nommées</strong> présentes (personnes, lieux, organisations, enjeux), un second les normalise et les harmonise entre français et anglais. Aucun dictionnaire fermé : le système peut détecter des objets émergents qu’aucun chercheur n’aurait pensé à inclure d’avance.</p>
+<p><strong>Trois dimensions de la saillance.</strong> Pour chaque objet identifié, on mesure :</p>
+<ul>
+<li><strong>la position</strong> sur la page (haut, milieu, bas);</li>
+<li><strong>la taille</strong> du traitement (gros titre, photo principale, simple brève);</li>
+<li><strong>la durée</strong> de présence (quelques minutes, plusieurs heures, des journées entières).</li>
+</ul>
+<p><strong>Deux indices.</strong> Ces trois dimensions se combinent en deux indicateurs :</p>
+<ul>
+<li>l’<strong>indice absolu</strong>, cumulatif, qui mesure la saillance totale d’un sujet sur une période;</li>
+<li>l’<strong>indice relatif</strong>, normalisé entre 0 et 100, qui permet de comparer des périodes ou des médias entre eux.</li>
+</ul>
+<h3 id="ce-quon-peut-faire-avec-radar">3. Ce qu’on peut faire avec Radar+</h3>
+<ul>
+<li><strong>Suivre la trajectoire d’un sujet</strong> dans le temps : son ascension, son sommet, son déclin.</li>
+<li><strong>Comparer deux médias</strong> sur une même période : qui parle de quoi, quand, et pendant combien de temps.</li>
+<li><strong>Repérer les angles morts</strong> : sujets qu’un média ignore alors qu’un autre les met en avant.</li>
+<li><strong>Quantifier les asymétries</strong> entre univers médiatiques (par exemple, Fox News c. CNN aux États-Unis <a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a>).</li>
+<li><strong>Documenter des moments démocratiques majeurs</strong> : élections, crises, débats publics. Les élections fédérales canadiennes de 2021 et de 2025, ainsi que l’élection québécoise de 2022, ont été parmi les premiers grands bancs d’essai publics de l’outil.</li>
+</ul>
+<h3 id="une-histoire-qui-commence-en-2018">4. Une histoire qui commence en 2018</h3>
+<p>Le développement de Radar+ commence en <strong>septembre 2018</strong> à l’Université Laval, dans une équipe de chercheurs en sciences sociales numériques qui se demande comment documenter, de façon rigoureuse et continue, ce que les médias choisissent de mettre en avant. Pendant un an, le scraper est conçu, testé et raffiné en coulisse.</p>
+<p><strong>Septembre 2019 — le premier grand rendez-vous public.</strong> Radar+ est déployé pour couvrir l’<strong>élection fédérale canadienne</strong>. La CLESSN lance un site web dédié et publie sur ses réseaux sociaux <strong>six fois par jour</strong>, chaque jour de la campagne, des analyses tirées en direct de la saillance des partis, enjeux et personnalités sur les pages d’accueil des grands médias canadiens. C’est la naissance publique de l’outil — et l’épreuve du feu.</p>
+<p>Le succès de la couverture 2019 donne à l’équipe la confiance d’aller plus loin. L’<strong>élection fédérale de 2021</strong> devient le deuxième grand terrain, suivie l’année d’après par l’<strong>élection québécoise de 2022</strong>, puis par l’<strong>élection fédérale de 2025</strong> dont les données alimentent plusieurs publications scientifiques sur la mesure de la saillance médiatique.</p>
+<p>Pendant que l’équipe scientifique extrait des analyses de l’archive, l’infrastructure technique mûrit. Plusieurs refontes successives — chacune apportant plus de fiabilité, plus de couverture et plus de précision — culminent en 2024 avec une migration vers le nuage informatique (Amazon Web Services) et l’introduction de modèles de langage locaux pour la reconnaissance et la normalisation des entités. Radar+ atteint alors un taux de fiabilité supérieur à 95 % sur 15 médias actifs.</p>
+<p>En 2026, après huit ans depuis les premières lignes de code et près de sept ans d’archivage continu, Radar+ s’ouvre pleinement au public. Le site <strong>radarplus.org</strong> rend les indices, les unes archivées et les outils d’analyse consultables par tout le monde — chercheurs, journalistes, étudiants, citoyens. La même année, un postdoctorat à UCLA sous la supervision de Stuart Soroka — l’un des grands noms de l’agenda-setting au Canada et aux États-Unis <a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a><a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a> — inaugure une nouvelle phase consacrée à l’expansion de la couverture américaine et à la comparaison des univers médiatiques nord-américains.</p>
+<h3 id="radar-dans-la-vitrine-démocratique">5. Radar+ dans la Vitrine démocratique</h3>
+<p>Radar+ est l’un des trois piliers de la <strong>Vitrine démocratique</strong>, un projet structurant de la CLESSN (Chaire de leadership en enseignement des sciences sociales numériques) sous la direction de <strong>Yannick Dufresne</strong>, à l’Université Laval. Les trois modules couvrent les trois sommets du triangle démocratique :</p>
+<ul>
+<li><strong>Polimètre+</strong> suit les <strong>promesses électorales</strong> et leur accomplissement;</li>
+<li><strong>Radar+</strong> mesure la <strong>saillance médiatique</strong> des sujets dans la couverture;</li>
+<li><strong>Agora+</strong> capte l’<strong>opinion publique</strong> sur les enjeux clés.</li>
+</ul>
+<p>Ensemble, ces trois modules permettent une innovation méthodologique inédite : <strong>pondérer les promesses politiques par leur saillance</strong> — une première mondiale dans le domaine du suivi des promesses gouvernementales. Le projet est porté en collaboration avec d’autres centres affiliés à l’Université Laval (GRCP, CAPP, CRDIP, CSDC) et s’inscrit dans une démarche d’<strong>ouverture des données</strong> au service de la recherche, du journalisme et du débat citoyen.</p>
+<h3 id="léquipe">6. L’équipe</h3>
+<p>Radar+ est une œuvre collective. Depuis 2018, le projet rassemble des chercheurs, développeurs, analystes et collaborateurs qui ont contribué à le faire grandir.</p>
+<p><strong>Direction et coordination</strong></p>
+<ul>
+<li><strong>Yannick Dufresne</strong> — direction scientifique (CLESSN, Université Laval)</li>
+<li><strong>Adrien Cloutier</strong> — chargé de projet</li>
+<li><strong>Étienne Proulx</strong> — gestion de projet (Vitrine démocratique)</li>
+</ul>
+<p><strong>Développement actuel</strong></p>
+<ul>
+<li><strong>Patrick Poncet</strong> — développement principal (infrastructure AWS, versions récentes)</li>
+</ul>
+<p><strong>Développement (équipe d’origine et refontes successives)</strong></p>
+<ul>
+<li><strong>Olivier Banville</strong> — développement fondateur (premières versions, 2019–2023)</li>
+<li><strong>Marc-Antoine Rancourt</strong> — équipe fondatrice (web scraping, théorie de la visualisation)</li>
+<li><strong>William Poirier</strong> — équipe fondatrice</li>
+<li><strong>Camille Tremblay-Antoine</strong> — équipe fondatrice</li>
+<li><strong>Clément Cadieux</strong> — développement</li>
+</ul>
+<p><strong>Recherche, analyses et raffinement</strong></p>
+<ul>
+<li><strong>Jérémie Drouin</strong></li>
+<li><strong>Alexandre Fortier-Chouinard</strong></li>
+<li><strong>Jérémy Gilbert</strong></li>
+<li><strong>Antoine Lemore</strong></li>
+<li><strong>Hubert Cadieux</strong></li>
+<li><strong>Hugues-Étienne Moisan-Plante</strong></li>
+<li><strong>Benjamin Carignan</strong></li>
+<li><strong>Karine Dufresne</strong></li>
+<li><strong>Alexandre Bouillon</strong></li>
+<li><strong>Arnaud Beaulé</strong></li>
+</ul>
+<blockquote>
+<p>Ce projet existe aussi grâce à toutes les personnes qui, à un moment ou un autre, ont contribué à valider, annoter, déboguer ou penser Radar+. Merci à toute l’équipe — actuelle et d’époque.</p>
+</blockquote>
+<hr />
+<h2 id="sources">Sources</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>McCombs, M. E., &amp; Shaw, D. L. (1972). The agenda-setting function of mass media. <em>Public Opinion Quarterly</em>, 36(2), 176–187. <a href="https://doi.org/10.1086/267990">https://doi.org/10.1086/267990</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>Soroka, S. N. (2002). <em>Agenda-setting dynamics in Canada</em>. UBC Press. <a href="https://www.ubcpress.ca/agenda-setting-dynamics-in-canada">https://www.ubcpress.ca/agenda-setting-dynamics-in-canada</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>Mancini, P. (2013). Media fragmentation, party system, and democracy. <em>The International Journal of Press/Politics</em>, 18(1), 43–60. <a href="https://doi.org/10.1177/1940161212458200">https://doi.org/10.1177/1940161212458200</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Stroud, N. J. (2010). Polarization and partisan selective exposure. <em>Journal of Communication</em>, 60(3), 556–576. <a href="https://doi.org/10.1111/j.1460-2466.2010.01497.x">https://doi.org/10.1111/j.1460-2466.2010.01497.x</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>Stroud, N. J. (2011). <em>Niche news: The politics of news choice</em>. Oxford University Press. <a href="https://doi.org/10.1093/acprof:oso/9780199755509.001.0001">https://doi.org/10.1093/acprof:oso/9780199755509.001.0001</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p>Prior, M. (2013). Media and political polarization. <em>Annual Review of Political Science</em>, 16, 101–127. <a href="https://doi.org/10.1146/annurev-polisci-100711-135242">https://doi.org/10.1146/annurev-polisci-100711-135242</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7" role="doc-endnote"><p>Iyengar, S., Sood, G., &amp; Lelkes, Y. (2012). Affect, not ideology: A social identity perspective on polarization. <em>Public Opinion Quarterly</em>, 76(3), 405–431. <a href="https://doi.org/10.1093/poq/nfs038">https://doi.org/10.1093/poq/nfs038</a><a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8" role="doc-endnote"><p>Iyengar, S., Lelkes, Y., Levendusky, M., Malhotra, N., &amp; Westwood, S. J. (2019). The origins and consequences of affective polarization in the United States. <em>Annual Review of Political Science</em>, 22, 129–146. <a href="https://doi.org/10.1146/annurev-polisci-051117-073034">https://doi.org/10.1146/annurev-polisci-051117-073034</a><a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9" role="doc-endnote"><p>Habermas, J. (1991). <em>The structural transformation of the public sphere: An inquiry into a category of bourgeois society</em>. MIT Press. <a href="https://mitpress.mit.edu/9780262581080/the-structural-transformation-of-the-public-sphere/">https://mitpress.mit.edu/9780262581080/the-structural-transformation-of-the-public-sphere/</a><a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10" role="doc-endnote"><p>Iyengar, S., &amp; Hahn, K. S. (2009). Red media, blue media: Evidence of ideological selectivity in media use. <em>Journal of Communication</em>, 59(1), 19–39. <a href="https://doi.org/10.1111/j.1460-2466.2008.01402.x">https://doi.org/10.1111/j.1460-2466.2008.01402.x</a><a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11" role="doc-endnote"><p>Soroka, S. N. (2002). <em>Agenda-setting dynamics in Canada</em>. UBC Press. <a href="https://www.ubcpress.ca/agenda-setting-dynamics-in-canada">https://www.ubcpress.ca/agenda-setting-dynamics-in-canada</a><a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12" role="doc-endnote"><p>Soroka, S. (2014). <em>Negativity in democratic politics: Causes and consequences</em>. Cambridge University Press. <a href="https://doi.org/10.1017/CBO9781107477971">https://doi.org/10.1017/CBO9781107477971</a><a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
     </section>
 
     <h2 class="section-title">Explorer</h2>
     <nav class="links" aria-label="Liens Radar+">
+      <a class="link" href="./methodologie.html">Méthodologie</a>
       <a class="link" href="./constellation.html">Constellation</a>
       <a class="link" href="./evolution.html">Évolution</a>
+      <a class="link" href="./alertes.html">Alertes</a>
       <a class="link" href="./acces-donnees.html">Accès aux données</a>
       <a class="link" href="./partenaires.html">Partenaires</a>
       <a class="link" href="./unes.html">Dans le radar</a>

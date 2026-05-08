@@ -12,6 +12,7 @@
 # Outputs temporaires (jamais enregistrés)
 *.html
 !site/radarplus.html
+!site/methodologie.html
 !site/acces-donnees.html
 !site/partenaires.html
 *.png

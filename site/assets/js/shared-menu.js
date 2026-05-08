@@ -36,6 +36,7 @@
       '<a href="https://github.com/adriclout/radar-plus/tree/main/analyses" target="_blank" rel="noopener">Analyses</a>',
       '<h3 style="margin-top: 30px;">À propos</h3>',
       '<a href="./radarplus.html" data-page="radarplus.html">Radar+</a>',
+      '<a href="./methodologie.html" data-page="methodologie.html">Méthodologie</a>',
       '<a href="./partenaires.html" data-page="partenaires.html">Partenaires &amp; contributeurs</a>',
       '<a href="./acces-donnees.html" data-page="acces-donnees.html">Accès aux données</a>',
       '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>'
@@ -147,25 +148,23 @@
     var alerts    = [];
     var seen      = {};
 
-    // Agréger les 2 dernières périodes pour éviter les trous
-    var lastPeriods = periods.slice(-2).reverse();
-    for (var pi = 0; pi < lastPeriods.length; pi++) {
-      var pKey = lastPeriods[pi].key;
-      for (var ci = 0; ci < countries.length; ci++) {
-        var country = countries[ci];
-        var gd = graphData.graphs[country] && graphData.graphs[country][pKey];
-        if (!gd) continue;
-        var nodes = gd.nodes || [];
-        for (var ni = 0; ni < nodes.length; ni++) {
-          var node = nodes[ni];
-          if (ALERT_BAR_LEVELS.indexOf(node.alert_level) === -1) continue;
-          if (!node.alert_active) continue;
-          var key = country + ':' + node.id;
-          if (seen[key]) continue;
-          seen[key] = true;
-          var score = Number(node.alert_score);
-          alerts.push({ id: node.id, level: node.alert_level, score: isFinite(score) ? score : null, country: country });
-        }
+    // Uniquement la période la plus récente: évite d'afficher des alertes déjà terminées.
+    var latestPeriod = periods.length ? periods[periods.length - 1] : null;
+    var pKey = latestPeriod && latestPeriod.key;
+    for (var ci = 0; ci < countries.length; ci++) {
+      var country = countries[ci];
+      var gd = graphData.graphs[country] && graphData.graphs[country][pKey];
+      if (!gd) continue;
+      var nodes = gd.nodes || [];
+      for (var ni = 0; ni < nodes.length; ni++) {
+        var node = nodes[ni];
+        if (ALERT_BAR_LEVELS.indexOf(node.alert_level) === -1) continue;
+        if (!node.alert_active) continue;
+        var key = country + ':' + node.id;
+        if (seen[key]) continue;
+        seen[key] = true;
+        var score = Number(node.alert_score);
+        alerts.push({ id: node.id, level: node.alert_level, score: isFinite(score) ? score : null, country: country });
       }
     }
 
