@@ -967,7 +967,7 @@
           <button class="granularity-tab active" data-gran="day">Jour</button>
           <button class="granularity-tab" data-gran="week">Semaine</button>
           <button class="granularity-tab" data-gran="month">Mois</button>
-          <button class="granularity-tab" data-gran="quarter">3 mois</button>
+          <button class="granularity-tab" data-gran="quarter">Année</button>
         </div>
         <div class="country-tabs" id="country-tabs">
           <button class="country-tab active" data-country="QC">Québec</button>
@@ -1512,8 +1512,8 @@ function buildSlots() {
       dateLabel = monthKeyToLabel(bk);
       interval = 'Saillance cumulée du mois';
     } else {
-      dateLabel = '3 derniers mois';
-      interval = 'Saillance cumulée (90 jours)';
+      dateLabel = 'Cette année';
+      interval = 'Saillance cumulée de l’année';
     }
     return { periodKeys: keys, dateLabel: dateLabel, interval: interval, bucketKey: bk };
   });
@@ -1575,7 +1575,7 @@ function renderHot20() {
   var subtitleEl = document.getElementById('hot20-subtitle');
 
   // Update subtitle
-  var subtitleMap = { '4h': 'Édition (4h)', day: 'Aujourd\'hui', week: 'Cette semaine', month: 'Ce mois-ci', quarter: '3 derniers mois' };
+  var subtitleMap = { '4h': 'Édition (4h)', day: 'Aujourd\'hui', week: 'Cette semaine', month: 'Ce mois-ci', quarter: 'Cette année' };
   subtitleEl.textContent = subtitleMap[currentGranularity] || '';
 
   if (!aggregatedSlots.length) {
@@ -1618,7 +1618,7 @@ function renderHot20() {
   } else {
     allNodes = aggregateNodes(countryGraphs, slot.periodKeys);
     if (!allNodes.length) {
-      var emptyMsg = { day: 'cette journée', week: 'cette semaine', month: 'ce mois', quarter: 'cette période' };
+      var emptyMsg = { day: 'cette journée', week: 'cette semaine', month: 'ce mois', quarter: 'cette année' };
       grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période') + '</div>';
       return;
     }
@@ -1686,8 +1686,8 @@ function renderHot20() {
   window._hot20Nodes = nodes;
 
   /* Granularity-specific labels for tooltips */
-  var granLabel = { '4h': 'bloc horaire (4 h)', day: 'journée', week: 'semaine', month: 'mois', quarter: 'période de 3 mois' };
-  var granLabelPlural = { '4h': 'blocs horaires', day: 'jours', week: 'semaines', month: 'mois', quarter: 'trimestres' };
+  var granLabel = { '4h': 'bloc horaire (4 h)', day: 'journée', week: 'semaine', month: 'mois', quarter: 'année' };
+  var granLabelPlural = { '4h': 'blocs horaires', day: 'jours', week: 'semaines', month: 'mois', quarter: 'années' };
   var gl = granLabel[currentGranularity] || 'période';
   var glp = granLabelPlural[currentGranularity] || 'périodes';
 
