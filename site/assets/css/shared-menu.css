@@ -340,3 +340,7 @@ body.has-alert-bar .nav-toggle {
 body.has-alert-bar .menu-discover-hint {
   top: calc(27px + var(--alert-bar-h));
 }
+/* Pages avec un panneau latéral fixé au top (evolution.html) */
+body.has-alert-bar #left-panel {
+  top: var(--alert-bar-h);
+}

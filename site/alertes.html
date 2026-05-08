@@ -283,6 +283,7 @@
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
     /* Articles */
@@ -408,7 +409,9 @@
     <span class="ticker-label-title" id="ticker-updated">Les Unes</span>
     <span class="ticker-radar" aria-hidden="true"></span>
   </a>
-  <div class="ticker-track" id="ticker-track" aria-live="off"></div>
+  <div class="ticker-viewport">
+    <div class="ticker-track" id="ticker-track" aria-live="off"></div>
+  </div>
 </section>
 
 <script src="./assets/js/shared-menu.js"></script>
