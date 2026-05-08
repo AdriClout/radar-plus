@@ -606,10 +606,13 @@
   setIfFn('height', window.innerHeight);
   setIfFn('backgroundColor', '#00000f');
   // Constellation figée: pas de pan, pas de zoom, pas de drag de nœuds.
-  // Le layout s'auto-cadre via zoomToFit après stabilisation.
+  // Le layout s'auto-cadre via zoomToFit après chaque stabilisation
+  // de la simulation force (onEngineStop).
   setIfFn('enableZoomInteraction', false);
   setIfFn('enablePanInteraction', false);
   setIfFn('enableNodeDrag', false);
+  setIfFn('cooldownTicks', 80);
+  setIfFn('onEngineStop', () => fitGraphToView(0));
   // Nœuds par défaut (cercles) — couleur + taille via API standard
   setIfFn('nodeColor', n => nodeColorStr(n.size, n._highlighted));
   setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));

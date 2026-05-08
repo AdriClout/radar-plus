@@ -11,9 +11,11 @@
 
   function injectHomeLogo() {
     var page = window.location.pathname.split('/').pop() || 'index.html';
-    // Skip sur l'accueil (où le logo serait redondant) et sur evolution.html
-    // qui a son propre #evo-logo intégré dans le panneau gauche.
-    if (page === 'index.html' || page === '' || document.getElementById('evo-logo')) return;
+    // Skip sur l'accueil (où le logo serait redondant) et sur les pages
+    // qui ont déjà leur propre logo intégré dans un panneau gauche
+    // (evolution.html: #evo-logo, constellation.html: #cst-logo).
+    if (page === 'index.html' || page === '') return;
+    if (document.getElementById('evo-logo') || document.getElementById('cst-logo')) return;
     if (document.getElementById('home-logo')) return;
     var a = document.createElement('a');
     a.id = 'home-logo';
@@ -231,12 +233,11 @@
         strip.innerHTML = multi;
         halfW = strip.scrollWidth / 2 || halfW;
       }
-      // Vitesse uniforme ~3 px/s (très lent, lecture posée). Plancher 200s.
-      // La vitesse en px/s est identique quel que soit le nombre d'alertes:
-      // halfW grandit avec le nombre de copies, dur grandit
-      // proportionnellement → même vitesse perçue.
-      var pxPerSec = 3;
-      var dur = Math.max(200, Math.round(halfW / pxPerSec));
+      // Vitesse uniforme ~1.5 px/s (très lent, lecture très posée).
+      // Plancher 360s. Vitesse en px/s identique quel que soit le
+      // nombre d'alertes: halfW et dur grandissent proportionnellement.
+      var pxPerSec = 1.5;
+      var dur = Math.max(360, Math.round(halfW / pxPerSec));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
       bar.classList.add('ready');
     });
