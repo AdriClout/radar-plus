@@ -146,12 +146,118 @@
     #top10-list {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       flex: 1;
       min-height: 0;
       overflow-y: auto;
       padding-right: 2px;
     }
+
+    /* ── Période (calque sur evolution.html) ── */
+    #window-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    .win-btn {
+      flex: 1 1 calc(50% - 2px);
+      min-width: 0;
+      padding: 5px 10px;
+      border: 1px solid rgba(100,150,255,0.25);
+      border-radius: 3px;
+      background: rgba(10,20,50,0.5);
+      color: rgba(140,180,220,0.85);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .win-btn:hover  { border-color: rgba(120,170,255,0.55); color: rgba(180,210,255,0.95); }
+    .win-btn.active { border-color: rgba(120,180,255,0.75); background: rgba(30,60,150,0.40); color: #d0e8ff; box-shadow: 0 0 8px rgba(80,130,255,0.2); }
+    #window-meta {
+      font-size: 9px;
+      letter-spacing: 0.7px;
+      color: rgba(100,140,200,0.55);
+      margin-top: 6px;
+      padding-left: 1px;
+    }
+
+    /* ── Hot 10 row (calque sur evolution.html .rleg-item) ── */
+    .rleg-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 7px;
+      border: 1px solid rgba(90,130,250,0.22);
+      border-radius: 4px;
+      background: rgba(8,18,48,0.55);
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    .rleg-item:hover, .rleg-item.hovered {
+      border-color: rgba(145,182,255,0.75);
+      background: rgba(20,36,86,0.7);
+      transform: translateX(-2px);
+    }
+    .rleg-item.focused {
+      border-color: rgba(186,211,255,0.95);
+      background: rgba(40,74,150,0.42);
+      box-shadow: 0 0 10px rgba(90,135,255,0.32);
+    }
+    .rleg-item.dimmed { opacity: 0.45; }
+    .rleg-item.alert-watch    { border-color: rgba(212,188,88,0.55);  background: rgba(72,58,20,0.4);  }
+    .rleg-item.alert-alert    { border-color: rgba(255,143,92,0.62); background: rgba(86,38,24,0.42); }
+    .rleg-item.alert-strong   { border-color: rgba(255,110,110,0.72); background: rgba(92,24,28,0.48); box-shadow: 0 0 12px rgba(255,90,90,0.14); }
+    .rleg-item.alert-emerging { border-color: rgba(112,186,245,0.55); background: rgba(18,56,92,0.5); }
+    .rleg-rank {
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: 10px;
+      color: rgba(160,195,255,0.85);
+      flex-shrink: 0;
+      min-width: 16px;
+      text-align: right;
+    }
+    .rleg-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 10px;
+      color: rgba(190,215,255,0.95);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .rleg-alert-badge {
+      font-family: 'Orbitron', monospace;
+      font-size: 7px;
+      letter-spacing: 0.6px;
+      padding: 1px 5px;
+      border-radius: 999px;
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+    .rleg-alert-badge.level-watch    { color: rgba(255,224,112,0.96); border: 1px solid rgba(224,196,88,0.55); background: rgba(74,60,16,0.62); }
+    .rleg-alert-badge.level-alert    { color: rgba(255,186,136,0.98); border: 1px solid rgba(255,143,92,0.65); background: rgba(88,40,24,0.68); }
+    .rleg-alert-badge.level-strong   { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.72); background: rgba(98,22,28,0.72); }
+    .rleg-alert-badge.level-emerging { color: rgba(160,210,255,0.96); border: 1px solid rgba(112,186,245,0.55); background: rgba(18,56,92,0.62); }
+    .rleg-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: rgba(140,180,255,0.78);
+      flex-shrink: 0;
+      min-width: 32px;
+      text-align: right;
+    }
+    .rleg-delta {
+      font-size: 9px;
+      letter-spacing: 0.4px;
+      flex-shrink: 0;
+      min-width: 28px;
+      text-align: right;
+    }
+    .rleg-delta.up   { color: rgba(80,220,140,0.88); }
+    .rleg-delta.down { color: rgba(255,100,100,0.82); }
+    .rleg-delta.flat { color: rgba(110,150,200,0.55); }
+    .rleg-delta.new-entry { color: rgba(255, 220, 60, 0.92); }
+    .rleg-delta.ret-entry { color: rgba(120, 200, 255, 0.88); }
     .top10-item {
       width: 100%;
       border: 1px solid rgba(90, 130, 250, 0.18);
@@ -288,11 +394,21 @@
         <button class="tab" data-country="USA">USA</button>
       </div>
     </div>
+    <div class="lpanel-section" id="window-section">
+      <div class="lpanel-label">Période</div>
+      <div id="window-row">
+        <button class="win-btn active" data-gran="day"   type="button" aria-label="Période jour">Jour</button>
+        <button class="win-btn"        data-gran="week"  type="button" aria-label="Période semaine">Semaine</button>
+        <button class="win-btn"        data-gran="month" type="button" aria-label="Période mois">Mois</button>
+        <button class="win-btn"        data-gran="year"  type="button" aria-label="Période année">Année</button>
+      </div>
+      <div id="window-meta"></div>
+    </div>
     <div class="lpanel-section">
       <div class="lpanel-label">Vue</div>
       <div id="mode-tabs">
         <span class="mode-tab active">Constellation</span>
-        <a class="mode-tab" href="./evolution.html">Évolution</a>
+        <a class="mode-tab" id="link-evolution" href="./evolution.html">Évolution</a>
       </div>
     </div>
     <div class="lpanel-section">
@@ -303,7 +419,7 @@
       </div>
     </div>
     <div class="lpanel-section" id="top10-section">
-      <div class="lpanel-label">Top 10 objets saillants <span id="top10-country">CAN</span></div>
+      <div class="lpanel-label">Hot 10 <span id="top10-country">CAN</span></div>
       <div id="top10-list"></div>
     </div>
   </div>
@@ -698,14 +814,143 @@
   // ── État ──────────────────────────────────────────────────────────────────
   const urlParams = new URLSearchParams(window.location.search);
   const urlCountry = (urlParams.get('country') || '').toUpperCase();
+  const urlGran    = (urlParams.get('gran') || '').toLowerCase();
   let currentCountry = countries.includes(urlCountry) ? urlCountry : countries[0];
-  let currentIdx     = periods.length - 1;
   let focusedNode    = null;
   let lastNodeClickTs = 0;
   let playInterval   = null;
   let playSpeed      = 1500;
   const SPEEDS       = [1500, 700, 250];
   const SPEED_LABELS = ['1×', '2×', '5×'];
+
+  // Granularité: agrège les blocs 4h en jour/semaine/mois/année et
+  // navigue par créneaux à cette granularité (parité avec evolution.html).
+  const GRAN_SET = ['day', 'week', 'month', 'year'];
+  let rankedGranularity = GRAN_SET.includes(urlGran) ? urlGran : 'day';
+
+  // Mois/jours FR pour les labels de slots
+  const FR_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+  function periodKeyToDateStr(key) {
+    return String(key || '').split('_')[0];
+  }
+  function dateToWeekKey(dateStr) {
+    const d = new Date(`${dateStr}T00:00:00`);
+    d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+    const yearStart = new Date(d.getFullYear(), 0, 1);
+    const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+  }
+  function bucketKeyForPeriod(p, gran) {
+    const ds = periodKeyToDateStr(p.key);
+    if (gran === 'week')  return dateToWeekKey(ds);
+    if (gran === 'month') return ds.slice(0, 7);
+    if (gran === 'year')  return ds.slice(0, 4);
+    return ds; // day
+  }
+  function labelForBucket(bucketKey, gran) {
+    if (gran === 'day') {
+      const [y, m, d] = bucketKey.split('-').map(Number);
+      return `${d} ${FR_MONTHS[Math.max(0, (m||1)-1)]} ${y}`;
+    }
+    if (gran === 'week') {
+      const [y, w] = bucketKey.split('-W');
+      return `Semaine ${Number(w)} · ${y}`;
+    }
+    if (gran === 'month') {
+      const [y, m] = bucketKey.split('-').map(Number);
+      return `${FR_MONTHS[Math.max(0, m-1)]} ${y}`;
+    }
+    return bucketKey; // year
+  }
+
+  // Construit les créneaux (slots) à la granularité courante. Chaque
+  // slot regroupe les périodes 4h qui tombent dans le même bucket.
+  let slots = [];
+  let currentSlotIdx = 0;
+  function buildSlots() {
+    const buckets = new Map();
+    for (const p of periods) {
+      const bk = bucketKeyForPeriod(p, rankedGranularity);
+      if (!buckets.has(bk)) buckets.set(bk, []);
+      buckets.get(bk).push(p);
+    }
+    slots = [...buckets.entries()].map(([bk, ps]) => ({
+      key: bk,
+      label: labelForBucket(bk, rankedGranularity),
+      periods: ps,
+      periodKeys: ps.map(p => p.key)
+    }));
+    currentSlotIdx = Math.max(0, slots.length - 1);
+  }
+
+  // Agrège les nodes/links de toutes les périodes 4h d'un slot:
+  // - node[id]: size = somme, n = somme, alert_level = pire niveau,
+  //   alert_score = max(score), articles/media_ids = union
+  // - link[src→tgt]: value = somme
+  // Retourne {nodes, links} compatible avec ForceGraph.
+  const ALERT_RANK = { strong: 4, alert: 3, watch: 2, emerging: 1, none: 0, normal: 0 };
+  function aggregateSlot(country, slot) {
+    if (!slot || !slot.periodKeys.length) return { nodes: [], links: [] };
+    const nodeMap = new Map();
+    const linkMap = new Map();
+    for (const pk of slot.periodKeys) {
+      const g = graphs[country]?.[pk];
+      if (!g) continue;
+      for (const n of (g.nodes || [])) {
+        const cur = nodeMap.get(n.id);
+        if (!cur) {
+          nodeMap.set(n.id, {
+            id: n.id,
+            size: Number(n.size) || 0,
+            n: Number(n.n) || 0,
+            alert_level: n.alert_level || 'none',
+            alert_score: Number(n.alert_score) || null,
+            alert_active: !!n.alert_active,
+            articles: Array.isArray(n.articles) ? n.articles.slice() : [],
+            media_ids: Array.isArray(n.media_ids) ? n.media_ids.slice() : []
+          });
+        } else {
+          cur.size += Number(n.size) || 0;
+          cur.n    += Number(n.n) || 0;
+          if ((ALERT_RANK[n.alert_level] || 0) > (ALERT_RANK[cur.alert_level] || 0)) {
+            cur.alert_level = n.alert_level;
+          }
+          if (n.alert_active) cur.alert_active = true;
+          const sc = Number(n.alert_score);
+          if (Number.isFinite(sc) && (cur.alert_score == null || sc > cur.alert_score)) {
+            cur.alert_score = sc;
+          }
+          if (Array.isArray(n.articles)) cur.articles.push(...n.articles);
+          if (Array.isArray(n.media_ids)) {
+            const seen = new Set(cur.media_ids);
+            for (const m of n.media_ids) if (!seen.has(m)) { cur.media_ids.push(m); seen.add(m); }
+          }
+        }
+      }
+      for (const l of (g.links || [])) {
+        const s = (l.source && l.source.id) || l.source;
+        const t = (l.target && l.target.id) || l.target;
+        if (!s || !t) continue;
+        const key = s < t ? `${s}|${t}` : `${t}|${s}`;
+        const cur = linkMap.get(key);
+        if (!cur) linkMap.set(key, { source: s, target: t, value: Number(l.value) || 0 });
+        else cur.value += Number(l.value) || 0;
+      }
+    }
+    let nodes = [...nodeMap.values()].sort((a, b) => b.size - a.size);
+    nodes.forEach((n, i) => { n._rank = i; });
+    const links = filterTopLinks([...linkMap.values()], MAX_LINKS_NODE);
+    return { nodes, links };
+  }
+
+  // Slot précédent (pour calcul des deltas dans le Hot 10).
+  function prevSlotNodes(country) {
+    if (currentSlotIdx <= 0) return null;
+    const prev = slots[currentSlotIdx - 1];
+    if (!prev) return null;
+    return aggregateSlot(country, prev).nodes;
+  }
   let speedIdx       = 0;
 
   // Auto-fit: cadre les nœuds dans la zone réellement visible (hors
@@ -769,19 +1014,23 @@
     fitGraphToView(400);
   }
 
-  function loadPeriod(country, idx) {
-    const period = periods[idx]; if (!period) return;
-    const gd = getGD(country, period.key);
-    // Réutilise les positions précédentes pour les nœuds qui persistent
-    // d'une période à l'autre — évite que le layout reparte de zéro.
+  // Charge un slot (créneau à la granularité courante) dans le graphe.
+  // Le slot est agrégé sur tous ses blocs 4h: nodes (somme size, n,
+  // pire alert_level) et liens (somme value).
+  function loadSlot(country, slotIdx) {
+    const slot = slots[slotIdx];
+    if (!slot) return;
+    currentSlotIdx = slotIdx;
+    const gd = aggregateSlot(country, slot);
+
+    // Réutilise les positions précédentes pour les nœuds persistants —
+    // évite de relancer un layout from-scratch entre deux slots adjacents.
     const prev = {};
     (Graph.graphData().nodes || []).forEach(n => { prev[n.id] = {x: n.x, y: n.y}; });
     gd.nodes.forEach(n => { if (prev[n.id]) Object.assign(n, prev[n.id]); });
 
-    // Pré-positionnement circulaire des nouveaux nœuds (sans coords
-    // héritées). Les place sur un cercle régulier autour de (0,0)
-    // plutôt qu'au hasard, ce qui rend la convergence du layout
-    // beaucoup plus élégante (pas d'expulsion brutale).
+    // Pré-positionnement circulaire des nouveaux nœuds: cercle régulier
+    // autour de (0,0), bien plus élégant que des positions random.
     const newNodes = gd.nodes.filter(n => !Number.isFinite(n.x) || !Number.isFinite(n.y));
     if (newNodes.length) {
       const radius = Math.max(80, 22 * Math.sqrt(gd.nodes.length));
@@ -798,43 +1047,82 @@
     focusedNode = null;
     Graph.graphData(gd);
     // Le cadrage final se fait dans onEngineStop, après stabilisation.
-    const conv = periodConvergenceScore(country, period.key);
+
     document.getElementById('period-label').innerHTML =
-      `<span>${period.label}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens &nbsp;·&nbsp; convergence ${conv.toFixed(1)}`;
-    renderTop10(gd, country);
+      `<span>${escapeHtml(slot.label)}</span> &nbsp;·&nbsp; ${gd.nodes.length} objets &nbsp;·&nbsp; ${gd.links.length} liens`;
+
+    const metaEl = document.getElementById('window-meta');
+    if (metaEl) {
+      const blocks = slot.periods.length;
+      metaEl.textContent = `${slot.label} · ${blocks} bloc${blocks > 1 ? 's' : ''} 4h`;
+    }
+
+    renderHot10(gd, country);
     document.getElementById('focus-hint').classList.remove('visible');
     renderArticlesPanel(null);
   }
 
-  function renderTop10(gd, country) {
+  // Hot 10 — format calqué sur evolution.html (.rleg-item) avec dot
+  // d'alerte, badge niveau, valeur de saillance, delta vs slot précédent.
+  const ALERT_BADGE_LABELS = { strong: 'Fort', alert: 'Alerte', watch: 'Veille', emerging: 'Émerg.' };
+  function renderHot10(gd, country) {
     const list = document.getElementById('top10-list');
     const countryEl = document.getElementById('top10-country');
     countryEl.textContent = country;
 
-    const top = (gd.nodes || []).slice().sort((a, b) => b.size - a.size).slice(0, 10);
+    const top = (gd.nodes || []).slice(0, 10);
     if (!top.length) {
-      list.innerHTML = '<div id="top10-empty">Aucun objet pour cette période.</div>';
+      list.innerHTML = '<div id="top10-empty">Aucun objet pour ce créneau.</div>';
       return;
     }
 
+    // Rangs du slot précédent pour calculer les deltas
+    const prevNodes = prevSlotNodes(country);
+    const prevRanks = new Map();
+    if (prevNodes) prevNodes.slice(0, 10).forEach((n, i) => prevRanks.set(n.id, i + 1));
+
     list.innerHTML = '';
     top.forEach((n, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'top10-item';
-      btn.dataset.nodeId = n.id;
-      btn.innerHTML = `<span class="top10-rank">${i + 1}.</span>${escapeHtml(n.id)}<span class="top10-score">${n.size.toFixed(1)} pts · ${n.n} mentions</span>`;
-      btn.addEventListener('click', (e) => {
+      const lvl = n.alert_level;
+      const showBadge = n.alert_active && lvl && lvl !== 'normal' && lvl !== 'none';
+
+      const item = document.createElement('div');
+      item.className = 'rleg-item' + (showBadge ? ' alert-' + lvl : '');
+      item.dataset.nodeId = n.id;
+
+      let deltaTxt = '', deltaClass = 'flat';
+      const prevRank = prevRanks.get(n.id);
+      if (prevRank == null) {
+        if (prevNodes && prevNodes.length) { deltaTxt = 'NVX'; deltaClass = 'new-entry'; }
+      } else {
+        const d = prevRank - (i + 1);
+        if (d > 0)      { deltaTxt = `↑${d}`; deltaClass = 'up'; }
+        else if (d < 0) { deltaTxt = `↓${Math.abs(d)}`; deltaClass = 'down'; }
+        else            { deltaTxt = '='; deltaClass = 'flat'; }
+      }
+
+      const badgeHtml = showBadge
+        ? `<span class="rleg-alert-badge level-${escapeHtml(lvl)}">${escapeHtml(ALERT_BADGE_LABELS[lvl] || lvl)}</span>`
+        : '';
+
+      item.innerHTML =
+        `<span class="rleg-rank">${i + 1}.</span>` +
+        `<span class="rleg-name" title="${escapeHtml(n.id)}">${escapeHtml(n.id)}</span>` +
+        badgeHtml +
+        `<span class="rleg-val">${(Number(n.size) || 0).toFixed(1)}</span>` +
+        `<span class="rleg-delta ${deltaClass}">${deltaTxt}</span>`;
+
+      item.addEventListener('click', (e) => {
         e.stopPropagation();
-        focusNodeById(btn.dataset.nodeId);
+        focusNodeById(n.id);
       });
-      list.appendChild(btn);
+      list.appendChild(item);
     });
   }
 
   function setTop10Active(nodeId) {
-    document.querySelectorAll('.top10-item').forEach(btn => {
-      if (nodeId && btn.dataset.nodeId === nodeId) btn.classList.add('active');
-      else btn.classList.remove('active');
+    document.querySelectorAll('.rleg-item').forEach(btn => {
+      btn.classList.toggle('focused', !!nodeId && btn.dataset.nodeId === nodeId);
     });
   }
 
@@ -896,12 +1184,27 @@
     clearFocusAndRecenter();
   });
 
+  // Initialise les slots à la granularité courante
+  buildSlots();
+
   const slider = document.getElementById('timeline');
-  slider.max = periods.length-1; slider.value = currentIdx;
-  slider.addEventListener('input', () => { currentIdx=+slider.value; loadPeriod(currentCountry,currentIdx); });
+  function refreshSliderRange() {
+    slider.max = Math.max(0, slots.length - 1);
+    slider.value = currentSlotIdx;
+  }
+  refreshSliderRange();
+  slider.addEventListener('input', () => {
+    currentSlotIdx = +slider.value;
+    loadSlot(currentCountry, currentSlotIdx);
+  });
 
   const playBtn = document.getElementById('play-btn');
-  function advance() { currentIdx=(currentIdx+1)%periods.length; slider.value=currentIdx; loadPeriod(currentCountry,currentIdx); }
+  function advance() {
+    if (!slots.length) return;
+    currentSlotIdx = (currentSlotIdx + 1) % slots.length;
+    slider.value = currentSlotIdx;
+    loadSlot(currentCountry, currentSlotIdx);
+  }
   function togglePlay() {
     if (playInterval) { clearInterval(playInterval); playInterval=null; playBtn.textContent='▶'; playBtn.classList.remove('playing'); }
     else { playBtn.textContent='⏸'; playBtn.classList.add('playing'); playInterval=setInterval(advance,playSpeed); }
@@ -911,6 +1214,20 @@
     speedIdx=(speedIdx+1)%SPEEDS.length; playSpeed=SPEEDS[speedIdx];
     document.getElementById('speed-btn').textContent=SPEED_LABELS[speedIdx];
     if (playInterval) { clearInterval(playInterval); playInterval=setInterval(advance,playSpeed); }
+  });
+
+  // Boutons de granularité (Jour/Semaine/Mois/Année)
+  document.querySelectorAll('.win-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = btn.dataset.gran;
+      if (!GRAN_SET.includes(g) || g === rankedGranularity) return;
+      rankedGranularity = g;
+      document.querySelectorAll('.win-btn').forEach(b => b.classList.toggle('active', b.dataset.gran === g));
+      buildSlots();
+      refreshSliderRange();
+      loadSlot(currentCountry, currentSlotIdx);
+    });
+    btn.classList.toggle('active', btn.dataset.gran === rankedGranularity);
   });
   // ── Recherche ─────────────────────────────────────────────────────────────
   const searchInput  = document.getElementById('search-input');
@@ -922,7 +1239,7 @@
     searchStatus.className   = '';
     if (!q) { clearFocusAndRecenter(); return; }
 
-    // Cherche dans la période courante
+    // 1) Match dans le slot courant déjà rendu
     const gd = Graph.graphData();
     const matchNow = (gd.nodes || []).find(n => n.id.toLowerCase().includes(q));
     if (matchNow) {
@@ -932,21 +1249,27 @@
       return;
     }
 
-    // Cherche dans toutes les périodes (plus récente en premier)
-    let foundIdx = -1, foundId = null;
-    for (let i = periods.length - 1; i >= 0; i--) {
-      const g = graphs[currentCountry]?.[periods[i].key];
-      if (!g) continue;
-      const m = (g.nodes || []).find(n => n.id.toLowerCase().includes(q));
-      if (m) { foundIdx = i; foundId = m.id; break; }
+    // 2) Cherche dans tous les slots, du plus récent au plus ancien
+    let foundSlotIdx = -1, foundId = null;
+    for (let i = slots.length - 1; i >= 0; i--) {
+      const slot = slots[i];
+      // On scanne les périodes 4h du slot pour ne pas avoir à tout agréger
+      let m = null;
+      for (const pk of slot.periodKeys) {
+        const g = graphs[currentCountry]?.[pk];
+        if (!g) continue;
+        m = (g.nodes || []).find(n => n.id.toLowerCase().includes(q));
+        if (m) break;
+      }
+      if (m) { foundSlotIdx = i; foundId = m.id; break; }
     }
 
-    if (foundIdx !== -1) {
-      currentIdx = foundIdx;
-      slider.value = currentIdx;
-      loadPeriod(currentCountry, currentIdx);
+    if (foundSlotIdx !== -1) {
+      currentSlotIdx = foundSlotIdx;
+      slider.value = currentSlotIdx;
+      loadSlot(currentCountry, currentSlotIdx);
       focusNodeById(foundId);
-      searchStatus.textContent = '↳ ' + periods[foundIdx].label;
+      searchStatus.textContent = '↳ ' + slots[foundSlotIdx].label;
       searchStatus.className   = 'jumped';
     } else {
       clearFocusAndRecenter();
@@ -964,10 +1287,10 @@
   document.addEventListener('keydown', e => {
     if (document.activeElement === searchInput) return;
     if (e.key === '/') { e.preventDefault(); searchInput.focus(); searchInput.select(); return; }
-    if      (e.key==='ArrowRight'){currentIdx=Math.min(currentIdx+1,periods.length-1);slider.value=currentIdx;loadPeriod(currentCountry,currentIdx);}
-    else if (e.key==='ArrowLeft') {currentIdx=Math.max(currentIdx-1,0);slider.value=currentIdx;loadPeriod(currentCountry,currentIdx);}
-    else if (e.key===' ')         {e.preventDefault();togglePlay();}
-    else if (e.key==='Escape')    { if(searchInput.value){searchInput.value='';handleSearch('');} }
+    if      (e.key==='ArrowRight'){ currentSlotIdx = Math.min(currentSlotIdx + 1, slots.length - 1); slider.value = currentSlotIdx; loadSlot(currentCountry, currentSlotIdx); }
+    else if (e.key==='ArrowLeft') { currentSlotIdx = Math.max(currentSlotIdx - 1, 0);                slider.value = currentSlotIdx; loadSlot(currentCountry, currentSlotIdx); }
+    else if (e.key===' ')         { e.preventDefault(); togglePlay(); }
+    else if (e.key==='Escape')    { if(searchInput.value){ searchInput.value=''; handleSearch(''); } }
   });
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -975,17 +1298,30 @@
       tab.classList.add('active');
       currentCountry = tab.dataset.country;
       applyTimelineHeat(currentCountry);
-      loadPeriod(currentCountry, currentIdx);
+      loadSlot(currentCountry, currentSlotIdx);
     });
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
   });
+
+  // Lien Évolution: propage le pays + la granularité courants pour
+  // continuité de session entre les deux vues.
+  const evoLink = document.getElementById('link-evolution');
+  if (evoLink) {
+    evoLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const u = new URL(evoLink.href, window.location.href);
+      u.searchParams.set('country', currentCountry);
+      u.searchParams.set('gran', rankedGranularity);
+      window.location.href = u.pathname + (u.search || '') + (u.hash || '');
+    });
+  }
 
   // Loading masqué tout de suite: l'utilisateur voit la simulation
   // placer les nœuds intelligemment dans l'espace, puis onEngineStop
   // cadre le tout dans la zone visible.
   document.getElementById('loading').style.display = 'none';
   applyTimelineHeat(currentCountry);
-  loadPeriod(currentCountry, currentIdx);
+  loadSlot(currentCountry, currentSlotIdx);
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
   const urlNode = urlParams.get('node');
