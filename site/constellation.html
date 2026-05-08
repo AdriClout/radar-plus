@@ -569,23 +569,49 @@
       });
     });
   // Labels (après les cercles par défaut)
+  // Placement intelligent du label: pour chaque nœud on choisit le
+  // côté (droite/gauche) où il y a le plus d'espace par rapport au
+  // centroïde local. Réduit drastiquement les chevauchements de
+  // labels dans les clusters denses.
   setIfFn('onRenderFramePost', (ctx, gs) => {
       const { nodes } = Graph.graphData();
+      // Centroïde global = barycentre des nœuds visibles (tous_x, tous_y).
+      let cx = 0, cy = 0, cn = 0;
+      for (const n of nodes) {
+        if (n.x == null || n._highlighted === false) continue;
+        cx += n.x; cy += n.y; cn++;
+      }
+      if (cn > 0) { cx /= cn; cy /= cn; }
+
       nodes.forEach(n => {
         if (n._rank >= TOP_LABELS || n.x == null || n._highlighted === false) return;
         const t   = sizeToT(n.size);
         const r   = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
         const fs  = Math.max(2, 11 / gs);
         ctx.font  = `${fs}px 'SF Mono', monospace`;
-        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.textBaseline = 'middle';
         const lbl = n.id;
         const tw  = ctx.measureText(lbl).width;
         const pad = 2 / gs;
-        const lx  = n.x + r + pad * 1.5;
-        const ly  = n.y;
+        // Label à l'extérieur du centroïde: si le nœud est à gauche
+        // du barycentre, on place le label à gauche; sinon à droite.
+        // Ainsi les labels rayonnent vers l'extérieur du cluster, pas
+        // vers son intérieur où ils écraseraient d'autres nœuds.
+        const onLeft = n.x < cx;
+        const ly = n.y;
+        let lx, alignedX;
+        if (onLeft) {
+          ctx.textAlign = 'right';
+          lx = n.x - r - pad * 1.5;
+          alignedX = lx - tw;
+        } else {
+          ctx.textAlign = 'left';
+          lx = n.x + r + pad * 1.5;
+          alignedX = lx;
+        }
         ctx.fillStyle = 'rgba(0,3,22,0.80)';
-        ctx.fillRect(lx - pad, ly - fs/2 - pad, tw + pad*2, fs + pad*2);
-        ctx.fillStyle = `rgba(${Math.round(175+t*75)},215,255,0.92)`;
+        ctx.fillRect(alignedX - pad, ly - fs / 2 - pad, tw + pad * 2, fs + pad * 2);
+        ctx.fillStyle = `rgba(${Math.round(175 + t * 75)},215,255,0.92)`;
         ctx.fillText(lbl, lx, ly);
       });
     });
@@ -593,17 +619,28 @@
   setIfFn('onNodeClick', handleClick);
 
   // ── Forces du layout ──────────────────────────────────────────────────────
-  // - charge: répulsion modérée. Plus faible qu'auparavant car combinée
-  //   au pré-positionnement circulaire, on n'a plus besoin de pousser
-  //   fort pour démêler les nœuds.
-  // - link.distance: liaisons courtes (50px) pour des clusters compacts.
-  // - collide: empêche le chevauchement disque+label.
-  // - center: force radiale douce qui ramène l'ensemble vers (0,0) —
-  //   évite que les clusters disconnectés ne dérivent à l'infini.
-  Graph.d3Force('charge').strength(-130);
-  Graph.d3Force('link').distance(50);
+  // - charge: répulsion modérée pour démêler sans expulser.
+  // - link.distance: ~65px, donne de la place entre nœuds connectés
+  //   (sinon les labels se collent dans les clusters denses).
+  // - collide: padding label-aware (ellipse asymétrique, plus large
+  //   horizontalement car les labels sont dessinés à droite des nœuds).
+  // - gentleCenter: rappel vers (0,0) — empêche les clusters
+  //   disconnectés de dériver et concentre l'ensemble sur la zone
+  //   visible, plutôt que de remplir l'infini.
+  Graph.d3Force('charge').strength(-110);
+  Graph.d3Force('link').distance(65);
 
   function nodeRadius(n) { return 3 * Math.sqrt(Math.max(4, n.size * 0.5)); }
+
+  // Padding label-aware: ajoute une marge horizontale proportionnelle
+  // à la longueur du label (capée à ~30px), petite marge verticale
+  // constante. Empêche concrètement les labels de se chevaucher dans
+  // les clusters denses, sans exploser le layout des nœuds courts.
+  function labelPadX(n) {
+    const labelW = (n.id || '').length * 5; // ≈ 5px/char en SF Mono 11px
+    return Math.min(30, 10 + labelW * 0.18);
+  }
+  const LABEL_PAD_Y = 10;
 
   function collideForce(alpha) {
     const nodes = Graph.graphData().nodes;
@@ -612,17 +649,25 @@
       for (let j = i + 1; j < n; j++) {
         const a = nodes[i], b = nodes[j];
         if (a.x == null || b.x == null) continue;
-        const ra = nodeRadius(a) + 8;
-        const rb = nodeRadius(b) + 8;
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const distSq = dx * dx + dy * dy;
-        const minDist = ra + rb;
-        if (distSq < minDist * minDist && distSq > 1e-4) {
-          const dist = Math.sqrt(distSq);
-          const push = ((minDist - dist) / 2) * alpha;
-          const ux = dx / dist, uy = dy / dist;
-          a.x -= ux * push; a.y -= uy * push;
-          b.x += ux * push; b.y += uy * push;
+        const ra = nodeRadius(a);
+        const rb = nodeRadius(b);
+        // Distances minimum asymétriques — plus larges en X qu'en Y
+        // car les labels sont rendus horizontalement à droite du nœud.
+        const minDx = ra + rb + (labelPadX(a) + labelPadX(b)) * 0.5;
+        const minDy = ra + rb + LABEL_PAD_Y;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        // Test ellipse: (dx/minDx)² + (dy/minDy)² < 1 ⇒ collision.
+        const ex = dx / minDx, ey = dy / minDy;
+        const dEll2 = ex * ex + ey * ey;
+        if (dEll2 < 1 && dEll2 > 1e-6) {
+          const dEll = Math.sqrt(dEll2);
+          // Push proportionnel à la pénétration dans l'ellipse.
+          const push = ((1 - dEll) / 2) * alpha;
+          a.x -= dx * push;
+          a.y -= dy * push;
+          b.x += dx * push;
+          b.y += dy * push;
         }
       }
     }
@@ -631,7 +676,7 @@
 
   // Force radiale: tire chaque nœud vers (0,0) avec une intensité
   // proportionnelle à sa distance. Empêche les clusters disconnectés
-  // de partir à l'infini sous l'effet de charge.
+  // de partir à l'infini et concentre l'ensemble sur la zone visible.
   function gentleCenter(strength) {
     return function(alpha) {
       const nodes = Graph.graphData().nodes;
@@ -643,7 +688,7 @@
       }
     };
   }
-  Graph.d3Force('gentleCenter', gentleCenter(0.06));
+  Graph.d3Force('gentleCenter', gentleCenter(0.09));
 
   window.addEventListener('resize', () => {
     Graph.width(window.innerWidth).height(window.innerHeight);
