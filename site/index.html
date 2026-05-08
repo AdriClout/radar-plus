@@ -107,9 +107,10 @@
     }
     .media-hotspot:hover .media-tooltip { opacity: 1; }
 
-    /* Scroll indicator */
+    /* Scroll indicator — placé plus haut pour ne pas se perdre au-dessus
+       du ticker et de la barre d'alerte en haut */
     .scroll-hint {
-      position: absolute; bottom: calc(var(--ticker-height) + 26px); left: 50%;
+      position: absolute; bottom: calc(var(--ticker-height) + 90px); left: 50%;
       transform: translateX(-50%); text-align: center;
       animation: float 2.5s ease-in-out infinite;
       z-index: 5;
@@ -2017,15 +2018,34 @@ function updateEvolutionCtaLink() {
 }
 updateEvolutionCtaLink();
 
-/* "Explorer" sous le hero → scroll fluide vers le HOT 20 */
+/* "Explorer" sous le hero → scroll fluide vers le HOT 20.
+   Le scroll tient compte de la barre d'alerte fixée en haut: on
+   décale de --alert-bar-h pour que le titre HOT 20 ne se retrouve
+   pas caché derrière. */
+function scrollToHot20() {
+  var target = document.getElementById('hot20');
+  if (!target) return;
+  var hasBar = document.body.classList.contains('has-alert-bar');
+  var rootStyle = getComputedStyle(document.documentElement);
+  var barH = parseInt(rootStyle.getPropertyValue('--alert-bar-h')) || 32;
+  var offset = (hasBar ? barH : 0) + 16;
+  var top = target.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top: top, behavior: 'smooth' });
+}
+
 (function() {
   var btn = document.getElementById('scroll-to-hot20');
-  if (!btn) return;
-  btn.addEventListener('click', function() {
-    var target = document.getElementById('hot20');
-    if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (btn) btn.addEventListener('click', scrollToHot20);
+
+  // Auto-scroll vers HOT 20 après 5s sans interaction utilisateur
+  var userInteracted = false;
+  function flagInteract() { userInteracted = true; }
+  ['scroll','wheel','click','keydown','touchstart'].forEach(function(ev) {
+    window.addEventListener(ev, flagInteract, { once: true, passive: true });
   });
+  setTimeout(function() {
+    if (!userInteracted) scrollToHot20();
+  }, 5000);
 })();
 
 document.getElementById('country-tabs').addEventListener('click', function(e) {
