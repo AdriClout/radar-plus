@@ -292,12 +292,13 @@
 
     .alert-card-stats {
       display: flex;
-      gap: 16px;
+      flex-wrap: wrap;
+      gap: 8px 14px;
       margin-bottom: 8px;
       font-size: 10px;
       color: var(--muted);
     }
-    .alert-card-stat { display: flex; flex-direction: column; gap: 1px; }
+    .alert-card-stat { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
     .alert-card-stat-val {
       font-size: 14px;
       font-weight: 700;
@@ -383,6 +384,120 @@
       font-size: 9px;
     }
 
+    /* ── Carte événement (cluster d'alertes autour d'un pivot) ── */
+    .alert-card.is-event {
+      grid-column: 1 / -1;
+      border-left-width: 4px;
+      background: linear-gradient(180deg, rgba(20,40,90,0.32), rgba(10,20,55,0.55));
+    }
+    .alert-event-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(180,210,255,0.85);
+      padding: 2px 9px 2px 7px;
+      border: 1px solid rgba(120,170,255,0.45);
+      border-radius: 999px;
+      background: rgba(20,50,110,0.55);
+      flex-shrink: 0;
+      margin-right: 8px;
+    }
+    .alert-event-tag::before {
+      content: '◆';
+      font-size: 8px;
+      color: rgba(150,200,255,0.9);
+    }
+    .alert-event-pivot-name {
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: rgba(230,242,255,0.98);
+      text-transform: capitalize;
+      letter-spacing: 0.3px;
+      flex: 1;
+      word-break: break-word;
+    }
+    a.alert-event-pivot-name { text-decoration: none; cursor: pointer; transition: color 0.15s; }
+    a.alert-event-pivot-name:hover { color: rgba(170,210,255,1); }
+    .alert-event-pivot-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 8px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+    .alert-event-pivot-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 7px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-family: var(--orbitron);
+      border: 1px solid rgba(140,180,240,0.4);
+      color: rgba(190,220,255,0.85);
+      background: rgba(20,40,90,0.45);
+    }
+    .alert-event-pivot-badge.is-pivot-alert { /* if pivot itself alerts */
+      border-color: rgba(255,180,140,0.55);
+      color: rgba(255,210,180,0.95);
+      background: rgba(86,42,24,0.55);
+    }
+    .alert-event-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 10px;
+      color: rgba(180,205,240,0.78);
+      margin: 10px 0 10px;
+    }
+    .alert-event-summary b { color: rgba(220,235,255,0.96); font-weight: 700; }
+    .alert-event-members {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .event-member {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 10px;
+      color: rgba(220,235,255,0.92);
+      text-decoration: none;
+      background: rgba(8,14,36,0.55);
+      cursor: pointer;
+      transition: filter 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .event-member:hover { filter: brightness(1.18); border-color: rgba(150,200,255,0.7); }
+    .event-member.level-strong { border-color: rgba(255,110,110,0.55); background: rgba(92,24,28,0.45); color: rgba(255,200,200,0.96); }
+    .event-member.level-alert  { border-color: rgba(255,143,92,0.5);  background: rgba(86,38,24,0.45);  color: rgba(255,205,165,0.96); }
+    .event-member.level-watch  { border-color: rgba(212,188,88,0.45); background: rgba(72,58,20,0.45);  color: rgba(255,225,150,0.96); }
+    .event-member-score {
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 0.6px;
+      color: rgba(180,210,255,0.7);
+    }
+    .alert-event-pivot-articles-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: rgba(140,175,220,0.7);
+      margin: 4px 0 6px;
+    }
+
     /* Vide / chargement */
     #alertes-empty, #alertes-loading {
       text-align: center;
@@ -465,9 +580,9 @@
   <div id="alertes-filters">
     <span class="filter-label" data-i18n="alertes.filter_country">Pays</span>
     <select id="filter-country">
-      <option value="all" data-i18n="common.all_countries">Tous</option>
-      <option value="CAN" selected data-i18n="country.CAN">Canada</option>
+      <option value="all" selected data-i18n="common.all_countries">Tous</option>
       <option value="QC" data-i18n="country.QC">Québec</option>
+      <option value="CAN" data-i18n="country.CAN">Canada</option>
       <option value="USA" data-i18n="country.USA">États-Unis</option>
     </select>
     <div class="filter-sep"></div>
@@ -518,7 +633,7 @@
   const COUNTRY_LABELS = { CAN: 'CAN', QC: 'QC', USA: 'USA' };
 
   let graphData    = null;
-  let filterCountry = 'CAN';
+  let filterCountry = 'all';
   let filterStatus  = 'current';
   let filterLevel   = 'all';
   let filterSearch  = '';
@@ -543,7 +658,13 @@
 
   function getActiveCountries() {
     if (!graphData) return [];
-    return Object.keys(graphData.graphs || {});
+    // Ordre fixe pour cohérence d'affichage: QC, CAN, USA.
+    var preferred = ['QC', 'CAN', 'USA'];
+    var available = Object.keys(graphData.graphs || {});
+    var ordered = [];
+    preferred.forEach(function(c) { if (available.indexOf(c) !== -1) ordered.push(c); });
+    available.forEach(function(c) { if (ordered.indexOf(c) === -1) ordered.push(c); });
+    return ordered;
   }
 
   function getLatestPeriodKey() {
@@ -620,6 +741,23 @@
         if (!gd) continue;
 
         var nodes = gd.nodes || [];
+        var nodesById = {};
+        for (var nx = 0; nx < nodes.length; nx++) nodesById[nodes[nx].id] = nodes[nx];
+
+        // Indexer les events: on masque pivot + membres pour éviter les
+        // doublures (un pivot lui-même en alerte ne doit pas réapparaître
+        // comme alerte autonome à côté de sa carte événement).
+        var events = Array.isArray(gd.events) ? gd.events : [];
+        var inEvent = {};
+        for (var ei = 0; ei < events.length; ei++) {
+          var ev = events[ei];
+          if (!ev || !ev.pivot || !Array.isArray(ev.members)) continue;
+          if (ev.pivot.alert_active) inEvent[ev.pivot.id] = ei;
+          for (var mi = 0; mi < ev.members.length; mi++) {
+            inEvent[ev.members[mi].id] = ei;
+          }
+        }
+
         for (var ni = 0; ni < nodes.length; ni++) {
           var node  = nodes[ni];
           var level = node.alert_level;
@@ -636,6 +774,10 @@
           if (filterLevel !== 'all' && level !== filterLevel) continue;
           if (searchLow && node.id.toLowerCase().indexOf(searchLow) === -1) continue;
 
+          // Skip si cette alerte est membre OU pivot actif d'un événement
+          // (sera affichée dans la carte événement, pas en doublon).
+          if (inEvent[node.id] !== undefined) continue;
+
           var score = numOrNull(node.alert_score);
           var delta = numOrNull(node.alert_delta);
           var baseline = numOrNull(node.alert_baseline);
@@ -643,6 +785,7 @@
           var yearPeak  = numOrNull(node.alert_year_peak);
           var topShare  = numOrNull(node.alert_top_share);
           alertsInPeriod.push({
+            kind:     'alert',
             id:       node.id,
             level:    level,
             score:    score,
@@ -658,6 +801,63 @@
             country:  country,
           });
         }
+
+        // Construire les "alertes événement" (1 par cluster avec ≥1 membre)
+        for (var ei2 = 0; ei2 < events.length; ei2++) {
+          var ev = events[ei2];
+          if (!ev || !ev.pivot || !Array.isArray(ev.members) || !ev.members.length) continue;
+
+          // Niveau effectif de l'événement = max niveau parmi pivot + membres
+          var allLevels = ev.members.map(function(m) { return m.alert_level; });
+          if (ev.pivot.alert_active && ev.pivot.alert_level) allLevels.push(ev.pivot.alert_level);
+          var topLevel = 'watch';
+          for (var li = 0; li < LEVEL_ORDER.length; li++) {
+            if (allLevels.indexOf(LEVEL_ORDER[li]) !== -1) { topLevel = LEVEL_ORDER[li]; break; }
+          }
+
+          // Statut = current si la période est la latest ET au moins un membre/pivot actif
+          var anyActive = ev.members.some(function(m) {
+            return ['strong', 'alert', 'watch'].indexOf(m.alert_level) !== -1;
+          }) || !!ev.pivot.alert_active;
+          var isCurrent = period.key === latestKey && anyActive;
+
+          // Pour le filtre "current/ended" on suit la même logique que pour les alertes
+          var isEnded = period.key !== latestKey && anyActive
+            && !ev.members.every(function(m) { return latestActiveMap[country + '::' + m.id]; });
+
+          if (filterStatus === 'current' && !isCurrent) continue;
+          if (filterStatus === 'ended' && !isEnded) continue;
+          if (filterLevel !== 'all' && topLevel !== filterLevel) continue;
+
+          // Filtre search: matcher pivot ou n'importe quel membre
+          if (searchLow) {
+            var match = ev.pivot.id.toLowerCase().indexOf(searchLow) !== -1
+              || ev.members.some(function(m) { return m.id.toLowerCase().indexOf(searchLow) !== -1; });
+            if (!match) continue;
+          }
+
+          // Articles à afficher = exactement les articles partagés (pivot ∩ membres),
+          // déjà calculés et embarqués dans l'event par le pipeline R.
+          var sharedArticles = Array.isArray(ev.shared_articles) ? ev.shared_articles : [];
+
+          // Score "représentatif" = max alert_score parmi pivot+membres pour le tri
+          var topScore = ev.pivot.alert_score || 0;
+          ev.members.forEach(function(m) {
+            if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
+          });
+
+          alertsInPeriod.push({
+            kind:        'event',
+            level:       topLevel,
+            score:       topScore,
+            country:     country,
+            status:      isCurrent ? 'current' : (isEnded ? 'ended' : 'other'),
+            pivot:       ev.pivot,
+            members:     ev.members,
+            articles:    sharedArticles,
+            sharedCount: numOrNull(ev.shared_articles_count) || sharedArticles.length,
+          });
+        }
       }
 
       if (!alertsInPeriod.length) continue;
@@ -665,6 +865,8 @@
       alertsInPeriod.sort(function(a, b) {
         var lo = LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level);
         if (lo !== 0) return lo;
+        // Events avant alertes individuelles à level égal (plus structurant)
+        if (a.kind !== b.kind) return a.kind === 'event' ? -1 : 1;
         return (b.score || 0) - (a.score || 0);
       });
 
@@ -674,6 +876,116 @@
   }
 
   function renderCard(alert) {
+    if (alert.kind === 'event') return renderEventCard(alert);
+    return renderSimpleAlertCard(alert);
+  }
+
+  function renderEventCard(ev) {
+    var T = window.t || function(k){ return k; };
+    var countryStr = T('country.' + ev.country) || ev.country;
+    var pivotId = ev.pivot.id;
+    var qCountry = encodeURIComponent(ev.country);
+    var allIds = [pivotId].concat(ev.members.map(function(m){ return m.id; }));
+    var qNodes = encodeURIComponent(allIds.join(','));
+    var evoUrl = './evolution.html?country=' + qCountry + '&nodes=' + qNodes + '&mode=tracking&gran=week';
+    var cstUrl = './constellation.html?country=' + qCountry + '&node=' + encodeURIComponent(pivotId);
+    var statsUrl = './statistiques.html?pays=' + qCountry + '&objet=' + encodeURIComponent(pivotId);
+
+    // Pivot: si lui-même en alerte active, afficher son badge avec le bon level
+    var pivotIsAlert = !!ev.pivot.alert_active;
+    var pivotBadgeHtml = '';
+    if (pivotIsAlert && ev.pivot.alert_level) {
+      var pl = ev.pivot.alert_level;
+      var plLabel = T('alertes.level_' + pl) || pl;
+      pivotBadgeHtml = '<span class="alert-event-pivot-badge is-pivot-alert" title="' + escapeHtml(T('alertes.event_pivot_in_alert_tip') || '') + '">'
+        + escapeHtml(plLabel) + '</span>';
+    } else {
+      pivotBadgeHtml = '<span class="alert-event-pivot-badge" title="' + escapeHtml(T('alertes.event_pivot_context_tip') || '') + '">'
+        + escapeHtml(T('alertes.event_pivot_context') || 'Pivot') + '</span>';
+    }
+
+    // Members pills (cliquables, naviguent vers évolution).
+    // Tri: niveau d'alerte décroissant (strong > alert > watch), puis
+    // containment décroissant. Met les signaux les plus forts en premier.
+    var sortedMembers = ev.members.slice().sort(function(a, b) {
+      var lo = LEVEL_ORDER.indexOf(a.alert_level) - LEVEL_ORDER.indexOf(b.alert_level);
+      if (lo !== 0) return lo;
+      return (b.containment || 0) - (a.containment || 0);
+    });
+    var membersHtml = '';
+    for (var mi = 0; mi < sortedMembers.length; mi++) {
+      var m = sortedMembers[mi];
+      var mScore = (typeof m.alert_score === 'number') ? ('z ' + m.alert_score.toFixed(1) + '×') : '';
+      var mUrl = './evolution.html?country=' + qCountry + '&node=' + encodeURIComponent(m.id) + '&mode=tracking&gran=week';
+      var mLevelLabel = T('alertes.level_' + m.alert_level) || m.alert_level;
+      var containStr = (typeof m.containment === 'number') ? Math.round(m.containment * 100) + '%' : '—';
+      var nStr = (typeof m.n === 'number') ? m.n : '—';
+      var tooltip = T('alertes.event_member_tip', {
+        level: mLevelLabel,
+        score: mScore || '—',
+        containment: containStr,
+        mentions: nStr
+      });
+      membersHtml += '<a class="event-member level-' + escapeHtml(m.alert_level) + '" href="' + escapeHtml(mUrl) + '" title="' + escapeHtml(tooltip) + '">'
+        + escapeHtml(m.id)
+        + (mScore ? ' <span class="event-member-score">' + escapeHtml(mScore) + '</span>' : '')
+        + '</a>';
+    }
+
+    var articlesHtml = '';
+    var arts = (ev.articles || []).slice(0, 4);
+    for (var ai = 0; ai < arts.length; ai++) {
+      var a = arts[ai];
+      var url = (typeof a.url === 'string' && a.url) ? escapeHtml(a.url) : '#';
+      var title = (typeof a.title === 'string' && a.title) ? escapeHtml(a.title) : 'Article';
+      var media = (typeof a.media_id === 'string') ? escapeHtml(a.media_id) : '';
+      articlesHtml += '<a class="alert-article-link" href="' + url + '" target="_blank" rel="noopener">'
+        + (media ? '<span class="alert-article-media">' + media + '</span>' : '')
+        + '<span class="alert-article-title">' + title + '</span>'
+        + '</a>';
+    }
+
+    var memberCountStr = T('alertes.event_members_count', { n: ev.members.length });
+    var sharedCountStr = T('alertes.event_shared_articles', { n: ev.sharedCount });
+
+    // KPIs agrégés sur le cluster (pivot + membres)
+    var totalMentions = (typeof ev.pivot.n === 'number' ? ev.pivot.n : 0);
+    var maxScore = (ev.pivot.alert_active && typeof ev.pivot.alert_score === 'number') ? ev.pivot.alert_score : 0;
+    for (var ki = 0; ki < ev.members.length; ki++) {
+      var mk = ev.members[ki];
+      if (typeof mk.n === 'number') totalMentions += mk.n;
+      if (typeof mk.alert_score === 'number' && mk.alert_score > maxScore) maxScore = mk.alert_score;
+    }
+    var totalMentionsStr = T('alertes.event_total_mentions', { n: totalMentions });
+    var maxScoreStr = maxScore > 0 ? T('alertes.event_max_score', { score: maxScore.toFixed(1) }) : '';
+
+    return '<div class="alert-card is-event level-' + escapeHtml(ev.level) + '">'
+      + '<div class="alert-card-top">'
+      +   '<span class="alert-event-tag">' + escapeHtml(T('alertes.event_tag') || 'Événement') + '</span>'
+      +   '<a class="alert-event-pivot-name" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(pivotId) + '</a>'
+      +   pivotBadgeHtml
+      +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
+      + '</div>'
+      + '<div class="alert-event-summary">'
+      +   '<span class="event-stat">' + memberCountStr + '</span>'
+      +   '<span class="event-stat">' + sharedCountStr + '</span>'
+      +   '<span class="event-stat">' + totalMentionsStr + '</span>'
+      +   (maxScoreStr ? '<span class="event-stat">' + maxScoreStr + '</span>' : '')
+      + '</div>'
+      + '<div class="alert-event-members">' + membersHtml + '</div>'
+      + (articlesHtml
+          ? '<div class="alert-event-pivot-articles-label">' + escapeHtml(T('alertes.event_pivot_articles') || 'Articles partagés') + '</div>'
+            + '<div class="alert-card-articles">' + articlesHtml + '</div>'
+          : '')
+      + '<div class="alert-card-nav">'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.nav_evolution')) + ' (' + (ev.members.length + 1) + ') <span aria-hidden="true">→</span></a>'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl) + '">' + escapeHtml(T('alertes.nav_constellation')) + ' <span aria-hidden="true">→</span></a>'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl) + '">' + escapeHtml(T('alertes.nav_stats')) + ' <span aria-hidden="true">→</span></a>'
+      + '</div>'
+      + '</div>';
+  }
+
+  function renderSimpleAlertCard(alert) {
     var T = window.t || function(k){ return k; };
     var levelLabel = T('alertes.level_' + alert.level) || alert.level;
     var scoreStr   = alert.score !== null ? alert.score.toFixed(1) + '\u00d7' : '\u2014';

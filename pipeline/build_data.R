@@ -395,6 +395,127 @@ build_articles <- function(urls_json, titles_json, max_articles = 15) {
   out
 }
 
+# ─── Clustering événementiel ─────────────────────────────────────────────────
+# Une alerte signale un OBJET. Mais plusieurs objets peuvent monter ensemble
+# parce qu'ils couvrent le même événement (ex: WHO + Alberta + hantavirus →
+# un seul événement: la situation hantavirus). On regroupe les alertes par
+# pivot d'événement = objet (alerte ou non) qui CONTIENT les articles des
+# membres du cluster. Métrique: containment(membre → pivot) ≥ seuil.
+ALERT_EVENT_CONTAINMENT <- 0.5
+
+parse_urls_set <- function(urls_json) {
+  u <- parse_json_chr(urls_json)
+  unique(u[!is.na(u) & nzchar(u)])
+}
+
+build_alert_events <- function(nodes_i) {
+  # nodes_i: data frame d'une (country, période), Top N filtré, avec colonnes
+  # extracted_objects, urls, alert_active, alert_level, alert_score, n,
+  # absolute_normalized_index. Doit déjà être ordonné par desc(saillance).
+  if (nrow(nodes_i) < 2) return(list())
+
+  alert_idx <- which(isTRUE(nodes_i$alert_active) | nodes_i$alert_active %in% TRUE)
+  if (!length(alert_idx)) return(list())
+
+  urls_sets <- lapply(nodes_i$urls, parse_urls_set)
+
+  # Pour chaque candidat-pivot, lister les alertes dont containment ≥ seuil
+  candidates <- list()
+  for (p in seq_len(nrow(nodes_i))) {
+    pivot_urls <- urls_sets[[p]]
+    if (length(pivot_urls) < 2) next  # pivot doit avoir au moins 2 articles
+    members <- integer(0)
+    contains <- numeric(0)
+    for (a in alert_idx) {
+      if (a == p) next
+      member_urls <- urls_sets[[a]]
+      if (!length(member_urls)) next
+      cc <- length(intersect(member_urls, pivot_urls)) / length(member_urls)
+      if (cc >= ALERT_EVENT_CONTAINMENT) {
+        members <- c(members, a)
+        contains <- c(contains, cc)
+      }
+    }
+    if (length(members) > 0) {
+      # Score qualité du pivot = precision × recall.
+      #   precision = part des articles DU PIVOT qui appartiennent au cluster
+      #               (pénalise un pivot qui couvre trop large)
+      #   recall    = avg containment des membres vers le pivot (déjà calculé)
+      member_urls_union <- character(0)
+      for (mm in members) member_urls_union <- union(member_urls_union, urls_sets[[mm]])
+      pivot_precision <- if (length(pivot_urls) > 0) {
+        length(intersect(pivot_urls, member_urls_union)) / length(pivot_urls)
+      } else 0
+      avg_recall <- mean(contains)
+      candidates[[length(candidates) + 1]] <- list(
+        pivot = p, members = members, contains = contains,
+        score = pivot_precision * avg_recall,
+        pivot_urls_count = length(pivot_urls)
+      )
+    }
+  }
+  if (!length(candidates)) return(list())
+
+  # Tri: score (precision × recall) desc, puis pivot le plus ciblé (urls min)
+  # en départage. Favorise hantavirus (3 articles tous sur le sujet, p=1.0)
+  # plutôt qu'ontario (4 articles dont 1 hors-cluster, p=0.75) quand les deux
+  # couvrent les mêmes membres.
+  candidates <- candidates[order(
+    -sapply(candidates, function(c) c$score),
+     sapply(candidates, function(c) c$pivot_urls_count)
+  )]
+
+  used <- integer(0)  # indices déjà consommés (pivot OU membre)
+  events <- list()
+  for (cl in candidates) {
+    if (cl$pivot %in% used) next  # pivot déjà attribué à un autre cluster
+    remaining_idx <- which(!cl$members %in% used)
+    if (!length(remaining_idx)) next
+    members <- cl$members[remaining_idx]
+    contains <- cl$contains[remaining_idx]
+    used <- c(used, cl$pivot, members)
+
+    p <- cl$pivot
+    pivot_id <- nodes_i$extracted_objects[p]
+    pivot_urls <- urls_sets[[p]]
+
+    # Articles partagés = intersection union(membres) ∩ pivot
+    member_url_union <- character(0)
+    for (m in members) member_url_union <- union(member_url_union, urls_sets[[m]])
+    shared_urls <- intersect(member_url_union, pivot_urls)
+
+    # Récupérer les objets {title,url,media_id} pour ces shared_urls.
+    # Le pivot a ses propres articles déjà parsés; on filtre par URL.
+    pivot_arts_full <- build_articles(nodes_i$urls[p], nodes_i$titles[p])
+    shared_articles <- Filter(function(a) a$url %in% shared_urls, pivot_arts_full)
+
+    events[[length(events) + 1]] <- list(
+      pivot = list(
+        id           = pivot_id,
+        size         = round(nodes_i$absolute_normalized_index[p], 3),
+        n            = nodes_i$n[p],
+        alert_level  = nodes_i$alert_level[p],
+        alert_active = isTRUE(nodes_i$alert_active[p]),
+        alert_score  = if (is.na(nodes_i$alert_score[p])) NULL else round(nodes_i$alert_score[p], 2)
+      ),
+      members = purrr::map(seq_along(members), function(k) {
+        m <- members[k]
+        list(
+          id           = nodes_i$extracted_objects[m],
+          alert_level  = nodes_i$alert_level[m],
+          alert_score  = if (is.na(nodes_i$alert_score[m])) NULL else round(nodes_i$alert_score[m], 2),
+          n            = nodes_i$n[m],
+          containment  = round(contains[k], 3)
+        )
+      }),
+      shared_articles       = shared_articles,
+      shared_articles_count = length(shared_urls),
+      total_members         = length(members)
+    )
+  }
+  events
+}
+
 make_periods_df <- function(df) {
   df |>
     dplyr::distinct(date_utc, time_interval_utc) |>
@@ -476,7 +597,8 @@ graphs_graph <- purrr::map(countries, function(country) {
           lm <- link_med_i |> dplyr::filter(source == links_i$source[j], target == links_i$target[j])
           if (nrow(lm) == 0) character(0) else lm$media_ids[[1]]
         }
-      ))
+      )),
+      events = build_alert_events(nodes_i)
     )
   }) |> setNames(periods_graph$key)
 }) |> setNames(countries)
@@ -509,7 +631,10 @@ result_graph <- list(
       min_abs_score = ALERT_MIN_ABS_SCORE,
       # Fenêtre glissante utilisée pour le calcul du z-score d'alerte
       # (180 périodes × 4h ÷ 24 = 30 jours).
-      lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24
+      lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24,
+      # Seuil de containment d'articles pour regrouper deux alertes
+      # comme membres d'un même événement (cluster autour d'un pivot).
+      event_containment = ALERT_EVENT_CONTAINMENT
     ),
     media_ids    = all_media_ids,
     periods      = make_periods_list(periods_graph),

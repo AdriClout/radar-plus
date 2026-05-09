@@ -223,6 +223,23 @@
       var href = './evolution.html?country=' + encodeURIComponent(a.country) +
                  '&node=' + encodeURIComponent(a.id) +
                  '&mode=tracking&gran=week';
+
+      if (a.isEvent && a.memberNames && a.memberNames.length) {
+        var membersList = a.memberNames.map(function(n) {
+          return '<span class="alert-bar-event-member">' + escHtml(n) + '</span>';
+        }).join('<span class="alert-bar-event-sep" aria-hidden="true"> \u00b7 </span>');
+        return '<a class="alert-bar-item is-event level-' + escHtml(a.level) + '" href="' + escHtml(href) + '">' +
+          '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
+          '<span class="alert-bar-event-tag" aria-hidden="true">\u25c6</span>' +
+          '<span class="alert-bar-event-pivot">' + escHtml(a.id) + '</span>' +
+          '<span class="alert-bar-event-link" aria-hidden="true">\u2014</span>' +
+          '<span class="alert-bar-event-members">' + membersList + '</span>' +
+          (sc ? '<span class="alert-bar-item-score">' + escHtml(sc) + '</span>' : '') +
+          '<span class="alert-bar-item-country">' + escHtml(a.country) + '</span>' +
+          '</a>' +
+          '<span class="alert-bar-sep" aria-hidden="true">\u2022</span>';
+      }
+
       return '<a class="alert-bar-item level-' + escHtml(a.level) + '" href="' + escHtml(href) + '">' +
         '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
         '<span class="alert-bar-item-name">'  + escHtml(a.id)  + '</span>' +
@@ -251,11 +268,61 @@
       var country = countries[ci];
       var gd = graphData.graphs[country] && graphData.graphs[country][pKey];
       if (!gd) continue;
+
+      // 1) Indexer les events: les membres seront masqués au profit du pivot.
+      var events = Array.isArray(gd.events) ? gd.events : [];
+      var memberIds = {};
+      for (var ei = 0; ei < events.length; ei++) {
+        var ev = events[ei];
+        if (!ev || !Array.isArray(ev.members)) continue;
+        for (var mi = 0; mi < ev.members.length; mi++) memberIds[ev.members[mi].id] = true;
+      }
+
+      // 2) Émettre les pivots d'événements en premier (level effectif = max parmi membres+pivot)
+      for (var ei2 = 0; ei2 < events.length; ei2++) {
+        var ev2 = events[ei2];
+        if (!ev2 || !ev2.pivot || !Array.isArray(ev2.members) || !ev2.members.length) continue;
+        var lvls = ev2.members.map(function(m){ return m.alert_level; });
+        if (ev2.pivot.alert_active) lvls.push(ev2.pivot.alert_level);
+        var topLvl = null;
+        if (lvls.indexOf('strong') !== -1) topLvl = 'strong';
+        else if (lvls.indexOf('alert') !== -1) topLvl = 'alert';
+        if (!topLvl) continue;  // bandeau ne montre que strong/alert
+        var key2 = country + ':event:' + ev2.pivot.id;
+        if (seen[key2]) continue;
+        seen[key2] = true;
+        // Score représentatif = max alert_score parmi pivot+membres
+        var topScore = ev2.pivot.alert_active && typeof ev2.pivot.alert_score === 'number' ? ev2.pivot.alert_score : 0;
+        ev2.members.forEach(function(m){
+          if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
+        });
+        // Trier les noms de membres par niveau d'alerte (strong > alert > watch)
+        // pour afficher les plus saillants en premier dans le défilement.
+        var levelRank = { strong: 0, alert: 1, watch: 2, emerging: 3 };
+        var sortedMembers = ev2.members.slice().sort(function(a, b) {
+          var la = levelRank[a.alert_level] !== undefined ? levelRank[a.alert_level] : 9;
+          var lb = levelRank[b.alert_level] !== undefined ? levelRank[b.alert_level] : 9;
+          if (la !== lb) return la - lb;
+          return (b.containment || 0) - (a.containment || 0);
+        });
+        alerts.push({
+          id: ev2.pivot.id,
+          level: topLvl,
+          score: isFinite(topScore) && topScore > 0 ? topScore : null,
+          country: country,
+          isEvent: true,
+          memberCount: ev2.members.length,
+          memberNames: sortedMembers.map(function(m){ return m.id; })
+        });
+      }
+
+      // 3) Émettre les alertes individuelles non couvertes par un event
       var nodes = gd.nodes || [];
       for (var ni = 0; ni < nodes.length; ni++) {
         var node = nodes[ni];
         if (ALERT_BAR_LEVELS.indexOf(node.alert_level) === -1) continue;
         if (!node.alert_active) continue;
+        if (memberIds[node.id]) continue;  // masqué (membre d'un event)
         var key = country + ':' + node.id;
         if (seen[key]) continue;
         seen[key] = true;

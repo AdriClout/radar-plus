@@ -307,6 +307,7 @@ body.has-shared-menu .topbar {
   will-change: transform;
 }
 .alert-bar-track:hover .alert-bar-strip { animation-play-state: paused; }
+
 @keyframes alert-strip-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -361,6 +362,41 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
 .alert-bar-item-score {
   font-size: 8px;
   color: rgba(255,190,190,0.65);
+}
+/* Format spécial pour les pivots d'événement dans le défilement:
+   pivot en gras et plus visible, membres listés en plus discret à côté. */
+.alert-bar-event-tag {
+  font-size: 9px;
+  color: rgba(180,220,255,0.85);
+  margin: 0 2px;
+}
+.alert-bar-event-pivot {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: capitalize;
+  color: rgba(255,235,235,0.98);
+  letter-spacing: 0.3px;
+}
+.alert-bar-item.level-alert .alert-bar-event-pivot {
+  color: rgba(255,225,200,0.98);
+}
+.alert-bar-event-link {
+  font-size: 9px;
+  color: rgba(255,180,180,0.4);
+  margin: 0 2px;
+}
+.alert-bar-event-members {
+  font-size: 8px;
+  color: rgba(255,200,200,0.62);
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
+}
+.alert-bar-event-member {
+  white-space: nowrap;
+}
+.alert-bar-event-sep {
+  color: rgba(255,170,170,0.3);
 }
 
 .alert-bar-item-country {
