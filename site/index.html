@@ -83,6 +83,31 @@
       filter: drop-shadow(0 0 40px rgba(60,100,255,0.25));
     }
 
+    /* Slogan/Beta overlay — recouvre la zone "BETA" du SVG (centre-bas
+       du robot) avec le slogan "Transparence médiatique". Positionné
+       en pourcentage pour suivre le redimensionnement responsive du
+       SVG (viewBox 960×680 — BETA est ~y:475/680=70%, x:center). */
+    .hero-slogan {
+      position: absolute;
+      left: 50%;
+      top: 71%;
+      transform: translateX(-50%);
+      padding: 7px 22px;
+      background: var(--bg, #00000f);
+      border: 1px solid rgba(120, 170, 255, 0.45);
+      border-radius: 6px;
+      font-family: 'Orbitron', 'Space Mono', monospace;
+      font-size: clamp(11px, 1.5vw, 16px);
+      letter-spacing: clamp(2px, 0.4vw, 4px);
+      text-transform: uppercase;
+      color: rgba(206, 228, 255, 0.96);
+      text-shadow: 0 0 12px rgba(78, 125, 245, 0.35);
+      box-shadow: 0 0 18px rgba(60, 100, 210, 0.2);
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 4;
+    }
+
     /* Media logos overlay — positioned over the SVG */
     .media-overlay {
       position: absolute; inset: 0;
@@ -953,6 +978,7 @@
 <section class="hero" id="hero">
   <div class="hero-robot">
     <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
+    <div class="hero-slogan" data-i18n="hero.slogan">Transparence médiatique</div>
     <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
     <div class="media-overlay" id="media-overlay">
       <!-- Row 1: Global News · Montreal Gazette · ICI Radio-Canada · CBC · TVA -->

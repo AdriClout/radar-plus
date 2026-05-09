@@ -279,32 +279,44 @@
     bar.classList.remove('bar-strong', 'bar-alert');
     bar.classList.add('bar-' + alerts[0].level);
 
+    // Toujours partir d'une seule copie de itemsHtml comme référence
+    // de mesure. La logique du multiplicateur ci-dessous calcule
+    // combien de copies sont nécessaires pour remplir la piste, puis
+    // pose le strip final avec un nombre PAIR de copies (pour que
+    // translateX(-50%) reste un loop continu).
+    //
+    // Token de synchro: si populateAlertBar est rappelé rapidement
+    // (ex: changement de langue après le fetch initial), seule la
+    // dernière rAF s'exécute. Sinon les rAF se chevauchent et
+    // multiplient la largeur déjà multipliée → strip 4x/8x trop large
+    // → vitesse perçue ultra-lente.
     var itemsHtml = buildBarItems(alerts);
-    strip.innerHTML = itemsHtml + itemsHtml; // doublon initial pour défilement infini
+    strip.innerHTML = itemsHtml; // une seule copie initiale, on multipliera dans rAF
+    var token = (_alertBarRenderToken = (_alertBarRenderToken || 0) + 1);
 
     window.requestAnimationFrame(function() {
-      // L'animation translateX(-50%) suppose 2 moitiés identiques. Si le
-      // strip est plus étroit que la zone visible, on voit du vide à
-      // droite — on rajoute des copies (paire) jusqu'à dépasser la piste.
+      if (token !== _alertBarRenderToken) return; // appel obsolète
       var track = document.getElementById('alert-bar-track');
       var trackW = track ? track.clientWidth : 800;
-      var halfW  = strip.scrollWidth / 2 || 1;
-      if (halfW < trackW + 40) {
-        var copies = Math.max(2, Math.ceil((trackW + 40) / halfW) * 2);
-        var multi = '';
-        for (var i = 0; i < copies; i++) multi += itemsHtml;
-        strip.innerHTML = multi;
-        halfW = strip.scrollWidth / 2 || halfW;
-      }
+      // Largeur d'UNE copie (la référence stable, pas la version multipliée)
+      var oneW = strip.scrollWidth || 1;
+      // On veut au moins 2 copies (pour le loop) et assez pour que
+      // 1 demi-strip dépasse la piste avec une marge de 40px.
+      var copies = Math.max(2, Math.ceil((trackW + 40) / oneW) * 2);
+      var multi = '';
+      for (var i = 0; i < copies; i++) multi += itemsHtml;
+      strip.innerHTML = multi;
+      var halfW = strip.scrollWidth / 2 || oneW;
+
       // Vitesse uniforme ~1.5 px/s (très lent, lecture très posée).
-      // Plancher 360s. Vitesse en px/s identique quel que soit le
-      // nombre d'alertes: halfW et dur grandissent proportionnellement.
+      // Plancher 360s. Indépendant du nombre d'alertes/copies.
       var pxPerSec = 1.5;
       var dur = Math.max(360, Math.round(halfW / pxPerSec));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
       bar.classList.add('ready');
     });
   }
+  var _alertBarRenderToken = 0;
 
   var _lastAlertGraphData = null;
   function initAlertBar() {
