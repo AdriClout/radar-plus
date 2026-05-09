@@ -52,6 +52,30 @@ ALERT_STREAK_TSUNAMI  <- 18L
 ALERT_TOP_SHARE_ECLIPSE <- 0.50
 ALERT_TOP_SHARE_TSUNAMI <- 0.70
 
+# Convergence d'agenda: à quel point la couverture médiatique d'une
+# période est concentrée sur peu de sujets. Calculée comme 1 - entropie
+# normalisée de Shannon sur les saillances >= 1. 0 = parfaitement
+# distribué, 1 = un seul sujet domine totalement. Utilisée comme entrée
+# additionnelle pour qualifier eclipse/tsunami: l'agenda est-il
+# globalement convergent en plus du sujet dominant ?
+#
+# Seuils calibrés EMPIRIQUEMENT par pays, sur les percentiles de la
+# distribution observée (cf. salience_tiers): p85 = eclipse_min,
+# p98 = tsunami_min. Garantit que:
+#   - eclipse n'est requis que dans les 15% des périodes les plus
+#     convergentes du pays
+#   - tsunami uniquement dans le top 2% — vraiment rare
+# Recalibration auto à chaque run du pipeline.
+ALERT_CONVERGENCE_PCTL_ECLIPSE <- 0.85
+ALERT_CONVERGENCE_PCTL_TSUNAMI <- 0.98
+
+# Anti-halo direct: filet de sécurité après le clustering événementiel.
+# Si deux alertes actives partagent ≥ N% d'articles MAIS ne sont pas
+# regroupées dans un même cluster, downgrade celle au z-score le plus
+# bas (un cran). Évite que deux alertes redondantes apparaissent quand
+# le clustering n'a pas trouvé de pivot évident.
+ALERT_HALO_THRESHOLD  <- 0.80
+
 # Objets génériques exclus par pays (même logique que radar-hot-20)
 EXCLUSION_BY_COUNTRY <- list(
   QC  = c("quebec", "montreal", "canada"),
@@ -264,20 +288,90 @@ df_index <- df_index |>
   ) |>
   dplyr::ungroup()
 
-# Étape 3 : assignation du tier final, taxonomie 6-tiers.
-# Décision combine PERSISTANCE (alert_streak) et DOMINANCE (alert_top_share).
-#   tsunami : streak ≥ 18 (≥ 3 j) ET top_share ≥ 70%
-#   eclipse : streak ≥ 12 (≥ 2 j) ET top_share ≥ 50%
+# Étape 3a : convergence d'agenda par (pays, période). Mesure à quel
+# point la couverture est concentrée sur peu de sujets.
+#   1 - entropie(p) / log(n)  où p = saillances normalisées du Top
+# Plage [0, 1] : 0 = parfaitement distribué, 1 = un seul sujet domine.
+# Calculé sur les saillances ≥ ALERT_MIN_ABS_SCORE pour cohérence avec
+# les paliers de saillance (mêmes saillances "qui comptent").
+compute_convergence <- function(sizes) {
+  s <- sizes[is.finite(sizes) & sizes > 0]
+  n <- length(s)
+  if (n < 2) return(NA_real_)
+  total <- sum(s)
+  if (total <= 0) return(NA_real_)
+  p <- s / total
+  H <- -sum(p * log(p))
+  Hmax <- log(n)
+  if (Hmax <= 0) return(NA_real_)
+  1 - H / Hmax
+}
+
+df_convergence <- df_index |>
+  dplyr::filter(absolute_normalized_index > 0) |>
+  dplyr::group_by(country_id, date_utc, time_interval_utc) |>
+  # Limiter au Top N pour mesurer la convergence de l'AGENDA EFFECTIF
+  # (pas la dispersion sur tous les sujets isolés à saillance < 1).
+  # Sinon entropie diluée par 100+ objets-bruit, convergence sous-estimée.
+  dplyr::slice_max(absolute_normalized_index, n = TOP_N_OBJECTS, with_ties = FALSE) |>
+  dplyr::summarise(
+    convergence = compute_convergence(absolute_normalized_index),
+    .groups = "drop"
+  )
+
+# Calibration empirique des seuils convergence par pays (percentiles
+# sur la distribution observée — auto-adaptable comme les paliers de
+# saillance).
+convergence_thresholds_df <- df_convergence |>
+  dplyr::filter(is.finite(convergence)) |>
+  dplyr::group_by(country_id) |>
+  dplyr::summarise(
+    eclipse_min = stats::quantile(convergence, ALERT_CONVERGENCE_PCTL_ECLIPSE, na.rm = TRUE),
+    tsunami_min = stats::quantile(convergence, ALERT_CONVERGENCE_PCTL_TSUNAMI, na.rm = TRUE),
+    .groups     = "drop"
+  )
+convergence_thresholds <- list()
+cat("Calibration des seuils convergence par pays (p85 eclipse / p98 tsunami)...\n")
+for (i in seq_len(nrow(convergence_thresholds_df))) {
+  c <- as.character(convergence_thresholds_df$country_id[i])
+  convergence_thresholds[[c]] <- list(
+    eclipse = round(unname(convergence_thresholds_df$eclipse_min[i]), 3),
+    tsunami = round(unname(convergence_thresholds_df$tsunami_min[i]), 3)
+  )
+  cat(sprintf("  %s : eclipse>=%.3f, tsunami>=%.3f\n", c,
+              convergence_thresholds[[c]]$eclipse,
+              convergence_thresholds[[c]]$tsunami))
+}
+
+df_index <- df_index |>
+  dplyr::left_join(df_convergence, by = c("country_id", "date_utc", "time_interval_utc")) |>
+  dplyr::mutate(
+    .conv_eclipse_min = vapply(country_id, function(c) {
+      v <- convergence_thresholds[[c]]$eclipse
+      if (is.null(v) || !is.finite(v)) NA_real_ else v
+    }, numeric(1)),
+    .conv_tsunami_min = vapply(country_id, function(c) {
+      v <- convergence_thresholds[[c]]$tsunami
+      if (is.null(v) || !is.finite(v)) NA_real_ else v
+    }, numeric(1))
+  )
+
+# Étape 3b : assignation du tier final, taxonomie 6-tiers.
+# Décision combine PERSISTANCE (streak) + DOMINANCE locale (top_share)
+# + DOMINANCE globale (convergence d'agenda).
+#   tsunami : streak ≥ 18 (≥ 3 j), top_share ≥ 70%, convergence ≥ 0.60
+#   eclipse : streak ≥ 12 (≥ 2 j), top_share ≥ 50%, convergence ≥ 0.45
 #   strong  : streak ≥ 12 (≥ 2 j)
-#   alert   : streak ≥ 4   (~1 j de couverture)
+#   alert   : streak ≥ 4   (~1 j)
 #   watch   : streak ≥ 2   (~8 h)
 #   surveillance : 1 bloc anormal isolé
-#   emerging : signal réel mais historique trop court pour z-score
-#   none : sinon
-assign_alert_tier <- function(streak, top_share, anomalous, emerging) {
+#   emerging : historique trop court pour z-score
+assign_alert_tier <- function(streak, top_share, convergence, conv_eclipse_min, conv_tsunami_min, anomalous, emerging) {
   if (isTRUE(anomalous)) {
-    if (!is.na(top_share) && streak >= ALERT_STREAK_TSUNAMI && top_share >= ALERT_TOP_SHARE_TSUNAMI) return("tsunami")
-    if (!is.na(top_share) && streak >= ALERT_STREAK_ECLIPSE && top_share >= ALERT_TOP_SHARE_ECLIPSE) return("eclipse")
+    cv_ok_t <- !is.na(convergence) && !is.na(conv_tsunami_min) && convergence >= conv_tsunami_min
+    cv_ok_e <- !is.na(convergence) && !is.na(conv_eclipse_min) && convergence >= conv_eclipse_min
+    if (!is.na(top_share) && streak >= ALERT_STREAK_TSUNAMI && top_share >= ALERT_TOP_SHARE_TSUNAMI && cv_ok_t) return("tsunami")
+    if (!is.na(top_share) && streak >= ALERT_STREAK_ECLIPSE && top_share >= ALERT_TOP_SHARE_ECLIPSE && cv_ok_e) return("eclipse")
     if (streak >= ALERT_STREAK_STRONG) return("strong")
     if (streak >= ALERT_STREAK_ALERT)  return("alert")
     if (streak >= ALERT_STREAK_WATCH)  return("watch")
@@ -290,13 +384,14 @@ assign_alert_tier <- function(streak, top_share, anomalous, emerging) {
 df_index <- df_index |>
   dplyr::mutate(
     alert_level = purrr::pmap_chr(
-      list(alert_streak, alert_top_share, alert_anomalous, alert_emerging),
+      list(alert_streak, alert_top_share, convergence, .conv_eclipse_min, .conv_tsunami_min, alert_anomalous, alert_emerging),
       assign_alert_tier
     ),
     # "Active" = signaux qui valent la peine d'être affichés comme alertes
     # (surveillance et emerging restent visibles mais sont des signaux faibles).
     alert_active = alert_level %in% c("tsunami", "eclipse", "strong", "alert", "watch")
-  )
+  ) |>
+  dplyr::select(-.conv_eclipse_min, -.conv_tsunami_min)
 
 cat("  →", sum(df_index$alert_active, na.rm = TRUE), "points d'alerte actifs sur", nrow(df_index), "lignes\n")
 cat("  → Distribution par tier:\n")
@@ -586,6 +681,68 @@ build_alert_events <- function(nodes_i) {
   events
 }
 
+# Anti-halo direct: filet de sécurité après le clustering. Si deux
+# alertes actives partagent ≥ ALERT_HALO_THRESHOLD d'articles MAIS ne
+# sont pas regroupées dans un même cluster (ni pivot, ni membre), on
+# rétrograde celle au z-score le plus bas d'un cran. Évite les doublons
+# redondants quand le clustering n'a pas trouvé de pivot évident.
+HALO_DOWNGRADE <- c(
+  tsunami      = "eclipse",
+  eclipse      = "strong",
+  strong       = "alert",
+  alert        = "watch",
+  watch        = "surveillance",
+  surveillance = "none",
+  emerging     = "none"
+)
+
+apply_halo_protection <- function(nodes_i, events) {
+  if (nrow(nodes_i) < 2) return(nodes_i)
+
+  clustered_ids <- character(0)
+  for (e in events) {
+    if (!is.null(e$pivot) && !is.null(e$pivot$id)) {
+      clustered_ids <- c(clustered_ids, e$pivot$id)
+    }
+    if (!is.null(e$members) && length(e$members)) {
+      clustered_ids <- c(clustered_ids, vapply(e$members, function(m) m$id, character(1)))
+    }
+  }
+  clustered_ids <- unique(clustered_ids)
+
+  active_mask <- isTRUE(nodes_i$alert_active) | nodes_i$alert_active %in% TRUE
+  candidates <- which(active_mask & !nodes_i$extracted_objects %in% clustered_ids)
+  if (length(candidates) < 2) return(nodes_i)
+
+  urls_sets <- lapply(nodes_i$urls[candidates], parse_urls_set)
+
+  for (i in seq_along(candidates)) {
+    for (j in seq_along(candidates)) {
+      if (i >= j) next
+      a <- candidates[i]; b <- candidates[j]
+      ua <- urls_sets[[i]]; ub <- urls_sets[[j]]
+      if (!length(ua) || !length(ub)) next
+      inter <- length(intersect(ua, ub))
+      if (inter == 0) next
+      cab <- inter / length(ua)
+      cba <- inter / length(ub)
+      if (max(cab, cba) >= ALERT_HALO_THRESHOLD) {
+        za <- nodes_i$alert_score[a]; zb <- nodes_i$alert_score[b]
+        za_v <- if (is.na(za)) -Inf else za
+        zb_v <- if (is.na(zb)) -Inf else zb
+        loser <- if (za_v <= zb_v) a else b
+        old_lvl <- nodes_i$alert_level[loser]
+        new_lvl <- HALO_DOWNGRADE[old_lvl]
+        if (!is.na(new_lvl) && new_lvl != old_lvl) {
+          nodes_i$alert_level[loser] <- unname(new_lvl)
+          nodes_i$alert_active[loser] <- new_lvl %in% c("tsunami", "eclipse", "strong", "alert", "watch")
+        }
+      }
+    }
+  }
+  nodes_i
+}
+
 make_periods_df <- function(df) {
   df |>
     dplyr::distinct(date_utc, time_interval_utc) |>
@@ -640,6 +797,19 @@ graphs_graph <- purrr::map(countries, function(country) {
     links_i    <- df_edges       |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(source) %in% excl, !tolower(target) %in% excl)
     link_med_i <- df_edges_media |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(source) %in% excl, !tolower(target) %in% excl)
 
+    # Cluster d'événements et anti-halo: on commence par identifier les
+    # clusters, puis on rétrograde les alertes redondantes hors cluster
+    # AVANT de produire la structure de nodes finale.
+    period_events <- build_alert_events(nodes_i)
+    nodes_i <- apply_halo_protection(nodes_i, period_events)
+
+    # Convergence d'agenda pour cette période (lookup dans df_convergence)
+    period_convergence <- {
+      cv_row <- df_convergence |>
+        dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
+      if (nrow(cv_row) >= 1 && is.finite(cv_row$convergence[1])) round(cv_row$convergence[1], 3) else NULL
+    }
+
     list(
       nodes = purrr::map(seq_len(nrow(nodes_i)), function(j) list(
         id        = nodes_i$extracted_objects[j],
@@ -669,10 +839,71 @@ graphs_graph <- purrr::map(countries, function(country) {
           if (nrow(lm) == 0) character(0) else lm$media_ids[[1]]
         }
       )),
-      events = build_alert_events(nodes_i)
+      events = period_events,
+      convergence = period_convergence
     )
   }) |> setNames(periods_graph$key)
 }) |> setNames(countries)
+
+# Persistance d'événements: lier les events des périodes consécutives
+# par chevauchement de membres (Jaccard sur ids ≥ 0.5). Assigne un
+# event_id stable à un événement qui persiste sur plusieurs périodes
+# 4h. Permet au frontend de reconnaître qu'un cruise ship sur 5
+# périodes consécutives = UN événement de 5 périodes, pas 5 events.
+ALERT_EVENT_LINK_THRESHOLD <- 0.5
+
+link_events_persistence <- function(graphs_country, periods_keys_ordered, country) {
+  prev_events <- list()
+  counter <- 0L
+  for (pk in periods_keys_ordered) {
+    gd <- graphs_country[[pk]]
+    if (is.null(gd) || is.null(gd$events) || !length(gd$events)) {
+      prev_events <- list()
+      next
+    }
+    new_events <- list()
+    for (ev in gd$events) {
+      member_ids <- if (length(ev$members)) {
+        vapply(ev$members, function(m) m$id, character(1))
+      } else character(0)
+      ev_signature <- c(ev$pivot$id, member_ids)
+
+      best_pe <- NULL
+      best_jaccard <- 0
+      for (pe in prev_events) {
+        pe_member_ids <- if (length(pe$members)) {
+          vapply(pe$members, function(m) m$id, character(1))
+        } else character(0)
+        pe_signature <- c(pe$pivot$id, pe_member_ids)
+        union_size <- length(union(ev_signature, pe_signature))
+        if (union_size <= 0) next
+        j <- length(intersect(ev_signature, pe_signature)) / union_size
+        if (j > best_jaccard) {
+          best_jaccard <- j
+          best_pe <- pe
+        }
+      }
+      if (best_jaccard >= ALERT_EVENT_LINK_THRESHOLD && !is.null(best_pe)) {
+        ev$event_id <- best_pe$event_id
+        ev$is_continuation <- TRUE
+        ev$continuation_jaccard <- round(best_jaccard, 3)
+      } else {
+        counter <- counter + 1L
+        ev$event_id <- paste0(country, "-ev-", counter, "-", ev$pivot$id)
+        ev$is_continuation <- FALSE
+        ev$continuation_jaccard <- NULL
+      }
+      new_events[[length(new_events) + 1]] <- ev
+    }
+    graphs_country[[pk]]$events <- new_events
+    prev_events <- new_events
+  }
+  graphs_country
+}
+
+graphs_graph <- purrr::imap(graphs_graph, function(graphs_country, country) {
+  link_events_persistence(graphs_country, periods_graph$key, country)
+})
 
 result_graph <- list(
   meta = list(
@@ -697,6 +928,19 @@ result_graph <- list(
         eclipse = ALERT_TOP_SHARE_ECLIPSE,
         tsunami = ALERT_TOP_SHARE_TSUNAMI
       ),
+      # Convergence d'agenda (1 - entropie normalisée). Seuils requis pour
+      # eclipse/tsunami EN PLUS de la dominance locale (top_share).
+      # Seuils convergence calibrés empiriquement par pays
+      # (percentiles ALERT_CONVERGENCE_PCTL_*). Voir
+      # convergence_thresholds_by_country pour les valeurs.
+      convergence_percentiles = list(
+        eclipse = ALERT_CONVERGENCE_PCTL_ECLIPSE,
+        tsunami = ALERT_CONVERGENCE_PCTL_TSUNAMI
+      ),
+      convergence_thresholds_by_country = convergence_thresholds,
+      # Anti-halo: si 2 alertes hors cluster partagent ≥ X articles,
+      # downgrade celle au z-score le plus bas.
+      halo_threshold = ALERT_HALO_THRESHOLD,
       # Conversion blocs → durée approchée (1 bloc = 4h)
       block_hours = 4,
       # Fenêtre glissante utilisée pour le calcul du z-score d'alerte
@@ -747,6 +991,17 @@ for (country in countries) {
       dplyr::filter(!tolower(extracted_objects) %in% excl) |>
       dplyr::arrange(dplyr::desc(absolute_normalized_index))
 
+    # Anti-halo aussi pour timeseries (cohérence avec graph.json)
+    period_events_ts <- build_alert_events(nodes_i)
+    nodes_i <- apply_halo_protection(nodes_i, period_events_ts)
+
+    # Convergence
+    period_convergence_ts <- {
+      cv_row <- df_convergence |>
+        dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
+      if (nrow(cv_row) >= 1 && is.finite(cv_row$convergence[1])) round(cv_row$convergence[1], 3) else NULL
+    }
+
     period_nodes <- list()
     period_articles <- list()
     if (nrow(nodes_i) > 0) {
@@ -771,7 +1026,11 @@ for (country in countries) {
       }
     }
 
-    graphs_country[[pk]] <- list(nodes = period_nodes, links = list())
+    graphs_country[[pk]] <- list(
+      nodes = period_nodes,
+      links = list(),
+      convergence = period_convergence_ts
+    )
     articles_country[[pk]] <- period_articles
   }
   graphs_ts[[country]] <- graphs_country
@@ -799,6 +1058,15 @@ result_ts <- list(
         eclipse = ALERT_TOP_SHARE_ECLIPSE,
         tsunami = ALERT_TOP_SHARE_TSUNAMI
       ),
+      # Seuils convergence calibrés empiriquement par pays
+      # (percentiles ALERT_CONVERGENCE_PCTL_*). Voir
+      # convergence_thresholds_by_country pour les valeurs.
+      convergence_percentiles = list(
+        eclipse = ALERT_CONVERGENCE_PCTL_ECLIPSE,
+        tsunami = ALERT_CONVERGENCE_PCTL_TSUNAMI
+      ),
+      convergence_thresholds_by_country = convergence_thresholds,
+      halo_threshold = ALERT_HALO_THRESHOLD,
       block_hours = 4,
       lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24
     ),

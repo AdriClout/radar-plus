@@ -110,6 +110,9 @@ Légende verdict :
 | `alert_top_share` (part vs Top 1 période) | `build_data.R` | post-traitement par groupe | 🔴 | idem `radar-alerts-score` |
 | **`assign_alert_tier`** — taxonomie 6 tiers basée sur persistance + dominance (surveillance/watch/alert/strong/eclipse/tsunami) | `build_data.R` | `assign_alert_tier` | 🔴 | idem `radar-alerts-score` |
 | **`build_alert_events`** — clustering événementiel : containment d'articles ≥ 50 %, sélection pivot par précision × rappel, marche gloutonne | `build_data.R` | `build_alert_events` | 🔴 | `radar-alerts-events` (nouveau, dépend de `radar-alerts-score`) |
+| **`apply_halo_protection`** — anti-halo direct : si 2 alertes hors cluster partagent ≥ 80 % d'articles, downgrade celle au z plus bas | `build_data.R` | `apply_halo_protection` | 🔴 | idem `radar-alerts-events` |
+| **`link_events_persistence`** — persistance event_id par chevauchement membres (Jaccard ≥ 0.5) entre périodes consécutives | `build_data.R` | `link_events_persistence` | 🔴 | idem (post-traitement séquentiel par pays) |
+| **`compute_convergence`** — entropie normalisée de Shannon sur les saillances ≥ 1, par (pays, période). Mesure de dominance globale de l'agenda | `build_data.R` | `compute_convergence` + `df_convergence` | 🔴 | `radar-convergence-day` ou intégré à `radar-alerts-score` |
 | **`salience_tiers`** — paliers absolus calibrés par pays (p50/p80/p95/p99 sur saillances ≥ 1), recalibration auto à chaque run | `build_data.R` | section dédiée | 🔴 | `radar-salience-tiers` (nouveau, ou intégré à `radar-alerts-score`) |
 | Top N par période × pays (slice_max) | `build_data.R` | `df_nodes` | 🔴 | `radar-graph-data` (nouveau) |
 | Co-occurrences nœuds (`df_edges`) | `build_data.R` | section liens | 🔴 | `radar-cooccurrences` (nouveau) |
