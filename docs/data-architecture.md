@@ -37,9 +37,15 @@ Référence canonique : <https://adriencloutier.com/documents/clessn/workflow-vi
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  RAFFINEUR + LOADER (R, GH Actions)                                     │
 │  pipeline/build_data.R                                                  │
-│   • compute_alert_metrics() — z-scores 30 j glissants                   │
+│   • compute_alert_metrics() — z-scores 30 j glissants + alert_streak    │
+│     (run-length encoding des blocs anormaux consécutifs)                │
 │   • alert_top_share — part vs Top 1 du pays·période                     │
-│   • niveaux strong / alert / watch / emerging                           │
+│   • assign_alert_tier — 6 tiers basés sur persistance + dominance       │
+│     (surveillance / watch / alert / strong / eclipse / tsunami)         │
+│   • build_alert_events — clustering événementiel par pivot d'articles  │
+│     (containment ≥ 50 %, sélection précision×rappel)                    │
+│   • salience_tiers — paliers absolus par pays (p50/p80/p95/p99 sur     │
+│     saillances ≥ 1) recalibrés à chaque run                             │
 │   • co-occurrences df_edges / df_edges_media                            │
 │   • Top N par période × pays                                            │
 │   • Exclusions par pays                                                 │
@@ -59,6 +65,9 @@ Référence canonique : <https://adriencloutier.com/documents/clessn/workflow-vi
 │   • filterTopLinks — anti-hairball graph                                │
 │   • buildAllTimeScores — somme saillance toutes périodes                │
 │   • getAlertGroups + getLatestActiveMap — statut current/ended          │
+│   • buildPerCountryDayMatrix + buildEpisodesForObject — page Cycles     │
+│     (heatmap sujet × jour, runs continus, peak salience par épisode)    │
+│   • getSalienceTier (alertes + cycles) — mapping saillance → palier     │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -96,15 +105,18 @@ Légende verdict :
 | Transformation | Fichier | Ligne | Verdict | Raffineur cible suggéré |
 |---|---|---|---|---|
 | Filtrage temporel `date >= history_start` | `build_data.R` | 217 | 🟡 | À pousser dans le query SQL |
-| Z-score d'alerte (rolling 180 périodes, MAD/SD) | `build_data.R` | 75-202 | 🔴 | `radar-alerts-score` (nouveau) |
-| `alert_top_share` (part vs Top 1 période) | `build_data.R` | 258-265 | 🔴 | idem `radar-alerts-score` |
-| Niveaux strong/alert/watch/emerging + downgrade | `build_data.R` | 250-270 | 🔴 | idem `radar-alerts-score` |
-| Top N par période × pays (slice_max) | `build_data.R` | 276-279 | 🔴 | `radar-graph-data` (nouveau) |
-| Co-occurrences nœuds (`df_edges`) | `build_data.R` | 298-319 | 🔴 | `radar-cooccurrences` (nouveau) |
-| Co-occurrences avec médias (`df_edges_media`) | `build_data.R` | 321-341 | 🔴 | idem `radar-cooccurrences` |
-| Exclusions par pays (`EXCLUSION_BY_COUNTRY`) | `build_data.R` | 48-52 | 🔴 | Config raffineur (cohérent avec `radar-hot-20` qui a la même règle) |
-| Assemblage `graph.json` | `build_data.R` | 434-523 | 🟡 (loader) | Lambda `radar-graph-data` style `vitrine-graph-data` |
-| Assemblage `timeseries.json` | `build_data.R` | 525-619 | 🟡 (loader) | idem |
+| Z-score d'alerte (rolling 180 périodes, MAD/SD) | `build_data.R` | `compute_alert_metrics` | 🔴 | `radar-alerts-score` (nouveau) |
+| **`alert_streak`** : run-length de blocs anormaux consécutifs | `build_data.R` | `compute_alert_metrics` | 🔴 | idem `radar-alerts-score` |
+| `alert_top_share` (part vs Top 1 période) | `build_data.R` | post-traitement par groupe | 🔴 | idem `radar-alerts-score` |
+| **`assign_alert_tier`** — taxonomie 6 tiers basée sur persistance + dominance (surveillance/watch/alert/strong/eclipse/tsunami) | `build_data.R` | `assign_alert_tier` | 🔴 | idem `radar-alerts-score` |
+| **`build_alert_events`** — clustering événementiel : containment d'articles ≥ 50 %, sélection pivot par précision × rappel, marche gloutonne | `build_data.R` | `build_alert_events` | 🔴 | `radar-alerts-events` (nouveau, dépend de `radar-alerts-score`) |
+| **`salience_tiers`** — paliers absolus calibrés par pays (p50/p80/p95/p99 sur saillances ≥ 1), recalibration auto à chaque run | `build_data.R` | section dédiée | 🔴 | `radar-salience-tiers` (nouveau, ou intégré à `radar-alerts-score`) |
+| Top N par période × pays (slice_max) | `build_data.R` | `df_nodes` | 🔴 | `radar-graph-data` (nouveau) |
+| Co-occurrences nœuds (`df_edges`) | `build_data.R` | section liens | 🔴 | `radar-cooccurrences` (nouveau) |
+| Co-occurrences avec médias (`df_edges_media`) | `build_data.R` | section liens | 🔴 | idem `radar-cooccurrences` |
+| Exclusions par pays (`EXCLUSION_BY_COUNTRY`) | `build_data.R` | constantes | 🔴 | Config raffineur (cohérent avec `radar-hot-20` qui a la même règle) |
+| Assemblage `graph.json` (avec events, salience_tiers, streak) | `build_data.R` | section export | 🟡 (loader) | Lambda `radar-graph-data` style `vitrine-graph-data` |
+| Assemblage `timeseries.json` (avec streak, salience_tiers) | `build_data.R` | section export | 🟡 (loader) | idem |
 | Assemblage `articles.json` | `build_data.R` | (lazy) | 🟡 (loader) | idem |
 | Cascade ticker (raw S3 → Athena warehouse → datamart) | `fetch_ticker_data.py` | 244-287 | 🔴 | `radar-ticker` raffineur dédié |
 | Dédup hour-bucket + lookup titres + filtre 48 h | `build_ticker.R` | 88-116 | 🔴 | idem `radar-ticker` |
@@ -124,10 +136,17 @@ Légende verdict :
 | `buildRankedSlots` — Hot 10 cumulé par bucket | `evolution.html` | 1199 | 🔴 | idem Hot 20 |
 | `computeStats` — peak rank, mentions totales, etc. | `statistiques.html` | 1145 | 🔴 | Table `radar_object_stats` |
 | `buildSearchMeta` | `statistiques.html` | 1786 | 🔴 | idem |
-| `getAlertGroups` + `getLatestActiveMap` (statut current/ended) | `alertes.html` | 530, 578 | 🔴 | Calcul statut dans `radar-alerts-score` |
-| `updateEvolutionCta` — pays avec le plus d'alertes | `alertes.html` | 725 | 🟡 | Petit calcul UI, peut rester |
-| Filtres UI (pays, niveau, search) | `alertes.html` | 810+ | 🟢 | Pure UI |
+| `getAlertGroups` + `getLatestActiveMap` (statut current/ended) | `alertes.html` | `getAlertGroups` | 🔴 | Calcul statut dans `radar-alerts-score` |
+| `updateEvolutionCta` — pays avec le plus d'alertes | `alertes.html` | `updateEvolutionCta` | 🟡 | Petit calcul UI, peut rester |
+| Filtres UI (pays, niveau, search) | `alertes.html` | filtres | 🟢 | Pure UI |
+| **Mini-timeline alertes** — agrégation alerts/event count par période 4h sur 14 j | `alertes.html` | `buildTimelineData` | 🔴 | Pré-calculer dans `radar-alerts-score` (tables temporelles déjà nécessaires pour le z-score) |
+| **Sous-groupement par pays** + tri | `alertes.html` | `getActiveCountries` | 🟢 | Pure UI |
+| **Localisation labels période** (May→mai, EDT→HAE) | `alertes.html` | `formatPeriodLabel` | 🟢 | Pure UI (i18n) |
+| **`buildPerCountryDayMatrix`** — agrège niveau max + size max par jour pour chaque objet sur 130 j | `cycles.html` | `buildPerCountryDayMatrix` | 🔴 | `radar-cycles-day` (nouveau) — agrège timeseries 4h → jour |
+| **`buildEpisodesForObject`** — runs continus de jours niveau ≥ alerte, avec peak salience | `cycles.html` | `buildEpisodesForObject` | 🔴 | idem `radar-cycles-day` ou table dédiée `radar_alert_episodes` |
+| **`getSalienceTier`** (mapping size → palier) | `alertes.html`, `cycles.html`, `evolution.html` | helpers | 🟢 | Pure UI (lit `meta.salience_tiers` pré-calculé) |
 | Tracking mode multi-objets | `evolution.html` | n/a | 🟢 | Pure UI |
+| **4 lignes paliers de saillance** sur le chart | `evolution.html` | `renderEvolutionChart` | 🟢 | Pure UI (lit `meta.salience_tiers` pré-calculé) |
 | Force graph rendering | `constellation.html` | n/a | 🟢 | Pure UI |
 | `buildKpis`, `buildTrendAndTop`, `buildQualityTable` | `sonar.html` | 570, 638, 677 | 🟡 | Sonar est un dashboard de monitoring, OK qu'il vive ici, mais à harmoniser avec le raffineur `sonar` existant |
 
@@ -147,12 +166,35 @@ Légende verdict :
 
 ### Phase 1 — Raffineur `radar-alerts-score` (priorité haute)
 
-**Pourquoi en premier** : c'est la prochaine grosse évolution UX (clustering événementiel — voir conversation alertes), et c'est le code le plus risqué à laisser au mauvais endroit (calcul statistique + déjà eu un crash CI dû à vctrs).
+**Pourquoi en premier** : c'est le code le plus risqué à laisser dans GH Actions (calcul statistique non trivial, déjà eu un crash CI dû à vctrs ; et désormais beaucoup plus complexe avec la taxonomie 6 tiers, le streak temporel et les paliers de saillance). Toute la logique d'alertes, qui pilote 3 pages (Alertes / Cycles / Évolution), doit résider en un point unique du datamart.
 
-- Source : `vitrine_datamart-salient_index` (table déjà raffinée)
-- Calcule : z-score, top_share, niveau, statut current/ended, **clustering événementiel** (Jaccard + pivot)
-- Publie : `vitrine_datamart-radar_alerts` (une ligne par objet × période × pays) + `vitrine_datamart-radar_alert_events` (cluster d'événements)
-- Trigger EventBridge : aligné sur `radar-salient-index` (~6×/jour)
+**Source unique** : `vitrine_datamart-salient_index` (déjà raffinée).
+
+**Calculs** (refonte du `compute_alert_metrics` + post-traitements actuels) :
+
+1. **Z-score robuste glissant** sur 180 périodes 4h (médiane log + MAD/SD), `alert_score`, `alert_baseline`, `alert_peak_ratio`, `alert_year_peak`.
+2. **`alert_streak`** — run-length encoding des blocs consécutifs anormaux par (pays, objet) ordonnés par date+période. C'est *la* nouveauté de la taxonomie 2026 : un seul bloc 4h anormal isolé n'est plus une « alerte forte ».
+3. **`alert_top_share`** — saillance / Top 1 du pays·période, pour la dimension dominance.
+4. **`alert_level`** — assignation 6 tiers (`surveillance`, `watch`, `alert`, `strong`, `eclipse`, `tsunami`) en combinant streak + top_share. Logique paramétrée par seuils (`ALERT_STREAK_*`, `ALERT_TOP_SHARE_*`).
+5. **Statut current/ended** — actuellement re-dérivé côté JS, à publier directement par le raffineur.
+6. **Clustering événementiel** (`build_alert_events`) — pour chaque (pays, période courante), grouper les alertes par pivot d'articles : `containment(membre → pivot) ≥ 0.5`, sélection pivot par `precision × recall`, marche gloutonne pour qu'aucune alerte n'appartienne à deux clusters. Garde aussi `shared_articles` matérialisé.
+7. **`salience_tiers` par pays** — calibration empirique des paliers `moderate`/`high`/`very_high`/`extreme` sur les percentiles (p50/p80/p95/p99) des saillances ≥ `ALERT_MIN_ABS_SCORE`. Recalcul à chaque run, par pays. Sert d'**échelle de référence absolue** pour positionner toute saillance — utilisée par evolution.html, alertes.html, cycles.html.
+
+**Tables datamart à publier** :
+
+- `vitrine_datamart-radar_alerts` — une ligne par (pays, objet, date, time_interval), avec score / streak / level / top_share / etc.
+- `vitrine_datamart-radar_alert_events` — un cluster par (pays, période, pivot), avec `members` (jsonb), `shared_articles`, `containment` par membre.
+- `vitrine_datamart-radar_salience_tiers` — une ligne par pays × run timestamp, avec les 4 percentiles. Permet de retracer comment l'échelle évolue.
+
+**Trigger EventBridge** : aligné sur `radar-salient-index` (~6×/jour aux mêmes heures).
+
+**Pourquoi un seul raffineur (pas N petits)** : le streak nécessite l'historique complet par objet, le clustering événementiel utilise les alertes actives sortantes du z-score, les paliers calibrent sur la même distribution. Tout dépend de la même lecture de `salient_index` — un seul I/O.
+
+**Note conceptuelle importante** : les **paliers de saillance** et la **convergence** sont deux **mesures de référence** sur l'agenda médiatique :
+- Paliers = position d'un objet dans la distribution des saillances (où en est-il sur l'échelle ?)
+- Convergence = à quel point l'agenda est concentré sur peu de sujets (à un moment donné, à quel point un seul sujet domine ?)
+
+Ces deux indices sont conceptuellement adjacents au `top_share` qui pilote déjà la détection eclipse/tsunami. La convergence pourrait à terme **enrichir** la logique d'alerte (ex: une éclipse n'est pas qu'un sujet à top_share élevé, c'est aussi un agenda devenu globalement convergent). À garder en tête pour la conception de `radar-convergence-day` (Phase 3) — il pourrait fournir une feature à `radar-alerts-score`.
 
 ### Phase 2 — Raffineur `radar-graph-data` (loader, parallèle à `vitrine-graph-data`)
 
@@ -161,16 +203,20 @@ Légende verdict :
 - À ce stade, `pipeline/build_data.R` est supprimé du repo
 - `pipeline/fetch_data.py` aussi (le loader connaît directement le datamart)
 
-### Phase 3 — Raffineurs d'agrégation multi-granularité
+### Phase 3 — Raffineurs d'agrégation multi-granularité + indices d'agenda
 
 Pattern Vitrine : tables séparées par granularité (`_day`, `_week`, `_month`).
 
-- `radar-hot-10-day` (et étendre `radar-hot-20` existant pour les autres granularités)
-- `radar-object-stats` (peak rank, mentions totales, séries pour `statistiques.html`)
-- `radar-convergence-day` (heatmap timeline)
-- `radar-graph-aggregated-{day,week,month}` (pré-agrégations slot)
+- **`radar-hot-10-day`** (et étendre `radar-hot-20` existant pour les autres granularités)
+- **`radar-object-stats`** — peak rank, mentions totales, séries pour `statistiques.html`
+- **`radar-convergence-day`** — indice de convergence de l'agenda par jour
+  - Aujourd'hui calculé en JS (`periodConvergenceScore` dans evolution.html) : combine saillance des Top 3 + densité de co-occurrence forte. Sert au coloriage de la barre temporelle.
+  - À migrer en raffineur car (1) c'est un indice métier non trivial, (2) il devrait éventuellement **alimenter `radar-alerts-score`** : une éclipse / tsunami est qualitativement plus fort dans un agenda déjà convergent. Tables suggérées : `radar_convergence_day`, potentiellement aussi `radar_convergence_4h` pour la granularité fine.
+  - Voir aussi : entropie de Shannon sur la distribution de saillance (Pinto 2018), divergence de Jensen-Shannon entre périodes — métriques alternatives ou complémentaires.
+- **`radar-cycles-day`** — pour la page Cycles : matrice (pays, sujet, jour) avec niveau max + size max + niveau d'épisode, et tables d'épisodes consécutifs. Aujourd'hui calculé en JS dans `cycles.html` à chaque chargement de page (130 j × ~50 sujets actifs). Coût négligeable côté backend, gros gain de simplicité côté frontend.
+- **`radar-graph-aggregated-{day,week,month}`** — pré-agrégations slot pour evolution / index / constellation.
 
-À ce stade, `index.html`, `evolution.html`, `statistiques.html`, `constellation.html` n'agrègent plus rien.
+À ce stade, `index.html`, `evolution.html`, `statistiques.html`, `constellation.html`, `cycles.html` n'agrègent plus rien.
 
 ### Phase 4 — Raffineur `radar-ticker`
 
@@ -193,6 +239,8 @@ Pattern Vitrine : tables séparées par granularité (`_day`, `_week`, `_month`)
 
 ## 6. Notes & risques
 
+- **Paramètres ETL = jamais hardcodés côté frontend**. Les seuils d'alerte (`ALERT_STREAK_*`, `ALERT_TOP_SHARE_*`, `ALERT_Z_THRESHOLD`, etc.) ainsi que les paliers de saillance (p50/p80/p95/p99) sont **calculés / appliqués en raffineur**. Le frontend ne fait que les **lire** depuis `meta.alert_thresholds` / `meta.salience_tiers`. Ce contrat est déjà respecté aujourd'hui — à conserver impérativement à la migration : pas de duplication des seuils côté JS, sinon drift garanti dès qu'on ajustera la logique côté raffineur.
+- **Indices d'agenda** (paliers de saillance, convergence) sont des entrées **conceptuellement adjacentes** à la logique d'alerte. La taxonomie 6 tiers actuelle utilise `top_share` (dominance ponctuelle) ; un futur enrichissement pourrait croiser avec `convergence` (dominance globale de l'agenda) pour qualifier plus finement les éclipses/tsunamis. À garder en tête lors de la conception de `radar-convergence-day` (Phase 3) — pourrait devenir une feature de `radar-alerts-score` plutôt qu'un raffineur indépendant.
 - Les exclusions `EXCLUSION_BY_COUNTRY` (Canada, Ottawa, etc.) doivent être centralisées **côté raffineur** — actuellement elles sont aussi dans `radar-hot-20`, donc il y a déjà une duplication latente à régler.
 - `pipeline/fetch_ticker_data.py` lit directement le bucket warehouse PROD (`bucket-stack-datawarehousebucketa0f23e27-...`). Cette dépendance dure n'a pas sa place dans GH Actions — un lambda IAM-scopé est plus propre.
 - Le passage par GH Actions pour `Refresh Constellation Data` impose un secret `GH_PAT` + creds AWS dans GitHub. La migration en lambda élimine ces secrets côté repo public.
