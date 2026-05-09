@@ -157,6 +157,33 @@
 
     /* ── Groupes de périodes ── */
     .period-group { margin-bottom: 36px; }
+    /* Section par pays (apparaît seulement quand pays = "Tous") */
+    .country-section { margin-top: 14px; }
+    .country-section:first-of-type { margin-top: 4px; }
+    .country-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 4px 0 4px 8px;
+      border-left: 3px solid rgba(120,170,255,0.55);
+    }
+    .country-header-flag {
+      font-family: var(--orbitron);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: rgba(220,235,255,0.95);
+    }
+    .country-header-count {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
     .period-header {
       display: flex;
       align-items: center;
@@ -558,6 +585,113 @@
       pointer-events: none;
       box-shadow: none;
     }
+
+    /* ── Mini-timeline 14 jours ── */
+    .alertes-timeline {
+      margin: 14px 0 6px;
+      padding: 12px 14px 10px;
+      border: 1px solid rgba(90,140,255,0.18);
+      border-radius: 6px;
+      background: rgba(8,16,42,0.55);
+    }
+    .alertes-timeline-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .alertes-timeline-label {
+      font-family: var(--orbitron);
+      font-size: 9px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(160,200,255,0.78);
+    }
+    .alertes-timeline-reset {
+      margin-left: auto;
+      padding: 3px 9px;
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      background: rgba(20,40,90,0.5);
+      border: 1px solid rgba(120,180,255,0.4);
+      border-radius: 999px;
+      color: rgba(190,220,255,0.92);
+      cursor: pointer;
+      transition: filter 0.15s, border-color 0.15s;
+    }
+    .alertes-timeline-reset:hover {
+      filter: brightness(1.2);
+      border-color: rgba(160,200,255,0.7);
+    }
+    .alertes-timeline-track {
+      display: flex;
+      align-items: flex-end;
+      gap: 1px;
+      height: 36px;
+      width: 100%;
+      overflow: hidden;
+      padding-bottom: 2px;
+      border-bottom: 1px solid rgba(90,140,255,0.10);
+    }
+    .timeline-bar {
+      flex: 1 1 0;
+      min-width: 3px;
+      max-width: 16px;
+      background: rgba(90,140,255,0.10);
+      border-radius: 2px 2px 0 0;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+    .timeline-bar:hover { box-shadow: 0 0 0 2px rgba(120,170,255,0.55); }
+    .timeline-bar.lvl-watch  { background: rgba(212,188,88,0.75); }
+    .timeline-bar.lvl-alert  { background: rgba(255,143,92,0.82); }
+    .timeline-bar.lvl-strong { background: rgba(255,110,110,0.88); }
+    .timeline-bar.is-selected { box-shadow: 0 0 0 2px rgba(180,220,255,0.92); }
+    .timeline-bar.is-latest::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -5px;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255,120,120,0.95);
+      animation: pulse-dot 1.6s ease-in-out infinite;
+    }
+    .alertes-timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 8px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .alertes-timeline-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+    }
+    .legend-dot.lvl-watch  { background: rgba(212,188,88,0.8); }
+    .legend-dot.lvl-alert  { background: rgba(255,143,92,0.85); }
+    .legend-dot.lvl-strong { background: rgba(255,110,110,0.9); }
+    .alertes-timeline-legend-hint {
+      margin-left: auto;
+      font-style: italic;
+      text-transform: none;
+      letter-spacing: 0.4px;
+      color: rgba(140,180,230,0.55);
+    }
   </style>
 </head>
 <body>
@@ -570,8 +704,23 @@
       <span class="alertes-live-dot"></span>
       <span id="alertes-live-text" data-i18n="common.loading">chargement…</span>
     </div>
-    <a id="alertes-evo-cta" class="alertes-evo-cta disabled" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta_aria" aria-label="Voir l'évolution des alertes">
-      <span data-i18n="alertes.evo_cta">Voir l'évolution dans le temps</span>
+    <div id="alertes-timeline" class="alertes-timeline" hidden>
+      <div class="alertes-timeline-header">
+        <span class="alertes-timeline-label" data-i18n="alertes.timeline_label">Activité 14 jours</span>
+        <button type="button" id="alertes-timeline-reset" class="alertes-timeline-reset" hidden>
+          <span data-i18n="alertes.timeline_back_live">↩ Retour au live</span>
+        </button>
+      </div>
+      <div class="alertes-timeline-track" id="alertes-timeline-track" role="list"></div>
+      <div class="alertes-timeline-legend">
+        <span class="alertes-timeline-legend-item"><span class="legend-dot lvl-strong"></span><span data-i18n="alertes.level_strong">Alerte forte</span></span>
+        <span class="alertes-timeline-legend-item"><span class="legend-dot lvl-alert"></span><span data-i18n="alertes.level_alert">Alerte</span></span>
+        <span class="alertes-timeline-legend-item"><span class="legend-dot lvl-watch"></span><span data-i18n="alertes.level_watch">Veille</span></span>
+        <span class="alertes-timeline-legend-hint" data-i18n="alertes.timeline_hint">Clique sur une période pour la voir</span>
+      </div>
+    </div>
+    <a id="alertes-evo-cta" class="alertes-evo-cta disabled" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta_track_aria" aria-label="Suivre les sujets en alerte dans Évolution">
+      <span data-i18n="alertes.evo_cta_track">Suivre les sujets en alerte</span>
       <span class="alertes-evo-cta-count" id="alertes-evo-cta-count">0</span>
       <span class="alertes-evo-cta-arrow" aria-hidden="true">→</span>
     </a>
@@ -637,6 +786,9 @@
   let filterStatus  = 'current';
   let filterLevel   = 'all';
   let filterSearch  = '';
+  // Période sélectionnée via la mini-timeline (override de filterStatus
+  // quand non null — affiche uniquement cette période)
+  let filterPeriodKey = null;
 
   function escapeHtml(v) {
     return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
@@ -698,6 +850,125 @@
     return isFinite(n) ? n : null;
   }
 
+  // Le label des périodes est pré-calculé en anglais par le pipeline R
+  // ("May 09 · 8-12 EDT"). On le ré-écrit en français quand la langue
+  // courante est FR : "9 mai · 8-12 HAE".
+  var MONTHS_EN_TO_FR = {
+    Jan: 'janv.', Feb: 'févr.', Mar: 'mars', Apr: 'avr.',
+    May: 'mai', Jun: 'juin', Jul: 'juil.', Aug: 'août',
+    Sep: 'sept.', Oct: 'oct.', Nov: 'nov.', Dec: 'déc.'
+  };
+  function currentLang() {
+    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
+  }
+  function formatPeriodLabel(rawLabel) {
+    if (!rawLabel) return '';
+    if (currentLang() !== 'fr') return rawLabel;
+    return String(rawLabel)
+      .replace(/^([A-Z][a-z]{2})\s+0?(\d+)/, function(_, mon, day) {
+        var fr = MONTHS_EN_TO_FR[mon];
+        if (!fr) return _;
+        return parseInt(day, 10) + ' ' + fr;
+      })
+      .replace(/\bEDT\b/, 'HAE')
+      .replace(/\bEST\b/, 'HNE');
+  }
+
+  // ── Mini-timeline: agrégation alertes par période ──
+  function buildTimelineData() {
+    if (!graphData || !graphData.meta || !Array.isArray(graphData.meta.periods)) return [];
+    var periods = graphData.meta.periods;
+    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+    var latestKey = getLatestPeriodKey();
+    var out = [];
+    for (var pi = 0; pi < periods.length; pi++) {
+      var p = periods[pi];
+      var alertCount = 0;
+      var eventCount = 0;
+      var maxLevel = null; // 'strong' | 'alert' | 'watch' | null
+      for (var ci = 0; ci < countries.length; ci++) {
+        var country = countries[ci];
+        var gd = graphData.graphs[country] && graphData.graphs[country][p.key];
+        if (!gd) continue;
+        var nodes = gd.nodes || [];
+        for (var ni = 0; ni < nodes.length; ni++) {
+          var node = nodes[ni];
+          if (!node.alert_active) continue;
+          var lvl = node.alert_level;
+          if (['strong','alert','watch'].indexOf(lvl) === -1) continue;
+          alertCount++;
+          if (!maxLevel || LEVEL_ORDER.indexOf(lvl) < LEVEL_ORDER.indexOf(maxLevel)) {
+            maxLevel = lvl;
+          }
+        }
+        var events = Array.isArray(gd.events) ? gd.events : [];
+        eventCount += events.length;
+      }
+      out.push({
+        key: p.key,
+        label: p.label || p.key,
+        alertCount: alertCount,
+        eventCount: eventCount,
+        maxLevel: maxLevel,
+        isLatest: p.key === latestKey
+      });
+    }
+    return out;
+  }
+
+  function renderTimeline() {
+    var container = document.getElementById('alertes-timeline');
+    var track = document.getElementById('alertes-timeline-track');
+    var resetBtn = document.getElementById('alertes-timeline-reset');
+    if (!container || !track) return;
+    var data = buildTimelineData();
+    if (!data.length) {
+      container.hidden = true;
+      return;
+    }
+    container.hidden = false;
+
+    var T = window.t || function(k){ return k; };
+    // Calcul de la hauteur normalisée des bars
+    var maxCount = data.reduce(function(m, d) { return d.alertCount > m ? d.alertCount : m; }, 1);
+    var html = data.map(function(d) {
+      var heightPct = d.alertCount > 0 ? Math.max(12, Math.round(d.alertCount / maxCount * 100)) : 8;
+      var lvlClass = d.maxLevel ? ' lvl-' + d.maxLevel : '';
+      var selected = d.key === filterPeriodKey ? ' is-selected' : '';
+      var latest = d.isLatest ? ' is-latest' : '';
+      var tip = T('alertes.timeline_bar_tip', {
+        period: formatPeriodLabel(d.label),
+        alerts: d.alertCount,
+        events: d.eventCount
+      });
+      return '<button type="button" class="timeline-bar' + lvlClass + selected + latest + '"'
+        + ' style="height:' + heightPct + '%"'
+        + ' data-period-key="' + escapeHtml(d.key) + '"'
+        + ' title="' + escapeHtml(tip) + '"'
+        + ' aria-label="' + escapeHtml(tip) + '"></button>';
+    }).join('');
+    track.innerHTML = html;
+
+    // Bouton retour au live: visible si période sélectionnée ≠ latest
+    if (resetBtn) {
+      resetBtn.hidden = !filterPeriodKey;
+    }
+
+    // Délégation de clic
+    track.querySelectorAll('.timeline-bar').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var k = btn.getAttribute('data-period-key');
+        if (filterPeriodKey === k) {
+          // Re-clic = désélectionner et revenir au live
+          filterPeriodKey = null;
+        } else {
+          filterPeriodKey = k;
+        }
+        render();
+      });
+    });
+  }
+
   function renderMethodology() {
     var box = document.getElementById('alertes-methodology');
     if (!box) return;
@@ -733,6 +1004,9 @@
 
     for (var pi = 0; pi < periods.length; pi++) {
       var period = periods[pi];
+      // Si une période est explicitement sélectionnée via la timeline,
+      // ne montrer QUE celle-là (override des filtres status).
+      if (filterPeriodKey && period.key !== filterPeriodKey) continue;
       var alertsInPeriod = [];
 
       for (var ci = 0; ci < countries.length; ci++) {
@@ -767,10 +1041,16 @@
           var isCurrent = period.key === latestKey && active;
           var isEnded = period.key !== latestKey && active && !latestActiveMap[key];
 
-          if (filterStatus === 'current' && !isCurrent) continue;
-          if (filterStatus === 'ended' && !isEnded) continue;
-
-          if ((filterStatus === 'current' || filterStatus === 'ended') && !active) continue;
+          // Si une période est sélectionnée via timeline, on ignore le
+          // filtre status: on montre toutes les alertes actives de la
+          // période choisie (à l'instant de cette période).
+          if (!filterPeriodKey) {
+            if (filterStatus === 'current' && !isCurrent) continue;
+            if (filterStatus === 'ended' && !isEnded) continue;
+            if ((filterStatus === 'current' || filterStatus === 'ended') && !active) continue;
+          } else {
+            if (!active) continue;
+          }
           if (filterLevel !== 'all' && level !== filterLevel) continue;
           if (searchLow && node.id.toLowerCase().indexOf(searchLow) === -1) continue;
 
@@ -825,8 +1105,12 @@
           var isEnded = period.key !== latestKey && anyActive
             && !ev.members.every(function(m) { return latestActiveMap[country + '::' + m.id]; });
 
-          if (filterStatus === 'current' && !isCurrent) continue;
-          if (filterStatus === 'ended' && !isEnded) continue;
+          if (!filterPeriodKey) {
+            if (filterStatus === 'current' && !isCurrent) continue;
+            if (filterStatus === 'ended' && !isEnded) continue;
+          } else {
+            if (!anyActive) continue;
+          }
           if (filterLevel !== 'all' && topLevel !== filterLevel) continue;
 
           // Filtre search: matcher pivot ou n'importe quel membre
@@ -1055,7 +1339,7 @@
 
     var T = window.t || function(k){ return k; };
     var totalSignals = groups.reduce(function(acc, g) { return acc + g.alerts.length; }, 0);
-    var latestLbl = groups[0].period.label || groups[0].period.key;
+    var latestLbl = formatPeriodLabel(groups[0].period.label || groups[0].period.key);
     if (filterStatus === 'ended') {
       text.textContent = T('alertes_pill.ended_count', { n: totalSignals, last: latestLbl });
       return;
@@ -1076,27 +1360,42 @@
     if (!cta || !countEl) return;
 
     // Pays cible: filtre courant si spécifique, sinon celui qui a le plus
-    // d'alertes visibles (evolution.html est mono-pays).
-    var perCountry = {}; // country -> array of unique node ids
+    // de sujets visibles (evolution.html est mono-pays). On collecte les
+    // IDs uniques en incluant pivot+membres pour les cartes "événement"
+    // et l'id direct pour les alertes simples.
+    var perCountry = {}; // country -> Set of node ids
+    function add(country, id) {
+      if (!perCountry[country]) perCountry[country] = {};
+      perCountry[country][id] = true;
+    }
     for (var gi = 0; gi < groups.length; gi++) {
       var alerts = groups[gi].alerts;
       for (var ai = 0; ai < alerts.length; ai++) {
         var a = alerts[ai];
-        if (!perCountry[a.country]) perCountry[a.country] = [];
-        if (perCountry[a.country].indexOf(a.id) === -1) perCountry[a.country].push(a.id);
+        if (a.kind === 'event' && a.pivot) {
+          add(a.country, a.pivot.id);
+          (a.members || []).forEach(function(m) { add(a.country, m.id); });
+        } else if (a.id) {
+          add(a.country, a.id);
+        }
       }
     }
+    // Convertir en arrays
+    var perCountryArr = {};
+    Object.keys(perCountry).forEach(function(c) {
+      perCountryArr[c] = Object.keys(perCountry[c]);
+    });
 
     var country = filterCountry;
     if (country === 'all') {
       var best = null, bestN = -1;
-      for (var c in perCountry) {
-        if (perCountry[c].length > bestN) { best = c; bestN = perCountry[c].length; }
+      for (var c in perCountryArr) {
+        if (perCountryArr[c].length > bestN) { best = c; bestN = perCountryArr[c].length; }
       }
       country = best;
     }
 
-    var nodes = country && perCountry[country] ? perCountry[country] : [];
+    var nodes = country && perCountryArr[country] ? perCountryArr[country] : [];
     if (!nodes.length) {
       cta.classList.add('disabled');
       cta.setAttribute('aria-disabled', 'true');
@@ -1109,7 +1408,7 @@
     cta.setAttribute('aria-disabled', 'false');
     countEl.textContent = String(nodes.length);
     var url = './evolution.html?country=' + encodeURIComponent(country)
-      + '&mode=tracking&gran=month'
+      + '&mode=tracking&gran=week'
       + '&nodes=' + encodeURIComponent(nodes.join(','));
     cta.setAttribute('href', url);
   }
@@ -1119,6 +1418,7 @@
     if (!container) return;
     var groups = getAlertGroups();
     renderMethodology();
+    renderTimeline();
     updateLivePill(groups);
     updateEvolutionCta(groups);
 
@@ -1142,23 +1442,63 @@
       } else if (filterStatus === 'ended') {
         latest = '<span class="period-header-latest">' + Th('common.ended') + '</span>';
       }
-      var cards   = g.alerts.map(renderCard).join('');
+      // Sous-groupement par pays quand filtre = "Tous", pour qu'on voie
+      // d'un coup d'œil quelle alerte appartient à quel pays. Sinon
+      // (un seul pays sélectionné), on garde l'ancien layout uniforme.
+      var body;
+      if (filterCountry === 'all') {
+        // Grouper par country en respectant l'ordre QC > CAN > USA
+        var byCountry = {};
+        g.alerts.forEach(function(a) {
+          if (!byCountry[a.country]) byCountry[a.country] = [];
+          byCountry[a.country].push(a);
+        });
+        var orderedCountries = getActiveCountries().filter(function(c) {
+          return byCountry[c] && byCountry[c].length;
+        });
+        var sigOne = Th('alertes.signal_one');
+        var sigMany = Th('alertes.signal_many');
+        body = orderedCountries.map(function(c) {
+          var label = Th('country.' + c) || c;
+          var n = byCountry[c].length;
+          var cards2 = byCountry[c].map(renderCard).join('');
+          return '<div class="country-section">'
+            + '<div class="country-header">'
+            +   '<span class="country-header-flag">' + escapeHtml(label) + '</span>'
+            +   '<span class="country-header-count">' + n + ' ' + escapeHtml(n > 1 ? sigMany : sigOne) + '</span>'
+            + '</div>'
+            + '<div class="alerts-grid">' + cards2 + '</div>'
+            + '</div>';
+        }).join('');
+      } else {
+        body = '<div class="alerts-grid">' + g.alerts.map(renderCard).join('') + '</div>';
+      }
+
       html += '<div class="period-group">'
         + '<div class="period-header">'
-        +   '<span class="period-header-label">' + escapeHtml(g.period.label || g.period.key) + '</span>'
+        +   '<span class="period-header-label">' + escapeHtml(formatPeriodLabel(g.period.label || g.period.key)) + '</span>'
         +   '<span class="period-header-count">'  + escapeHtml(String(count)) + ' ' + escapeHtml((window.t||function(k){return k;})(count > 1 ? 'alertes.signal_many' : 'alertes.signal_one')) + '</span>'
         +   latest
         + '</div>'
-        + '<div class="alerts-grid">' + cards + '</div>'
+        + body
         + '</div>';
     }
     container.innerHTML = html;
   }
 
   document.getElementById('filter-country').addEventListener('change', function() { filterCountry = this.value; render(); });
-  document.getElementById('filter-status').addEventListener('change',  function() { filterStatus  = this.value; render(); });
+  document.getElementById('filter-status').addEventListener('change',  function() {
+    filterStatus = this.value;
+    // Changer le statut quitte la sélection de période timeline
+    filterPeriodKey = null;
+    render();
+  });
   document.getElementById('filter-level').addEventListener('change',   function() { filterLevel   = this.value; render(); });
   document.getElementById('filter-search').addEventListener('input',   function() { filterSearch  = this.value; render(); });
+  document.getElementById('alertes-timeline-reset').addEventListener('click', function() {
+    filterPeriodKey = null;
+    render();
+  });
 
   // Re-render au changement de langue (textes générés dynamiquement)
   document.addEventListener('i18n:applied', function () {
