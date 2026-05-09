@@ -1131,9 +1131,19 @@
     year:  { topN: 16, emptyLabel: 'Année' },
     total: { topN: 20, emptyLabel: 'Depuis le début' },
   };
-  const FR_MONTHS = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
-  const FR_MONTHS_SHORT = ['janv.', 'fevr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'aout', 'sept.', 'oct.', 'nov.', 'dec.'];
-  const FR_WEEKDAYS_SHORT = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+  // Mois / jours: lus dynamiquement depuis ui.{lang}.json via window.t.
+  // Fallback FR si i18n pas chargé.
+  const FR_MONTHS_FALLBACK = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const FR_MONTHS_SHORT_FALLBACK = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  const FR_WEEKDAYS_SHORT_FALLBACK = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+  function getMonths()        { var v = window.__i18n && window.__i18n.get && window.__i18n.get('fr_months');         return Array.isArray(v) ? v : FR_MONTHS_FALLBACK; }
+  function getMonthsShort()   { var v = window.__i18n && window.__i18n.get && window.__i18n.get('fr_months_short');   return Array.isArray(v) ? v : FR_MONTHS_SHORT_FALLBACK; }
+  function getWeekdaysShort() { var v = window.__i18n && window.__i18n.get && window.__i18n.get('fr_weekdays_short'); return Array.isArray(v) ? v : FR_WEEKDAYS_SHORT_FALLBACK; }
+  // Variables historiques (gardées pour compat avec le reste du code,
+  // mais MAJ via Object.defineProperty pour rester réactives à la langue).
+  const FR_MONTHS         = new Proxy({}, { get(_, k) { return getMonths()[k]; } });
+  const FR_MONTHS_SHORT   = new Proxy({}, { get(_, k) { return getMonthsShort()[k]; } });
+  const FR_WEEKDAYS_SHORT = new Proxy({}, { get(_, k) { return getWeekdaysShort()[k]; } });
   const LOCAL_UTC_OFFSET_HOURS = 4; // EDT, cohérent avec le pipeline actuel
   const EN_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
 
@@ -1182,7 +1192,8 @@
 
   function toWeekLabel(weekKey) {
     const [year, wk] = weekKey.split('-W');
-    return `Semaine ${Number(wk)} · ${year}`;
+    const weekWord = (window.t && window.t('period.week')) || 'Semaine';
+    return `${weekWord} ${Number(wk)} · ${year}`;
   }
 
   function buildRankedSlots(sourcePeriods = periods) {
@@ -1835,9 +1846,16 @@
       const prevSlotLabel = !isHoverBlock && rankedGranularity !== 'day' && rankedSlotIdx > 0
         ? (rankedSlots[rankedSlotIdx - 1]?.label || '')
         : '';
+      const Tvs = window.t || function(k){ return k; };
       const compLabel = rankedGranularity === 'day'
-        ? (prevPeriodForLabel?.isVeille ? 'vs hier (moy./bloc)' : prevPeriodForLabel ? `vs ${blockRangeLabelFromPeriod(prevPeriodForLabel)}` : 'vs hier')
-        : (prevSlotLabel ? `vs ${prevSlotLabel}` : ({ week: 'vs sem. passée', month: 'vs mois passé', year: 'vs an passé' }[rankedGranularity] || ''));
+        ? (prevPeriodForLabel?.isVeille
+            ? Tvs('vs.yesterday_avg')
+            : prevPeriodForLabel
+              ? Tvs('vs.previous', { label: blockRangeLabelFromPeriod(prevPeriodForLabel) })
+              : Tvs('vs.yesterday'))
+        : (prevSlotLabel
+            ? Tvs('vs.previous', { label: prevSlotLabel })
+            : ({ week: Tvs('vs.last_week'), month: Tvs('vs.last_month'), year: Tvs('vs.last_year') }[rankedGranularity] || ''));
       if (r.delta !== null && r.delta !== 0) {
         deltaClass = r.delta > 0 ? 'up' : 'down';
         deltaTxt = `${r.delta > 0 ? '↑' : '↓'}${Math.abs(r.delta)}`;

@@ -124,6 +124,15 @@
     "total": "Since the beginning"
   },
 
+  "vs": {
+    "yesterday": "vs yesterday",
+    "yesterday_avg": "vs yesterday (avg/block)",
+    "last_week": "vs last week",
+    "last_month": "vs last month",
+    "last_year": "vs last year",
+    "previous": "vs {label}"
+  },
+
   "increase_tip": {
     "4h": "Saliency gained during this 4h block",
     "day": "Saliency gained since the start of the day",

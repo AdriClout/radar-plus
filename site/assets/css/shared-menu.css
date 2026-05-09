@@ -163,6 +163,22 @@
   vertical-align: middle;
 }
 
+/* Logo GitHub à la place du texte — dernier item du nav */
+.side-nav a.nav-github {
+  padding: 14px 0;
+  display: inline-flex;
+  align-items: center;
+  color: rgba(208, 224, 255, 0.85);
+  border-bottom: none;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+.side-nav a.nav-github:hover {
+  color: #ffffff;
+  transform: translateX(2px);
+  padding-left: 0;
+}
+.side-nav a.nav-github svg { display: block; }
+
 body.has-shared-menu .top,
 body.has-shared-menu .topbar {
   padding-right: 72px;

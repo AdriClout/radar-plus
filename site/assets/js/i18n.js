@@ -73,6 +73,9 @@
     return interpolate(v, params);
   }
 
+  // Get raw value (array, object, anything). Pas de fallback texte.
+  function get(key) { return getByPath(strings, key); }
+
   // Liste des attributs supportés via data-i18n-{attr}
   var SUPPORTED_ATTRS = [
     'placeholder', 'title', 'aria-label', 'aria-description',
@@ -157,6 +160,7 @@
     SUPPORTED: SUPPORTED.slice(),
     DEFAULT_LANG: DEFAULT_LANG,
     t: t,
+    get: get,
     setLang: setLang,
     currentLang: function () { return currentLang; },
     applyTo: applyTo

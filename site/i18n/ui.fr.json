@@ -124,6 +124,15 @@
     "total": "Depuis le début"
   },
 
+  "vs": {
+    "yesterday": "vs hier",
+    "yesterday_avg": "vs hier (moy./bloc)",
+    "last_week": "vs sem. passée",
+    "last_month": "vs mois passé",
+    "last_year": "vs an passé",
+    "previous": "vs {label}"
+  },
+
   "increase_tip": {
     "4h": "Saillance gagnée pendant ce bloc 4h",
     "day": "Saillance gagnée depuis le début de la journée",
