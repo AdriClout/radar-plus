@@ -258,11 +258,10 @@ downgrade_by_top_share <- function(level, top_share) {
 df_index <- df_index |>
   dplyr::group_by(country_id, date_utc, time_interval_utc) |>
   dplyr::mutate(
-    alert_top_share = dplyr::if_else(
-      max(absolute_normalized_index, na.rm = TRUE) > 0,
-      absolute_normalized_index / max(absolute_normalized_index, na.rm = TRUE),
-      NA_real_
-    )
+    alert_top_share = {
+      m <- max(absolute_normalized_index, na.rm = TRUE)
+      if (!is.finite(m) || m <= 0) NA_real_ else absolute_normalized_index / m
+    }
   ) |>
   dplyr::ungroup() |>
   dplyr::mutate(
