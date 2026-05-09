@@ -206,6 +206,10 @@
 
   "evolution": {
     "title": "Évolution",
+    "salience_moderate": "modéré",
+    "salience_high": "élevé",
+    "salience_very_high": "très élevé",
+    "salience_extreme": "extrême",
     "country_label": "Pays",
     "search_label": "Recherche",
     "mode_hot10": "HOT 10",

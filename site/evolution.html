@@ -2852,6 +2852,42 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left - 8, y + 3);
     }
 
+    // Paliers de saillance absolue (calibrés sur la distribution empirique).
+    // Permettent de SITUER une courbe d'objet sur une échelle commune:
+    // est-ce que ce sujet atteint le palier "Élevé" ou "Extrême"?
+    const salienceTiers = tsData?.meta?.salience_tiers?.[currentCountry];
+    if (salienceTiers) {
+      const TIER_COLORS = {
+        moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
+        high:      { line: 'rgba(212,188,88,0.65)',  text: 'rgba(255,224,140,0.95)' },
+        very_high: { line: 'rgba(255,143,92,0.70)',  text: 'rgba(255,200,160,0.98)' },
+        extreme:   { line: 'rgba(220,140,255,0.80)', text: 'rgba(235,200,255,1)'    }
+      };
+      const tierLabelKey = window.t || ((k) => k);
+      const TIER_ORDER = ['moderate', 'high', 'very_high', 'extreme'];
+      ctx.font = '9px "Orbitron", "Space Mono", monospace';
+      TIER_ORDER.forEach(tk => {
+        const v = Number(salienceTiers[tk]);
+        if (!Number.isFinite(v) || v <= 0 || v > maxVal * 1.05) return;
+        const y = yOf(Math.min(v, maxVal), maxVal);
+        const c = TIER_COLORS[tk] || TIER_COLORS.moderate;
+        // Ligne pointillée
+        ctx.strokeStyle = c.line; ctx.lineWidth = 1; ctx.setLineDash([2, 5]);
+        ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + chartW, y); ctx.stroke();
+        ctx.setLineDash([]);
+        // Étiquette compacte à droite
+        const label = (tierLabelKey('evolution.salience_' + tk) || tk).toUpperCase()
+                    + '  ' + v.toFixed(1);
+        const padX = 6;
+        ctx.textAlign = 'right';
+        const tw = ctx.measureText(label).width + padX * 2;
+        ctx.fillStyle = 'rgba(0,2,18,0.78)';
+        ctx.fillRect(PAD.left + chartW - tw - 2, y - 8, tw, 14);
+        ctx.fillStyle = c.text;
+        ctx.fillText(label, PAD.left + chartW - 4, y + 3);
+      });
+    }
+
     // X ticks - echantillonnage propre pour le mode suivi.
     const tickIndices = (() => {
       const target = 8;

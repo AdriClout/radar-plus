@@ -305,6 +305,40 @@ for (lvl in names(tier_counts)) {
   cat("     ", sprintf("%-13s", lvl), tier_counts[[lvl]], "\n")
 }
 
+# ─── Paliers de saillance absolue (par pays) ──────────────────────────────────
+# Calibrés sur la distribution empirique des saillances (HISTORY_DAYS jours,
+# blocs 4h non nuls). Permettent de RELATIVISER l'absolu : un objet à
+# saillance 8 est-il rare ou banal ? Affichés comme repères horizontaux sur
+# la page Évolution.
+#   moderate  = p50 (médiane)
+#   high      = p80 (top 20%)
+#   very_high = p95 (top 5%)
+#   extreme   = p99 (top 1% — vraiment marquant)
+cat("Calcul des paliers de saillance par pays...\n")
+salience_tiers_df <- df_index |>
+  dplyr::filter(absolute_normalized_index > 0) |>
+  dplyr::group_by(country_id) |>
+  dplyr::summarise(
+    moderate  = stats::quantile(absolute_normalized_index, 0.50, na.rm = TRUE),
+    high      = stats::quantile(absolute_normalized_index, 0.80, na.rm = TRUE),
+    very_high = stats::quantile(absolute_normalized_index, 0.95, na.rm = TRUE),
+    extreme   = stats::quantile(absolute_normalized_index, 0.99, na.rm = TRUE),
+    .groups   = "drop"
+  )
+salience_tiers <- list()
+for (i in seq_len(nrow(salience_tiers_df))) {
+  c <- as.character(salience_tiers_df$country_id[i])
+  salience_tiers[[c]] <- list(
+    moderate  = round(unname(salience_tiers_df$moderate[i]),  3),
+    high      = round(unname(salience_tiers_df$high[i]),      3),
+    very_high = round(unname(salience_tiers_df$very_high[i]), 3),
+    extreme   = round(unname(salience_tiers_df$extreme[i]),   3)
+  )
+  cat(sprintf("  %s : modéré=%.2f · élevé=%.2f · très élevé=%.2f · extrême=%.2f\n",
+              c, salience_tiers[[c]]$moderate, salience_tiers[[c]]$high,
+              salience_tiers[[c]]$very_high, salience_tiers[[c]]$extreme))
+}
+
 # ─── Nœuds : top N par période × pays (toute la fenêtre historique) ───────────
 
 df_nodes <- df_index |>
@@ -670,6 +704,10 @@ result_graph <- list(
       # comme membres d'un même événement (cluster autour d'un pivot).
       event_containment = ALERT_EVENT_CONTAINMENT
     ),
+    # Paliers de saillance absolue par pays (percentiles de la distribution
+    # empirique sur la fenêtre HISTORY_DAYS). Permettent au frontend de
+    # situer un score de saillance sur une échelle moderate/high/very_high/extreme.
+    salience_tiers = salience_tiers,
     media_ids    = all_media_ids,
     periods      = make_periods_list(periods_graph),
     countries    = countries
@@ -762,6 +800,7 @@ result_ts <- list(
       block_hours = 4,
       lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24
     ),
+    salience_tiers = salience_tiers,
     periods       = make_periods_list(periods_ts),
     countries     = countries
   ),
