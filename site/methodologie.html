@@ -259,7 +259,8 @@
 <li>Validation et fiabilité</li>
 <li>Limites méthodologiques</li>
 <li>Reproductibilité et accès aux données</li>
-<li><a href="#alertes">Alertes de saillance</a></li>
+<li><a href="#alertes">Alertes de saillance et cycles d’attention</a></li>
+<li><a href="#paliers">Paliers de saillance absolue</a></li>
 <li>Sources</li>
 </ol>
 <hr />
@@ -534,42 +535,79 @@
 </blockquote>
 <p>Une publication méthodologique détaillée <a href="#fn27" class="footnote-ref" id="fnref27" role="doc-noteref"><sup>27</sup></a> est en préparation et viendra compléter la documentation officielle.</p>
 <hr />
-<h2 id="alertes">10. Alertes de saillance</h2>
-<p>Les <strong>alertes de saillance</strong> détectent automatiquement les objets dont la couverture médiatique change brusquement <em>et</em> qui pèsent réellement sur le radar. Trois niveaux gradués sont publiés en continu : <strong>Veille</strong> (signal faible), <strong>Alerte</strong> (signal marqué), <strong>Alerte forte</strong> (signal majeur). La logique combine quatre filtres complémentaires.</p>
+<h2 id="alertes">10. Alertes de saillance et cycles d’attention</h2>
+<p>Les <strong>alertes de saillance</strong> identifient les objets dont la couverture médiatique sort de l’ordinaire. La taxonomie distingue six niveaux gradués selon deux dimensions complémentaires : la <strong>persistance</strong> (combien de temps le signal anormal tient) et la <strong>dominance</strong> (à quel point l’objet capte l’attention médiatique). Cette articulation reprend les concepts d’<em>alarme/patrouille</em> et de <em>media storm</em> formalisés en communication politique<a href="#fn-bb1" class="footnote-ref"><sup>bb1</sup></a><a href="#fn-bb2" class="footnote-ref"><sup>bb2</sup></a>.</p>
 
 <h3 id="alertes-anomalie">10.1 Anomalie statistique (z-score robuste)</h3>
-<p>Pour chaque objet et chaque période de 4 h, la saillance courante est comparée à la <strong>médiane glissante</strong> et au <strong>MAD</strong> (median absolute deviation) des 30 derniers jours sur la même tranche horaire. Le z-score robuste s’écrit :</p>
+<p>Pour chaque objet et chaque bloc de 4 h, la saillance courante est comparée à la <strong>médiane glissante</strong> et au <strong>MAD</strong> (median absolute deviation) des 30 derniers jours :</p>
 <blockquote>
-<p>z = (log(saillance courante + 1) − médiane log) / max(MAD log, plancher d’échelle)</p>
+<p>z = (log(saillance + 1) − médiane log) / max(MAD log, plancher d’échelle)</p>
 </blockquote>
-<p>L’usage de <code>log1p</code> rend le score symétrique entre montées et descentes, et la médiane + MAD résistent aux valeurs extrêmes (anciennes pointes ne saturent pas la mesure). Le plancher d’échelle (par défaut 0.08 sur la base log) évite les explosions de z sur les séries quasi constantes.</p>
-<p>Seuils gradués : <strong>Veille z ≥ 1.8</strong>, <strong>Alerte z ≥ 2.6</strong>, <strong>Alerte forte z ≥ 3.8</strong>. Ces valeurs sont calibrées pour produire un nombre raisonnable d’alertes sur les corpus actuels (CAN, QC, USA) sans noyer le signal.</p>
+<p>L’usage de <code>log1p</code> symétrise les montées et descentes ; médiane + MAD résistent aux valeurs extrêmes (anciennes pointes ne saturent pas la mesure). Plancher d’échelle 0.08 sur la base log pour éviter les explosions sur séries quasi constantes. Un bloc est considéré <strong>anormal</strong> dès que <strong>z ≥ 1.8</strong>, sous réserve d’un plancher absolu de saillance (≥ 1.0) et d’au moins 2 mentions médias.</p>
 
-<h3 id="alertes-importance">10.2 Importance vs le radar (part du Top)</h3>
-<p>Le z-score à lui seul détecte des <em>anomalies pour l’objet lui-même</em> — un objet normalement absent qui passe à 1.0 voit son z grimper rapidement, sans pour autant peser dans la couverture médiatique réelle. Pour qu’une alerte signale aussi quelque chose de <strong>visible</strong> sur le radar, on calcule la <strong>part du Top</strong> :</p>
+<h3 id="alertes-persistance">10.2 Persistance temporelle (streak de blocs anormaux)</h3>
+<p>Un seul bloc 4 h anormal isolé n’est pas une alerte d’événement : c’est un <em>flash</em>. La taxonomie compte le nombre de <strong>blocs anormaux consécutifs</strong> (streak) jusqu’au moment courant. Plus la séquence est longue, plus le signal est qualitativement fort. C’est ce que Boydstun &amp; Russell (2016) appellent le passage de l’<em>alarme</em> à la <em>patrouille</em><a href="#fn-bb1" class="footnote-ref"><sup>bb1</sup></a> : les médias se fixent sur un sujet chaud après l’avoir détecté.</p>
+
+<h3 id="alertes-dominance">10.3 Dominance dans l’agenda (top_share)</h3>
+<p>La <strong>part du Top</strong> mesure dans quelle mesure un objet capte l’attention médiatique <em>maintenant</em> :</p>
 <blockquote>
-<p>part_top = saillance courante / saillance du Top 1 du pays·période</p>
+<p>top_share = saillance courante / saillance du Top 1 du pays·période</p>
 </blockquote>
-<p>Si la part est insuffisante, le niveau d’alerte est <strong>rétrogradé d’un cran</strong> (Forte → Alerte → Veille → aucune). Seuils par défaut : <strong>Veille ≥ 10 %</strong>, <strong>Alerte ≥ 20 %</strong>, <strong>Alerte forte ≥ 35 %</strong>. Un objet dont l’anomalie est très significative mais qui ne pèse que 5 % du Top n’apparaîtra pas comme alerte — un choix éditorial visant à privilégier les signaux <em>réellement consommés</em> par le public.</p>
+<p>Quand la dominance dépasse certains seuils <em>en plus</em> d’une persistance soutenue, on bascule dans le registre de l’<strong>éclipse</strong> ou du <strong>tsunami</strong> médiatique : le sujet n’est plus simplement présent, il <em>écrase la concurrence pour l’attention</em><a href="#fn-bb3" class="footnote-ref"><sup>bb3</sup></a>.</p>
 
-<h3 id="alertes-pic-annuel">10.3 Pic annuel propre + plancher absolu</h3>
-<p>Deux garde-fous supplémentaires complètent la classification :</p>
+<h3 id="alertes-tiers">10.4 Six niveaux gradués</h3>
+<p>L’assignation finale du niveau combine streak et top_share :</p>
 <ul>
-<li><strong>Ratio vs pic annuel</strong> : la saillance courante doit représenter au moins une fraction du <em>pic atteint par l’objet sur l’année en cours</em>. Seuils par défaut : 15 % (Veille), 30 % (Alerte), 55 % (Forte). Empêche un objet dont la pointe historique est passée depuis longtemps de redéclencher une alerte sur un micro-soubresaut.</li>
-<li><strong>Plancher absolu de saillance</strong> : la saillance courante doit dépasser un seuil minimum (par défaut 1.0). Filtre les objets si peu présents que leur signal reste sous le bruit éditorial.</li>
+<li><strong>Surveillance</strong> — 1 bloc 4 h anormal isolé. Signal détecté, à confirmer.</li>
+<li><strong>Veille</strong> — streak ≥ 2 blocs (≈ 8 h). Le sujet tient.</li>
+<li><strong>Alerte</strong> — streak ≥ 4 blocs (≈ 1 jour). Montée nette.</li>
+<li><strong>Alerte forte</strong> — streak ≥ 12 blocs (≈ 2 jours). Tempête médiatique soutenue (<em>media storm</em>).</li>
+<li><strong>Éclipse médiatique</strong> — streak ≥ 12 blocs <em>et</em> top_share ≥ 50 %. Le sujet domine l’agenda — il <em>éclipse</em> le reste.</li>
+<li><strong>Tsunami médiatique</strong> — streak ≥ 18 blocs (≈ 3 jours) <em>et</em> top_share ≥ 70 %. L’agenda est rincé par un seul sujet — concept inspiré de Giasson (2008)<a href="#fn-bb4" class="footnote-ref"><sup>bb4</sup></a>.</li>
 </ul>
+<p>Le statut <em>Émergent</em> persiste pour les objets dont l’historique est trop court (&lt; 18 périodes ≈ 3 jours) pour calculer un z-score robuste, mais qui dépassent les planchers de saillance et de mentions.</p>
 
-<h3 id="alertes-mentions">10.4 Mentions minimales</h3>
-<p>Une alerte requiert un nombre minimum de <strong>médias distincts</strong> ayant traité l’objet dans la période courante : <strong>2 (Veille)</strong>, <strong>3 (Alerte)</strong>, <strong>4 (Alerte forte)</strong>. Cette contrainte évite qu’un seul média qui martèle un sujet ne déclenche à lui seul une alerte d’écosystème.</p>
+<h3 id="alertes-cluster">10.5 Clustering événementiel (pivot d’articles)</h3>
+<p>Plusieurs alertes simultanées peuvent recouvrir un seul événement (ex. WHO + Alberta + ontario lors d’une éclosion de hantavirus). Pour éviter de fragmenter l’information, le pipeline regroupe les alertes par <strong>cluster autour d’un pivot</strong> :</p>
+<ol>
+<li>Pour chaque candidat-pivot du Top 30 d’une période, on calcule le <em>containment</em> de chaque alerte active vers ce pivot : <code>|articles(alerte) ∩ articles(pivot)| / |articles(alerte)|</code>.</li>
+<li>Les alertes dont le containment ≥ 50 % sont rattachées au pivot comme <em>membres</em>.</li>
+<li>Quand plusieurs pivots concurrent pour les mêmes membres, on retient celui maximisant <em>précision × rappel</em> — c’est-à-dire celui dont les articles sont les plus <strong>ciblés</strong> sur le cluster, pas seulement les plus larges.</li>
+<li>Une <em>marche gloutonne</em> garantit qu’une alerte n’appartient qu’à un seul cluster.</li>
+</ol>
+<p>Le pivot peut lui-même être en alerte ou non : ce qui compte est qu’il <em>explique</em> les articles partagés. Cette approche s’apparente aux mesures de <em>déplacement d’agenda</em> (Atkinson 2014<a href="#fn-bb5" class="footnote-ref"><sup>bb5</sup></a>, Pinto 2018<a href="#fn-bb6" class="footnote-ref"><sup>bb6</sup></a>) mais opère à granularité fine (4 h) et publie le pivot d’événement directement dans la donnée.</p>
 
-<h3 id="alertes-fenetre">10.5 Fenêtre de calcul et latence</h3>
-<p>La fenêtre glissante des 30 jours se traduit par <strong>180 périodes de 4 h</strong>. Un historique minimal de 18 périodes (≈ 3 jours) est requis avant qu’un score robuste soit calculé — en deçà, les objets émergents reçoivent un statut <em>Émergent</em> distinct, signalant simplement leur arrivée. Toutes les métriques d’alerte (score, baseline, ratio vs pic, part du Top, mentions, niveau, état actif) sont publiées par objet et par période dans <code>graph.json</code> et <code>timeseries.json</code>, et rafraîchies automatiquement à chaque cycle de 4 h.</p>
+<h3 id="alertes-archives">10.6 Cycles d’attention — page Archive</h3>
+<p>La page <em>Cycles</em> archive les 130 derniers jours sous forme de <strong>heatmap sujet × jour</strong> : une ligne par objet ayant atteint au moins <em>Alerte</em>, une cellule colorée par jour selon le niveau max atteint. La structure des bandes révèle visuellement les cycles d’attention de Downs<a href="#fn-bb7" class="footnote-ref"><sup>bb7</sup></a>, les déplacements (issue displacement) et les éclipses persistantes. Un tableau d’épisodes consécutifs (sujet, début, fin, durée, niveau max, pic de saillance, part max du Top) complète la lecture archivistique.</p>
 
-<h3 id="alertes-portee">10.6 Portée et limites</h3>
-<p>Les alertes sont conçues comme un <strong>signal de priorité éditoriale</strong>, pas comme un jugement de qualité ou de véracité. Une montée détectée signale que <em>la couverture médiatique change</em>, jamais que l’objet est nécessairement plus important ou véridique. Les valeurs des seuils sont disponibles en clair dans les données (<code>meta.alert_thresholds</code>) et peuvent être réajustées par configuration sans toucher au code de calcul.</p>
+<h3 id="alertes-fenetre">10.7 Fenêtre de calcul et latence</h3>
+<p>La fenêtre glissante des 30 jours se traduit par <strong>180 périodes de 4 h</strong>. Toutes les métriques (z, baseline, peak_ratio, top_share, streak, niveau, statut actif) sont publiées par objet et par période dans <code>graph.json</code> (14 j, avec articles + co-occurrences) et <code>timeseries.json</code> (130 j, sans articles), et rafraîchies à chaque cycle 4 h. Les seuils sont disponibles en clair dans <code>meta.alert_thresholds</code> et peuvent être réajustés sans toucher au code de calcul.</p>
+
+<h3 id="alertes-portee">10.8 Portée et limites</h3>
+<p>Les alertes sont un <strong>signal de priorité éditoriale</strong>, pas un jugement de qualité ou de véracité. Une montée détectée signale que <em>la couverture médiatique change</em>, jamais que l’objet est nécessairement plus important ou véridique. Le clustering par pivot peut occasionnellement isoler un membre légitime si ses articles sont trop éparpillés — dans ce cas, l’alerte reste affichée individuellement plutôt que regroupée.</p>
 
 <hr />
-<h2 id="sources">11. Sources</h2>
+<h2 id="paliers">11. Paliers de saillance absolue</h2>
+<p>Le z-score d’alerte mesure l’<em>anomalie pour soi</em> — un objet est inhabituel par rapport à son propre passé. Mais ça ne dit rien de la <em>magnitude absolue</em> : un score de saillance de 8.5 est-il rare ou banal sur le radar ? Pour répondre à cette question, Radar+ publie quatre <strong>paliers de saillance absolue</strong> calibrés empiriquement par pays.</p>
+
+<h3 id="paliers-calibration">11.1 Calibration empirique</h3>
+<p>Sur la fenêtre des 130 derniers jours, on prend tous les couples (objet, bloc 4 h) dont la saillance dépasse le plancher d’alerte (≥ 1.0) — c’est-à-dire les saillances <em>qui comptent</em>. La distribution de ces saillances est ensuite découpée en quatre seuils correspondant aux percentiles :</p>
+<ul>
+<li><strong>Modéré</strong> — p50 (médiane). Au-dessus, on est dans la moitié supérieure des saillances.</li>
+<li><strong>Élevé</strong> — p80 (top 20 %).</li>
+<li><strong>Très élevé</strong> — p95 (top 5 %).</li>
+<li><strong>Extrême</strong> — p99 (top 1 % — vraiment marquant).</li>
+</ul>
+<p>La calibration est <strong>par pays</strong> : la concentration de l’attention médiatique varie considérablement selon les corpus. Un score « extrême » au Québec n’est pas comparable à un « extrême » aux États-Unis (où le pic est beaucoup plus haut). À titre indicatif, les seuils CAN tournent autour de 3.3 / 8.1 / 21.1 / 38.3 pendant que les seuils USA sont proches de 2.5 / 4.1 / 6.4 / 8.6 — reflet direct du fait que CAN concentre fortement la couverture sur peu de sujets-stars (Trump notamment), alors que USA est plus dispersé dans cette base.</p>
+
+<h3 id="paliers-affichage">11.2 Affichage</h3>
+<p>Les paliers apparaissent comme <strong>quatre lignes horizontales pointillées</strong> sur le chart de la page <em>Évolution</em> en mode tracking. La courbe de saillance d’un objet vient s’y promener : on voit en un coup d’œil quel palier il atteint dans l’absolu. Sur les pages <em>Alertes</em> et <em>Cycles</em>, un mini-pill coloré indique le palier max atteint pour chaque carte ou épisode.</p>
+
+<h3 id="paliers-recalibration">11.3 Recalibration automatique</h3>
+<p>Les seuils sont recalculés à chaque exécution du pipeline (toutes les 4 h). Si la couverture médiatique change radicalement (campagne électorale, crise majeure), les paliers s’ajustent automatiquement — pas de seuils magiques figés. Les valeurs du moment sont publiées dans <code>meta.salience_tiers</code> et restent disponibles pour analyse.</p>
+
+<hr />
+<h2 id="sources">12. Sources</h2>
 <section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
@@ -600,6 +638,13 @@
 <li id="fn25" role="doc-endnote"><p>Miller, J. M., &amp; Peterson, D. A. M. (2004). Theoretical and empirical implications of attitude strength. <em>The Journal of Politics</em>, 66(3), 847–867. <a href="https://doi.org/10.1111/j.1468-2508.2004.00282.x">https://doi.org/10.1111/j.1468-2508.2004.00282.x</a><a href="#fnref25" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn26" role="doc-endnote"><p>Schoenbach, K., De Waal, E., &amp; Lauf, E. (2005). Online and print newspapers: Their impact on the extent of the perceived public agenda. <em>European Journal of Communication</em>, 20(2), 245–258. <a href="https://doi.org/10.1177/0267323105052300">https://doi.org/10.1177/0267323105052300</a><a href="#fnref26" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn27" role="doc-endnote"><p>CLESSN (en préparation). Publication méthodologique sur Radar+ : indices de saillance et applications dans le contexte canadien. <em>À paraître</em>.<a href="#fnref27" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn-bb1" role="doc-endnote"><p>Boydstun, A. E., &amp; Russell, A. (2016). From Alarm to Patrol: A Hybrid Model of News Generation. <em>Political Communication</em>. <a href="https://doi.org/10.1080/10584609.2015.1107758">https://doi.org/10.1080/10584609.2015.1107758</a></p></li>
+<li id="fn-bb2" role="doc-endnote"><p>Boydstun, A. E., Hardy, A., &amp; Walgrave, S. (2014). Two Faces of Media Attention: Media Storm Versus Non-Storm Coverage. <em>Political Communication</em>, 31(4), 509–531. <a href="https://doi.org/10.1080/10584609.2014.875967">https://doi.org/10.1080/10584609.2014.875967</a></p></li>
+<li id="fn-bb3" role="doc-endnote"><p>Zhu, J.-H. (1992). Issue competition and attention distraction: A zero-sum theory of agenda-setting. <em>Journalism Quarterly</em>, 69(4), 825–836.</p></li>
+<li id="fn-bb4" role="doc-endnote"><p>Giasson, T. (2008). Médias, opinion publique et démocratie : la couverture médiatique des grands enjeux politiques. Travaux sur les <em>tsunamis médiatiques</em> et la concentration de l’attention dans la couverture canadienne.</p></li>
+<li id="fn-bb5" role="doc-endnote"><p>Atkinson, M. L., Lovett, J., &amp; Baumgartner, F. R. (2014). Measuring the media agenda. <em>Political Communication</em>, 31(2), 355–380. <a href="https://doi.org/10.1080/10584609.2013.828139">https://doi.org/10.1080/10584609.2013.828139</a></p></li>
+<li id="fn-bb6" role="doc-endnote"><p>Pinto, S., Albanese, F., Dorso, C. O., &amp; Balenzuela, P. (2019). Quantifying time-dependent Media Agenda and Public Opinion by topic modeling. <em>Physica A: Statistical Mechanics and its Applications</em>, 524, 614–624. <a href="https://doi.org/10.1016/j.physa.2019.04.108">https://doi.org/10.1016/j.physa.2019.04.108</a></p></li>
+<li id="fn-bb7" role="doc-endnote"><p>Downs, A. (1972). Up and down with ecology: The “issue-attention cycle”. <em>The Public Interest</em>, 28, 38–50.</p></li>
 </ol>
 </section>
 </div>

@@ -276,6 +276,7 @@
     "event_total_mentions": "<b>{n}</b> mention(s) totale(s)",
     "event_max_score": "Score z max <b>{score}×</b>",
     "event_member_tip": "{level} · {score} · {containment} d’articles communs · {mentions} mention(s)",
+    "salience_tip": "Palier de saillance absolue atteint, sur l’échelle calibrée pour ce pays.",
     "timeline_label": "Activité 14 jours",
     "timeline_back_live": "↩ Retour au live",
     "timeline_hint": "Clique sur une période pour la voir",
@@ -323,6 +324,7 @@
     "col_end": "Fin",
     "col_duration": "Durée",
     "col_max_level": "Niveau max",
+    "col_peak_salience": "Pic saillance",
     "col_top_share_max": "Part max du Top",
     "day": "jour",
     "days": "jours"

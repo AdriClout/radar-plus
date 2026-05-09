@@ -325,6 +325,30 @@
       box-shadow: 0 0 8px rgba(220,150,255,0.45);
     }
 
+    /* ── Pill de palier de saillance (réf absolue par pays) ── */
+    .alert-salience-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-family: var(--orbitron);
+      font-size: 6.5px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      border: 1px solid;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .alert-salience-pill::before {
+      content: '◆';
+      font-size: 6.5px;
+    }
+    .alert-salience-pill.salience-moderate  { color: rgba(170,200,255,0.85); border-color: rgba(120,170,255,0.45); background: rgba(20,40,90,0.45); }
+    .alert-salience-pill.salience-high      { color: rgba(255,224,140,0.95); border-color: rgba(212,188,88,0.55); background: rgba(74,60,16,0.50); }
+    .alert-salience-pill.salience-very_high { color: rgba(255,200,160,0.98); border-color: rgba(255,143,92,0.62); background: rgba(86,42,24,0.55); }
+    .alert-salience-pill.salience-extreme   { color: rgba(235,200,255,1);    border-color: rgba(230,160,255,0.78); background: rgba(96,40,144,0.55); box-shadow: 0 0 6px rgba(220,150,255,0.30); }
+
     .alert-card-name {
       font-size: 13px;
       font-weight: 700;
@@ -826,6 +850,23 @@
     emerging: 'Émergent'
   };
   const COUNTRY_LABELS = { CAN: 'CAN', QC: 'QC', USA: 'USA' };
+  // Paliers de saillance: dérivés des seuils empiriques par pays exportés
+  // dans graph.json:meta.salience_tiers. Ordre du plus haut au plus bas.
+  const SALIENCE_TIER_ORDER = ['extreme', 'very_high', 'high', 'moderate'];
+  function getSalienceTier(country, size) {
+    if (!graphData || !graphData.meta || !graphData.meta.salience_tiers) return null;
+    var tiers = graphData.meta.salience_tiers[country];
+    if (!tiers || typeof size !== 'number') return null;
+    for (var i = 0; i < SALIENCE_TIER_ORDER.length; i++) {
+      var k = SALIENCE_TIER_ORDER[i];
+      if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
+    }
+    return null;
+  }
+  function salienceTierLabel(tier) {
+    var T = window.t || function(k){ return k; };
+    return T('evolution.salience_' + tier) || tier;
+  }
 
   let graphData    = null;
   let filterCountry = 'all';
@@ -1120,6 +1161,7 @@
             peakRatio: peakRatio,
             yearPeak:  yearPeak,
             topShare:  topShare,
+            size:     numOrNull(node.size),
             n:        node.n || 0,
             active:   active,
             status:   isCurrent ? 'current' : (isEnded ? 'ended' : 'other'),
@@ -1290,11 +1332,17 @@
     var totalMentionsStr = T('alertes.event_total_mentions', { n: totalMentions });
     var maxScoreStr = maxScore > 0 ? T('alertes.event_max_score', { score: maxScore.toFixed(1) }) : '';
 
+    // Palier de saillance du pivot (référence absolue par pays)
+    var pivotSize = (typeof ev.pivot.size === 'number') ? ev.pivot.size : null;
+    var pivotTier = pivotSize !== null ? getSalienceTier(ev.country, pivotSize) : null;
+    var pivotTierPill = pivotTier ? '<span class="alert-salience-pill salience-' + pivotTier + '" title="' + escapeHtml(T('alertes.salience_tip') || '') + '">' + escapeHtml(salienceTierLabel(pivotTier)) + '</span>' : '';
+
     return '<div class="alert-card is-event level-' + escapeHtml(ev.level) + '">'
       + '<div class="alert-card-top">'
       +   '<span class="alert-event-tag">' + escapeHtml(T('alertes.event_tag') || 'Événement') + '</span>'
       +   '<a class="alert-event-pivot-name" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(pivotId) + '</a>'
       +   pivotBadgeHtml
+      +   pivotTierPill
       +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
       + '</div>'
       + '<div class="alert-event-summary">'
@@ -1349,12 +1397,17 @@
     var cstUrl   = './constellation.html?country=' + qCountry + '&node=' + qNode;
     var statsUrl = './statistiques.html?pays=' + qCountry + '&objet=' + qNode;
 
+    // Palier de saillance (référence absolue par pays)
+    var alertTier = (typeof alert.size === 'number') ? getSalienceTier(alert.country, alert.size) : null;
+    var alertTierPill = alertTier ? '<span class="alert-salience-pill salience-' + alertTier + '" title="' + escapeHtml(T('alertes.salience_tip') || '') + '">' + escapeHtml(salienceTierLabel(alertTier)) + '</span>' : '';
+
     return '<div class="alert-card level-' + escapeHtml(alert.level) + '">'
       + '<div class="alert-card-top">'
       +   '<span class="alert-card-badge">' + escapeHtml(levelLabel) + '</span>'
       +   '<a class="alert-card-name" href="' + escapeHtml(evoUrl) + '" data-i18n-aria-label="alertes.card_name_aria" aria-label="Voir l\'évolution de ' + escapeHtml(alert.id) + '">'
       +     escapeHtml(alert.id)
       +   '</a>'
+      +   alertTierPill
       +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
       + '</div>'
       + '<div class="alert-card-stats">'

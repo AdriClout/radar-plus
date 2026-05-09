@@ -276,6 +276,7 @@
     "event_total_mentions": "<b>{n}</b> total mentions",
     "event_max_score": "Max z-score <b>{score}×</b>",
     "event_member_tip": "{level} · {score} · {containment} shared articles · {mentions} mention(s)",
+    "salience_tip": "Absolute salience tier reached on the country-calibrated scale.",
     "timeline_label": "14-day activity",
     "timeline_back_live": "↩ Back to live",
     "timeline_hint": "Click a period to view it",
@@ -323,6 +324,7 @@
     "col_end": "End",
     "col_duration": "Duration",
     "col_max_level": "Max level",
+    "col_peak_salience": "Peak salience",
     "col_top_share_max": "Max top share",
     "day": "day",
     "days": "days"

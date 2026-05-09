@@ -216,6 +216,26 @@
       box-shadow: 0 0 4px rgba(220,150,255,0.4);
     }
 
+    /* Pill palier de saillance (réf absolue par pays) */
+    .ep-salience-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-family: var(--orbitron);
+      font-size: 7px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+    .ep-salience-pill::before { content: '◆'; font-size: 7px; }
+    .ep-salience-pill.salience-moderate  { color: rgba(170,200,255,0.85); border-color: rgba(120,170,255,0.45); background: rgba(20,40,90,0.45); }
+    .ep-salience-pill.salience-high      { color: rgba(255,224,140,0.95); border-color: rgba(212,188,88,0.55); background: rgba(74,60,16,0.50); }
+    .ep-salience-pill.salience-very_high { color: rgba(255,200,160,0.98); border-color: rgba(255,143,92,0.62); background: rgba(86,42,24,0.55); }
+    .ep-salience-pill.salience-extreme   { color: rgba(235,200,255,1);    border-color: rgba(230,160,255,0.78); background: rgba(96,40,144,0.55); }
+
     /* Tier badge couleurs (header label) */
     .tier-tsunami      { color: rgba(245,220,255,1);    border-color: rgba(230,160,255,0.80); background: rgba(96,40,144,0.55); }
     .tier-eclipse      { color: rgba(230,200,255,0.98); border-color: rgba(200,140,255,0.65); background: rgba(72,32,114,0.55); }
@@ -425,7 +445,7 @@
   // Construit, par pays, la matrice {objectId -> {dayKey -> {level, score, top_share, streak}}}
   // Niveau gardé = niveau MAX du jour (across the 6 blocs 4h).
   function buildPerCountryDayMatrix(country) {
-    var m = {}; // objectId -> { dayKey -> {level, score, ...} }
+    var m = {}; // objectId -> { dayKey -> {level, score, ..., size} }
     var cg = timeseriesData.graphs[country];
     if (!cg) return m;
     for (var pk in cg) {
@@ -437,17 +457,40 @@
         if (n.alert_level === 'emerging') continue; // on n'archive pas les emerging
         if (!m[n.id]) m[n.id] = {};
         var existing = m[n.id][day];
-        if (!existing || levelRank(n.alert_level) < levelRank(existing.level)) {
+        var nSize = (typeof n.size === 'number') ? n.size : null;
+        var newWins = !existing || levelRank(n.alert_level) < levelRank(existing.level);
+        if (newWins) {
           m[n.id][day] = {
             level: n.alert_level,
             score: n.alert_score || null,
             top_share: n.alert_top_share || null,
-            streak: n.alert_streak || 0
+            streak: n.alert_streak || 0,
+            size: nSize  // saillance du bloc
           };
+        } else if (nSize !== null && (existing.size === null || nSize > existing.size)) {
+          // Garder la saillance MAX du jour même si le tier est moindre
+          existing.size = nSize;
         }
       }
     }
     return m;
+  }
+
+  // Paliers de saillance par pays (référence absolue, exposée par le pipeline).
+  var SALIENCE_TIER_ORDER_DESC = ['extreme', 'very_high', 'high', 'moderate'];
+  function getSalienceTier(country, size) {
+    if (!timeseriesData || !timeseriesData.meta || !timeseriesData.meta.salience_tiers) return null;
+    var tiers = timeseriesData.meta.salience_tiers[country];
+    if (!tiers || typeof size !== 'number') return null;
+    for (var i = 0; i < SALIENCE_TIER_ORDER_DESC.length; i++) {
+      var k = SALIENCE_TIER_ORDER_DESC[i];
+      if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
+    }
+    return null;
+  }
+  function salienceTierLabel(tier) {
+    var T = window.t || function(k){ return k; };
+    return T('evolution.salience_' + tier) || tier;
   }
 
   // Liste de tous les jours uniques de timeseries, dans l'ordre.
@@ -486,13 +529,15 @@
         current.maxLevel = maxLevel(current.maxLevel, d.level);
         if ((d.top_share || 0) > current.maxTopShare) current.maxTopShare = d.top_share;
         if ((d.streak || 0) > current.maxStreak) current.maxStreak = d.streak;
+        if ((d.size || 0) > current.peakSalience) current.peakSalience = d.size || 0;
       } else {
         if (current) episodes.push(current);
         current = {
           firstDay: dk, lastDay: dk,
           maxLevel: d.level,
           maxTopShare: d.top_share || 0,
-          maxStreak: d.streak || 0
+          maxStreak: d.streak || 0,
+          peakSalience: d.size || 0
         };
       }
       prev = dk;
@@ -628,12 +673,13 @@
     // Tri
     var sorted = episodes.slice().sort(function(a, b) {
       var av, bv;
-      if (sortBy === 'duration')      { av = a.durationDays; bv = b.durationDays; }
-      else if (sortBy === 'maxLevel') { av = -levelRank(a.maxLevel); bv = -levelRank(b.maxLevel); }
-      else if (sortBy === 'start')    { av = a.firstDay; bv = b.firstDay; }
-      else if (sortBy === 'subject')  { av = a.id; bv = b.id; }
-      else if (sortBy === 'country')  { av = a.country; bv = b.country; }
-      else                            { av = a.maxTopShare; bv = b.maxTopShare; }
+      if (sortBy === 'duration')           { av = a.durationDays; bv = b.durationDays; }
+      else if (sortBy === 'maxLevel')      { av = -levelRank(a.maxLevel); bv = -levelRank(b.maxLevel); }
+      else if (sortBy === 'peakSalience')  { av = a.peakSalience || 0; bv = b.peakSalience || 0; }
+      else if (sortBy === 'start')         { av = a.firstDay; bv = b.firstDay; }
+      else if (sortBy === 'subject')       { av = a.id; bv = b.id; }
+      else if (sortBy === 'country')       { av = a.country; bv = b.country; }
+      else                                  { av = a.maxTopShare; bv = b.maxTopShare; }
       var cmp = av < bv ? -1 : av > bv ? 1 : 0;
       return sortDir === 'asc' ? cmp : -cmp;
     });
@@ -649,6 +695,7 @@
       + '<th data-sort="end">' + escapeHtml(T('cycles.col_end')) + '</th>'
       + '<th data-sort="duration"' + (sortBy === 'duration' ? ' class="sort-' + sortDir + '"' : '') + '>' + escapeHtml(T('cycles.col_duration')) + '</th>'
       + '<th data-sort="maxLevel"' + (sortBy === 'maxLevel' ? ' class="sort-' + sortDir + '"' : '') + '>' + escapeHtml(T('cycles.col_max_level')) + '</th>'
+      + '<th data-sort="peakSalience"' + (sortBy === 'peakSalience' ? ' class="sort-' + sortDir + '"' : '') + '>' + escapeHtml(T('cycles.col_peak_salience')) + '</th>'
       + '<th>' + escapeHtml(T('cycles.col_top_share_max')) + '</th>'
       + '</tr></thead><tbody>';
 
@@ -658,6 +705,10 @@
       var qNode = encodeURIComponent(e.id);
       var url = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
       var cTitle = T('country.' + e.country) || e.country;
+      var peakTier = getSalienceTier(e.country, e.peakSalience);
+      var peakCellHtml = peakTier
+        ? '<span class="ep-salience-pill salience-' + peakTier + '" title="' + escapeHtml(e.peakSalience.toFixed(1)) + '">' + escapeHtml(salienceTierLabel(peakTier)) + ' · ' + e.peakSalience.toFixed(1) + '</span>'
+        : (e.peakSalience ? e.peakSalience.toFixed(1) : '—');
       html += '<tr data-href="' + escapeHtml(url) + '">'
         + '<td class="ep-subject">' + escapeHtml(e.id) + '</td>'
         + '<td>' + escapeHtml(cTitle) + '</td>'
@@ -665,6 +716,7 @@
         + '<td>' + escapeHtml(formatDayShort(e.lastDay)) + '</td>'
         + '<td class="ep-num">' + e.durationDays + ' ' + escapeHtml(T(e.durationDays > 1 ? 'cycles.days' : 'cycles.day')) + '</td>'
         + '<td><span class="ep-tier tier-' + e.maxLevel + '">' + escapeHtml(tierLabel(e.maxLevel)) + '</span></td>'
+        + '<td>' + peakCellHtml + '</td>'
         + '<td class="ep-share">' + (e.maxTopShare ? Math.round(e.maxTopShare * 100) + '%' : '—') + '</td>'
         + '</tr>';
     }
