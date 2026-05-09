@@ -306,17 +306,19 @@ for (lvl in names(tier_counts)) {
 }
 
 # ─── Paliers de saillance absolue (par pays) ──────────────────────────────────
-# Calibrés sur la distribution empirique des saillances (HISTORY_DAYS jours,
-# blocs 4h non nuls). Permettent de RELATIVISER l'absolu : un objet à
-# saillance 8 est-il rare ou banal ? Affichés comme repères horizontaux sur
-# la page Évolution.
+# Calibrés sur la distribution empirique des saillances "qui comptent"
+# (>= ALERT_MIN_ABS_SCORE, même plancher que celui qui décide si une alerte
+# est légitime). Sans ce filtre, la médiane était noyée par les milliers
+# d'objets isolés à saillance < 1, tirant tous les seuils vers le bas.
+# Permettent de RELATIVISER l'absolu : un objet à saillance 8 est-il rare
+# ou banal ? Affichés comme repères horizontaux sur la page Évolution.
 #   moderate  = p50 (médiane)
 #   high      = p80 (top 20%)
 #   very_high = p95 (top 5%)
 #   extreme   = p99 (top 1% — vraiment marquant)
-cat("Calcul des paliers de saillance par pays...\n")
+cat("Calcul des paliers de saillance par pays (saillance >= ", ALERT_MIN_ABS_SCORE, ")...\n", sep = "")
 salience_tiers_df <- df_index |>
-  dplyr::filter(absolute_normalized_index > 0) |>
+  dplyr::filter(absolute_normalized_index >= ALERT_MIN_ABS_SCORE) |>
   dplyr::group_by(country_id) |>
   dplyr::summarise(
     moderate  = stats::quantile(absolute_normalized_index, 0.50, na.rm = TRUE),
