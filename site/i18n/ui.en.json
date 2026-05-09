@@ -18,6 +18,7 @@
     "constellation": "Constellation",
     "evolution": "Evolution",
     "alertes": "Alerts",
+    "cycles": "Cycles",
     "statistiques": "Statistics",
     "sonar": "Sonar",
     "hot20": "Hot 20",
@@ -32,6 +33,7 @@
     "badge_timeline": "TIMELINE",
     "badge_object": "OBJECT",
     "badge_monitoring": "MONITORING",
+    "badge_archive": "ARCHIVE",
     "alert_marker": "!"
   },
 
@@ -299,6 +301,27 @@
     "active_count": "{n} active alerts · {last}",
     "ended_count": "{n} ended alerts · latest: {last}",
     "signals_count": "{n} signals · most recent period: {last}"
+  },
+
+  "cycles": {
+    "title": "Attention cycles",
+    "title_accent": "in media",
+    "subtitle": "Archive of topics that crossed the alert threshold over the past 130 days · daily aggregation, peak level reached",
+    "filter_country": "Country",
+    "filter_min_level": "Min level",
+    "heatmap_title": "Cycles map · topic × day",
+    "heatmap_empty": "No cycle for the selected filters.",
+    "episodes_title": "Recorded episodes",
+    "episodes_empty": "No episode for the selected filters.",
+    "col_subject": "Subject",
+    "col_country": "Country",
+    "col_start": "Start",
+    "col_end": "End",
+    "col_duration": "Duration",
+    "col_max_level": "Max level",
+    "col_top_share_max": "Max top share",
+    "day": "day",
+    "days": "days"
   },
 
   "ticker": {

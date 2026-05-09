@@ -18,6 +18,7 @@
     "constellation": "Constellation",
     "evolution": "Évolution",
     "alertes": "Alertes",
+    "cycles": "Cycles",
     "statistiques": "Statistiques",
     "sonar": "Sonar",
     "hot20": "Hot 20",
@@ -32,6 +33,7 @@
     "badge_timeline": "TIMELINE",
     "badge_object": "OBJET",
     "badge_monitoring": "MONITORING",
+    "badge_archive": "ARCHIVE",
     "alert_marker": "!"
   },
 
@@ -299,6 +301,27 @@
     "active_count": "{n} alertes en cours · {last}",
     "ended_count": "{n} alertes terminées · dernière: {last}",
     "signals_count": "{n} signaux · période la plus récente: {last}"
+  },
+
+  "cycles": {
+    "title": "Cycles d’attention",
+    "title_accent": "médiatique",
+    "subtitle": "Archive des sujets qui ont franchi le seuil d’alerte sur les 130 derniers jours · agrégation au jour, niveau max atteint",
+    "filter_country": "Pays",
+    "filter_min_level": "Niveau min.",
+    "heatmap_title": "Carte des cycles · sujet × jour",
+    "heatmap_empty": "Aucun cycle pour les filtres sélectionnés.",
+    "episodes_title": "Épisodes recensés",
+    "episodes_empty": "Aucun épisode pour les filtres sélectionnés.",
+    "col_subject": "Sujet",
+    "col_country": "Pays",
+    "col_start": "Début",
+    "col_end": "Fin",
+    "col_duration": "Durée",
+    "col_max_level": "Niveau max",
+    "col_top_share_max": "Part max du Top",
+    "day": "jour",
+    "days": "jours"
   },
 
   "ticker": {
