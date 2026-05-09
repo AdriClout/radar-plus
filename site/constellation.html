@@ -887,6 +887,27 @@
   // d'amortir fortement: pas d'expulsion brutale à contenir).
   setIfFn('d3AlphaDecay', 0.022);
   setIfFn('d3VelocityDecay', 0.42);
+  // Paliers de saillance (référence absolue par pays). Lecture depuis
+  // graphData.meta.salience_tiers, qui est calibré et publié par le
+  // pipeline. Aucun seuil hardcodé côté frontend.
+  const SALIENCE_TIER_ORDER_DESC = ['extreme', 'very_high', 'high', 'moderate'];
+  const TIER_RING_COLORS = {
+    moderate:  'rgba(120,170,255,0.55)',
+    high:      'rgba(212,188,88,0.70)',
+    very_high: 'rgba(255,143,92,0.78)',
+    extreme:   'rgba(220,140,255,0.92)'
+  };
+  function getSalienceTier(size) {
+    if (!graphData || !graphData.meta || !graphData.meta.salience_tiers) return null;
+    const tiers = graphData.meta.salience_tiers[currentCountry];
+    if (!tiers || typeof size !== 'number') return null;
+    for (let i = 0; i < SALIENCE_TIER_ORDER_DESC.length; i++) {
+      const k = SALIENCE_TIER_ORDER_DESC[i];
+      if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
+    }
+    return null;
+  }
+
   // Étoiles (avant) + halos de nœuds (avant le cercle par défaut)
   setIfFn('onRenderFramePre', (ctx, gs) => {
       // 1. Étoiles en coords écran
@@ -930,6 +951,30 @@
   // labels dans les clusters denses.
   setIfFn('onRenderFramePost', (ctx, gs) => {
       const { nodes } = Graph.graphData();
+
+      // Anneau de palier de saillance (référence absolue par pays).
+      // Dessiné après le cercle natif: moderate → bleu pâle, high → jaune,
+      // very_high → orange, extreme → violet. Permet de voir d'un coup
+      // d'œil les nœuds qui tutoient les paliers absolus de l'agenda.
+      nodes.forEach(n => {
+        if (n.x == null || n._highlighted === false) return;
+        const tier = getSalienceTier(n.size);
+        if (!tier) return;
+        const r = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, r + 2, 0, Math.PI * 2);
+        ctx.strokeStyle = TIER_RING_COLORS[tier];
+        ctx.lineWidth = (tier === 'extreme' ? 2.4 : tier === 'very_high' ? 1.8 : 1.4) / Math.max(0.5, gs);
+        ctx.stroke();
+        if (tier === 'extreme') {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, r + 5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(220,140,255,0.30)';
+          ctx.lineWidth = 1 / Math.max(0.5, gs);
+          ctx.stroke();
+        }
+      });
+
       // Centroïde global = barycentre des nœuds visibles (tous_x, tous_y).
       let cx = 0, cy = 0, cn = 0;
       for (const n of nodes) {

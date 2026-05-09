@@ -1926,11 +1926,30 @@
         }).join('');
       }
 
+      // Paliers de saillance (référence absolue par pays). Lecture depuis
+      // graphData.meta.salience_tiers, calibré et publié par le pipeline.
+      const SALIENCE_TIER_ORDER_DESC_S = ['extreme', 'very_high', 'high', 'moderate'];
+      function getSalienceTier(country, size) {
+        const tiers = state.graphData?.meta?.salience_tiers?.[country];
+        if (!tiers || typeof size !== 'number') return null;
+        for (let i = 0; i < SALIENCE_TIER_ORDER_DESC_S.length; i++) {
+          const k = SALIENCE_TIER_ORDER_DESC_S[i];
+          if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
+        }
+        return null;
+      }
+      function salienceTierLabelLocal(tier) {
+        const T = window.t || function(k) { return k; };
+        return T('evolution.salience_' + tier) || tier;
+      }
+
       function renderPeakList(stats) {
+        const peakTier = getSalienceTier(state.activeCountry, stats.peak.score);
+        const peakTierStr = peakTier ? ' · palier ' + salienceTierLabelLocal(peakTier).toUpperCase() : '';
         const highlights = [
           {
             title: 'Pic absolu',
-            body: stats.peak.label + ' · score ' + formatNumber(stats.peak.score) + ' · rang #' + (stats.peak.rank || '—'),
+            body: stats.peak.label + ' · score ' + formatNumber(stats.peak.score) + ' · rang #' + (stats.peak.rank || '—') + peakTierStr,
             key: 'highlight_peak'
           },
           {

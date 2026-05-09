@@ -890,39 +890,76 @@
 </blockquote>
 <p>A detailed methodological publication<a href="#en-fn27" class="footnote-ref" id="en-fnref27" role="doc-noteref"><sup>27</sup></a> is in preparation and will complete the official documentation.</p>
 <hr />
-<h2 id="en-alertes">10. Saliency alerts</h2>
-<p>The <strong>saliency alerts</strong> automatically detect objects whose media coverage shifts abruptly <em>and</em> that genuinely weigh on the radar. Three graded levels are published continuously: <strong>Watch</strong> (weak signal), <strong>Alert</strong> (marked signal), <strong>Strong alert</strong> (major signal). The logic combines four complementary filters.</p>
+<h2 id="en-alertes">10. Saliency alerts and attention cycles</h2>
+<p><strong>Saliency alerts</strong> identify objects whose media coverage steps out of the ordinary. The taxonomy distinguishes six graded levels along two complementary dimensions: <strong>persistence</strong> (how long the abnormal signal holds) and <strong>dominance</strong> (to what extent the object captures media attention). This articulation echoes the <em>alarm/patrol</em> and <em>media storm</em> concepts formalized in political communication.</p>
 
 <h3 id="en-anomalie">10.1 Statistical anomaly (robust z-score)</h3>
-<p>For each object and each 4h period, the current saliency is compared to the <strong>rolling median</strong> and the <strong>MAD</strong> (median absolute deviation) of the past 30 days on the same time slice. The robust z-score is:</p>
+<p>For each object and each 4h block, current saliency is compared to the <strong>rolling median</strong> and <strong>MAD</strong> (median absolute deviation) over the past 30 days:</p>
 <blockquote>
-<p>z = (log(current saliency + 1) − log median) / max(log MAD, scale floor)</p>
+<p>z = (log(saliency + 1) − log median) / max(log MAD, scale floor)</p>
 </blockquote>
-<p>Using <code>log1p</code> makes the score symmetric between rises and falls, and median + MAD are resistant to extreme values (old peaks do not saturate the measure). The scale floor (default 0.08 on the log basis) prevents z-score explosions on near-constant series.</p>
-<p>Graded thresholds: <strong>Watch z ≥ 1.8</strong>, <strong>Alert z ≥ 2.6</strong>, <strong>Strong alert z ≥ 3.8</strong>. These values are calibrated to produce a reasonable number of alerts on current corpora (CAN, QC, USA) without drowning the signal.</p>
+<p><code>log1p</code> symmetrizes rises and falls; median + MAD resist extreme values (old peaks don’t saturate the measure). Scale floor 0.08 on the log basis prevents z explosions on near-constant series. A block is flagged as <strong>anomalous</strong> as soon as <strong>z ≥ 1.8</strong>, subject to an absolute saliency floor (≥ 1.0) and at least 2 outlet mentions.</p>
 
-<h3 id="en-importance">10.2 Importance vs. the radar (share of Top)</h3>
-<p>The z-score alone detects <em>anomalies for the object itself</em> — a normally absent object jumping to 1.0 sees its z climb quickly, without weighing in real coverage. For an alert to also signal something <strong>visible</strong> on the radar, we compute the <strong>share of Top</strong>:</p>
+<h3 id="en-persistance">10.2 Temporal persistence (streak of anomalous blocks)</h3>
+<p>An isolated 4h block is not an event-level alert: it’s a <em>flash</em>. The taxonomy counts the number of <strong>consecutive anomalous blocks</strong> (streak) up to the current moment. The longer the run, the qualitatively stronger the signal. This is what Boydstun &amp; Russell (2016) call the shift from <em>alarm</em> to <em>patrol</em>: media latch onto a hot topic after detecting it.</p>
+
+<h3 id="en-dominance">10.3 Agenda dominance (top_share)</h3>
+<p>The <strong>share of Top</strong> measures how much an object captures media attention <em>right now</em>:</p>
 <blockquote>
 <p>top_share = current saliency / Top 1 saliency for the country·period</p>
 </blockquote>
-<p>If the share is insufficient, the alert level is <strong>downgraded by one notch</strong> (Strong → Alert → Watch → none). Default thresholds: <strong>Watch ≥ 10%</strong>, <strong>Alert ≥ 20%</strong>, <strong>Strong alert ≥ 35%</strong>. An object whose anomaly is highly significant but only weighs 5% of the Top will not appear as an alert — an editorial choice favoring signals that are <em>actually consumed</em> by the public.</p>
+<p>When dominance crosses certain thresholds <em>in addition</em> to sustained persistence, we shift into <strong>media eclipse</strong> or <strong>media tsunami</strong> territory: the topic is no longer simply present, it <em>crowds out the competition for attention</em>.</p>
 
-<h3 id="en-pic-annuel">10.3 Own annual peak + absolute floor</h3>
-<p>Two additional safeguards complete the classification:</p>
+<h3 id="en-tiers">10.4 Six graded levels</h3>
+<p>Final level assignment combines streak and top_share:</p>
 <ul>
-<li><strong>Ratio vs. annual peak</strong>: current saliency must represent at least a fraction of <em>the peak reached by the object during the current year</em>. Default thresholds: 15% (Watch), 30% (Alert), 55% (Strong). Prevents an object whose historical peak is long past from re-triggering an alert on a tiny rebound.</li>
-<li><strong>Absolute saliency floor</strong>: current saliency must exceed a minimum threshold (default 1.0). Filters out objects so weakly present that their signal stays below editorial noise.</li>
+<li><strong>Surveillance</strong> — 1 isolated anomalous 4h block. Signal detected, to be confirmed.</li>
+<li><strong>Watch</strong> — streak ≥ 2 blocks (≈ 8h). The topic holds.</li>
+<li><strong>Alert</strong> — streak ≥ 4 blocks (≈ 1 day). Clear rise.</li>
+<li><strong>Strong alert</strong> — streak ≥ 12 blocks (≈ 2 days). Sustained <em>media storm</em>.</li>
+<li><strong>Media eclipse</strong> — streak ≥ 12 blocks <em>and</em> top_share ≥ 50%. The topic dominates the agenda — it <em>eclipses</em> everything else.</li>
+<li><strong>Media tsunami</strong> — streak ≥ 18 blocks (≈ 3 days) <em>and</em> top_share ≥ 70%. The agenda is rinsed by a single topic.</li>
 </ul>
+<p>The <em>Emerging</em> status persists for objects whose history is too short (&lt; 18 periods ≈ 3 days) to compute a robust z-score, but who exceed the saliency and mention floors.</p>
 
-<h3 id="en-mentions">10.4 Minimum mentions</h3>
-<p>An alert requires a minimum number of <strong>distinct outlets</strong> that have covered the object in the current period: <strong>2 (Watch)</strong>, <strong>3 (Alert)</strong>, <strong>4 (Strong alert)</strong>. This constraint prevents a single outlet hammering a topic from triggering an ecosystem-wide alert on its own.</p>
+<h3 id="en-cluster">10.5 Event clustering (article pivot)</h3>
+<p>Several simultaneous alerts may cover a single event (e.g. WHO + Alberta + Ontario during a hantavirus outbreak). To avoid fragmenting the information, the pipeline groups alerts into <strong>clusters around a pivot</strong>:</p>
+<ol>
+<li>For each candidate-pivot from the period’s Top 30, compute each active alert’s <em>containment</em> toward the pivot: <code>|articles(alert) ∩ articles(pivot)| / |articles(alert)|</code>.</li>
+<li>Alerts with containment ≥ 50% are attached to the pivot as <em>members</em>.</li>
+<li>When several pivots compete for the same members, we keep the one maximizing <em>precision × recall</em> — i.e. the pivot whose articles are most <strong>focused</strong> on the cluster, not just the broadest.</li>
+<li>A <em>greedy walk</em> ensures an alert belongs to only one cluster.</li>
+</ol>
+<p>The pivot itself can be in alert or not: what matters is that it <em>explains</em> the shared articles. This approach relates to <em>agenda displacement</em> measures (Atkinson 2014, Pinto 2018) but operates at fine granularity (4h) and publishes the event pivot directly in the data.</p>
 
-<h3 id="en-fenetre">10.5 Calculation window and latency</h3>
-<p>The 30-day rolling window translates to <strong>180 periods of 4h</strong>. A minimum history of 18 periods (≈ 3 days) is required before a robust score can be computed — below that, emerging objects receive a distinct <em>Emerging</em> status, signaling simply their arrival. All alert metrics (score, baseline, ratio vs. peak, share of Top, mentions, level, active state) are published per object and per period in <code>graph.json</code> and <code>timeseries.json</code>, and refreshed automatically every 4h cycle.</p>
+<h3 id="en-archives">10.6 Attention cycles — Archive page</h3>
+<p>The <em>Cycles</em> page archives the past 130 days as a <strong>topic × day heatmap</strong>: one line per object that reached at least <em>Alert</em>, one colored cell per day matching the maximum level reached. The structure of bands visually reveals Downs’ attention cycles, issue displacements, and persistent eclipses. A table of consecutive episodes (subject, start, end, duration, max level, peak salience, max top share) complements the archival reading.</p>
 
-<h3 id="en-portee">10.6 Scope and limits</h3>
-<p>Alerts are designed as a <strong>signal of editorial priority</strong>, not as a quality or veracity judgment. A detected rise signals that <em>media coverage is shifting</em>, never that the object is necessarily more important or true. Threshold values are available in cleartext in the data (<code>meta.alert_thresholds</code>) and can be readjusted by configuration without touching calculation code.</p>
+<h3 id="en-fenetre">10.7 Calculation window and latency</h3>
+<p>The 30-day rolling window translates to <strong>180 periods of 4h</strong>. All metrics (z, baseline, peak_ratio, top_share, streak, level, active state) are published per object and per period in <code>graph.json</code> (14 d, with articles + co-occurrences) and <code>timeseries.json</code> (130 d, no articles), and refreshed every 4h cycle. Thresholds are available in clear in <code>meta.alert_thresholds</code> and can be readjusted without touching calculation code.</p>
+
+<h3 id="en-portee">10.8 Scope and limits</h3>
+<p>Alerts are an <strong>editorial priority signal</strong>, not a quality or veracity judgment. A detected rise signals that <em>media coverage is shifting</em>, never that the object is necessarily more important or true. Pivot-based clustering may occasionally isolate a legitimate member if its articles are too scattered — in that case the alert remains shown individually rather than grouped.</p>
+
+<hr />
+<h2 id="en-paliers">11. Absolute saliency tiers</h2>
+<p>The alert z-score measures <em>anomaly relative to self</em> — an object is unusual compared to its own past. But it doesn’t say anything about <em>absolute magnitude</em>: is a saliency score of 8.5 rare or banal on the radar? To answer that question, Radar+ publishes four <strong>absolute saliency tiers</strong> empirically calibrated by country.</p>
+
+<h3 id="en-paliers-calibration">11.1 Empirical calibration</h3>
+<p>Over the past 130-day window, we take all (object, 4h block) pairs whose saliency exceeds the alert floor (≥ 1.0) — i.e. saliencies that <em>matter</em>. The distribution of these saliencies is then sliced into four thresholds matching the percentiles:</p>
+<ul>
+<li><strong>Moderate</strong> — p50 (median). Above, you’re in the upper half of saliencies.</li>
+<li><strong>High</strong> — p80 (top 20%).</li>
+<li><strong>Very high</strong> — p95 (top 5%).</li>
+<li><strong>Extreme</strong> — p99 (top 1% — really significant).</li>
+</ul>
+<p>Calibration is <strong>per country</strong>: media attention concentration varies considerably across corpora. An “extreme” score in Quebec is not comparable to an “extreme” in the United States (where the peak is much higher). For reference, CAN thresholds run around 3.3 / 8.1 / 21.1 / 38.3 while USA thresholds sit near 2.5 / 4.1 / 6.4 / 8.6 — a direct reflection of the fact that CAN concentrates coverage on few star topics (Trump notably) while USA is more dispersed in this dataset.</p>
+
+<h3 id="en-paliers-affichage">11.2 Display</h3>
+<p>Tiers appear as <strong>four horizontal dotted lines</strong> on the <em>Evolution</em> page chart in tracking mode. An object’s saliency curve wanders between them: at a glance you see which tier it reaches in absolute terms. On the <em>Alerts</em> and <em>Cycles</em> pages, a small colored pill indicates the maximum tier reached for each card or episode.</p>
+
+<h3 id="en-paliers-recalibration">11.3 Automatic recalibration</h3>
+<p>Thresholds are recomputed at every pipeline run (every 4h). If media coverage shifts radically (election campaign, major crisis), tiers adjust automatically — no frozen magic thresholds. Current values are published in <code>meta.salience_tiers</code> and remain available for analysis.</p>
 
 <hr />
 <h2 id="en-sources">11. Sources</h2>
