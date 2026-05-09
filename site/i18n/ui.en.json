@@ -202,7 +202,12 @@
     "previous_period_aria": "Previous period",
     "next_period_aria": "Next period",
     "blocks_completed": "{n} completed blocks",
-    "no_data": "No data for this slot."
+    "no_data": "No data for this slot.",
+    "follow": "+ Follow",
+    "following": "✓ Following",
+    "previously_section": "Previously featured",
+    "object_unavailable": "Object unavailable",
+    "no_articles_found": "No article found for this object."
   },
 
   "alertes": {

@@ -202,7 +202,12 @@
     "previous_period_aria": "Période précédente",
     "next_period_aria": "Période suivante",
     "blocks_completed": "{n} blocs complétés",
-    "no_data": "Aucune donnée pour ce créneau."
+    "no_data": "Aucune donnée pour ce créneau.",
+    "follow": "+ Suivre",
+    "following": "✓ Suivi",
+    "previously_section": "Précédemment à la une",
+    "object_unavailable": "Objet indisponible",
+    "no_articles_found": "Aucun article trouvé pour cet objet."
   },
 
   "alertes": {

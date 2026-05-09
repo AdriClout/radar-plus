@@ -896,11 +896,11 @@
     btn.addEventListener('click', () => {
       if (trackedObjects.has(nodeId)) {
         removeTracked(nodeId);
-        btn.textContent = '+ Suivre';
+        btn.textContent = (window.t || function(k){return k;})('evolution.follow');
         btn.classList.remove('tracked');
       } else {
         addTracked(nodeId);
-        btn.textContent = '✓ Suivi';
+        btn.textContent = (window.t || function(k){return k;})('evolution.following');
         btn.classList.add('tracked');
         setMode('tracking');
       }
@@ -957,7 +957,7 @@
           <a class="panel-link" href="${links.statsUrl}" target="_blank" rel="noopener noreferrer">Statistiques ↗</a>
           <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Constellation ↗</a>
         </div>
-        <button class="panel-track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${tracked ? '✓ Suivi' : '+ Suivre'}</button>
+        <button class="panel-track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${(window.t||function(k){return k;})(tracked?'evolution.following':'evolution.follow')}</button>
       </div>
     `;
   }
@@ -1061,7 +1061,7 @@
     const prevGroups = buildPreviousArticleGroups(node.id, seenUrls, ctx);
     let prevHtml = '';
     if (prevGroups.length > 0) {
-      prevHtml = '<div class="article-section-header">Précédemment à la une</div>';
+      prevHtml = '<div class="article-section-header">' + (window.t||function(k){return k;})('evolution.previously_section') + '</div>';
       prevGroups.forEach(g => {
         prevHtml += `<div class="article-period-label">${escapeHtml(g.label)}</div>`;
         prevHtml += g.articles.map(articleItemHtml).join('');
