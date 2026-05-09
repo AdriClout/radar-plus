@@ -246,7 +246,16 @@
       "emerging": "Émerg."
     },
     "signal_one": "signal",
-    "signal_many": "signals"
+    "signal_many": "signaux"
+  },
+
+  "alertes_pill": {
+    "none_active": "Aucune alerte en cours",
+    "none_ended": "Aucune alerte terminée",
+    "none_filters": "Aucun signal pour ces filtres",
+    "active_count": "{n} alertes en cours · {last}",
+    "ended_count": "{n} alertes terminées · dernière: {last}",
+    "signals_count": "{n} signaux · période la plus récente: {last}"
   },
 
   "ticker": {

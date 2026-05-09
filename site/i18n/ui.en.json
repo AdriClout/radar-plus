@@ -249,6 +249,15 @@
     "signal_many": "signals"
   },
 
+  "alertes_pill": {
+    "none_active": "No active alert",
+    "none_ended": "No ended alert",
+    "none_filters": "No signal for these filters",
+    "active_count": "{n} active alerts · {last}",
+    "ended_count": "{n} ended alerts · latest: {last}",
+    "signals_count": "{n} signals · most recent period: {last}"
+  },
+
   "ticker": {
     "label": "On the radar",
     "label_arrow": "On the radar ↗",

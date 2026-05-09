@@ -562,19 +562,16 @@
     var thr = graphData.meta.alert_thresholds || {};
     var lookbackDays = numOrNull(thr.lookback_days);
     if (lookbackDays === null) lookbackDays = 30;
+    var T = window.t || function(k){ return k; };
     var subtitleEl = document.getElementById('alertes-subtitle-window');
-    if (subtitleEl) subtitleEl.textContent = lookbackDays + ' derniers jours';
+    if (subtitleEl) subtitleEl.textContent = T('alertes.subtitle_window', { days: lookbackDays });
 
     box.innerHTML = ''
       + '<div class="alertes-methodology-line">'
-      + 'Une alerte signale un objet à la fois <em>inhabituel pour lui-même</em> '
-      + '(montée brusque vs ses ' + lookbackDays + ' derniers jours) <em>et réellement '
-      + 'visible</em> sur le radar (poids significatif vs le Top du pays). Trois '
-      + 'niveaux gradués : <strong>Veille</strong>, <strong>Alerte</strong>, '
-      + '<strong>Alerte forte</strong>.'
+      + T('alertes.methodology_intro', { days: lookbackDays })
       + '</div>'
       + '<a class="alertes-methodology-link" href="./methodologie.html#alertes">'
-      + 'Voir la méthodologie complète <span aria-hidden="true">→</span>'
+      + escapeHtml(T('alertes.methodology_link')) + ' <span aria-hidden="true">→</span>'
       + '</a>';
   }
 
@@ -651,16 +648,18 @@
   }
 
   function renderCard(alert) {
-    var levelLabel = LEVEL_LABELS[alert.level] || alert.level;
+    var T = window.t || function(k){ return k; };
+    var levelLabel = T('alertes.level_' + alert.level) || alert.level;
     var scoreStr   = alert.score !== null ? alert.score.toFixed(1) + '\u00d7' : '\u2014';
     var deltaStr   = alert.delta !== null ? (alert.delta >= 0 ? '+' : '') + alert.delta.toFixed(1) : '\u2014';
     var baselineStr = alert.baseline !== null ? alert.baseline.toFixed(2) : '\u2014';
     var peakRatioStr = alert.peakRatio !== null ? Math.round(alert.peakRatio * 100) + '%' : '\u2014';
-    var peakTitle = alert.yearPeak !== null ? 'Pic annuel: ' + alert.yearPeak.toFixed(2) : 'Pic annuel indisponible';
+    var peakTitle = alert.yearPeak !== null
+      ? T('alertes.card_peak_tip_year', { value: alert.yearPeak.toFixed(2) })
+      : T('alertes.card_peak_tip_none');
     var topShareStr = alert.topShare !== null ? Math.round(alert.topShare * 100) + '%' : '\u2014';
-    var topShareTitle = 'Part de la saillance du Top 1 du pays\u00b7p\u00e9riode. '
-      + 'Mesure l\u2019importance r\u00e9elle de l\u2019objet sur le radar maintenant.';
-    var countryStr = COUNTRY_LABELS[alert.country] || alert.country;
+    var topShareTitle = T('alertes.card_top_share_tip');
+    var countryStr = T('country.' + alert.country) || alert.country;
 
     var articlesHtml = '';
     var arts = alert.articles.slice(0, 3);
@@ -684,49 +683,43 @@
       +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
       + '</div>'
       + '<div class="alert-card-stats">'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">score z</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(topShareTitle) + '">' + escapeHtml(topShareStr) + '</span><span class="alert-card-stat-lbl">part du top</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(peakTitle) + '">' + escapeHtml(peakRatioStr) + '</span><span class="alert-card-stat-lbl">vs pic annuel</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">delta mentions</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(String(alert.n)) + '</span><span class="alert-card-stat-lbl">mentions</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_score')) + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(topShareTitle) + '">' + escapeHtml(topShareStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_top_share')) + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(peakTitle) + '">' + escapeHtml(peakRatioStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_peak_ratio')) + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_delta')) + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(String(alert.n)) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_mentions')) + '</span></div>'
       + '</div>'
       + (articlesHtml ? '<div class="alert-card-articles">' + articlesHtml + '</div>' : '')
-      + '<a class="alert-card-evo-link" href="' + escapeHtml(evoUrl) + '">Voir dans \u00c9volution \u2192</a>'
+      + '<a class="alert-card-evo-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.view_in_evolution')) + '</a>'
       + '</div>';
   }
 
   function updateLivePill(groups) {
     var text = document.getElementById('alertes-live-text');
     if (!text) return;
+    var T0 = window.t || function(k){ return k; };
     if (!groups.length) {
-      if (filterStatus === 'ended') {
-        text.textContent = 'Aucune alerte terminée';
-      } else if (filterStatus === 'all') {
-        text.textContent = 'Aucun signal pour ces filtres';
-      } else {
-        text.textContent = 'Aucune alerte en cours';
-      }
+      if (filterStatus === 'ended')      text.textContent = T0('alertes_pill.none_ended');
+      else if (filterStatus === 'all')   text.textContent = T0('alertes_pill.none_filters');
+      else                                text.textContent = T0('alertes_pill.none_active');
       return;
     }
 
+    var T = window.t || function(k){ return k; };
     var totalSignals = groups.reduce(function(acc, g) { return acc + g.alerts.length; }, 0);
+    var latestLbl = groups[0].period.label || groups[0].period.key;
     if (filterStatus === 'ended') {
-      text.textContent = totalSignals + ' alerte' + (totalSignals > 1 ? 's' : '') + ' terminée' + (totalSignals > 1 ? 's' : '')
-        + ' \u00b7 dernière: ' + (groups[0].period.label || groups[0].period.key);
+      text.textContent = T('alertes_pill.ended_count', { n: totalSignals, last: latestLbl });
       return;
     }
-
     if (filterStatus === 'all') {
-      text.textContent = totalSignals + ' signal' + (totalSignals > 1 ? 's' : '')
-        + ' \u00b7 période la plus récente: ' + (groups[0].period.label || groups[0].period.key);
+      text.textContent = T('alertes_pill.signals_count', { n: totalSignals, last: latestLbl });
       return;
     }
-
     var latestActive = groups.reduce(function(acc, g) {
       return acc + (g.alerts || []).filter(function(a) { return a.status === 'current'; }).length;
     }, 0);
-    text.textContent = latestActive + ' alerte' + (latestActive > 1 ? 's' : '') + ' en cours'
-      + ' \u00b7 ' + (groups[0].period.label || groups[0].period.key);
+    text.textContent = T('alertes_pill.active_count', { n: latestActive, last: latestLbl });
   }
 
   function updateEvolutionCta(groups) {
@@ -782,13 +775,11 @@
     updateEvolutionCta(groups);
 
     if (!groups.length) {
-      if (filterStatus === 'ended') {
-        container.innerHTML = '<div id="alertes-empty">Aucune alerte terminée pour les filtres sélectionnés.</div>';
-      } else if (filterStatus === 'current') {
-        container.innerHTML = '<div id="alertes-empty">Aucune alerte en cours pour les filtres sélectionnés.</div>';
-      } else {
-        container.innerHTML = '<div id="alertes-empty">Aucune alerte pour les filtres sélectionnés.</div>';
-      }
+      var Tc = window.t || function(k){ return k; };
+      var key = filterStatus === 'ended' ? 'alertes.no_alerts_ended'
+              : filterStatus === 'current' ? 'alertes.no_alerts_current'
+              : 'alertes.no_alerts_all';
+      container.innerHTML = '<div id="alertes-empty">' + escapeHtml(Tc(key)) + '</div>';
       return;
     }
 
@@ -797,16 +788,17 @@
       var g       = groups[gi];
       var count   = g.alerts.length;
       var latest = '';
+      var Th = window.t || function(k){ return k; };
       if (filterStatus === 'current' && g.isFirst) {
-        latest = '<span class="period-header-latest">En cours</span>';
+        latest = '<span class="period-header-latest">' + Th('common.in_progress') + '</span>';
       } else if (filterStatus === 'ended') {
-        latest = '<span class="period-header-latest">Terminée</span>';
+        latest = '<span class="period-header-latest">' + Th('common.ended') + '</span>';
       }
       var cards   = g.alerts.map(renderCard).join('');
       html += '<div class="period-group">'
         + '<div class="period-header">'
         +   '<span class="period-header-label">' + escapeHtml(g.period.label || g.period.key) + '</span>'
-        +   '<span class="period-header-count">'  + escapeHtml(String(count)) + ' signal' + (count > 1 ? 's' : '') + '</span>'
+        +   '<span class="period-header-count">'  + escapeHtml(String(count)) + ' ' + escapeHtml((window.t||function(k){return k;})(count > 1 ? 'alertes.signal_many' : 'alertes.signal_one')) + '</span>'
         +   latest
         + '</div>'
         + '<div class="alerts-grid">' + cards + '</div>'
@@ -819,6 +811,11 @@
   document.getElementById('filter-status').addEventListener('change',  function() { filterStatus  = this.value; render(); });
   document.getElementById('filter-level').addEventListener('change',   function() { filterLevel   = this.value; render(); });
   document.getElementById('filter-search').addEventListener('input',   function() { filterSearch  = this.value; render(); });
+
+  // Re-render au changement de langue (textes générés dynamiquement)
+  document.addEventListener('i18n:applied', function () {
+    if (graphData) render();
+  });
 
   loadData();
 })();
