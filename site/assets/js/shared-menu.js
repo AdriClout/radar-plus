@@ -181,7 +181,10 @@
      fortes et alertes de la période la plus récente.
   ================================================================ */
 
-  var ALERT_BAR_LEVELS = ['strong', 'alert'];
+  // Niveaux montrés dans le bandeau global. Ordre = priorité décroissante.
+  // Tsunami et éclipse sont les tiers qualitativement les plus alarmants;
+  // strong et alert sont les seuils classiques de "media storm".
+  var ALERT_BAR_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert'];
 
   function alertBarLabel(level) {
     if (window.t) {
@@ -331,9 +334,11 @@
       }
     }
 
-    // Trier: strong > alert, puis score desc
+    // Trier: tsunami > eclipse > strong > alert, puis score desc
+    var BAR_LEVEL_RANK = { tsunami: 0, eclipse: 1, strong: 2, alert: 3 };
     alerts.sort(function(a, b) {
-      var la = a.level === 'strong' ? 0 : 1, lb = b.level === 'strong' ? 0 : 1;
+      var la = BAR_LEVEL_RANK[a.level] !== undefined ? BAR_LEVEL_RANK[a.level] : 9;
+      var lb = BAR_LEVEL_RANK[b.level] !== undefined ? BAR_LEVEL_RANK[b.level] : 9;
       if (la !== lb) return la - lb;
       return (b.score || 0) - (a.score || 0);
     });
@@ -350,7 +355,7 @@
       return;
     }
 
-    bar.classList.remove('bar-strong', 'bar-alert');
+    bar.classList.remove('bar-tsunami', 'bar-eclipse', 'bar-strong', 'bar-alert');
     bar.classList.add('bar-' + alerts[0].level);
 
     // Toujours partir d'une seule copie de itemsHtml comme référence

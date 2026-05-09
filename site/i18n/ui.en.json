@@ -42,9 +42,12 @@
     "event_tag": "Event",
     "event_members": "{n} related entities",
     "level": {
+      "tsunami": "Media tsunami",
+      "eclipse": "Media eclipse",
       "strong": "Strong alert",
       "alert": "Alert",
       "watch": "Watch",
+      "surveillance": "Surveillance",
       "emerging": "Emerging"
     }
   },
@@ -234,9 +237,12 @@
     "status_ended": "Ended",
     "status_all": "All",
     "level_all": "All levels",
+    "level_tsunami": "Media tsunami",
+    "level_eclipse": "Media eclipse",
     "level_strong": "Strong alert",
     "level_alert": "Alert",
     "level_watch": "Watch",
+    "level_surveillance": "Surveillance",
     "level_emerging": "Emerging",
     "evo_cta": "View evolution over time",
     "evo_cta_aria": "View alert evolution",
@@ -271,12 +277,15 @@
     "no_alerts_current": "No active alert for the selected filters.",
     "no_alerts_ended": "No ended alert for the selected filters.",
     "no_alerts_all": "No alert for the selected filters.",
-    "methodology_intro": "An alert flags an object that is both <em>unusual for itself</em> (sharp rise vs its last {days} days) <em>and genuinely visible</em> on the radar (significant weight vs the country’s Top). Three graded levels: <strong>Watch</strong>, <strong>Alert</strong>, <strong>Strong alert</strong>.",
+    "methodology_intro": "An alert flags an object that is both <em>unusual for itself</em> (sharp rise vs its last {days} days) <em>and persistent over time</em>. Six graded levels: <strong>Surveillance</strong> (1 anomalous 4h block), <strong>Watch</strong> (≥ 8h), <strong>Alert</strong> (~1 day), <strong>Strong alert</strong> (≥ 2 days), <strong>Eclipse</strong> (≥ 2 days and ≥ 50% of Top), <strong>Media tsunami</strong> (≥ 3 days and ≥ 70% of Top).",
     "methodology_link": "View full methodology",
     "level_short": {
+      "tsunami": "Tsunami",
+      "eclipse": "Eclipse",
       "strong": "Strong",
       "alert": "Alert",
       "watch": "Watch",
+      "surveillance": "Surv.",
       "emerging": "Emerg."
     },
     "signal_one": "signal",

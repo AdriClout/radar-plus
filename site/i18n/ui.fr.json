@@ -42,9 +42,12 @@
     "event_tag": "Événement",
     "event_members": "{n} entités liées",
     "level": {
+      "tsunami": "Tsunami médiatique",
+      "eclipse": "Éclipse médiatique",
       "strong": "Alerte forte",
       "alert": "Alerte",
       "watch": "Veille",
+      "surveillance": "Surveillance",
       "emerging": "Émergent"
     }
   },
@@ -234,9 +237,12 @@
     "status_ended": "Terminées",
     "status_all": "Toutes",
     "level_all": "Tous niveaux",
+    "level_tsunami": "Tsunami médiatique",
+    "level_eclipse": "Éclipse médiatique",
     "level_strong": "Alerte forte",
     "level_alert": "Alerte",
     "level_watch": "Veille",
+    "level_surveillance": "Surveillance",
     "level_emerging": "Émergent",
     "evo_cta": "Voir l’évolution dans le temps",
     "evo_cta_aria": "Voir l’évolution des alertes",
@@ -271,12 +277,15 @@
     "no_alerts_current": "Aucune alerte en cours pour les filtres sélectionnés.",
     "no_alerts_ended": "Aucune alerte terminée pour les filtres sélectionnés.",
     "no_alerts_all": "Aucune alerte pour les filtres sélectionnés.",
-    "methodology_intro": "Une alerte signale un objet à la fois <em>inhabituel pour lui-même</em> (montée brusque vs ses {days} derniers jours) <em>et réellement visible</em> sur le radar (poids significatif vs le Top du pays). Trois niveaux gradués&nbsp;: <strong>Veille</strong>, <strong>Alerte</strong>, <strong>Alerte forte</strong>.",
+    "methodology_intro": "Une alerte signale un objet à la fois <em>inhabituel pour lui-même</em> (montée brusque vs ses {days} derniers jours) <em>et persistant dans le temps</em>. Six niveaux gradués&nbsp;: <strong>Surveillance</strong> (1 bloc 4h anormal), <strong>Veille</strong> (≥ 8h), <strong>Alerte</strong> (~1 jour), <strong>Alerte forte</strong> (≥ 2 jours), <strong>Éclipse</strong> (≥ 2 jours et ≥ 50% du Top), <strong>Tsunami médiatique</strong> (≥ 3 jours et ≥ 70% du Top).",
     "methodology_link": "Voir la méthodologie complète",
     "level_short": {
+      "tsunami": "Tsunami",
+      "eclipse": "Éclipse",
       "strong": "Fort",
       "alert": "Alerte",
       "watch": "Veille",
+      "surveillance": "Surv.",
       "emerging": "Émerg."
     },
     "signal_one": "signal",
