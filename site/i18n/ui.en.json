@@ -282,6 +282,22 @@
     "no_articles": "No recent headline."
   },
 
+  "doc_pages": {
+    "explore_section": "Explore",
+    "radarplus_lead": "Understanding what the media (really) puts forward.",
+    "methodologie_lead": "How Radar+ produces its media saliency indices.",
+    "link_radarplus": "Radar+",
+    "link_methodologie": "Methodology",
+    "link_constellation": "Constellation",
+    "link_evolution": "Evolution",
+    "link_alertes": "Alerts",
+    "link_acces_donnees": "Data access",
+    "link_partenaires": "Partners",
+    "link_unes": "On the radar",
+    "link_analyses": "Analyses",
+    "links_aria": "Radar+ links"
+  },
+
   "object_panel": {
     "saliency_score": "{score} pts · {mentions} mentions · {articles} article(s)",
     "view_in_evolution": "View in Evolution →",

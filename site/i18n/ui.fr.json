@@ -282,6 +282,22 @@
     "no_articles": "Aucune manchette récente."
   },
 
+  "doc_pages": {
+    "explore_section": "Explorer",
+    "radarplus_lead": "Comprendre ce que les médias mettent (vraiment) de l’avant.",
+    "methodologie_lead": "Comment Radar+ produit ses indices de saillance médiatique.",
+    "link_radarplus": "Radar+",
+    "link_methodologie": "Méthodologie",
+    "link_constellation": "Constellation",
+    "link_evolution": "Évolution",
+    "link_alertes": "Alertes",
+    "link_acces_donnees": "Accès aux données",
+    "link_partenaires": "Partenaires",
+    "link_unes": "Dans le radar",
+    "link_analyses": "Analyses",
+    "links_aria": "Liens Radar+"
+  },
+
   "object_panel": {
     "saliency_score": "{score} pts · {mentions} mentions · {articles} article(s)",
     "view_in_evolution": "Voir dans Évolution →",

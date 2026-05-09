@@ -163,6 +163,11 @@
   vertical-align: middle;
 }
 
+/* Toggle bilingue pour pages text long: éléments avec data-lang="fr"
+   visibles uniquement quand <html lang="fr">, idem pour "en". */
+html[lang="fr"] [data-lang="en"] { display: none !important; }
+html[lang="en"] [data-lang="fr"] { display: none !important; }
+
 /* Logo GitHub à la place du texte — dernier item du nav */
 .side-nav a.nav-github {
   padding: 14px 0;

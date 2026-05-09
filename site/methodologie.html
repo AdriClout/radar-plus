@@ -238,15 +238,16 @@
 
   <main class="wrap">
     <header class="top">
-      <a class="back" href="./index.html">Retour accueil</a>
-      <h1 class="title">Méthodologie</h1>
+      <a class="back" href="./index.html" data-i18n="common.back_home">Retour accueil</a>
+      <h1 class="title" data-i18n="page_title.methodologie">Méthodologie</h1>
     </header>
 
-    <section class="lead">
+    <section class="lead" data-i18n="doc_pages.methodologie_lead">
       Comment Radar+ produit ses indices de saillance médiatique.
     </section>
 
     <section class="doc" aria-label="Contenu méthodologique Radar+">
+<div data-lang="fr">
 <h2 id="sommaire">Sommaire</h2>
 <ol type="1">
 <li>Cadre conceptuel</li>
@@ -601,16 +602,328 @@
 <li id="fn27" role="doc-endnote"><p>CLESSN (en préparation). Publication méthodologique sur Radar+ : indices de saillance et applications dans le contexte canadien. <em>À paraître</em>.<a href="#fnref27" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
+</div>
+<div data-lang="en">
+<h2 id="en-sommaire">Contents</h2>
+<ol type="1">
+<li>Conceptual framework</li>
+<li>Collection architecture</li>
+<li>Identification of media objects</li>
+<li>Measuring saliency: three dimensions</li>
+<li>Index calculation</li>
+<li>Time windows</li>
+<li>Validation and reliability</li>
+<li>Methodological limits</li>
+<li>Reproducibility and data access</li>
+<li><a href="#en-alertes">Saliency alerts</a></li>
+<li>Sources</li>
+</ol>
+<hr />
+<h2 id="en-cadre-conceptuel">1. Conceptual framework</h2>
+<h3 id="en-saillance-definition">1.1 Media saliency: an operational definition</h3>
+<p><strong>Saliency</strong> is defined in scientific literature as the <strong>predominance of an issue or question in a given sphere</strong><a href="#en-fn1" class="footnote-ref" id="en-fnref1" role="doc-noteref"><sup>1</sup></a> <a href="#en-fn2" class="footnote-ref" id="en-fnref2" role="doc-noteref"><sup>2</sup></a>. Applied to the media, it captures the importance media outlets give to a story, an event, an issue, a person or a group. Media saliency is used in the literature as a proxy for public opinion<a href="#en-fn3" class="footnote-ref" id="en-fnref3" role="doc-noteref"><sup>3</sup></a> <a href="#en-fn4" class="footnote-ref" id="en-fnref4" role="doc-noteref"><sup>4</sup></a> <a href="#en-fn5" class="footnote-ref" id="en-fnref5" role="doc-noteref"><sup>5</sup></a>, as a proxy for the political sphere<a href="#en-fn6" class="footnote-ref" id="en-fnref6" role="doc-noteref"><sup>6</sup></a> <a href="#en-fn7" class="footnote-ref" id="en-fnref7" role="doc-noteref"><sup>7</sup></a>, or as a mechanism of selection and framing of information<a href="#en-fn8" class="footnote-ref" id="en-fnref8" role="doc-noteref"><sup>8</sup></a>.</p>
+<h3 id="en-deux-types">1.2 Two types of saliency</h3>
+<p>Radar+ articulates its measurement around <strong>two complementary axes</strong>:</p>
+<ul>
+<li><p><strong>Vertical saliency</strong> — the <strong>positioning of stories</strong> on the home page of an outlet. A “front-page” story, defined as the most prominent on the page, is more salient than the one below it, which itself is more salient than the next. This is the saliency the indices compute continuously.</p></li>
+<li><p><strong>Horizontal saliency</strong> — the <strong>relative importance of outlets between each other</strong> in a given media ecosystem. Not all media outlets in a territory weigh equally: some shape the public agenda more than others. This saliency is reflected in the <strong>choice of tracked outlets</strong> (see §2 Collection architecture).</p></li>
+</ul>
+<p>The central goal of Radar+ is therefore not to collect the entire output of every outlet in a territory, but rather to <strong>store the most salient stories (vertical saliency) of the most salient outlets (horizontal saliency)</strong>.</p>
+<h3 id="en-pourquoi-page-accueil">1.3 Why the home page</h3>
+<p>The home page is the <strong>editorial showcase</strong> of an outlet: it is where the newsroom continuously decides what deserves to be seen first, biggest, and longest. It therefore explicitly reflects editorial priorities — far more directly than a simple count of articles published. This approach is in line with foundational <em>agenda-setting</em> work<a href="#en-fn9" class="footnote-ref" id="en-fnref9" role="doc-noteref"><sup>9</sup></a> <a href="#en-fn10" class="footnote-ref" id="en-fnref10" role="doc-noteref"><sup>10</sup></a>, which establishes that the media shape public priorities less by what they say than by what they put forward<a href="#en-fn11" class="footnote-ref" id="en-fnref11" role="doc-noteref"><sup>11</sup></a>.</p>
+<h3 id="en-articulation-theorique">1.4 Theoretical framing</h3>
+<p>Three bodies of literature frame the approach:</p>
+<ul>
+<li><strong>Agenda-setting</strong><a href="#en-fn12" class="footnote-ref" id="en-fnref12" role="doc-noteref"><sup>12</sup></a> <a href="#en-fn13" class="footnote-ref" id="en-fnref13" role="doc-noteref"><sup>13</sup></a>: the media tell us what to think about more than what to think.</li>
+<li><strong>Media fragmentation</strong><a href="#en-fn14" class="footnote-ref" id="en-fnref14" role="doc-noteref"><sup>14</sup></a>: in a saturated and hybrid environment<a href="#en-fn15" class="footnote-ref" id="en-fnref15" role="doc-noteref"><sup>15</sup></a>, editorial choices diverge and feed audiences with distinct frames of reference.</li>
+<li><strong>Saliency as a measurable object</strong><a href="#en-fn16" class="footnote-ref" id="en-fnref16" role="doc-noteref"><sup>16</sup></a>: rigorously measuring what each outlet puts forward makes it possible to quantify previously intuitive asymmetries.</li>
+</ul>
+<hr />
+<h2 id="en-architecture">2. Collection architecture</h2>
+<h3 id="en-capture-continue">2.1 Continuous capture</h3>
+<p>Radar+ development began in <strong>September 2018</strong> within CLESSN. The first public version was deployed in <strong>September 2019</strong> for the Canadian federal election, with a dedicated website and daily social media posts. Since then, without interruption, an automated system photographs <strong>every 10 minutes</strong> the home page of every tracked outlet. For each capture, the system retains:</p>
+<ul>
+<li>the full <strong>HTML structure</strong> of the page;</li>
+<li>the <strong>relative position</strong> of each article (grid coordinates, hierarchical level);</li>
+<li>the associated <strong>visual elements</strong> (title, kicker, presence of a photo, block size);</li>
+<li>the precise <strong>timestamp</strong>.</li>
+</ul>
+<p>This 10-minute granularity is a compromise between fidelity to editorial dynamics (front pages can change several times in an hour during fast-moving events) and storage costs. Across nearly seven years, the archive accumulates more than <strong>5 million captures</strong>.</p>
+<h3 id="en-medias-suivis">2.2 Tracked outlets</h3>
+<p>At the time of the public site’s release, Radar+ collects the home pages of <strong>15 active outlets</strong> distributed as follows:</p>
+<ul>
+<li><strong>Quebec (6)</strong>: Radio-Canada, La Presse, Le Devoir, TVA Nouvelles, Journal de Montréal, Montreal Gazette</li>
+<li><strong>English Canada (7)</strong>: CBC, CTV News, Global News, Toronto Star, The Globe and Mail, National Post, Vancouver Sun</li>
+<li><strong>United States (2)</strong>: CNN, Fox News</li>
+</ul>
+<p>Other U.S. sources (<em>The New York Times</em>, <em>The Wall Street Journal</em>) were tracked in the past then disconnected, mainly due to access constraints and paywall changes. Expansion into British, French and Belgian outlets is underway, which will bring coverage to <strong>41 outlets</strong> in the long run.</p>
+<h3 id="en-criteres-selection">2.3 Source selection criteria</h3>
+<p>Outlet selection follows the <strong>horizontal saliency</strong> postulate (§1.2): the goal is to retain the most structuring outlets in an ecosystem, not the exhaustive set. For each media ecosystem, <strong>3 to 10 sources</strong> are retained according to <strong>four criteria</strong> approved by CLESSN’s scientific committee<a href="#en-fn17" class="footnote-ref" id="en-fnref17" role="doc-noteref"><sup>17</sup></a>:</p>
+<p><strong>1. Reliability.</strong> Outlets must publish journalistic news (no tabloids). Adding a source is supported by reliable academic sources justifying its professionalism. Outlet reliability is critical for audience trust, with reliable sources being more persuasive to readers<a href="#en-fn18" class="footnote-ref" id="en-fnref18" role="doc-noteref"><sup>18</sup></a>. According to Miller and Peterson, four dimensions characterize attitude strength: <strong>importance, accessibility, ambivalence and certainty</strong><a href="#en-fn19" class="footnote-ref" id="en-fnref19" role="doc-noteref"><sup>19</sup></a>. Articles in newspapers and news websites display a higher level of quality and reliability than other sources such as radio, television or social media<a href="#en-fn20" class="footnote-ref" id="en-fnref20" role="doc-noteref"><sup>20</sup></a>.</p>
+<p><strong>2. Diversity.</strong> Selected outlets must together represent the diversity of an ecosystem’s public: a range of <strong>ideological positions, languages, cultures and political orientations</strong>. The media exercise a power of selection and framing<a href="#en-fn21" class="footnote-ref" id="en-fnref21" role="doc-noteref"><sup>21</sup></a> that orients the perception of public debates; multiplying angles avoids the partial selection of information<a href="#en-fn22" class="footnote-ref" id="en-fnref22" role="doc-noteref"><sup>22</sup></a>. Some outlets’ partiality and biases have a significant impact on public opinion, especially when audiences do not perceive these leanings.</p>
+<p><strong>3. Reach.</strong> Selected outlets must have a <strong>broad audience</strong> in their ecosystem. Over time, the media have become centralizers of opinions and collective values, structuring social solidarity and shared interpretation of the world<a href="#en-fn23" class="footnote-ref" id="en-fnref23" role="doc-noteref"><sup>23</sup></a>. The more popular an outlet becomes, the larger its audience grows and the louder its voice with political institutions, all of which shapes its saliency. To quantify audience, <strong>reliable national sources</strong> (e.g., the CRTC in Canada) are consulted.</p>
+<p><strong>4. Format.</strong> Radar+ outlets aim for a <strong>balance between formats</strong>: print newspapers, radio, television and digital media. All must, however, have an active news home page to allow continuous collection (audio content collection is in development). Media format influences the available content (a newspaper goes deeper than a time-constrained TV bulletin<a href="#en-fn24" class="footnote-ref" id="en-fnref24" role="doc-noteref"><sup>24</sup></a>) and how news is memorized by audiences<a href="#en-fn25" class="footnote-ref" id="en-fnref25" role="doc-noteref"><sup>25</sup></a>. Online and print outlets have a comparable impact on public opinion but through different mechanisms and on distinct groups<a href="#en-fn26" class="footnote-ref" id="en-fnref26" role="doc-noteref"><sup>26</sup></a>: balancing formats therefore improves the representation of a territory’s social realities.</p>
+<blockquote>
+<p><strong>Key takeaway</strong> — every media ecosystem has its specificities. Selection remains flexible and accommodating, but must always serve the central objective: highlighting <strong>saliency</strong> as a determining factor.</p>
+</blockquote>
+<h3 id="en-infrastructure">2.4 Technical infrastructure</h3>
+<p>Data is archived and processed on a <strong>cloud infrastructure (Amazon Web Services)</strong> since 2024, with separate development, acceptance and production environments. The processing pipeline runs on the <strong>Ellipse</strong> platform of CLESSN, which mutualizes technical tools across the modules of the Democratic Showcase (Polimètre+, Radar+, Agora+).</p>
+<hr />
+<h2 id="en-objets">3. Identification of media objects</h2>
+<h3 id="en-objet-definition">3.1 Definition of a media object</h3>
+<p>A <strong>media object</strong> is a named entity, identifiable and tracked over time. Four broad categories are retained:</p>
+<ul>
+<li><strong>People</strong>: politicians, leaders, public personalities (e.g., <em>Donald Trump</em>, <em>Mark Carney</em>);</li>
+<li><strong>Issues</strong>: political and social topics (e.g., <em>immigration</em>, <em>climate</em>, <em>economy</em>);</li>
+<li><strong>Institutions and organizations</strong>: (e.g., <em>Supreme Court</em>, <em>Hydro-Québec</em>, <em>Hamas</em>);</li>
+<li><strong>Places</strong>: (e.g., <em>Ottawa</em>, <em>Kyiv</em>, <em>Gaza</em>).</li>
+</ul>
+<h3 id="en-pipeline">3.2 Extraction pipeline</h3>
+<p>For each capture, two AI models running <strong>entirely locally</strong> (no calls to external APIs, neither OpenAI nor Anthropic) process headlines and article leads:</p>
+<ol type="1">
+<li><p><strong>Named entity recognition</strong> — <strong>GLiNER</strong> (<em>Generalist and Lightweight Model for Named Entity Recognition</em>), an open zero-shot NER model, identifies all entities in each headline without relying on a closed dictionary. This approach detects emerging objects — a new political actor, an unexpected crisis, a portmanteau specific to an event — that no researcher would have thought to include in advance.</p></li>
+<li><p><strong>Bilingual normalization</strong> — <strong>Gemma 3</strong>, an open-weight language model from Google DeepMind run locally, harmonizes variants of the same object (<em>Donald J. Trump</em>, <em>Trump</em>, <em>the U.S. president</em>) and resolves French–English correspondences (<em>Cour suprême</em> / <em>Supreme Court</em>; <em>changements climatiques</em> / <em>climate change</em>). This step is crucial to rigorously compare the saliency of the same object across outlets in different languages.</p></li>
+</ol>
+<p>Local execution guarantees data sovereignty, the absence of commercial dependency, scientific reproducibility, and full control over processing costs.</p>
+<h3 id="en-validation">3.3 Human validation</h3>
+<p>The models are subject to <strong>continuous human validation</strong>. A benchmark of about <strong>1,500 manually annotated sentences</strong> is used to calibrate model prediction thresholds, measure their level of agreement with human judgment, and guide successive adjustments during updates.</p>
+<hr />
+<h2 id="en-mesure-saillance">4. Measuring saliency: three dimensions</h2>
+<p>For each object identified on a given capture, three dimensions are measured.</p>
+<h3 id="en-position">4.1 Position</h3>
+<p>The <strong>position</strong> indicates where the object appears on the home page. It is computed from the coordinates of the corresponding HTML element and ranked according to the outlet’s editorial logic (top zone, main block, secondary columns, bottom of page). An object at the top of the page receives a higher weighting than one at the bottom. This dimension corresponds directly to the <strong>vertical saliency</strong> postulate (§1.2).</p>
+<h3 id="en-taille">4.2 Size</h3>
+<p>The <strong>size</strong> measures the space the object occupies: title length, presence and size of an associated photo, dimension of the HTML block. A <em>banner headline</em> with a main image does not weigh the same as a simple blurb in a column.</p>
+<h3 id="en-duree">4.3 Duration</h3>
+<p>The <strong>duration</strong> captures the object’s persistence over time. Since captures occur every 10 minutes, we can precisely track how long an object remains on the home page — a few minutes, several hours, full days — and reconstruct its complete <strong>trajectory</strong>. Concretely, each headline is assigned a number of front-page minutes (<code>headline_minutes</code>), which then becomes the raw material for index calculation (§5).</p>
+<h3 id="en-textuels">4.4 For researchers: complementary textual indicators</h3>
+<blockquote>
+<p>Alongside the three visual dimensions above (position, size, duration), the research work associated with Radar+ develops finer <strong>textual indicators</strong>, computed from the content of headlines and articles: <strong>life span</strong> (how long a topic persists in coverage), <strong>tone</strong> (positive, neutral or negative orientation of treatment), and <strong>intensity</strong> (density of coverage over a given period). These indicators feed in-depth scientific analyses (see §10) and will progressively be integrated into the public interface. They do not replace the visual dimensions but complement them: the former measure what the outlet <strong>displays</strong>, the latter what the coverage <strong>says</strong>.</p>
+</blockquote>
+<hr />
+<h2 id="en-calcul-indices">5. Index calculation</h2>
+<p>The base unit of calculation is the <strong>4-hour block (UTC)</strong>. The day is divided into six blocks (00–04, 04–08, 08–12, 12–16, 16–20, 20–24); for each block, for each country, for each identified object, an absolute index is calculated. This 4-hour block is fine-grained enough to follow the news in near real-time, and broad enough to absorb editorial variability across outlets.</p>
+<h3 id="en-ponderation">5.1 Outlet weighting</h3>
+<p>Not all outlets treat their headlines the same way. Some leave a story on the front for several hours, others rotate their home page rapidly. To make comparisons fair, Radar+ computes for each outlet its <strong>average front-page duration</strong> (<code>mean_time</code>, in minutes) over a rolling 3-month window.</p>
+<p>As an indicative snapshot, here are these average durations:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Outlet</th>
+<th style="text-align: right;">Average front-page duration (min)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd"><td>La Presse</td><td style="text-align: right;">120.9</td></tr>
+<tr class="even"><td>TVA Nouvelles</td><td style="text-align: right;">125.0</td></tr>
+<tr class="odd"><td>Journal de Montréal</td><td style="text-align: right;">143.0</td></tr>
+<tr class="even"><td>Fox News</td><td style="text-align: right;">146.1</td></tr>
+<tr class="odd"><td>CBC</td><td style="text-align: right;">159.5</td></tr>
+<tr class="even"><td>Radio-Canada</td><td style="text-align: right;">160.0</td></tr>
+<tr class="odd"><td>Toronto Star</td><td style="text-align: right;">221.3</td></tr>
+<tr class="even"><td>CTV News</td><td style="text-align: right;">227.9</td></tr>
+<tr class="odd"><td>Montreal Gazette</td><td style="text-align: right;">241.4</td></tr>
+<tr class="even"><td>Le Devoir</td><td style="text-align: right;">241.8</td></tr>
+<tr class="odd"><td>National Post</td><td style="text-align: right;">249.0</td></tr>
+<tr class="even"><td>CNN</td><td style="text-align: right;">296.2</td></tr>
+<tr class="odd"><td>The Globe and Mail</td><td style="text-align: right;">325.9</td></tr>
+<tr class="even"><td>Global News</td><td style="text-align: right;">375.4</td></tr>
+<tr class="odd"><td>Vancouver Sun</td><td style="text-align: right;">505.3</td></tr>
+</tbody>
+</table>
+<p>From this base, two weightings are computed for each headline:</p>
+<ul>
+<li>the <strong>intra-outlet weighting</strong>: <code>pond_time = headline_minutes / mean_time_outlet</code>, which scales front-page time relative to the outlet’s average;</li>
+<li>the <strong>inter-outlet weighting</strong>: <code>pond_time_norm = headline_minutes / mean_time_global</code>, which scales the same time relative to the global average across all outlets (<strong>≈ 235.9 min</strong> for the 15 active outlets).</li>
+</ul>
+<p>It is the <strong>inter-outlet</strong> weighting that is used for public indices, because it allows rigorous comparison across outlets with different editorial paces — a 60-minute <em>banner headline</em> at <em>La Presse</em> (where rotation is fast) thus receives a different weight than a 60-minute one at the <em>Vancouver Sun</em> (where stability is long).</p>
+<h3 id="en-indice-absolu">5.2 Absolute saliency index</h3>
+<p>The <strong>absolute index</strong> of an object, on a 4-hour block, combines two components: the <strong>frequency</strong> of the object’s appearance (number of headlines mentioning it), and the <strong>sum of inter-outlet weightings</strong> of the matching headlines. More formally:</p>
+<blockquote>
+<p><code>absolute_normalized_index = n × Σ pond_time_norm</code></p>
+</blockquote>
+<p>where <code>n</code> is the number of headlines mentioning the object in the block, and <code>Σ pond_time_norm</code> is the sum of inter-outlet weightings of those headlines.</p>
+<p>This index therefore captures <strong>both frequency and insistence</strong>: a topic on many outlets briefly gets a high score; a topic on a single outlet for a long time also does. Both regimes are recognized.</p>
+<p>The absolute index then accumulates by simple addition across 4-hour blocks to produce <strong>daily, weekly, monthly and yearly</strong> scores.</p>
+<h3 id="en-indice-relatif">5.3 Relative saliency index</h3>
+<p>The <strong>relative index</strong> of an object, over a given time window, is expressed as a <strong>percentage of the total saliency</strong> for that window:</p>
+<blockquote>
+<p><code>relative_normalized_index = (absolute_normalized_index_object / Σ absolute_normalized_index_all_objects) × 100</code></p>
+</blockquote>
+<p>All relative values for a window therefore sum to 100%. This normalization allows <strong>comparisons</strong>:</p>
+<ul>
+<li>across different periods (a quiet month vs. an electoral month);</li>
+<li>across different outlets (climate saliency at Radio-Canada vs. TVA Nouvelles);</li>
+<li>across different media universes (Quebec vs. English Canada vs. United States).</li>
+</ul>
+<p>For rankings (Hot 20), some highly encompassing geographic objects — such as “quebec”, “montreal”, “canada” — are excluded, because they almost always appear at the top without a true editorial signal.</p>
+<h3 id="en-pourquoi-deux">5.4 Why two indices</h3>
+<p>The <strong>absolute</strong> index keeps track of an event’s real intensity; the <strong>relative</strong> index makes comparisons rigorous. Both are needed to answer different questions: <em>How dominant was this topic?</em> vs. <em>Compared to what?</em></p>
+<hr />
+<h2 id="en-fenetres">6. Time windows</h2>
+<p>Radar+ allows analyzing indices through several <strong>time windows</strong>, which correspond to different questions:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Window</th>
+<th>Construction</th>
+<th>Typical question</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>4 hours</strong></td>
+<td>Base block (calculation unit)</td>
+<td>What’s happening right now? Which objects are emerging?</td>
+</tr>
+<tr class="even">
+<td><strong>1 day</strong></td>
+<td>6 blocks of 4h</td>
+<td>What are the day’s priorities?</td>
+</tr>
+<tr class="odd">
+<td><strong>1 week</strong></td>
+<td>42 blocks of 4h (6 × 7)</td>
+<td>What is the weekly trend? Who is the “winner of the week”?</td>
+</tr>
+<tr class="even">
+<td><strong>1 month</strong></td>
+<td>~180 blocks</td>
+<td>Which topics dominated the past month?</td>
+</tr>
+<tr class="odd">
+<td><strong>1 year</strong></td>
+<td>~2,190 blocks</td>
+<td>What are the broad annual lines of coverage?</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>weekly</strong> window is computed from a configurable cutoff (default <strong>Friday 16:00 UTC</strong>), chosen to minimize weekend artifacts. The choice of window strongly influences interpretations: a topic can rank first on a 4h block without making the weekly top 20.</p>
+<hr />
+<h2 id="en-validation-fiabilite">7. Validation and reliability</h2>
+<h3 id="en-fiabilite">7.1 Reliability rate</h3>
+<p>The current infrastructure (in production since 2024) reaches a reliability rate <strong>above 95%</strong> across the 15 active outlets. This rate is measured from:</p>
+<ul>
+<li>the <strong>completeness of captures</strong> (percentage of 10-minute slots actually archived);</li>
+<li>the <strong>quality of media object extraction</strong> (agreement rate with the human benchmark);</li>
+<li>the <strong>stability of bilingual normalization</strong> (consistency of entity groupings across languages).</li>
+</ul>
+<h3 id="en-completude">7.2 Temporal completeness thresholds</h3>
+<p>Weekly analyses (Hot 20 in particular) rest on a theoretical expectation of <strong>42 blocks of 4 hours per week</strong> (6 per day × 7 days). A configurable minimum threshold — by default <strong>39 of 42 blocks</strong> (≈ 93%) — is used to validate data completeness before publication. When a week shows fewer blocks than this threshold, the system records the incompleteness in logs and continues processing with the available data, rather than blocking publication. This tolerance preserves continuity in the face of minor technical interruptions while explicitly signaling the quality degradation.</p>
+<h3 id="en-maturation">7.3 Technical maturation and historical continuity</h3>
+<p>Four successive overhauls of the technical infrastructure took place between 2019 and 2024, each aimed at improving robustness, coverage and precision. Data prior to 2024 (older versions) is preserved and used with the corresponding methodological precautions; the <strong>normalized format from the 2024 overhaul serves as the reference</strong> for current public analyses.</p>
+<h3 id="en-benchmark">7.4 Human benchmark</h3>
+<p>For each major model update, a sample of captures is subject to <strong>manual annotation</strong> by several team members. The <strong>inter-annotator agreement rate</strong> is used to assess the benchmark’s solidity, and divergences are arbitrated before integration into model thresholds.</p>
+<hr />
+<h2 id="en-limites">8. Methodological limits</h2>
+<p>No measurement is neutral. Radar+ asserts its rigor by also exposing its limits.</p>
+<h3 id="en-page-pas-totale">8.1 The home page is not the total coverage</h3>
+<p>Radar+ measures what an outlet <strong>puts in the window</strong>, not the entirety of what it publishes. A topic may receive several articles relegated to interior sections without ever appearing on the home page. For this reason, Radar+ should be interpreted as a measure of <strong>foregrounded editorial priorities</strong>, not as an exhaustive census of journalistic production.</p>
+<h3 id="en-biais-selection">8.2 Outlet selection bias</h3>
+<p>The tracked corpus is bounded (15 outlets, mostly print and English/French). Outlets broadcast mainly on radio or television (without an active journalistic home page) are not covered; nor are hyperlocal outlets and emerging spaces (social media, newsletters).</p>
+<h3 id="en-imperfection-ia">8.3 AI model imperfection</h3>
+<p>Entity recognition and normalization, although validated by a human benchmark, remain imperfect. <strong>Homonyms</strong>, <strong>emerging entities</strong> and <strong>ambiguous objects</strong> (for example, a name shared by several personalities) can introduce residual errors. The team publicly documents these cases and revises the models periodically.</p>
+<h3 id="en-comparabilite">8.4 Cross-language comparability</h3>
+<p>Comparing the saliency of an object in French and English assumes perfect normalization of variants — a goal actively pursued but never fully reached. Cross-language comparisons must be interpreted with this caveat.</p>
+<h3 id="en-effet-plateforme">8.5 Platform effect</h3>
+<p>Each outlet structures its home page differently. Normalizing positions and sizes across heterogeneous editorial architectures involves design choices that are documented but remain <strong>methodological conventions</strong>, not absolute truths.</p>
+<hr />
+<h2 id="en-reproductibilite">9. Reproducibility and data access</h2>
+<h3 id="en-code-ouvert">9.1 Open code</h3>
+<p>The Radar+ code — capture pipelines, AWS Lambda refiners, extraction models, index calculations, visualizations — is versioned and stored on the <strong>CLESSN GitHub</strong> (<a href="https://github.com/clessn">github.com/clessn</a>) and on <strong>Ellipse Sciences</strong> (<a href="https://github.com/ellipse-science">github.com/ellipse-science</a>), the shared technical platform that hosts Democratic Showcase tools. The R package <strong><code>tube</code></strong> (<a href="https://github.com/ellipse-science/tube">github.com/ellipse-science/tube</a>) is used to interact with datalakes and datamarts. The scientific community is invited to inspect, report issues and propose improvements.</p>
+<h3 id="en-acces">9.2 Data access</h3>
+<p>Researchers interested in using the corpus for analytical purposes can request access via the <strong>data access form</strong> available on radarplus.org. Access modalities are designed to respect both scientific openness and contractual obligations with source outlets. Data is available at several levels of processing: raw captures (archived home pages), intermediate tables (extracted objects, indices per 4h block), and aggregated tables (Hot 20, weekly/monthly/yearly rankings).</p>
+<h3 id="en-citer">9.3 Citing Radar+</h3>
+<p>A stable reference is provided to cite the tool in a scientific publication. The recommended form is:</p>
+<blockquote>
+<p>CLESSN (2026). <em>Radar+: Media saliency measurement tool</em>. Université Laval. <a href="https://radarplus.org">https://radarplus.org</a></p>
+</blockquote>
+<p>A detailed methodological publication<a href="#en-fn27" class="footnote-ref" id="en-fnref27" role="doc-noteref"><sup>27</sup></a> is in preparation and will complete the official documentation.</p>
+<hr />
+<h2 id="en-alertes">10. Saliency alerts</h2>
+<p>The <strong>saliency alerts</strong> automatically detect objects whose media coverage shifts abruptly <em>and</em> that genuinely weigh on the radar. Three graded levels are published continuously: <strong>Watch</strong> (weak signal), <strong>Alert</strong> (marked signal), <strong>Strong alert</strong> (major signal). The logic combines four complementary filters.</p>
+
+<h3 id="en-anomalie">10.1 Statistical anomaly (robust z-score)</h3>
+<p>For each object and each 4h period, the current saliency is compared to the <strong>rolling median</strong> and the <strong>MAD</strong> (median absolute deviation) of the past 30 days on the same time slice. The robust z-score is:</p>
+<blockquote>
+<p>z = (log(current saliency + 1) − log median) / max(log MAD, scale floor)</p>
+</blockquote>
+<p>Using <code>log1p</code> makes the score symmetric between rises and falls, and median + MAD are resistant to extreme values (old peaks do not saturate the measure). The scale floor (default 0.08 on the log basis) prevents z-score explosions on near-constant series.</p>
+<p>Graded thresholds: <strong>Watch z ≥ 1.8</strong>, <strong>Alert z ≥ 2.6</strong>, <strong>Strong alert z ≥ 3.8</strong>. These values are calibrated to produce a reasonable number of alerts on current corpora (CAN, QC, USA) without drowning the signal.</p>
+
+<h3 id="en-importance">10.2 Importance vs. the radar (share of Top)</h3>
+<p>The z-score alone detects <em>anomalies for the object itself</em> — a normally absent object jumping to 1.0 sees its z climb quickly, without weighing in real coverage. For an alert to also signal something <strong>visible</strong> on the radar, we compute the <strong>share of Top</strong>:</p>
+<blockquote>
+<p>top_share = current saliency / Top 1 saliency for the country·period</p>
+</blockquote>
+<p>If the share is insufficient, the alert level is <strong>downgraded by one notch</strong> (Strong → Alert → Watch → none). Default thresholds: <strong>Watch ≥ 10%</strong>, <strong>Alert ≥ 20%</strong>, <strong>Strong alert ≥ 35%</strong>. An object whose anomaly is highly significant but only weighs 5% of the Top will not appear as an alert — an editorial choice favoring signals that are <em>actually consumed</em> by the public.</p>
+
+<h3 id="en-pic-annuel">10.3 Own annual peak + absolute floor</h3>
+<p>Two additional safeguards complete the classification:</p>
+<ul>
+<li><strong>Ratio vs. annual peak</strong>: current saliency must represent at least a fraction of <em>the peak reached by the object during the current year</em>. Default thresholds: 15% (Watch), 30% (Alert), 55% (Strong). Prevents an object whose historical peak is long past from re-triggering an alert on a tiny rebound.</li>
+<li><strong>Absolute saliency floor</strong>: current saliency must exceed a minimum threshold (default 1.0). Filters out objects so weakly present that their signal stays below editorial noise.</li>
+</ul>
+
+<h3 id="en-mentions">10.4 Minimum mentions</h3>
+<p>An alert requires a minimum number of <strong>distinct outlets</strong> that have covered the object in the current period: <strong>2 (Watch)</strong>, <strong>3 (Alert)</strong>, <strong>4 (Strong alert)</strong>. This constraint prevents a single outlet hammering a topic from triggering an ecosystem-wide alert on its own.</p>
+
+<h3 id="en-fenetre">10.5 Calculation window and latency</h3>
+<p>The 30-day rolling window translates to <strong>180 periods of 4h</strong>. A minimum history of 18 periods (≈ 3 days) is required before a robust score can be computed — below that, emerging objects receive a distinct <em>Emerging</em> status, signaling simply their arrival. All alert metrics (score, baseline, ratio vs. peak, share of Top, mentions, level, active state) are published per object and per period in <code>graph.json</code> and <code>timeseries.json</code>, and refreshed automatically every 4h cycle.</p>
+
+<h3 id="en-portee">10.6 Scope and limits</h3>
+<p>Alerts are designed as a <strong>signal of editorial priority</strong>, not as a quality or veracity judgment. A detected rise signals that <em>media coverage is shifting</em>, never that the object is necessarily more important or true. Threshold values are available in cleartext in the data (<code>meta.alert_thresholds</code>) and can be readjusted by configuration without touching calculation code.</p>
+
+<hr />
+<h2 id="en-sources">11. Sources</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="en-fn1" role="doc-endnote"><p>Krosnick, J. A., Boninger, D. S., Chuang, Y. C., Berent, M. K., &amp; Carnot, C. G. (1993). Attitude strength: One construct or many related constructs? <em>Journal of Personality and Social Psychology</em>, 65(6), 1132–1151. <a href="https://doi.org/10.1037/0022-3514.65.6.1132">https://doi.org/10.1037/0022-3514.65.6.1132</a><a href="#en-fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn2" role="doc-endnote"><p>Miller, J. M., &amp; Peterson, D. A. M. (2004). Theoretical and empirical implications of attitude strength. <em>The Journal of Politics</em>, 66(3), 847–867. <a href="https://doi.org/10.1111/j.1468-2508.2004.00282.x">https://doi.org/10.1111/j.1468-2508.2004.00282.x</a><a href="#en-fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn3" role="doc-endnote"><p>Lewis-Beck, M. S., Jacoby, W. G., Norpoth, H., &amp; Weisberg, H. F. (2008). <em>The American voter revisited</em>. University of Michigan Press. <a href="https://www.press.umich.edu/206390/american_voter_revisited">https://www.press.umich.edu/206390/american_voter_revisited</a><a href="#en-fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn4" role="doc-endnote"><p>Zaller, J. R. (1992). <em>The nature and origins of mass opinion</em>. Cambridge University Press. <a href="https://doi.org/10.1017/CBO9780511818691">https://doi.org/10.1017/CBO9780511818691</a><a href="#en-fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn5" role="doc-endnote"><p>Van de Wardt, M. (2014). Putting the damper on: Do parties de-emphasize issues in response to internal divisions among their supporters? <em>Party Politics</em>, 20(3), 330–340. <a href="https://doi.org/10.1177/1354068811436045">https://doi.org/10.1177/1354068811436045</a><a href="#en-fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn6" role="doc-endnote"><p>Miller, J. M., &amp; Peterson, D. A. M. (2004). Theoretical and empirical implications of attitude strength. <em>The Journal of Politics</em>, 66(3), 847–867. <a href="https://doi.org/10.1111/j.1468-2508.2004.00282.x">https://doi.org/10.1111/j.1468-2508.2004.00282.x</a><a href="#en-fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn7" role="doc-endnote"><p>McCombs, M. E., &amp; Shaw, D. L. (1972). The agenda-setting function of mass media. <em>Public Opinion Quarterly</em>, 36(2), 176–187. <a href="https://doi.org/10.1086/267990">https://doi.org/10.1086/267990</a><a href="#en-fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn8" role="doc-endnote"><p>McCombs, M. E., &amp; Shaw, D. L. (1972). The agenda-setting function of mass media. <em>Public Opinion Quarterly</em>, 36(2), 176–187. <a href="https://doi.org/10.1086/267990">https://doi.org/10.1086/267990</a><a href="#en-fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn9" role="doc-endnote"><p>McCombs, M. E., &amp; Shaw, D. L. (1972). The agenda-setting function of mass media. <em>Public Opinion Quarterly</em>, 36(2), 176–187. <a href="https://doi.org/10.1086/267990">https://doi.org/10.1086/267990</a><a href="#en-fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn10" role="doc-endnote"><p>Soroka, S. N. (2002). <em>Agenda-setting dynamics in Canada</em>. UBC Press. <a href="https://www.ubcpress.ca/agenda-setting-dynamics-in-canada">https://www.ubcpress.ca/agenda-setting-dynamics-in-canada</a><a href="#en-fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn11" role="doc-endnote"><p>Iyengar, S., &amp; Kinder, D. R. (2010). <em>News that matters: Television and American opinion</em> (Updated ed.). University of Chicago Press. <a href="https://doi.org/10.7208/chicago/9780226388182.001.0001">https://doi.org/10.7208/chicago/9780226388182.001.0001</a><a href="#en-fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn12" role="doc-endnote"><p>McCombs, M. E., &amp; Shaw, D. L. (1972). The agenda-setting function of mass media. <em>Public Opinion Quarterly</em>, 36(2), 176–187. <a href="https://doi.org/10.1086/267990">https://doi.org/10.1086/267990</a><a href="#en-fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn13" role="doc-endnote"><p>Soroka, S. N. (2002). <em>Agenda-setting dynamics in Canada</em>. UBC Press. <a href="https://www.ubcpress.ca/agenda-setting-dynamics-in-canada">https://www.ubcpress.ca/agenda-setting-dynamics-in-canada</a><a href="#en-fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn14" role="doc-endnote"><p>Mancini, P. (2013). Media fragmentation, party system, and democracy. <em>The International Journal of Press/Politics</em>, 18(1), 43–60. <a href="https://doi.org/10.1177/1940161212458200">https://doi.org/10.1177/1940161212458200</a><a href="#en-fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn15" role="doc-endnote"><p>Chadwick, A. (2017). <em>The hybrid media system: Politics and power</em> (2nd ed.). Oxford University Press. <a href="https://doi.org/10.1093/oso/9780190696726.001.0001">https://doi.org/10.1093/oso/9780190696726.001.0001</a><a href="#en-fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn16" role="doc-endnote"><p>CLESSN (in preparation). Methodological publication on Radar+: saliency indices and applications in the Canadian context. <em>Forthcoming</em>.<a href="#en-fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn17" role="doc-endnote"><p>CLESSN (2021). <em>The Radar+ outlets: Methodological document on source selection for media content analysis</em>. Université Laval.<a href="#en-fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn18" role="doc-endnote"><p>Miller, J. M., &amp; Krosnick, J. A. (2000). News media impact on the ingredients of presidential evaluations: Politically knowledgeable citizens are guided by a trusted source. <em>American Journal of Political Science</em>, 44(2), 301–315. <a href="https://doi.org/10.2307/2669312">https://doi.org/10.2307/2669312</a><a href="#en-fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn19" role="doc-endnote"><p>Miller, J. M., &amp; Peterson, D. A. M. (2004). Theoretical and empirical implications of attitude strength. <em>The Journal of Politics</em>, 66(3), 847–867. <a href="https://doi.org/10.1111/j.1468-2508.2004.00282.x">https://doi.org/10.1111/j.1468-2508.2004.00282.x</a><a href="#en-fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn20" role="doc-endnote"><p>Hamborg, F., Donnay, K., &amp; Gipp, B. (2019). Automated identification of media bias in news articles: An interdisciplinary literature review. <em>International Journal on Digital Libraries</em>, 20(4), 391–415. <a href="https://doi.org/10.1007/s00799-018-0261-y">https://doi.org/10.1007/s00799-018-0261-y</a><a href="#en-fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn21" role="doc-endnote"><p>Domke, D., Shah, D. V., &amp; Wackman, D. B. (1998). Media priming effects: Accessibility, association, and activation. <em>International Journal of Public Opinion Research</em>, 10(1), 51–74. <a href="https://doi.org/10.1093/ijpor/10.1.51">https://doi.org/10.1093/ijpor/10.1.51</a><a href="#en-fnref21" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn22" role="doc-endnote"><p>Hamborg, F., Donnay, K., &amp; Gipp, B. (2019). Automated identification of media bias in news articles: An interdisciplinary literature review. <em>International Journal on Digital Libraries</em>, 20(4), 391–415. <a href="https://doi.org/10.1007/s00799-018-0261-y">https://doi.org/10.1007/s00799-018-0261-y</a><a href="#en-fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn23" role="doc-endnote"><p>Curran, J. (2012). <em>Media and power</em>. Routledge. <a href="https://doi.org/10.4324/9780203077672">https://doi.org/10.4324/9780203077672</a><a href="#en-fnref23" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn24" role="doc-endnote"><p>McCombs, M. E., &amp; Shaw, D. L. (1972). The agenda-setting function of mass media. <em>Public Opinion Quarterly</em>, 36(2), 176–187. <a href="https://doi.org/10.1086/267990">https://doi.org/10.1086/267990</a><a href="#en-fnref24" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn25" role="doc-endnote"><p>Miller, J. M., &amp; Peterson, D. A. M. (2004). Theoretical and empirical implications of attitude strength. <em>The Journal of Politics</em>, 66(3), 847–867. <a href="https://doi.org/10.1111/j.1468-2508.2004.00282.x">https://doi.org/10.1111/j.1468-2508.2004.00282.x</a><a href="#en-fnref25" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn26" role="doc-endnote"><p>Schoenbach, K., De Waal, E., &amp; Lauf, E. (2005). Online and print newspapers: Their impact on the extent of the perceived public agenda. <em>European Journal of Communication</em>, 20(2), 245–258. <a href="https://doi.org/10.1177/0267323105052300">https://doi.org/10.1177/0267323105052300</a><a href="#en-fnref26" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="en-fn27" role="doc-endnote"><p>CLESSN (in preparation). Methodological publication on Radar+: saliency indices and applications in the Canadian context. <em>Forthcoming</em>.<a href="#en-fnref27" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</div>
     </section>
-    <nav class="links" aria-label="Liens Radar+">
-      <a class="link" href="./radarplus.html">Radar+</a>
-      <a class="link" href="./constellation.html">Constellation</a>
-      <a class="link" href="./evolution.html">Évolution</a>
-      <a class="link" href="./alertes.html">Alertes</a>
-      <a class="link" href="./acces-donnees.html">Accès aux données</a>
-      <a class="link" href="./partenaires.html">Partenaires</a>
-      <a class="link" href="./unes.html">Dans le radar</a>
-      <a class="link" href="https://www.clessn.com/radar/index.html">Analyses</a>
+    <nav class="links" data-i18n-aria-label="doc_pages.links_aria" aria-label="Liens Radar+">
+      <a class="link" href="./radarplus.html" data-i18n="doc_pages.link_radarplus">Radar+</a>
+      <a class="link" href="./constellation.html" data-i18n="doc_pages.link_constellation">Constellation</a>
+      <a class="link" href="./evolution.html" data-i18n="doc_pages.link_evolution">Évolution</a>
+      <a class="link" href="./alertes.html" data-i18n="doc_pages.link_alertes">Alertes</a>
+      <a class="link" href="./acces-donnees.html" data-i18n="doc_pages.link_acces_donnees">Accès aux données</a>
+      <a class="link" href="./partenaires.html" data-i18n="doc_pages.link_partenaires">Partenaires</a>
+      <a class="link" href="./unes.html" data-i18n="doc_pages.link_unes">Dans le radar</a>
+      <a class="link" href="https://www.clessn.com/radar/index.html" data-i18n="doc_pages.link_analyses">Analyses</a>
     </nav>
   </main>
 
