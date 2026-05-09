@@ -337,10 +337,21 @@
         document.body.classList.remove('has-alert-bar');
       });
   }
-  // Re-render le bandeau si la langue change (les badges Alerte/Veille
-  // sont des chaînes traduites, pas des éléments data-i18n).
+  // À chaque changement de langue, on met à jour UNIQUEMENT le texte
+  // des badges de niveau (Alerte/Veille/...) en place. On NE refait
+  // PAS populateAlertBar — sinon le strip est réinitialisé à 1 copie,
+  // les copies sont recalculées et la durée d'animation change, ce
+  // qui produisait l'effet "défilement super lent" après 1-2
+  // changements de langue.
   document.addEventListener('i18n:applied', function () {
-    if (_lastAlertGraphData) populateAlertBar(_lastAlertGraphData);
+    var strip = document.getElementById('alert-bar-strip');
+    if (!strip) return;
+    strip.querySelectorAll('.alert-bar-item').forEach(function (item) {
+      var cls = item.className.match(/level-(\w+)/);
+      if (!cls) return;
+      var badge = item.querySelector('.alert-bar-item-badge');
+      if (badge) badge.textContent = alertBarLabel(cls[1]);
+    });
   });
 
   if (document.readyState === 'loading') {
