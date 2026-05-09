@@ -83,7 +83,18 @@
     "ended": "Terminée",
     "all": "Toutes",
     "all_levels": "Tous niveaux",
-    "all_countries": "Tous"
+    "all_countries": "Tous",
+    "back_home": "Retour accueil"
+  },
+
+  "page_title": {
+    "unes": "Dans le radar",
+    "partenaires": "Partenaires et contributeurs",
+    "acces_donnees": "Accès aux données",
+    "sonar": "SONAR",
+    "statistiques": "Statistiques par objet saillant",
+    "methodologie": "Méthodologie",
+    "radarplus": "Radar+"
   },
 
   "country": {

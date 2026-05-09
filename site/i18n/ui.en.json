@@ -83,7 +83,18 @@
     "ended": "Ended",
     "all": "All",
     "all_levels": "All levels",
-    "all_countries": "All"
+    "all_countries": "All",
+    "back_home": "Back to home"
+  },
+
+  "page_title": {
+    "unes": "On the radar",
+    "partenaires": "Partners and contributors",
+    "acces_donnees": "Data access",
+    "sonar": "SONAR",
+    "statistiques": "Per-object statistics",
+    "methodologie": "Methodology",
+    "radarplus": "Radar+"
   },
 
   "country": {
