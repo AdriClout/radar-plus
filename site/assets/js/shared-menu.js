@@ -220,12 +220,15 @@
     return alerts.map(function(a) {
       var lbl = alertBarLabel(a.level);
       var sc  = a.score !== null ? ' \u00b7\u00a0z\u00a0' + a.score.toFixed(1) + '\u00d7' : '';
-      return '<span class="alert-bar-item level-' + escHtml(a.level) + '">' +
+      var href = './evolution.html?country=' + encodeURIComponent(a.country) +
+                 '&node=' + encodeURIComponent(a.id) +
+                 '&mode=tracking&gran=week';
+      return '<a class="alert-bar-item level-' + escHtml(a.level) + '" href="' + escHtml(href) + '">' +
         '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
         '<span class="alert-bar-item-name">'  + escHtml(a.id)  + '</span>' +
         (sc ? '<span class="alert-bar-item-score">' + escHtml(sc) + '</span>' : '') +
         '<span class="alert-bar-item-country">' + escHtml(a.country) + '</span>' +
-        '</span>' +
+        '</a>' +
         '<span class="alert-bar-sep" aria-hidden="true">\u2022</span>';
     }).join('');
   }

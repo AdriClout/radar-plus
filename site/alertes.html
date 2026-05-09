@@ -273,6 +273,12 @@
       word-break: break-word;
       flex: 1;
     }
+    a.alert-card-name {
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    a.alert-card-name:hover { color: rgba(150,200,255,1); }
     .alert-card-country {
       font-size: 8px;
       letter-spacing: 1.2px;
@@ -343,19 +349,39 @@
       -webkit-box-orient: vertical;
     }
 
-    .alert-card-evo-link {
+    .alert-card-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(90,140,255,0.12);
+    }
+    .alert-card-nav-link {
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      font-family: var(--orbitron);
       font-size: 8px;
-      letter-spacing: 0.7px;
+      letter-spacing: 0.9px;
       text-transform: uppercase;
-      color: rgba(120,170,255,0.6);
+      color: rgba(160,200,255,0.78);
       text-decoration: none;
-      margin-top: 8px;
-      transition: color 0.2s;
+      padding: 4px 9px;
+      border: 1px solid rgba(90,140,255,0.28);
+      border-radius: 999px;
+      background: rgba(20,40,90,0.30);
+      transition: border-color 0.18s, background 0.18s, color 0.18s;
     }
-    .alert-card-evo-link:hover { color: rgba(160,210,255,0.9); }
+    .alert-card-nav-link:hover {
+      border-color: rgba(150,200,255,0.7);
+      background: rgba(30,60,140,0.50);
+      color: rgba(220,235,255,1);
+    }
+    .alert-card-nav-link span[aria-hidden="true"] {
+      opacity: 0.7;
+      font-size: 9px;
+    }
 
     /* Vide / chargement */
     #alertes-empty, #alertes-loading {
@@ -674,12 +700,18 @@
         + '</a>';
     }
 
-    var evoUrl = './evolution.html';
+    var qNode    = encodeURIComponent(alert.id);
+    var qCountry = encodeURIComponent(alert.country);
+    var evoUrl   = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=week';
+    var cstUrl   = './constellation.html?country=' + qCountry + '&node=' + qNode;
+    var statsUrl = './statistiques.html?pays=' + qCountry + '&objet=' + qNode;
 
     return '<div class="alert-card level-' + escapeHtml(alert.level) + '">'
       + '<div class="alert-card-top">'
       +   '<span class="alert-card-badge">' + escapeHtml(levelLabel) + '</span>'
-      +   '<span class="alert-card-name">'  + escapeHtml(alert.id)   + '</span>'
+      +   '<a class="alert-card-name" href="' + escapeHtml(evoUrl) + '" data-i18n-aria-label="alertes.card_name_aria" aria-label="Voir l\'évolution de ' + escapeHtml(alert.id) + '">'
+      +     escapeHtml(alert.id)
+      +   '</a>'
       +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
       + '</div>'
       + '<div class="alert-card-stats">'
@@ -690,7 +722,11 @@
       +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(String(alert.n)) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_mentions')) + '</span></div>'
       + '</div>'
       + (articlesHtml ? '<div class="alert-card-articles">' + articlesHtml + '</div>' : '')
-      + '<a class="alert-card-evo-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.view_in_evolution')) + '</a>'
+      + '<div class="alert-card-nav">'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.nav_evolution')) + ' <span aria-hidden="true">→</span></a>'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl) + '">' + escapeHtml(T('alertes.nav_constellation')) + ' <span aria-hidden="true">→</span></a>'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl) + '">' + escapeHtml(T('alertes.nav_stats')) + ' <span aria-hidden="true">→</span></a>'
+      + '</div>'
       + '</div>';
   }
 

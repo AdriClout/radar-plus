@@ -306,6 +306,7 @@ body.has-shared-menu .topbar {
   animation: alert-strip-scroll var(--alert-strip-dur) linear infinite;
   will-change: transform;
 }
+.alert-bar-track:hover .alert-bar-strip { animation-play-state: paused; }
 @keyframes alert-strip-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -320,7 +321,12 @@ body.has-shared-menu .topbar {
   font-family: 'Space Mono', monospace;
   font-size: 9px;
   color: rgba(255,210,210,0.85);
+  text-decoration: none;
+  transition: color 0.15s, filter 0.15s;
 }
+a.alert-bar-item { cursor: pointer; }
+a.alert-bar-item:hover .alert-bar-item-name { text-decoration: underline; }
+a.alert-bar-item:hover { filter: brightness(1.15); }
 .alert-bar-item.level-alert {
   color: rgba(255,220,190,0.85);
 }
