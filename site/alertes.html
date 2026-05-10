@@ -973,115 +973,611 @@
     @media (max-width: 700px) {
       .heatmap-row, .heatmap-axis { grid-template-columns: 130px 1fr; gap: 6px; }
     }
+
+    /* ╔══════ Refonte 2026-05 — page Alertes ═══════════════════════╗
+       Architecture en couches: KPIs persistants → Pouls de l'agenda
+       (multi-line par tier) → Slider temporel → Bandes par sujet →
+       Liste compacte des alertes de la période sélectionnée. Tout
+       sur une page, hiérarchie claire.                              */
+
+    .page-header { margin-bottom: 18px; }
+    .page-title {
+      font-family: var(--orbitron);
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #e8f0ff;
+      margin-bottom: 6px;
+    }
+    .page-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+      max-width: 720px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    /* ── KPIs ── */
+    .page-kpis {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .kpi {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(10,18,50,0.55);
+      cursor: default;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .kpi:hover { border-color: rgba(120,170,255,0.5); background: rgba(20,32,72,0.6); }
+    .kpi-mark {
+      width: 12px; height: 12px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .kpi-mark.kpi-active     { background: rgba(255,120,120,0.95); animation: pulse-dot 1.6s ease-in-out infinite; }
+    .kpi-mark.lvl-tsunami    { background: rgba(220,140,255,1); box-shadow: 0 0 8px rgba(220,150,255,0.55); }
+    .kpi-mark.lvl-eclipse    { background: rgba(200,140,255,0.92); }
+    .kpi-mark.lvl-strong     { background: rgba(255,110,110,0.92); }
+    .kpi-val {
+      font-family: var(--orbitron);
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(220,235,255,0.96);
+      line-height: 1;
+    }
+    .kpi-lbl {
+      display: flex; flex-direction: column; gap: 2px;
+      font-size: 8.5px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(180,210,250,0.68);
+    }
+    .kpi-lbl-sub { color: rgba(140,180,225,0.55); font-size: 7.5px; letter-spacing: 0.6px; }
+
+    /* ── Filtres ligne haute (pays + niveau min + lien méthodo) ── */
+    .page-filters {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .page-filters select {
+      background: rgba(10,18,50,0.7);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 10px;
+      outline: none;
+      cursor: pointer;
+    }
+    .page-methodo-link {
+      margin-left: auto;
+      font-family: var(--orbitron);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: rgba(180,210,255,0.85);
+      transition: border-color 0.18s, color 0.18s;
+    }
+    .page-methodo-link:hover { border-color: rgba(150,200,255,0.7); color: rgba(220,235,255,1); }
+
+    /* ── Section commune des charts ── */
+    .chart-section { margin-bottom: 22px; }
+    .chart-section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .chart-section-title {
+      font-family: var(--orbitron);
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(160,200,255,0.85);
+    }
+    .chart-section-window {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+    }
+    .chart-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(8,16,42,0.55);
+      padding: 12px 14px;
+      overflow-x: auto;
+    }
+
+    /* ── Pouls de l'agenda (SVG multi-line) ── */
+    #pulse-chart {
+      display: block;
+      width: 100%;
+      height: 200px;
+    }
+    .pulse-line { fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+    .pulse-line.lvl-tsunami      { stroke: rgba(230,150,255,1);     stroke-width: 2.4; filter: drop-shadow(0 0 4px rgba(220,150,255,0.45)); }
+    .pulse-line.lvl-eclipse      { stroke: rgba(200,140,255,0.92); }
+    .pulse-line.lvl-strong       { stroke: rgba(255,110,110,0.92); }
+    .pulse-line.lvl-alert        { stroke: rgba(255,143,92,0.85); }
+    .pulse-line.lvl-watch        { stroke: rgba(212,188,88,0.78); }
+    .pulse-grid line { stroke: rgba(55,85,175,0.18); stroke-dasharray: 3 6; }
+    .pulse-axis text { font-family: var(--mono); font-size: 9px; fill: rgba(110,150,215,0.55); }
+    .pulse-cursor { stroke: rgba(180,220,255,0.85); stroke-width: 1.4; stroke-dasharray: 2 3; }
+    .pulse-cursor-handle {
+      fill: rgba(15,30,75,0.9);
+      stroke: rgba(180,220,255,0.85);
+      stroke-width: 1.2;
+    }
+    .chart-legend {
+      display: flex; flex-wrap: wrap; gap: 14px;
+      margin-top: 10px;
+      font-size: 9px; letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .chart-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .chart-legend-mark {
+      display: inline-block;
+      width: 16px; height: 3px; border-radius: 2px;
+    }
+    .chart-legend-mark.lvl-tsunami    { background: rgba(230,150,255,1); }
+    .chart-legend-mark.lvl-eclipse    { background: rgba(200,140,255,0.92); }
+    .chart-legend-mark.lvl-strong     { background: rgba(255,110,110,0.92); }
+    .chart-legend-mark.lvl-alert      { background: rgba(255,143,92,0.85); }
+    .chart-legend-mark.lvl-watch      { background: rgba(212,188,88,0.78); }
+
+    /* ── Slider temporel ── */
+    .slider-section {
+      margin: 14px 0 26px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .slider-section input[type="range"] {
+      flex: 1;
+      cursor: pointer;
+      accent-color: rgba(180,220,255,0.92);
+    }
+    .slider-current {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(220,235,255,0.95);
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(10,20,55,0.7);
+      min-width: 200px;
+      text-align: center;
+    }
+    .slider-now-btn {
+      font-family: var(--orbitron);
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border: 1px solid rgba(120,180,255,0.45);
+      border-radius: 999px;
+      background: rgba(20,40,90,0.5);
+      color: rgba(190,220,255,0.92);
+      cursor: pointer;
+      transition: filter 0.15s, border-color 0.15s;
+    }
+    .slider-now-btn:hover { filter: brightness(1.18); border-color: rgba(160,200,255,0.7); }
+
+    /* ── Bandes (Top 25 sujets, ligne par sujet) ── */
+    .bands-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 0 12px;
+      min-height: 22px;
+    }
+    .bands-row + .bands-row { margin-top: 1px; }
+    .bands-row:hover .bands-label { color: rgba(220,235,255,1); }
+    .bands-label {
+      font-size: 11px;
+      color: rgba(200,220,255,0.84);
+      text-transform: capitalize;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+    .bands-label-tier {
+      font-family: var(--orbitron);
+      font-size: 7px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 999px;
+      border: 1px solid;
+      flex-shrink: 0;
+    }
+    .bands-cells {
+      display: grid;
+      gap: 1px;
+      height: 14px;
+    }
+    .bands-cell {
+      background: transparent;
+      border-radius: 1px;
+      cursor: pointer;
+      transition: filter 0.15s, transform 0.1s;
+    }
+    .bands-cell:hover { filter: brightness(1.4); transform: scaleY(1.4); }
+    .bands-cell.lvl-surveillance { background: rgba(150,180,220,0.40); }
+    .bands-cell.lvl-watch        { background: rgba(212,188,88,0.78); }
+    .bands-cell.lvl-alert        { background: rgba(255,143,92,0.85); }
+    .bands-cell.lvl-strong       { background: rgba(255,110,110,0.92); }
+    .bands-cell.lvl-eclipse      { background: rgba(200,140,255,0.92); }
+    .bands-cell.lvl-tsunami      { background: rgba(230,150,255,1); box-shadow: 0 0 4px rgba(220,150,255,0.4); }
+    .bands-cell.is-selected-day {
+      box-shadow: 0 0 0 1.5px rgba(180,220,255,0.95);
+    }
+    .bands-axis {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 10px;
+      padding: 0 12px 6px;
+      font-size: 8px;
+      letter-spacing: 0.6px;
+      color: rgba(140,180,230,0.55);
+      text-transform: uppercase;
+    }
+    .bands-axis-dates { display: flex; justify-content: space-between; }
+    .bands-country-header {
+      padding: 12px 12px 6px;
+      font-family: var(--orbitron);
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      color: rgba(160,200,255,0.78);
+      text-transform: uppercase;
+      border-top: 1px solid rgba(90,140,255,0.10);
+      margin-top: 6px;
+    }
+
+    /* ── Alertes — liste compacte ── */
+    .alerts-section { margin-top: 6px; }
+    .alerts-section-title {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-family: var(--orbitron);
+      font-size: 12px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(220,235,255,0.92);
+    }
+    .alerts-section-title .alerts-section-period {
+      font-size: 9px;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      text-transform: none;
+    }
+
+    .compact-alerts { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .compact-alert {
+      display: grid;
+      grid-template-columns: 110px 1fr 80px auto 28px;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      background: rgba(8,16,42,0.45);
+      border-top: 1px solid rgba(90,140,255,0.10);
+      transition: background 0.15s;
+    }
+    .compact-alert:first-child { border-top: none; }
+    .compact-alert:hover { background: rgba(20,40,90,0.45); }
+    .compact-alert.is-event { background: linear-gradient(180deg, rgba(20,40,90,0.32), rgba(10,20,55,0.55)); }
+    .compact-alert.is-expanded { background: rgba(15,28,72,0.72); }
+
+    .compact-alert-tier {
+      font-family: var(--orbitron);
+      font-size: 7.5px;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .compact-alert-tier.lvl-tsunami    { color: rgba(245,220,255,1); border-color: rgba(230,160,255,0.80); background: rgba(96,40,144,0.55); box-shadow: 0 0 6px rgba(220,150,255,0.35); }
+    .compact-alert-tier.lvl-eclipse    { color: rgba(230,200,255,0.98); border-color: rgba(200,140,255,0.65); background: rgba(72,32,114,0.55); }
+    .compact-alert-tier.lvl-strong     { color: rgba(255,196,196,0.98); border-color: rgba(255,110,110,0.64); background: rgba(98,22,28,0.55); }
+    .compact-alert-tier.lvl-alert      { color: rgba(255,186,136,0.98); border-color: rgba(255,143,92,0.58); background: rgba(88,40,24,0.55); }
+    .compact-alert-tier.lvl-watch      { color: rgba(255,224,112,0.96); border-color: rgba(224,196,88,0.48); background: rgba(74,60,16,0.55); }
+    .compact-alert-tier.lvl-surveillance{color: rgba(190,210,235,0.92); border-color: rgba(150,180,220,0.50); background: rgba(28,38,62,0.60); }
+    .compact-alert-tier.is-event       { color: rgba(200,225,255,0.96); border-color: rgba(120,170,255,0.55); background: rgba(20,50,110,0.6); }
+
+    .compact-alert-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(220,235,255,0.98);
+      text-transform: capitalize;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .compact-alert-name-extra {
+      font-size: 9px;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+      text-transform: none;
+      margin-left: 8px;
+    }
+    .compact-alert-meta {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: rgba(200,220,255,0.85);
+      text-align: right;
+    }
+    .compact-alert-country {
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .compact-alert-arrow {
+      width: 28px;
+      text-align: center;
+      color: rgba(160,200,255,0.6);
+      font-size: 14px;
+      transition: transform 0.18s;
+    }
+    .compact-alert.is-expanded .compact-alert-arrow { transform: rotate(90deg); color: rgba(220,235,255,1); }
+
+    .compact-alert-detail {
+      grid-column: 1 / -1;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(90,140,255,0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .compact-alert-detail .alert-card-stats { margin-bottom: 0; }
+    .compact-alert-detail .alert-card-articles { margin-top: 0; }
+
+    /* ── Vide / loading global ── */
+    .alerts-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    /* ── Sections pliables (épisodes complets, méthodologie inline) ── */
+    .collapsible {
+      margin-top: 22px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(8,16,42,0.55);
+    }
+    .collapsible[open] { background: rgba(8,16,42,0.65); }
+    .collapsible summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 16px;
+      font-family: var(--orbitron);
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(180,210,255,0.78);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .collapsible summary::-webkit-details-marker { display: none; }
+    .collapsible summary::before {
+      content: '▸';
+      font-size: 10px;
+      color: rgba(120,170,255,0.7);
+      transition: transform 0.15s;
+    }
+    .collapsible[open] summary::before { transform: rotate(90deg); }
+    .collapsible summary:hover { color: rgba(220,235,255,0.95); }
+    .collapsible-body { padding: 0 16px 16px; }
+
+    @media (max-width: 700px) {
+      .compact-alert { grid-template-columns: 90px 1fr 60px 24px; }
+      .compact-alert-country { display: none; }
+      .bands-row, .bands-axis { grid-template-columns: 130px 1fr; }
+      #pulse-chart { height: 160px; }
+    }
+
+    /* ── Refonte v3 (cartes simples, sans charts) ──────────────────── */
+    .alerts-section { margin-bottom: 36px; }
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(90,140,255,0.18);
+      font-family: var(--orbitron);
+      font-size: 13px;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: rgba(220,235,255,0.94);
+    }
+    .section-title-icon { font-size: 14px; color: var(--accent); }
+    .section-title-meta {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      text-transform: none;
+    }
+
+    /* Cartes "Événements récents" — chronique horizontale */
+    .recent-events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+    }
+    .recent-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border);
+      border-radius: 6px;
+      background: var(--card-bg);
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .recent-card:hover { background: rgba(20,40,90,0.45); transform: translateY(-1px); }
+    .recent-card.level-tsunami { border-color: rgba(220,140,255,0.55); border-left-color: rgba(240,160,255,1); background: linear-gradient(135deg, rgba(72,28,110,0.40), rgba(40,16,72,0.52)); box-shadow: 0 0 12px rgba(200,140,255,0.18); }
+    .recent-card.level-eclipse { border-color: rgba(180,120,255,0.45); border-left-color: rgba(200,140,255,0.92); background: rgba(48,24,80,0.30); }
+    .recent-card.level-strong  { border-color: rgba(255,110,110,0.45); border-left-color: rgba(255,100,100,0.92); background: rgba(92,24,28,0.26); }
+    .recent-card.level-alert   { border-color: rgba(255,143,92,0.40); border-left-color: rgba(255,143,92,0.85); background: rgba(86,38,24,0.26); }
+    .recent-card-top { display: flex; align-items: center; gap: 10px; }
+    .recent-card-tier {
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid;
+      flex-shrink: 0;
+    }
+    .recent-card-country {
+      margin-left: auto;
+      font-family: var(--orbitron);
+      font-size: 8px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .recent-card-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: rgba(230,242,255,0.97);
+      text-transform: capitalize;
+      line-height: 1.25;
+      word-break: break-word;
+    }
+    .recent-card-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      color: rgba(180,210,250,0.78);
+    }
+    .recent-card-dates { font-family: var(--mono); }
+    .recent-card-duration {
+      font-family: var(--orbitron);
+      letter-spacing: 0.6px;
+      color: rgba(200,225,255,0.85);
+    }
+    .recent-card-bottom {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(90,140,255,0.10);
+    }
+    .recent-events-more {
+      margin-top: 10px;
+      padding: 8px 12px;
+      font-size: 10px;
+      color: rgba(160,200,255,0.72);
+      text-align: center;
+      font-style: italic;
+    }
+
   </style>
 </head>
 <body>
 
 <div id="alertes-wrap">
-  <div class="alertes-header">
-    <div class="alertes-title"><span data-i18n="alertes.title">Alertes de</span> <span data-i18n="alertes.title_accent">saillance</span></div>
-    <div class="alertes-subtitle"><span data-i18n="alertes.subtitle">Signaux anormaux détectés dans la couverture médiatique</span> · <span id="alertes-subtitle-window">30 derniers jours</span></div>
-    <div class="alertes-live-pill" id="alertes-live-pill">
-      <span class="alertes-live-dot"></span>
-      <span id="alertes-live-text" data-i18n="common.loading">chargement…</span>
+  <header class="page-header">
+    <h1 class="page-title"><span data-i18n="alertes.title">Alertes de</span> <span data-i18n="alertes.title_accent">saillance</span></h1>
+    <p class="page-subtitle" data-i18n="alertes.refonte_subtitle">Quand un sujet sort de l'ordinaire — par persistance dans le temps et dominance dans l'agenda médiatique. Six niveaux gradués, du signal isolé au tsunami médiatique.</p>
+
+    <div class="page-filters">
+      <span class="filter-label" data-i18n="alertes.filter_country">Pays</span>
+      <select id="filter-country">
+        <option value="all" selected data-i18n="common.all_countries">Tous</option>
+        <option value="QC" data-i18n="country.QC">Québec</option>
+        <option value="CAN" data-i18n="country.CAN">Canada</option>
+        <option value="USA" data-i18n="country.USA">États-Unis</option>
+      </select>
+      <span class="filter-label" data-i18n="alertes.filter_min_level">Niveau min</span>
+      <select id="filter-min-level">
+        <option value="watch" selected data-i18n="alertes.level_watch">Veille</option>
+        <option value="alert" data-i18n="alertes.level_alert">Alerte</option>
+        <option value="strong" data-i18n="alertes.level_strong">Alerte forte</option>
+        <option value="eclipse" data-i18n="alertes.level_eclipse">Éclipse</option>
+        <option value="tsunami" data-i18n="alertes.level_tsunami">Tsunami</option>
+      </select>
+      <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
     </div>
-    <div id="alertes-timeline" class="alertes-timeline" hidden>
-      <div class="alertes-timeline-header">
-        <span class="alertes-timeline-label" data-i18n="alertes.timeline_label">Activité 14 jours</span>
-        <button type="button" id="alertes-timeline-reset" class="alertes-timeline-reset" hidden>
-          <span data-i18n="alertes.timeline_back_live">↩ Retour au live</span>
-        </button>
-      </div>
-      <div class="alertes-timeline-track" id="alertes-timeline-track" role="list"></div>
-      <div class="alertes-timeline-legend">
-        <span class="alertes-timeline-legend-item"><span class="legend-dot lvl-strong"></span><span data-i18n="alertes.level_strong">Alerte forte</span></span>
-        <span class="alertes-timeline-legend-item"><span class="legend-dot lvl-alert"></span><span data-i18n="alertes.level_alert">Alerte</span></span>
-        <span class="alertes-timeline-legend-item"><span class="legend-dot lvl-watch"></span><span data-i18n="alertes.level_watch">Veille</span></span>
-        <span class="alertes-timeline-legend-hint" data-i18n="alertes.timeline_hint">Clique sur une période pour la voir</span>
-      </div>
+
+    <div class="page-kpis" id="page-kpis"></div>
+  </header>
+
+  <section class="alerts-section">
+    <div class="section-title">
+      <span class="section-title-icon">⚡</span>
+      <span data-i18n="alertes.section_active">En cours</span>
+      <span class="section-title-meta" id="section-active-meta">—</span>
     </div>
-    <a id="alertes-evo-cta" class="alertes-evo-cta disabled" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta_track_aria" aria-label="Suivre les sujets en alerte dans Évolution">
-      <span data-i18n="alertes.evo_cta_track">Suivre les sujets en alerte</span>
-      <span class="alertes-evo-cta-count" id="alertes-evo-cta-count">0</span>
-      <span class="alertes-evo-cta-arrow" aria-hidden="true">→</span>
-    </a>
-  </div>
+    <div id="active-alerts"><div class="alerts-empty" data-i18n="common.loading">chargement…</div></div>
+  </section>
 
-  <div class="alertes-tabs" role="tablist">
-    <button type="button" class="alertes-tab active" role="tab" data-tab="current" aria-selected="true">
-      <span data-i18n="alertes.tab_current">En cours</span>
-    </button>
-    <button type="button" class="alertes-tab" role="tab" data-tab="cycles" aria-selected="false">
-      <span data-i18n="alertes.tab_cycles">Cycles d'attention</span>
-      <span class="alertes-tab-count" data-i18n="alertes.tab_cycles_window">130 j</span>
-    </button>
-  </div>
-
-  <!-- Filtre Pays commun aux deux onglets -->
-  <div id="alertes-filters-shared" class="alertes-filters-shared">
-    <span class="filter-label" data-i18n="alertes.filter_country">Pays</span>
-    <select id="filter-country">
-      <option value="all" selected data-i18n="common.all_countries">Tous</option>
-      <option value="QC" data-i18n="country.QC">Québec</option>
-      <option value="CAN" data-i18n="country.CAN">Canada</option>
-      <option value="USA" data-i18n="country.USA">États-Unis</option>
-    </select>
-  </div>
-
-  <div id="alertes-tab-current">
-
-  <div id="alertes-filters">
-    <span class="filter-label" data-i18n="alertes.filter_status">Statut</span>
-    <select id="filter-status">
-      <option value="current" selected data-i18n="alertes.status_current">En cours</option>
-      <option value="ended" data-i18n="alertes.status_ended">Terminées</option>
-      <option value="all" data-i18n="alertes.status_all">Toutes</option>
-    </select>
-    <div class="filter-sep"></div>
-    <span class="filter-label" data-i18n="alertes.filter_level">Niveau</span>
-    <select id="filter-level">
-      <option value="all" selected data-i18n="alertes.level_all">Tous niveaux</option>
-      <option value="tsunami" data-i18n="alertes.level_tsunami">Tsunami médiatique</option>
-      <option value="eclipse" data-i18n="alertes.level_eclipse">Éclipse médiatique</option>
-      <option value="strong" data-i18n="alertes.level_strong">Alerte forte</option>
-      <option value="alert" data-i18n="alertes.level_alert">Alerte</option>
-      <option value="watch" data-i18n="alertes.level_watch">Veille</option>
-      <option value="surveillance" data-i18n="alertes.level_surveillance">Surveillance</option>
-      <option value="emerging" data-i18n="alertes.level_emerging">Émergent</option>
-    </select>
-    <div class="filter-sep"></div>
-    <input type="text" id="filter-search" data-i18n-placeholder="alertes.filter_search_placeholder" placeholder="Filtrer un objet…" autocomplete="off" spellcheck="false" />
-  </div>
-
-  <div id="alertes-methodology" class="alertes-methodology"></div>
-
-  <div id="alertes-list"><div id="alertes-loading" data-i18n="common.loading">Chargement des alertes…</div></div>
-
-  </div><!-- /alertes-tab-current -->
-
-  <div id="alertes-tab-cycles" hidden>
-    <div id="cycles-summary" class="cycles-summary"></div>
-    <div class="heatmap-section">
-      <div class="heatmap-section-title" data-i18n="cycles.heatmap_title">Carte des cycles · sujet × jour</div>
-      <div class="heatmap-container" id="heatmap-container">
-        <div class="cycles-loading" data-i18n="common.loading">chargement…</div>
-      </div>
-      <div class="heatmap-legend">
-        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-tsunami"></span><span data-i18n="alertes.level_tsunami">Tsunami</span></span>
-        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-eclipse"></span><span data-i18n="alertes.level_eclipse">Éclipse</span></span>
-        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-strong"></span><span data-i18n="alertes.level_strong">Alerte forte</span></span>
-        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-alert"></span><span data-i18n="alertes.level_alert">Alerte</span></span>
-        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-watch"></span><span data-i18n="alertes.level_watch">Veille</span></span>
-        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-surveillance"></span><span data-i18n="alertes.level_surveillance">Surveillance</span></span>
-      </div>
+  <section class="alerts-section">
+    <div class="section-title">
+      <span class="section-title-icon">▣</span>
+      <span data-i18n="alertes.section_recent">Événements récents</span>
+      <span class="section-title-meta" data-i18n="alertes.section_recent_window">130 derniers jours · triés par gravité puis durée</span>
     </div>
-    <div class="episodes-section">
-      <div class="heatmap-section-title" data-i18n="cycles.episodes_title">Épisodes recensés</div>
-      <div class="episodes-table-wrap" id="episodes-table-wrap">
-        <div class="cycles-loading" data-i18n="common.loading">chargement…</div>
-      </div>
+    <div id="recent-events"><div class="alerts-empty" data-i18n="common.loading">chargement…</div></div>
+  </section>
+
+  <details class="collapsible" id="episodes-collapsible">
+    <summary><span data-i18n="alertes.episodes_collapsed">Tous les épisodes recensés (130 jours)</span></summary>
+    <div class="collapsible-body">
+      <div id="episodes-table-wrap"></div>
     </div>
-  </div><!-- /alertes-tab-cycles -->
+  </details>
 </div>
 
 <!-- Ticker manchettes -->
@@ -1096,33 +1592,75 @@
 </section>
 
 <script src="./assets/js/i18n.js"></script>
-  <script src="./assets/js/shared-menu.js"></script>
+<script src="./assets/js/shared-menu.js"></script>
 <script src="./assets/js/shared-ticker.js"></script>
+
 <script>
 (function() {
   'use strict';
 
-  // Ordre du plus grave au moins grave (utilisé pour tri + min level effectif)
-  const LEVEL_ORDER  = ['tsunami', 'eclipse', 'strong', 'alert', 'watch', 'surveillance', 'emerging'];
-  const LEVEL_LABELS = {
-    tsunami: 'Tsunami médiatique',
-    eclipse: 'Éclipse médiatique',
-    strong: 'Alerte forte',
-    alert: 'Alerte',
-    watch: 'Veille',
-    surveillance: 'Surveillance',
-    emerging: 'Émergent'
-  };
-  const COUNTRY_LABELS = { CAN: 'CAN', QC: 'QC', USA: 'USA' };
-  // Paliers de saillance: dérivés des seuils empiriques par pays exportés
-  // dans graph.json:meta.salience_tiers. Ordre du plus haut au plus bas.
-  const SALIENCE_TIER_ORDER = ['extreme', 'very_high', 'high', 'moderate'];
+  // ─── Constantes & helpers ────────────────────────────────────────
+  const LEVEL_ORDER = ['tsunami', 'eclipse', 'strong', 'alert', 'watch', 'surveillance', 'emerging'];
+  const ACTIVE_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert', 'watch'];
+  const EPISODE_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert']; // pour la chronique
+  const SALIENCE_TIER_ORDER_DESC = ['extreme', 'very_high', 'high', 'moderate'];
+  const FR_MONTHS_SHORT = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  const EN_MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function escapeHtml(v) {
+    return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function levelRank(lvl) { var i = LEVEL_ORDER.indexOf(lvl); return i === -1 ? 999 : i; }
+  function maxLevel(a, b) { return levelRank(a) <= levelRank(b) ? a : b; }
+  function currentLang() {
+    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
+  }
+  function tierLabel(lvl) {
+    var T = window.t || function(k){ return k; };
+    return T('alertes.level_' + lvl) || lvl;
+  }
+  function formatDayShort(dayStr) {
+    if (!dayStr) return '';
+    var p = dayStr.split('-');
+    if (p.length !== 3) return dayStr;
+    var d = parseInt(p[2], 10);
+    var mo = parseInt(p[1], 10) - 1;
+    var months = currentLang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
+    return d + ' ' + months[mo];
+  }
+  var MONTHS_EN_TO_FR = { Jan:'janv.', Feb:'févr.', Mar:'mars', Apr:'avr.', May:'mai', Jun:'juin', Jul:'juil.', Aug:'août', Sep:'sept.', Oct:'oct.', Nov:'nov.', Dec:'déc.' };
+  function formatPeriodLabel(rawLabel) {
+    if (!rawLabel) return '';
+    if (currentLang() !== 'fr') return rawLabel;
+    return String(rawLabel)
+      .replace(/^([A-Z][a-z]{2})\s+0?(\d+)/, function(_, mon, day) {
+        var fr = MONTHS_EN_TO_FR[mon];
+        if (!fr) return _;
+        return parseInt(day, 10) + ' ' + fr;
+      })
+      .replace(/\bEDT\b/, 'HAE')
+      .replace(/\bEST\b/, 'HNE');
+  }
+  function periodToDay(pk) { return String(pk).split('_')[0]; }
+  function getActiveCountries() {
+    var src = graphData || timeseriesData;
+    if (!src || !src.graphs) return [];
+    var preferred = ['QC', 'CAN', 'USA'];
+    var available = Object.keys(src.graphs);
+    var out = [];
+    preferred.forEach(function(c) { if (available.indexOf(c) !== -1) out.push(c); });
+    available.forEach(function(c) { if (out.indexOf(c) === -1) out.push(c); });
+    return out;
+  }
   function getSalienceTier(country, size) {
-    if (!graphData || !graphData.meta || !graphData.meta.salience_tiers) return null;
-    var tiers = graphData.meta.salience_tiers[country];
+    var src = graphData || timeseriesData;
+    if (!src || !src.meta || !src.meta.salience_tiers) return null;
+    var tiers = src.meta.salience_tiers[country];
     if (!tiers || typeof size !== 'number') return null;
-    for (var i = 0; i < SALIENCE_TIER_ORDER.length; i++) {
-      var k = SALIENCE_TIER_ORDER[i];
+    for (var i = 0; i < SALIENCE_TIER_ORDER_DESC.length; i++) {
+      var k = SALIENCE_TIER_ORDER_DESC[i];
       if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
     }
     return null;
@@ -1132,94 +1670,36 @@
     return T('evolution.salience_' + tier) || tier;
   }
 
-  let graphData    = null;
+  // ─── État ──────────────────────────────────────────────────────
+  let graphData = null;
+  let timeseriesData = null;
   let filterCountry = 'all';
-  let filterStatus  = 'current';
-  let filterLevel   = 'all';
-  let filterSearch  = '';
-  // Période sélectionnée via la mini-timeline (override de filterStatus
-  // quand non null — affiche uniquement cette période)
-  let filterPeriodKey = null;
+  let filterMinLevel = 'watch';
+  let expandedCardKey = null; // pour déplier une carte d'événement récent
 
-  function escapeHtml(v) {
-    return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
-      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
-    });
-  }
-
+  // ─── Chargement ────────────────────────────────────────────────
   async function loadData() {
     try {
-      const res = await fetch('./graph.json?t=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      graphData = await res.json();
+      var [g, t] = await Promise.all([
+        fetch('./graph.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
+        fetch('./timeseries.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+      ]);
+      graphData = g;
+      timeseriesData = t;
       render();
     } catch (e) {
-      document.getElementById('alertes-list').innerHTML =
-        '<div id="alertes-empty">Erreur de chargement des données.</div>';
+      var box = document.getElementById('active-alerts');
+      if (box) box.innerHTML = '<div class="alerts-empty">Erreur de chargement.</div>';
     }
   }
 
-  // Lazy load: timeseries.json est gros (14 Mo) et ne sert qu'à l'onglet
-  // Cycles. On ne le charge qu'à la première bascule.
-  let timeseriesData = null;
-  let timeseriesLoading = null;
-  function ensureTimeseriesLoaded() {
-    if (timeseriesData) return Promise.resolve(timeseriesData);
-    if (timeseriesLoading) return timeseriesLoading;
-    timeseriesLoading = fetch('./timeseries.json?t=' + Date.now(), { cache: 'no-store' })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { timeseriesData = d; return d; })
-      .catch(() => null);
-    return timeseriesLoading;
-  }
-
-  // ───────────── Onglets : "En cours" vs "Cycles d'attention" ─────────────
-  let currentTab = 'current';
-  let cyclesSortBy = 'duration';
-  let cyclesSortDir = 'desc';
-  const ALERTE_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert'];
-
-  function setTab(tab) {
-    if (tab !== 'current' && tab !== 'cycles') tab = 'current';
-    currentTab = tab;
-    document.querySelectorAll('.alertes-tab').forEach(b => {
-      var on = b.getAttribute('data-tab') === tab;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-    var panelCurrent = document.getElementById('alertes-tab-current');
-    var panelCycles = document.getElementById('alertes-tab-cycles');
-    if (panelCurrent) panelCurrent.hidden = tab !== 'current';
-    if (panelCycles) panelCycles.hidden = tab !== 'cycles';
-
-    // Hash URL pour deeplink (sans rechargement)
-    try {
-      var newHash = tab === 'cycles' ? '#cycles' : '';
-      if (window.location.hash !== newHash) {
-        history.replaceState({}, '', window.location.pathname + window.location.search + newHash);
-      }
-    } catch(_) {}
-
-    if (tab === 'cycles') {
-      ensureTimeseriesLoaded().then(function() { renderCycles(); });
-    }
-  }
-
-  // ── Cycles : agrégation jour, tableau d'épisodes (depuis ex-cycles.html) ──
-
-  function periodToDate(periodKey) { return String(periodKey).split('_')[0]; }
-  function levelRank(lvl) {
-    var idx = LEVEL_ORDER.indexOf(lvl);
-    return idx === -1 ? 999 : idx;
-  }
-  function maxLevel(a, b) { return levelRank(a) <= levelRank(b) ? a : b; }
-
+  // ─── Matrice par jour pour le tableau d'épisodes (timeseries) ──
   function buildPerCountryDayMatrix(country) {
     var m = {};
     var cg = timeseriesData && timeseriesData.graphs && timeseriesData.graphs[country];
     if (!cg) return m;
     for (var pk in cg) {
-      var day = periodToDate(pk);
+      var day = periodToDay(pk);
       var nodes = (cg[pk] && cg[pk].nodes) || [];
       for (var i = 0; i < nodes.length; i++) {
         var n = nodes[i];
@@ -1244,14 +1724,6 @@
     return m;
   }
 
-  function buildAllDays() {
-    if (!timeseriesData || !timeseriesData.meta) return [];
-    var set = {};
-    var periods = timeseriesData.meta.periods || [];
-    for (var i = 0; i < periods.length; i++) set[periodToDate(periods[i].key)] = true;
-    return Object.keys(set).sort();
-  }
-
   function buildEpisodesForObject(byDay) {
     var keys = Object.keys(byDay).sort();
     var episodes = [];
@@ -1261,7 +1733,7 @@
     for (var i = 0; i < keys.length; i++) {
       var dk = keys[i];
       var d = byDay[dk];
-      var isAlertLevel = ALERTE_LEVELS.indexOf(d.level) !== -1;
+      var isAlertLevel = EPISODE_LEVELS.indexOf(d.level) !== -1;
       if (!isAlertLevel) {
         if (current) { episodes.push(current); current = null; }
         prev = dk;
@@ -1271,17 +1743,10 @@
         current.lastDay = dk;
         current.maxLevel = maxLevel(current.maxLevel, d.level);
         if ((d.top_share || 0) > current.maxTopShare) current.maxTopShare = d.top_share;
-        if ((d.streak || 0) > current.maxStreak) current.maxStreak = d.streak;
         if ((d.size || 0) > current.peakSalience) current.peakSalience = d.size || 0;
       } else {
         if (current) episodes.push(current);
-        current = {
-          firstDay: dk, lastDay: dk,
-          maxLevel: d.level,
-          maxTopShare: d.top_share || 0,
-          maxStreak: d.streak || 0,
-          peakSalience: d.size || 0
-        };
+        current = { firstDay: dk, lastDay: dk, maxLevel: d.level, maxTopShare: d.top_share || 0, peakSalience: d.size || 0 };
       }
       prev = dk;
     }
@@ -1292,954 +1757,446 @@
     return episodes;
   }
 
-  var FR_MONTHS_SHORT_C = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
-  var EN_MONTHS_SHORT_C = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function currentLangC() {
-    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
-  }
-  function formatDayShort(dayStr) {
-    if (!dayStr) return '';
-    var parts = dayStr.split('-');
-    if (parts.length !== 3) return dayStr;
-    var d = parseInt(parts[2], 10);
-    var mo = parseInt(parts[1], 10) - 1;
-    var months = currentLangC() === 'fr' ? FR_MONTHS_SHORT_C : EN_MONTHS_SHORT_C;
-    return d + ' ' + months[mo];
-  }
-  function tierLabelC(lvl) {
-    var T = window.t || function(k){ return k; };
-    return T('alertes.level_' + lvl) || lvl;
-  }
-
-  function renderCyclesSummary(allEpisodes) {
-    var el = document.getElementById('cycles-summary');
-    if (!el) return;
-    var counts = { tsunami: 0, eclipse: 0, strong: 0, alert: 0 };
-    allEpisodes.forEach(function(e) {
-      if (counts[e.maxLevel] !== undefined) counts[e.maxLevel]++;
-    });
-    var html = '';
-    LEVEL_ORDER.forEach(function(lvl) {
-      if (counts[lvl] === undefined) return;
-      html += '<div class="summary-stat">'
-        +   '<span class="summary-stat-icon lvl-' + lvl + '"></span>'
-        +   '<span class="summary-stat-val">' + counts[lvl] + '</span>'
-        +   '<span class="summary-stat-lbl">' + escapeHtml(tierLabelC(lvl)) + (counts[lvl] !== 1 ? 's' : '') + '</span>'
-        + '</div>';
-    });
-    el.innerHTML = html;
-  }
-
-  function renderHeatmap(rowsByCountry, allDays) {
-    var container = document.getElementById('heatmap-container');
-    if (!container) return;
-    var T = window.t || function(k){ return k; };
-    if (!rowsByCountry.length || !allDays.length) {
-      container.innerHTML = '<div class="cycles-empty">' + escapeHtml(T('cycles.heatmap_empty')) + '</div>';
-      return;
+  // ─── KPIs en haut ─────────────────────────────────────────────
+  function computeKPIs() {
+    var kpis = { active: 0, tsunami: 0, eclipse: 0, strong: 0 };
+    if (!graphData || !timeseriesData) return kpis;
+    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+    var periods = (graphData.meta && graphData.meta.periods) || [];
+    var latestKey = periods.length ? periods[periods.length - 1].key : null;
+    if (latestKey) {
+      countries.forEach(function(c) {
+        var gd = graphData.graphs[c] && graphData.graphs[c][latestKey];
+        if (!gd) return;
+        var events = gd.events || [];
+        var inEvent = {};
+        events.forEach(function(e) {
+          if (e.pivot && e.pivot.alert_active) inEvent[e.pivot.id] = true;
+          (e.members || []).forEach(function(m) { inEvent[m.id] = true; });
+        });
+        var simple = (gd.nodes || []).filter(function(n) {
+          return n.alert_active && ACTIVE_LEVELS.indexOf(n.alert_level) !== -1 && !inEvent[n.id];
+        });
+        var activeEvents = events.filter(function(e) {
+          return (e.members || []).some(function(m) { return ACTIVE_LEVELS.indexOf(m.alert_level) !== -1; })
+            || (e.pivot && e.pivot.alert_active);
+        });
+        kpis.active += activeEvents.length + simple.length;
+      });
     }
-    var firstDay = allDays[0];
-    var lastDay = allDays[allDays.length - 1];
-    var midDay = allDays[Math.floor(allDays.length / 2)];
-    var html = ''
-      + '<div class="heatmap-axis">'
-      +   '<div></div>'
-      +   '<div class="heatmap-axis-dates">'
-      +     '<span>' + escapeHtml(formatDayShort(firstDay)) + '</span>'
-      +     '<span>' + escapeHtml(formatDayShort(midDay)) + '</span>'
-      +     '<span>' + escapeHtml(formatDayShort(lastDay)) + ' →</span>'
-      +   '</div>'
-      + '</div>';
-    var cellsTpl = 'repeat(' + allDays.length + ', minmax(2px, 1fr))';
-    rowsByCountry.forEach(function(group) {
-      if (filterCountry === 'all') {
-        var cTitle = T('country.' + group.country) || group.country;
-        html += '<div style="padding: 12px 12px 6px; font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.4px; color: rgba(160,200,255,0.78); text-transform: uppercase; border-top: 1px solid rgba(90,140,255,0.10); margin-top: 6px;">'
-          + escapeHtml(cTitle) + ' · ' + group.rows.length + '</div>';
-      }
-      group.rows.forEach(function(row) {
-        var cellsHtml = '';
-        for (var di = 0; di < allDays.length; di++) {
-          var d = row.byDay[allDays[di]];
-          if (d) {
-            var tip = formatDayShort(allDays[di]) + ' · ' + tierLabelC(d.level)
-              + (d.score !== null ? ' · z ' + d.score.toFixed(1) + '×' : '')
-              + (d.top_share !== null ? ' · ' + Math.round(d.top_share * 100) + '% du Top' : '');
-            cellsHtml += '<div class="heatmap-cell lvl-' + d.level + '" title="' + escapeHtml(tip) + '"></div>';
-          } else {
-            cellsHtml += '<div class="heatmap-cell"></div>';
-          }
-        }
-        var qCountry = encodeURIComponent(group.country);
-        var qNode = encodeURIComponent(row.id);
-        var evoUrl = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
-        html += '<div class="heatmap-row">'
-          +   '<a class="heatmap-label" href="' + escapeHtml(evoUrl) + '" title="' + escapeHtml(row.id) + '">'
-          +     '<span class="heatmap-label-tier tier-' + row.maxLevel + '">' + escapeHtml(tierLabelC(row.maxLevel)) + '</span>'
-          +     '<span>' + escapeHtml(row.id) + '</span>'
-          +   '</a>'
-          +   '<div class="heatmap-cells" style="grid-template-columns: ' + cellsTpl + '">'
-          +     cellsHtml
-          +   '</div>'
-          + '</div>';
+    countries.forEach(function(c) {
+      var matrix = buildPerCountryDayMatrix(c);
+      Object.keys(matrix).forEach(function(id) {
+        var maxL = null;
+        Object.keys(matrix[id]).forEach(function(day) {
+          var l = matrix[id][day].level;
+          if (!maxL || levelRank(l) < levelRank(maxL)) maxL = l;
+        });
+        if (maxL === 'tsunami') kpis.tsunami++;
+        else if (maxL === 'eclipse') kpis.eclipse++;
+        else if (maxL === 'strong') kpis.strong++;
       });
     });
+    return kpis;
+  }
+
+  function renderKPIs() {
+    var el = document.getElementById('page-kpis');
+    if (!el) return;
+    var k = computeKPIs();
+    var T = window.t || function(k){ return k; };
+    el.innerHTML = ''
+      + '<div class="kpi"><span class="kpi-mark kpi-active"></span><span class="kpi-val">' + k.active + '</span><span class="kpi-lbl">' + escapeHtml(T('alertes.kpi_active') || 'En cours') + '<span class="kpi-lbl-sub">' + escapeHtml(T('alertes.kpi_active_sub') || 'maintenant') + '</span></span></div>'
+      + '<div class="kpi"><span class="kpi-mark lvl-tsunami"></span><span class="kpi-val">' + k.tsunami + '</span><span class="kpi-lbl">' + escapeHtml(tierLabel('tsunami')) + '<span class="kpi-lbl-sub">130 j</span></span></div>'
+      + '<div class="kpi"><span class="kpi-mark lvl-eclipse"></span><span class="kpi-val">' + k.eclipse + '</span><span class="kpi-lbl">' + escapeHtml(tierLabel('eclipse')) + '<span class="kpi-lbl-sub">130 j</span></span></div>'
+      + '<div class="kpi"><span class="kpi-mark lvl-strong"></span><span class="kpi-val">' + k.strong + '</span><span class="kpi-lbl">' + escapeHtml(tierLabel('strong')) + '<span class="kpi-lbl-sub">130 j</span></span></div>';
+  }
+
+  // ─── Section "EN COURS" — cartes des alertes actives ──────────
+  function getCurrentAlertItems() {
+    if (!graphData || !graphData.meta) return [];
+    var periods = graphData.meta.periods || [];
+    var latestKey = periods.length ? periods[periods.length - 1].key : null;
+    if (!latestKey) return [];
+    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+    var items = [];
+    countries.forEach(function(country) {
+      var gd = graphData.graphs[country] && graphData.graphs[country][latestKey];
+      if (!gd) return;
+      var events = gd.events || [];
+      var inEvent = {};
+      events.forEach(function(e) {
+        if (e.pivot && e.pivot.alert_active) inEvent[e.pivot.id] = true;
+        (e.members || []).forEach(function(m) { inEvent[m.id] = true; });
+      });
+      events.forEach(function(e) {
+        if (!e.pivot || !Array.isArray(e.members) || !e.members.length) return;
+        var anyActive = (e.members || []).some(function(m) { return ACTIVE_LEVELS.indexOf(m.alert_level) !== -1; })
+          || (e.pivot && e.pivot.alert_active);
+        if (!anyActive) return;
+        var lvls = (e.members || []).map(function(m) { return m.alert_level; });
+        if (e.pivot && e.pivot.alert_active && e.pivot.alert_level) lvls.push(e.pivot.alert_level);
+        var topLvl = 'watch';
+        for (var li = 0; li < LEVEL_ORDER.length; li++) {
+          if (lvls.indexOf(LEVEL_ORDER[li]) !== -1) { topLvl = LEVEL_ORDER[li]; break; }
+        }
+        if (levelRank(topLvl) > levelRank(filterMinLevel)) return;
+        items.push({
+          kind: 'event', country: country, level: topLvl,
+          pivot: e.pivot, members: e.members,
+          sharedArticles: e.shared_articles || [],
+          sharedCount: e.shared_articles_count || 0
+        });
+      });
+      (gd.nodes || []).forEach(function(n) {
+        if (!n.alert_active) return;
+        if (ACTIVE_LEVELS.indexOf(n.alert_level) === -1) return;
+        if (inEvent[n.id]) return;
+        if (levelRank(n.alert_level) > levelRank(filterMinLevel)) return;
+        items.push({
+          kind: 'alert', country: country, level: n.alert_level, id: n.id,
+          score: n.alert_score || null, delta: n.alert_delta || null,
+          peakRatio: n.alert_peak_ratio || null, topShare: n.alert_top_share || null,
+          streak: n.alert_streak || 0, n: n.n || 0, size: n.size || null,
+          articles: Array.isArray(n.articles) ? n.articles : []
+        });
+      });
+    });
+    items.sort(function(a, b) {
+      var lo = levelRank(a.level) - levelRank(b.level);
+      if (lo !== 0) return lo;
+      if (a.kind !== b.kind) return a.kind === 'event' ? -1 : 1;
+      var sa = a.kind === 'event' ? (a.pivot && a.pivot.alert_score) || 0 : (a.score || 0);
+      var sb = b.kind === 'event' ? (b.pivot && b.pivot.alert_score) || 0 : (b.score || 0);
+      return sb - sa;
+    });
+    return items;
+  }
+
+  function renderCurrentAlerts() {
+    var container = document.getElementById('active-alerts');
+    var meta = document.getElementById('section-active-meta');
+    if (!container) return;
+    var T = window.t || function(k){ return k; };
+    var items = getCurrentAlertItems();
+
+    // Méta de la période courante
+    var periods = (graphData && graphData.meta && graphData.meta.periods) || [];
+    var latestLabel = periods.length ? formatPeriodLabel(periods[periods.length - 1].label) : '';
+    if (meta) meta.textContent = latestLabel + ' · ' + items.length + ' ' + (items.length > 1 ? T('alertes.signal_many') || 'signaux' : T('alertes.signal_one') || 'signal');
+
+    if (!items.length) {
+      container.innerHTML = '<div class="alerts-empty">' + escapeHtml(T('alertes.no_alerts_current') || 'Aucune alerte en cours pour les filtres sélectionnés.') + '</div>';
+      return;
+    }
+    // Grouper par pays si filtre = all
+    if (filterCountry === 'all') {
+      var byCountry = {};
+      items.forEach(function(it) {
+        if (!byCountry[it.country]) byCountry[it.country] = [];
+        byCountry[it.country].push(it);
+      });
+      var html = '';
+      getActiveCountries().forEach(function(c) {
+        var arr = byCountry[c];
+        if (!arr || !arr.length) return;
+        var label = T('country.' + c) || c;
+        html += '<div class="country-section">'
+          + '<div class="country-header">'
+          + '<span class="country-header-flag">' + escapeHtml(label) + '</span>'
+          + '<span class="country-header-count">' + arr.length + ' ' + (arr.length > 1 ? T('alertes.signal_many') || 'signaux' : T('alertes.signal_one') || 'signal') + '</span>'
+          + '</div>'
+          + '<div class="alerts-grid">' + arr.map(renderActiveCard).join('') + '</div>'
+          + '</div>';
+      });
+      container.innerHTML = html;
+    } else {
+      container.innerHTML = '<div class="alerts-grid">' + items.map(renderActiveCard).join('') + '</div>';
+    }
+  }
+
+  function renderActiveCard(item) {
+    var T = window.t || function(k){ return k; };
+    var country = item.country;
+    var qCountry = encodeURIComponent(country);
+    var countryStr = T('country.' + country) || country;
+
+    if (item.kind === 'event') {
+      var pivotId = item.pivot.id;
+      var allIds = [pivotId].concat(item.members.map(function(m){ return m.id; }));
+      var qNodes = encodeURIComponent(allIds.join(','));
+      var evoUrl = './evolution.html?country=' + qCountry + '&nodes=' + qNodes + '&mode=tracking&gran=week';
+      var cstUrl = './constellation.html?country=' + qCountry + '&node=' + encodeURIComponent(pivotId);
+      var statsUrl = './statistiques.html?pays=' + qCountry + '&objet=' + encodeURIComponent(pivotId);
+      var pivotIsAlert = !!item.pivot.alert_active;
+      var pivotBadge = pivotIsAlert
+        ? '<span class="alert-event-pivot-badge is-pivot-alert">' + escapeHtml(tierLabel(item.pivot.alert_level)) + '</span>'
+        : '<span class="alert-event-pivot-badge">' + escapeHtml(T('alertes.event_pivot_context') || 'Sujet') + '</span>';
+      var pivotSize = (typeof item.pivot.size === 'number') ? item.pivot.size : null;
+      var pivotTier = pivotSize !== null ? getSalienceTier(country, pivotSize) : null;
+      var pivotTierPill = pivotTier ? '<span class="alert-salience-pill salience-' + pivotTier + '">' + escapeHtml(salienceTierLabel(pivotTier)) + '</span>' : '';
+
+      var sortedMembers = item.members.slice().sort(function(a, b) {
+        var lo = LEVEL_ORDER.indexOf(a.alert_level) - LEVEL_ORDER.indexOf(b.alert_level);
+        if (lo !== 0) return lo;
+        return (b.containment || 0) - (a.containment || 0);
+      });
+      var membersHtml = sortedMembers.map(function(m) {
+        var mScore = (typeof m.alert_score === 'number') ? ('z ' + m.alert_score.toFixed(1) + '×') : '';
+        var mUrl = './evolution.html?country=' + qCountry + '&node=' + encodeURIComponent(m.id) + '&mode=tracking&gran=week';
+        return '<a class="event-member level-' + escapeHtml(m.alert_level) + '" href="' + escapeHtml(mUrl) + '">'
+          + escapeHtml(m.id)
+          + (mScore ? ' <span class="event-member-score">' + escapeHtml(mScore) + '</span>' : '')
+          + '</a>';
+      }).join('');
+
+      var arts = (item.sharedArticles || []).slice(0, 3);
+      var artsHtml = arts.map(function(a) {
+        return '<a class="alert-article-link" href="' + escapeHtml(a.url || '#') + '" target="_blank" rel="noopener">'
+          + (a.media_id ? '<span class="alert-article-media">' + escapeHtml(a.media_id) + '</span>' : '')
+          + '<span class="alert-article-title">' + escapeHtml(a.title || a.url || '') + '</span>'
+          + '</a>';
+      }).join('');
+
+      var totalMentions = (typeof item.pivot.n === 'number' ? item.pivot.n : 0)
+        + item.members.reduce(function(s, m){ return s + (typeof m.n === 'number' ? m.n : 0); }, 0);
+      var maxScore = (item.pivot.alert_active && typeof item.pivot.alert_score === 'number') ? item.pivot.alert_score : 0;
+      item.members.forEach(function(m) { if (typeof m.alert_score === 'number' && m.alert_score > maxScore) maxScore = m.alert_score; });
+
+      return '<div class="alert-card is-event level-' + escapeHtml(item.level) + '">'
+        + '<div class="alert-card-top">'
+        +   '<span class="alert-event-tag">' + escapeHtml(T('alertes.event_tag') || 'Événement') + '</span>'
+        +   '<a class="alert-event-pivot-name" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(pivotId) + '</a>'
+        +   pivotBadge
+        +   pivotTierPill
+        +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
+        + '</div>'
+        + '<div class="alert-event-summary">'
+        +   '<span class="event-stat"><b>' + item.members.length + '</b> ' + escapeHtml(T('alertes.event_entities') || 'entités liées') + '</span>'
+        +   '<span class="event-stat"><b>' + item.sharedCount + '</b> ' + escapeHtml(T('alertes.event_shared_short') || 'articles partagés') + '</span>'
+        +   '<span class="event-stat"><b>' + totalMentions + '</b> ' + escapeHtml(T('alertes.card_mentions') || 'mentions') + '</span>'
+        +   (maxScore > 0 ? '<span class="event-stat">z max <b>' + maxScore.toFixed(1) + '×</b></span>' : '')
+        + '</div>'
+        + '<div class="alert-event-members">' + membersHtml + '</div>'
+        + (artsHtml ? '<div class="alert-event-pivot-articles-label">' + escapeHtml(T('alertes.event_pivot_articles') || 'Articles partagés') + '</div><div class="alert-card-articles">' + artsHtml + '</div>' : '')
+        + '<div class="alert-card-nav">'
+        +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.nav_evolution') || 'Évolution') + ' (' + (item.members.length + 1) + ') <span aria-hidden="true">→</span></a>'
+        +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl) + '">' + escapeHtml(T('alertes.nav_constellation') || 'Constellation') + ' <span aria-hidden="true">→</span></a>'
+        +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl) + '">' + escapeHtml(T('alertes.nav_stats') || 'Statistiques') + ' <span aria-hidden="true">→</span></a>'
+        + '</div>'
+        + '</div>';
+    }
+
+    // Alerte simple
+    var qNode = encodeURIComponent(item.id);
+    var evoUrl2 = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=week';
+    var cstUrl2 = './constellation.html?country=' + qCountry + '&node=' + qNode;
+    var statsUrl2 = './statistiques.html?pays=' + qCountry + '&objet=' + qNode;
+    var levelLabel = tierLabel(item.level);
+    var scoreStr = item.score !== null ? item.score.toFixed(1) + '×' : '—';
+    var topShareStr = item.topShare !== null ? Math.round(item.topShare * 100) + '%' : '—';
+    var peakStr = item.peakRatio !== null ? Math.round(item.peakRatio * 100) + '%' : '—';
+    var deltaStr = item.delta !== null ? (item.delta >= 0 ? '+' : '') + item.delta.toFixed(1) : '—';
+    var alertTier = (typeof item.size === 'number') ? getSalienceTier(country, item.size) : null;
+    var tierPill = alertTier ? '<span class="alert-salience-pill salience-' + alertTier + '">' + escapeHtml(salienceTierLabel(alertTier)) + '</span>' : '';
+
+    var artsHtml2 = (item.articles || []).slice(0, 3).map(function(a) {
+      var url = (typeof a.url === 'string' && a.url) ? escapeHtml(a.url) : '#';
+      var title = (typeof a.title === 'string' && a.title) ? escapeHtml(a.title) : 'Article';
+      var media = (typeof a.media_id === 'string') ? escapeHtml(a.media_id) : '';
+      return '<a class="alert-article-link" href="' + url + '" target="_blank" rel="noopener">'
+        + (media ? '<span class="alert-article-media">' + media + '</span>' : '')
+        + '<span class="alert-article-title">' + title + '</span>'
+        + '</a>';
+    }).join('');
+
+    return '<div class="alert-card level-' + escapeHtml(item.level) + '">'
+      + '<div class="alert-card-top">'
+      +   '<span class="alert-card-badge">' + escapeHtml(levelLabel) + '</span>'
+      +   '<a class="alert-card-name" href="' + escapeHtml(evoUrl2) + '">' + escapeHtml(item.id) + '</a>'
+      +   tierPill
+      +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
+      + '</div>'
+      + '<div class="alert-card-stats">'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_score') || 'score z') + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(topShareStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_top_share') || 'part du top') + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(peakStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_peak_ratio') || 'vs pic') + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_delta') || 'delta') + '</span></div>'
+      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + item.n + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_mentions') || 'mentions') + '</span></div>'
+      + '</div>'
+      + (artsHtml2 ? '<div class="alert-card-articles">' + artsHtml2 + '</div>' : '')
+      + '<div class="alert-card-nav">'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl2) + '">' + escapeHtml(T('alertes.nav_evolution') || 'Évolution') + ' <span aria-hidden="true">→</span></a>'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl2) + '">' + escapeHtml(T('alertes.nav_constellation') || 'Constellation') + ' <span aria-hidden="true">→</span></a>'
+      +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl2) + '">' + escapeHtml(T('alertes.nav_stats') || 'Statistiques') + ' <span aria-hidden="true">→</span></a>'
+      + '</div>'
+      + '</div>';
+  }
+
+  // ─── Section "ÉVÉNEMENTS RÉCENTS" — chronique ────────────────
+  function buildRecentEpisodes() {
+    if (!timeseriesData) return [];
+    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+    var all = [];
+    countries.forEach(function(country) {
+      var matrix = buildPerCountryDayMatrix(country);
+      Object.keys(matrix).forEach(function(id) {
+        var byDay = matrix[id];
+        var maxL = null;
+        Object.keys(byDay).forEach(function(d) {
+          var l = byDay[d].level;
+          if (!maxL || levelRank(l) < levelRank(maxL)) maxL = l;
+        });
+        if (!maxL || levelRank(maxL) > levelRank(filterMinLevel)) return;
+        var eps = buildEpisodesForObject(byDay);
+        eps.forEach(function(e) {
+          if (levelRank(e.maxLevel) > levelRank(filterMinLevel)) return;
+          e.id = id; e.country = country;
+          all.push(e);
+        });
+      });
+    });
+    // Trier: gravité décroissante puis durée décroissante
+    all.sort(function(a, b) {
+      var lo = levelRank(a.maxLevel) - levelRank(b.maxLevel);
+      if (lo !== 0) return lo;
+      return b.durationDays - a.durationDays;
+    });
+    return all;
+  }
+
+  function renderRecentEvents() {
+    var container = document.getElementById('recent-events');
+    if (!container) return;
+    var T = window.t || function(k){ return k; };
+    var episodes = buildRecentEpisodes();
+    if (!episodes.length) {
+      container.innerHTML = '<div class="alerts-empty">' + escapeHtml(T('alertes.no_recent_events') || 'Aucun événement récent pour ces filtres.') + '</div>';
+      return;
+    }
+    // Limiter à 30 cartes pour ne pas surcharger
+    var cap = 30;
+    var displayed = episodes.slice(0, cap);
+    var more = episodes.length - displayed.length;
+    var html = '<div class="recent-events-grid">' + displayed.map(renderRecentCard).join('') + '</div>';
+    if (more > 0) {
+      html += '<div class="recent-events-more">'
+        + escapeHtml(T('alertes.recent_events_more', { n: more }) || ('… +' + more + ' autres dans le tableau pliable ci-dessous'))
+        + '</div>';
+    }
     container.innerHTML = html;
   }
 
-  function getSalienceTierForCountry(country, size) {
-    var src = timeseriesData || graphData;
-    if (!src || !src.meta || !src.meta.salience_tiers) return null;
-    var tiers = src.meta.salience_tiers[country];
-    if (!tiers || typeof size !== 'number') return null;
-    var order = ['extreme', 'very_high', 'high', 'moderate'];
-    for (var i = 0; i < order.length; i++) {
-      var k = order[i];
-      if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
-    }
-    return null;
-  }
-  function salienceTierLabelLocal(tier) {
+  function renderRecentCard(e) {
     var T = window.t || function(k){ return k; };
-    return T('evolution.salience_' + tier) || tier;
+    var qCountry = encodeURIComponent(e.country);
+    var qNode = encodeURIComponent(e.id);
+    var evoUrl = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
+    var cTitle = T('country.' + e.country) || e.country;
+    var peakTier = getSalienceTier(e.country, e.peakSalience);
+    var peakHtml = peakTier
+      ? '<span class="ep-salience-pill salience-' + peakTier + '">' + escapeHtml(salienceTierLabel(peakTier)) + ' · ' + e.peakSalience.toFixed(1) + '</span>'
+      : (e.peakSalience ? e.peakSalience.toFixed(1) : '—');
+    var topShareStr = e.maxTopShare ? Math.round(e.maxTopShare * 100) + '%' : '—';
+    var dateRange = formatDayShort(e.firstDay) + (e.firstDay !== e.lastDay ? ' → ' + formatDayShort(e.lastDay) : '');
+    var durationStr = e.durationDays + ' ' + (e.durationDays > 1 ? T('cycles.days') || 'jours' : T('cycles.day') || 'jour');
+
+    return '<a class="recent-card level-' + escapeHtml(e.maxLevel) + '" href="' + escapeHtml(evoUrl) + '">'
+      + '<div class="recent-card-top">'
+      +   '<span class="recent-card-tier tier-' + e.maxLevel + '">' + escapeHtml(tierLabel(e.maxLevel)) + '</span>'
+      +   '<span class="recent-card-country">' + escapeHtml(cTitle) + '</span>'
+      + '</div>'
+      + '<div class="recent-card-name">' + escapeHtml(e.id) + '</div>'
+      + '<div class="recent-card-meta">'
+      +   '<span class="recent-card-dates">' + escapeHtml(dateRange) + '</span>'
+      +   '<span class="recent-card-duration">' + escapeHtml(durationStr) + '</span>'
+      + '</div>'
+      + '<div class="recent-card-bottom">'
+      +   '<span class="recent-card-peak">' + escapeHtml(T('alertes.recent_peak') || 'Pic') + ': ' + peakHtml + '</span>'
+      +   '<span class="recent-card-share">' + escapeHtml(T('alertes.recent_share') || 'Top max') + ': ' + topShareStr + '</span>'
+      + '</div>'
+      + '</a>';
   }
 
-  function renderEpisodesTable(episodes) {
+  // ─── Tableau pliable des épisodes ─────────────────────────────
+  function renderEpisodesTable() {
     var wrap = document.getElementById('episodes-table-wrap');
-    if (!wrap) return;
+    if (!wrap || !timeseriesData) return;
     var T = window.t || function(k){ return k; };
-    if (!episodes.length) {
-      wrap.innerHTML = '<div class="cycles-empty">' + escapeHtml(T('cycles.episodes_empty')) + '</div>';
+    var all = buildRecentEpisodes();
+    if (!all.length) {
+      wrap.innerHTML = '<div class="alerts-empty">' + escapeHtml(T('cycles.episodes_empty') || 'Aucun épisode pour ces filtres.') + '</div>';
       return;
     }
-    var sorted = episodes.slice().sort(function(a, b) {
-      var av, bv;
-      if (cyclesSortBy === 'duration')           { av = a.durationDays; bv = b.durationDays; }
-      else if (cyclesSortBy === 'maxLevel')      { av = -levelRank(a.maxLevel); bv = -levelRank(b.maxLevel); }
-      else if (cyclesSortBy === 'peakSalience')  { av = a.peakSalience || 0; bv = b.peakSalience || 0; }
-      else if (cyclesSortBy === 'start')         { av = a.firstDay; bv = b.firstDay; }
-      else if (cyclesSortBy === 'subject')       { av = a.id; bv = b.id; }
-      else if (cyclesSortBy === 'country')       { av = a.country; bv = b.country; }
-      else                                        { av = a.maxTopShare; bv = b.maxTopShare; }
-      var cmp = av < bv ? -1 : av > bv ? 1 : 0;
-      return cyclesSortDir === 'asc' ? cmp : -cmp;
-    });
-    function thCls(col) { return cyclesSortBy === col ? ' class="sort-' + cyclesSortDir + '"' : ''; }
+    // Tableau complet trié par durée
+    all.sort(function(a, b) { return b.durationDays - a.durationDays; });
     var html = '<table class="episodes-table"><thead><tr>'
-      + '<th data-sort="subject"' + thCls('subject') + '>' + escapeHtml(T('cycles.col_subject')) + '</th>'
-      + '<th data-sort="country"' + thCls('country') + '>' + escapeHtml(T('cycles.col_country')) + '</th>'
-      + '<th data-sort="start"' + thCls('start') + '>' + escapeHtml(T('cycles.col_start')) + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_end')) + '</th>'
-      + '<th data-sort="duration"' + thCls('duration') + '>' + escapeHtml(T('cycles.col_duration')) + '</th>'
-      + '<th data-sort="maxLevel"' + thCls('maxLevel') + '>' + escapeHtml(T('cycles.col_max_level')) + '</th>'
-      + '<th data-sort="peakSalience"' + thCls('peakSalience') + '>' + escapeHtml(T('cycles.col_peak_salience')) + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_top_share_max')) + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_subject') || 'Sujet') + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_country') || 'Pays') + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_start') || 'Début') + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_end') || 'Fin') + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_duration') || 'Durée') + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_max_level') || 'Niveau max') + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_peak_salience') || 'Pic saillance') + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_top_share_max') || 'Part max') + '</th>'
       + '</tr></thead><tbody>';
-    for (var i = 0; i < sorted.length; i++) {
-      var e = sorted[i];
+    all.forEach(function(e) {
       var qCountry = encodeURIComponent(e.country);
       var qNode = encodeURIComponent(e.id);
       var url = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
       var cTitle = T('country.' + e.country) || e.country;
-      var peakTier = getSalienceTierForCountry(e.country, e.peakSalience);
-      var peakCellHtml = peakTier
-        ? '<span class="ep-salience-pill salience-' + peakTier + '">' + escapeHtml(salienceTierLabelLocal(peakTier)) + ' · ' + e.peakSalience.toFixed(1) + '</span>'
+      var peakTier = getSalienceTier(e.country, e.peakSalience);
+      var peakHtml = peakTier
+        ? '<span class="ep-salience-pill salience-' + peakTier + '">' + escapeHtml(salienceTierLabel(peakTier)) + ' · ' + e.peakSalience.toFixed(1) + '</span>'
         : (e.peakSalience ? e.peakSalience.toFixed(1) : '—');
       html += '<tr data-href="' + escapeHtml(url) + '">'
         + '<td class="ep-subject">' + escapeHtml(e.id) + '</td>'
         + '<td>' + escapeHtml(cTitle) + '</td>'
         + '<td>' + escapeHtml(formatDayShort(e.firstDay)) + '</td>'
         + '<td>' + escapeHtml(formatDayShort(e.lastDay)) + '</td>'
-        + '<td class="ep-num">' + e.durationDays + ' ' + escapeHtml(T(e.durationDays > 1 ? 'cycles.days' : 'cycles.day')) + '</td>'
-        + '<td><span class="ep-tier tier-' + e.maxLevel + '">' + escapeHtml(tierLabelC(e.maxLevel)) + '</span></td>'
-        + '<td>' + peakCellHtml + '</td>'
+        + '<td class="ep-num">' + e.durationDays + ' j</td>'
+        + '<td><span class="ep-tier tier-' + e.maxLevel + '">' + escapeHtml(tierLabel(e.maxLevel)) + '</span></td>'
+        + '<td>' + peakHtml + '</td>'
         + '<td class="ep-share">' + (e.maxTopShare ? Math.round(e.maxTopShare * 100) + '%' : '—') + '</td>'
         + '</tr>';
-    }
+    });
     html += '</tbody></table>';
     wrap.innerHTML = html;
-    wrap.querySelectorAll('th[data-sort]').forEach(function(th) {
-      th.addEventListener('click', function() {
-        var col = th.getAttribute('data-sort');
-        if (cyclesSortBy === col) cyclesSortDir = cyclesSortDir === 'asc' ? 'desc' : 'asc';
-        else { cyclesSortBy = col; cyclesSortDir = (col === 'subject' || col === 'country' || col === 'start') ? 'asc' : 'desc'; }
-        renderEpisodesTable(episodes);
-      });
-    });
     wrap.querySelectorAll('tr[data-href]').forEach(function(tr) {
-      tr.addEventListener('click', function() {
-        window.location.href = tr.getAttribute('data-href');
-      });
+      tr.addEventListener('click', function() { window.location.href = tr.getAttribute('data-href'); });
     });
   }
 
-  function renderCycles() {
-    if (!timeseriesData) return;
-    var allDays = buildAllDays();
-    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
-    var rowsByCountry = [];
-    var allEpisodes = [];
-    countries.forEach(function(country) {
-      var matrix = buildPerCountryDayMatrix(country);
-      var rows = [];
-      Object.keys(matrix).forEach(function(id) {
-        var byDay = matrix[id];
-        var tiers = Object.values(byDay).map(function(d) { return d.level; });
-        var rowMaxLevel = tiers.reduce(function(acc, l) { return acc === null ? l : maxLevel(acc, l); }, null);
-        if (!rowMaxLevel) return;
-        // Filtre niveau min: par défaut on prend "alert" et plus
-        if (levelRank(rowMaxLevel) > levelRank('alert')) return;
-        rows.push({ id: id, byDay: byDay, maxLevel: rowMaxLevel, totalDays: tiers.length });
-        var eps = buildEpisodesForObject(byDay);
-        eps.forEach(function(e) {
-          e.id = id; e.country = country;
-          if (levelRank(e.maxLevel) <= levelRank('alert')) allEpisodes.push(e);
-        });
-      });
-      rows.sort(function(a, b) {
-        var lo = levelRank(a.maxLevel) - levelRank(b.maxLevel);
-        if (lo !== 0) return lo;
-        return b.totalDays - a.totalDays;
-      });
-      if (rows.length) rowsByCountry.push({ country: country, rows: rows });
-    });
-    renderCyclesSummary(allEpisodes);
-    renderHeatmap(rowsByCountry, allDays);
-    renderEpisodesTable(allEpisodes);
-  }
-
-  function getActiveCountries() {
-    if (!graphData) return [];
-    // Ordre fixe pour cohérence d'affichage: QC, CAN, USA.
-    var preferred = ['QC', 'CAN', 'USA'];
-    var available = Object.keys(graphData.graphs || {});
-    var ordered = [];
-    preferred.forEach(function(c) { if (available.indexOf(c) !== -1) ordered.push(c); });
-    available.forEach(function(c) { if (ordered.indexOf(c) === -1) ordered.push(c); });
-    return ordered;
-  }
-
-  function getLatestPeriodKey() {
-    if (!graphData || !graphData.meta || !Array.isArray(graphData.meta.periods)) return null;
-    var periods = graphData.meta.periods;
-    if (!periods.length) return null;
-    return periods[periods.length - 1].key;
-  }
-
-  function getLatestActiveMap(countries, latestKey) {
-    var out = {};
-    if (!latestKey) return out;
-    for (var ci = 0; ci < countries.length; ci++) {
-      var country = countries[ci];
-      var gd = graphData.graphs[country] && graphData.graphs[country][latestKey];
-      if (!gd) continue;
-      var nodes = gd.nodes || [];
-      for (var ni = 0; ni < nodes.length; ni++) {
-        var node = nodes[ni];
-        var level = String(node.alert_level || 'none');
-        if (!node.alert_active) continue;
-        if (level === 'none' || level === 'normal' || level === 'emerging') continue;
-        out[country + '::' + node.id] = true;
-      }
-    }
-    return out;
-  }
-
-  function numOrNull(value) {
-    var n = Number(value);
-    return isFinite(n) ? n : null;
-  }
-
-  // Le label des périodes est pré-calculé en anglais par le pipeline R
-  // ("May 09 · 8-12 EDT"). On le ré-écrit en français quand la langue
-  // courante est FR : "9 mai · 8-12 HAE".
-  var MONTHS_EN_TO_FR = {
-    Jan: 'janv.', Feb: 'févr.', Mar: 'mars', Apr: 'avr.',
-    May: 'mai', Jun: 'juin', Jul: 'juil.', Aug: 'août',
-    Sep: 'sept.', Oct: 'oct.', Nov: 'nov.', Dec: 'déc.'
-  };
-  function currentLang() {
-    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
-  }
-  function formatPeriodLabel(rawLabel) {
-    if (!rawLabel) return '';
-    if (currentLang() !== 'fr') return rawLabel;
-    return String(rawLabel)
-      .replace(/^([A-Z][a-z]{2})\s+0?(\d+)/, function(_, mon, day) {
-        var fr = MONTHS_EN_TO_FR[mon];
-        if (!fr) return _;
-        return parseInt(day, 10) + ' ' + fr;
-      })
-      .replace(/\bEDT\b/, 'HAE')
-      .replace(/\bEST\b/, 'HNE');
-  }
-
-  // ── Mini-timeline: agrégation alertes par période ──
-  function buildTimelineData() {
-    if (!graphData || !graphData.meta || !Array.isArray(graphData.meta.periods)) return [];
-    var periods = graphData.meta.periods;
-    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
-    var latestKey = getLatestPeriodKey();
-    var out = [];
-    for (var pi = 0; pi < periods.length; pi++) {
-      var p = periods[pi];
-      var alertCount = 0;
-      var eventCount = 0;
-      var maxLevel = null; // 'strong' | 'alert' | 'watch' | null
-      for (var ci = 0; ci < countries.length; ci++) {
-        var country = countries[ci];
-        var gd = graphData.graphs[country] && graphData.graphs[country][p.key];
-        if (!gd) continue;
-        var nodes = gd.nodes || [];
-        for (var ni = 0; ni < nodes.length; ni++) {
-          var node = nodes[ni];
-          if (!node.alert_active) continue;
-          var lvl = node.alert_level;
-          if (['strong','alert','watch'].indexOf(lvl) === -1) continue;
-          alertCount++;
-          if (!maxLevel || LEVEL_ORDER.indexOf(lvl) < LEVEL_ORDER.indexOf(maxLevel)) {
-            maxLevel = lvl;
-          }
-        }
-        var events = Array.isArray(gd.events) ? gd.events : [];
-        eventCount += events.length;
-      }
-      out.push({
-        key: p.key,
-        label: p.label || p.key,
-        alertCount: alertCount,
-        eventCount: eventCount,
-        maxLevel: maxLevel,
-        isLatest: p.key === latestKey
-      });
-    }
-    return out;
-  }
-
-  function renderTimeline() {
-    var container = document.getElementById('alertes-timeline');
-    var track = document.getElementById('alertes-timeline-track');
-    var resetBtn = document.getElementById('alertes-timeline-reset');
-    if (!container || !track) return;
-    var data = buildTimelineData();
-    if (!data.length) {
-      container.hidden = true;
-      return;
-    }
-    container.hidden = false;
-
-    var T = window.t || function(k){ return k; };
-    // Calcul de la hauteur normalisée des bars
-    var maxCount = data.reduce(function(m, d) { return d.alertCount > m ? d.alertCount : m; }, 1);
-    var html = data.map(function(d) {
-      var heightPct = d.alertCount > 0 ? Math.max(12, Math.round(d.alertCount / maxCount * 100)) : 8;
-      var lvlClass = d.maxLevel ? ' lvl-' + d.maxLevel : '';
-      var selected = d.key === filterPeriodKey ? ' is-selected' : '';
-      var latest = d.isLatest ? ' is-latest' : '';
-      var tip = T('alertes.timeline_bar_tip', {
-        period: formatPeriodLabel(d.label),
-        alerts: d.alertCount,
-        events: d.eventCount
-      });
-      return '<button type="button" class="timeline-bar' + lvlClass + selected + latest + '"'
-        + ' style="height:' + heightPct + '%"'
-        + ' data-period-key="' + escapeHtml(d.key) + '"'
-        + ' title="' + escapeHtml(tip) + '"'
-        + ' aria-label="' + escapeHtml(tip) + '"></button>';
-    }).join('');
-    track.innerHTML = html;
-
-    // Bouton retour au live: visible si période sélectionnée ≠ latest
-    if (resetBtn) {
-      resetBtn.hidden = !filterPeriodKey;
-    }
-
-    // Délégation de clic
-    track.querySelectorAll('.timeline-bar').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var k = btn.getAttribute('data-period-key');
-        if (filterPeriodKey === k) {
-          // Re-clic = désélectionner et revenir au live
-          filterPeriodKey = null;
-        } else {
-          filterPeriodKey = k;
-        }
-        render();
-      });
-    });
-  }
-
-  function renderMethodology() {
-    var box = document.getElementById('alertes-methodology');
-    if (!box) return;
-    if (!graphData || !graphData.meta) {
-      box.innerHTML = '';
-      return;
-    }
-
-    var thr = graphData.meta.alert_thresholds || {};
-    var lookbackDays = numOrNull(thr.lookback_days);
-    if (lookbackDays === null) lookbackDays = 30;
-    var T = window.t || function(k){ return k; };
-    var subtitleEl = document.getElementById('alertes-subtitle-window');
-    if (subtitleEl) subtitleEl.textContent = T('alertes.subtitle_window', { days: lookbackDays });
-
-    box.innerHTML = ''
-      + '<div class="alertes-methodology-line">'
-      + T('alertes.methodology_intro', { days: lookbackDays })
-      + '</div>'
-      + '<a class="alertes-methodology-link" href="./methodologie.html#alertes">'
-      + escapeHtml(T('alertes.methodology_link')) + ' <span aria-hidden="true">→</span>'
-      + '</a>';
-  }
-
-  function getAlertGroups() {
-    if (!graphData) return [];
-    const periods   = (graphData.meta && graphData.meta.periods ? graphData.meta.periods : []).slice().reverse();
-    const countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
-    const latestKey = getLatestPeriodKey();
-    const latestActiveMap = getLatestActiveMap(countries, latestKey);
-    const searchLow = filterSearch.trim().toLowerCase();
-    const groups    = [];
-
-    for (var pi = 0; pi < periods.length; pi++) {
-      var period = periods[pi];
-      // Si une période est explicitement sélectionnée via la timeline,
-      // ne montrer QUE celle-là (override des filtres status).
-      if (filterPeriodKey && period.key !== filterPeriodKey) continue;
-      var alertsInPeriod = [];
-
-      for (var ci = 0; ci < countries.length; ci++) {
-        var country = countries[ci];
-        var gd = graphData.graphs[country] && graphData.graphs[country][period.key];
-        if (!gd) continue;
-
-        var nodes = gd.nodes || [];
-        var nodesById = {};
-        for (var nx = 0; nx < nodes.length; nx++) nodesById[nodes[nx].id] = nodes[nx];
-
-        // Indexer les events: on masque pivot + membres pour éviter les
-        // doublures (un pivot lui-même en alerte ne doit pas réapparaître
-        // comme alerte autonome à côté de sa carte événement).
-        var events = Array.isArray(gd.events) ? gd.events : [];
-        var inEvent = {};
-        for (var ei = 0; ei < events.length; ei++) {
-          var ev = events[ei];
-          if (!ev || !ev.pivot || !Array.isArray(ev.members)) continue;
-          if (ev.pivot.alert_active) inEvent[ev.pivot.id] = ei;
-          for (var mi = 0; mi < ev.members.length; mi++) {
-            inEvent[ev.members[mi].id] = ei;
-          }
-        }
-
-        for (var ni = 0; ni < nodes.length; ni++) {
-          var node  = nodes[ni];
-          var level = node.alert_level;
-          if (!level || level === 'normal' || level === 'none') continue;
-          var active = !!node.alert_active;
-          var key = country + '::' + node.id;
-          var isCurrent = period.key === latestKey && active;
-          var isEnded = period.key !== latestKey && active && !latestActiveMap[key];
-
-          // Si une période est sélectionnée via timeline, on ignore le
-          // filtre status: on montre toutes les alertes actives de la
-          // période choisie (à l'instant de cette période).
-          if (!filterPeriodKey) {
-            if (filterStatus === 'current' && !isCurrent) continue;
-            if (filterStatus === 'ended' && !isEnded) continue;
-            if ((filterStatus === 'current' || filterStatus === 'ended') && !active) continue;
-          } else {
-            if (!active) continue;
-          }
-          if (filterLevel !== 'all' && level !== filterLevel) continue;
-          if (searchLow && node.id.toLowerCase().indexOf(searchLow) === -1) continue;
-
-          // Skip si cette alerte est membre OU pivot actif d'un événement
-          // (sera affichée dans la carte événement, pas en doublon).
-          if (inEvent[node.id] !== undefined) continue;
-
-          var score = numOrNull(node.alert_score);
-          var delta = numOrNull(node.alert_delta);
-          var baseline = numOrNull(node.alert_baseline);
-          var peakRatio = numOrNull(node.alert_peak_ratio);
-          var yearPeak  = numOrNull(node.alert_year_peak);
-          var topShare  = numOrNull(node.alert_top_share);
-          alertsInPeriod.push({
-            kind:     'alert',
-            id:       node.id,
-            level:    level,
-            score:    score,
-            delta:    delta,
-            baseline: baseline,
-            peakRatio: peakRatio,
-            yearPeak:  yearPeak,
-            topShare:  topShare,
-            size:     numOrNull(node.size),
-            n:        node.n || 0,
-            active:   active,
-            status:   isCurrent ? 'current' : (isEnded ? 'ended' : 'other'),
-            articles: Array.isArray(node.articles) ? node.articles : [],
-            country:  country,
-          });
-        }
-
-        // Construire les "alertes événement" (1 par cluster avec ≥1 membre)
-        for (var ei2 = 0; ei2 < events.length; ei2++) {
-          var ev = events[ei2];
-          if (!ev || !ev.pivot || !Array.isArray(ev.members) || !ev.members.length) continue;
-
-          // Niveau effectif de l'événement = max niveau parmi pivot + membres
-          var allLevels = ev.members.map(function(m) { return m.alert_level; });
-          if (ev.pivot.alert_active && ev.pivot.alert_level) allLevels.push(ev.pivot.alert_level);
-          var topLevel = 'watch';
-          for (var li = 0; li < LEVEL_ORDER.length; li++) {
-            if (allLevels.indexOf(LEVEL_ORDER[li]) !== -1) { topLevel = LEVEL_ORDER[li]; break; }
-          }
-
-          // Statut = current si la période est la latest ET au moins un membre/pivot actif
-          var ACTIVE_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert', 'watch'];
-          var anyActive = ev.members.some(function(m) {
-            return ACTIVE_LEVELS.indexOf(m.alert_level) !== -1;
-          }) || !!ev.pivot.alert_active;
-          var isCurrent = period.key === latestKey && anyActive;
-
-          // Pour le filtre "current/ended" on suit la même logique que pour les alertes
-          var isEnded = period.key !== latestKey && anyActive
-            && !ev.members.every(function(m) { return latestActiveMap[country + '::' + m.id]; });
-
-          if (!filterPeriodKey) {
-            if (filterStatus === 'current' && !isCurrent) continue;
-            if (filterStatus === 'ended' && !isEnded) continue;
-          } else {
-            if (!anyActive) continue;
-          }
-          if (filterLevel !== 'all' && topLevel !== filterLevel) continue;
-
-          // Filtre search: matcher pivot ou n'importe quel membre
-          if (searchLow) {
-            var match = ev.pivot.id.toLowerCase().indexOf(searchLow) !== -1
-              || ev.members.some(function(m) { return m.id.toLowerCase().indexOf(searchLow) !== -1; });
-            if (!match) continue;
-          }
-
-          // Articles à afficher = exactement les articles partagés (pivot ∩ membres),
-          // déjà calculés et embarqués dans l'event par le pipeline R.
-          var sharedArticles = Array.isArray(ev.shared_articles) ? ev.shared_articles : [];
-
-          // Score "représentatif" = max alert_score parmi pivot+membres pour le tri
-          var topScore = ev.pivot.alert_score || 0;
-          ev.members.forEach(function(m) {
-            if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
-          });
-
-          alertsInPeriod.push({
-            kind:        'event',
-            level:       topLevel,
-            score:       topScore,
-            country:     country,
-            status:      isCurrent ? 'current' : (isEnded ? 'ended' : 'other'),
-            pivot:       ev.pivot,
-            members:     ev.members,
-            articles:    sharedArticles,
-            sharedCount: numOrNull(ev.shared_articles_count) || sharedArticles.length,
-          });
-        }
-      }
-
-      if (!alertsInPeriod.length) continue;
-
-      alertsInPeriod.sort(function(a, b) {
-        var lo = LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level);
-        if (lo !== 0) return lo;
-        // Events avant alertes individuelles à level égal (plus structurant)
-        if (a.kind !== b.kind) return a.kind === 'event' ? -1 : 1;
-        return (b.score || 0) - (a.score || 0);
-      });
-
-      groups.push({ period: period, alerts: alertsInPeriod, isFirst: groups.length === 0 });
-    }
-    return groups;
-  }
-
-  function renderCard(alert) {
-    if (alert.kind === 'event') return renderEventCard(alert);
-    return renderSimpleAlertCard(alert);
-  }
-
-  function renderEventCard(ev) {
-    var T = window.t || function(k){ return k; };
-    var countryStr = T('country.' + ev.country) || ev.country;
-    var pivotId = ev.pivot.id;
-    var qCountry = encodeURIComponent(ev.country);
-    var allIds = [pivotId].concat(ev.members.map(function(m){ return m.id; }));
-    var qNodes = encodeURIComponent(allIds.join(','));
-    var evoUrl = './evolution.html?country=' + qCountry + '&nodes=' + qNodes + '&mode=tracking&gran=week';
-    var cstUrl = './constellation.html?country=' + qCountry + '&node=' + encodeURIComponent(pivotId);
-    var statsUrl = './statistiques.html?pays=' + qCountry + '&objet=' + encodeURIComponent(pivotId);
-
-    // Pivot: si lui-même en alerte active, afficher son badge avec le bon level
-    var pivotIsAlert = !!ev.pivot.alert_active;
-    var pivotBadgeHtml = '';
-    if (pivotIsAlert && ev.pivot.alert_level) {
-      var pl = ev.pivot.alert_level;
-      var plLabel = T('alertes.level_' + pl) || pl;
-      pivotBadgeHtml = '<span class="alert-event-pivot-badge is-pivot-alert" title="' + escapeHtml(T('alertes.event_pivot_in_alert_tip') || '') + '">'
-        + escapeHtml(plLabel) + '</span>';
-    } else {
-      pivotBadgeHtml = '<span class="alert-event-pivot-badge" title="' + escapeHtml(T('alertes.event_pivot_context_tip') || '') + '">'
-        + escapeHtml(T('alertes.event_pivot_context') || 'Pivot') + '</span>';
-    }
-
-    // Members pills (cliquables, naviguent vers évolution).
-    // Tri: niveau d'alerte décroissant (strong > alert > watch), puis
-    // containment décroissant. Met les signaux les plus forts en premier.
-    var sortedMembers = ev.members.slice().sort(function(a, b) {
-      var lo = LEVEL_ORDER.indexOf(a.alert_level) - LEVEL_ORDER.indexOf(b.alert_level);
-      if (lo !== 0) return lo;
-      return (b.containment || 0) - (a.containment || 0);
-    });
-    var membersHtml = '';
-    for (var mi = 0; mi < sortedMembers.length; mi++) {
-      var m = sortedMembers[mi];
-      var mScore = (typeof m.alert_score === 'number') ? ('z ' + m.alert_score.toFixed(1) + '×') : '';
-      var mUrl = './evolution.html?country=' + qCountry + '&node=' + encodeURIComponent(m.id) + '&mode=tracking&gran=week';
-      var mLevelLabel = T('alertes.level_' + m.alert_level) || m.alert_level;
-      var containStr = (typeof m.containment === 'number') ? Math.round(m.containment * 100) + '%' : '—';
-      var nStr = (typeof m.n === 'number') ? m.n : '—';
-      var tooltip = T('alertes.event_member_tip', {
-        level: mLevelLabel,
-        score: mScore || '—',
-        containment: containStr,
-        mentions: nStr
-      });
-      membersHtml += '<a class="event-member level-' + escapeHtml(m.alert_level) + '" href="' + escapeHtml(mUrl) + '" title="' + escapeHtml(tooltip) + '">'
-        + escapeHtml(m.id)
-        + (mScore ? ' <span class="event-member-score">' + escapeHtml(mScore) + '</span>' : '')
-        + '</a>';
-    }
-
-    var articlesHtml = '';
-    var arts = (ev.articles || []).slice(0, 4);
-    for (var ai = 0; ai < arts.length; ai++) {
-      var a = arts[ai];
-      var url = (typeof a.url === 'string' && a.url) ? escapeHtml(a.url) : '#';
-      var title = (typeof a.title === 'string' && a.title) ? escapeHtml(a.title) : 'Article';
-      var media = (typeof a.media_id === 'string') ? escapeHtml(a.media_id) : '';
-      articlesHtml += '<a class="alert-article-link" href="' + url + '" target="_blank" rel="noopener">'
-        + (media ? '<span class="alert-article-media">' + media + '</span>' : '')
-        + '<span class="alert-article-title">' + title + '</span>'
-        + '</a>';
-    }
-
-    var memberCountStr = T('alertes.event_members_count', { n: ev.members.length });
-    var sharedCountStr = T('alertes.event_shared_articles', { n: ev.sharedCount });
-
-    // KPIs agrégés sur le cluster (pivot + membres)
-    var totalMentions = (typeof ev.pivot.n === 'number' ? ev.pivot.n : 0);
-    var maxScore = (ev.pivot.alert_active && typeof ev.pivot.alert_score === 'number') ? ev.pivot.alert_score : 0;
-    for (var ki = 0; ki < ev.members.length; ki++) {
-      var mk = ev.members[ki];
-      if (typeof mk.n === 'number') totalMentions += mk.n;
-      if (typeof mk.alert_score === 'number' && mk.alert_score > maxScore) maxScore = mk.alert_score;
-    }
-    var totalMentionsStr = T('alertes.event_total_mentions', { n: totalMentions });
-    var maxScoreStr = maxScore > 0 ? T('alertes.event_max_score', { score: maxScore.toFixed(1) }) : '';
-
-    // Palier de saillance du pivot (référence absolue par pays)
-    var pivotSize = (typeof ev.pivot.size === 'number') ? ev.pivot.size : null;
-    var pivotTier = pivotSize !== null ? getSalienceTier(ev.country, pivotSize) : null;
-    var pivotTierPill = pivotTier ? '<span class="alert-salience-pill salience-' + pivotTier + '" title="' + escapeHtml(T('alertes.salience_tip') || '') + '">' + escapeHtml(salienceTierLabel(pivotTier)) + '</span>' : '';
-
-    return '<div class="alert-card is-event level-' + escapeHtml(ev.level) + '">'
-      + '<div class="alert-card-top">'
-      +   '<span class="alert-event-tag">' + escapeHtml(T('alertes.event_tag') || 'Événement') + '</span>'
-      +   '<a class="alert-event-pivot-name" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(pivotId) + '</a>'
-      +   pivotBadgeHtml
-      +   pivotTierPill
-      +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
-      + '</div>'
-      + '<div class="alert-event-summary">'
-      +   '<span class="event-stat">' + memberCountStr + '</span>'
-      +   '<span class="event-stat">' + sharedCountStr + '</span>'
-      +   '<span class="event-stat">' + totalMentionsStr + '</span>'
-      +   (maxScoreStr ? '<span class="event-stat">' + maxScoreStr + '</span>' : '')
-      + '</div>'
-      + '<div class="alert-event-members">' + membersHtml + '</div>'
-      + (articlesHtml
-          ? '<div class="alert-event-pivot-articles-label">' + escapeHtml(T('alertes.event_pivot_articles') || 'Articles partagés') + '</div>'
-            + '<div class="alert-card-articles">' + articlesHtml + '</div>'
-          : '')
-      + '<div class="alert-card-nav">'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.nav_evolution')) + ' (' + (ev.members.length + 1) + ') <span aria-hidden="true">→</span></a>'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl) + '">' + escapeHtml(T('alertes.nav_constellation')) + ' <span aria-hidden="true">→</span></a>'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl) + '">' + escapeHtml(T('alertes.nav_stats')) + ' <span aria-hidden="true">→</span></a>'
-      + '</div>'
-      + '</div>';
-  }
-
-  function renderSimpleAlertCard(alert) {
-    var T = window.t || function(k){ return k; };
-    var levelLabel = T('alertes.level_' + alert.level) || alert.level;
-    var scoreStr   = alert.score !== null ? alert.score.toFixed(1) + '\u00d7' : '\u2014';
-    var deltaStr   = alert.delta !== null ? (alert.delta >= 0 ? '+' : '') + alert.delta.toFixed(1) : '\u2014';
-    var baselineStr = alert.baseline !== null ? alert.baseline.toFixed(2) : '\u2014';
-    var peakRatioStr = alert.peakRatio !== null ? Math.round(alert.peakRatio * 100) + '%' : '\u2014';
-    var peakTitle = alert.yearPeak !== null
-      ? T('alertes.card_peak_tip_year', { value: alert.yearPeak.toFixed(2) })
-      : T('alertes.card_peak_tip_none');
-    var topShareStr = alert.topShare !== null ? Math.round(alert.topShare * 100) + '%' : '\u2014';
-    var topShareTitle = T('alertes.card_top_share_tip');
-    var countryStr = T('country.' + alert.country) || alert.country;
-
-    var articlesHtml = '';
-    var arts = alert.articles.slice(0, 3);
-    for (var i = 0; i < arts.length; i++) {
-      var a = arts[i];
-      var url   = (typeof a.url   === 'string' && a.url)   ? escapeHtml(a.url)   : '#';
-      var title = (typeof a.title === 'string' && a.title) ? escapeHtml(a.title) : 'Article';
-      var media = (typeof a.media_id === 'string')         ? escapeHtml(a.media_id) : '';
-      articlesHtml += '<a class="alert-article-link" href="' + url + '" target="_blank" rel="noopener">'
-        + (media ? '<span class="alert-article-media">' + media + '</span>' : '')
-        + '<span class="alert-article-title">' + title + '</span>'
-        + '</a>';
-    }
-
-    var qNode    = encodeURIComponent(alert.id);
-    var qCountry = encodeURIComponent(alert.country);
-    var evoUrl   = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=week';
-    var cstUrl   = './constellation.html?country=' + qCountry + '&node=' + qNode;
-    var statsUrl = './statistiques.html?pays=' + qCountry + '&objet=' + qNode;
-
-    // Palier de saillance (référence absolue par pays)
-    var alertTier = (typeof alert.size === 'number') ? getSalienceTier(alert.country, alert.size) : null;
-    var alertTierPill = alertTier ? '<span class="alert-salience-pill salience-' + alertTier + '" title="' + escapeHtml(T('alertes.salience_tip') || '') + '">' + escapeHtml(salienceTierLabel(alertTier)) + '</span>' : '';
-
-    return '<div class="alert-card level-' + escapeHtml(alert.level) + '">'
-      + '<div class="alert-card-top">'
-      +   '<span class="alert-card-badge">' + escapeHtml(levelLabel) + '</span>'
-      +   '<a class="alert-card-name" href="' + escapeHtml(evoUrl) + '" data-i18n-aria-label="alertes.card_name_aria" aria-label="Voir l\'évolution de ' + escapeHtml(alert.id) + '">'
-      +     escapeHtml(alert.id)
-      +   '</a>'
-      +   alertTierPill
-      +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
-      + '</div>'
-      + '<div class="alert-card-stats">'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_score')) + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(topShareTitle) + '">' + escapeHtml(topShareStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_top_share')) + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val" title="' + escapeHtml(peakTitle) + '">' + escapeHtml(peakRatioStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_peak_ratio')) + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_delta')) + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(String(alert.n)) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_mentions')) + '</span></div>'
-      + '</div>'
-      + (articlesHtml ? '<div class="alert-card-articles">' + articlesHtml + '</div>' : '')
-      + '<div class="alert-card-nav">'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.nav_evolution')) + ' <span aria-hidden="true">→</span></a>'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl) + '">' + escapeHtml(T('alertes.nav_constellation')) + ' <span aria-hidden="true">→</span></a>'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl) + '">' + escapeHtml(T('alertes.nav_stats')) + ' <span aria-hidden="true">→</span></a>'
-      + '</div>'
-      + '</div>';
-  }
-
-  function updateLivePill(groups) {
-    var text = document.getElementById('alertes-live-text');
-    if (!text) return;
-    var T0 = window.t || function(k){ return k; };
-    if (!groups.length) {
-      if (filterStatus === 'ended')      text.textContent = T0('alertes_pill.none_ended');
-      else if (filterStatus === 'all')   text.textContent = T0('alertes_pill.none_filters');
-      else                                text.textContent = T0('alertes_pill.none_active');
-      return;
-    }
-
-    var T = window.t || function(k){ return k; };
-    var totalSignals = groups.reduce(function(acc, g) { return acc + g.alerts.length; }, 0);
-    var latestLbl = formatPeriodLabel(groups[0].period.label || groups[0].period.key);
-    if (filterStatus === 'ended') {
-      text.textContent = T('alertes_pill.ended_count', { n: totalSignals, last: latestLbl });
-      return;
-    }
-    if (filterStatus === 'all') {
-      text.textContent = T('alertes_pill.signals_count', { n: totalSignals, last: latestLbl });
-      return;
-    }
-    var latestActive = groups.reduce(function(acc, g) {
-      return acc + (g.alerts || []).filter(function(a) { return a.status === 'current'; }).length;
-    }, 0);
-    text.textContent = T('alertes_pill.active_count', { n: latestActive, last: latestLbl });
-  }
-
-  function updateEvolutionCta(groups) {
-    var cta = document.getElementById('alertes-evo-cta');
-    var countEl = document.getElementById('alertes-evo-cta-count');
-    if (!cta || !countEl) return;
-
-    // Pays cible: filtre courant si spécifique, sinon celui qui a le plus
-    // de sujets visibles (evolution.html est mono-pays). On collecte les
-    // IDs uniques en incluant pivot+membres pour les cartes "événement"
-    // et l'id direct pour les alertes simples.
-    var perCountry = {}; // country -> Set of node ids
-    function add(country, id) {
-      if (!perCountry[country]) perCountry[country] = {};
-      perCountry[country][id] = true;
-    }
-    for (var gi = 0; gi < groups.length; gi++) {
-      var alerts = groups[gi].alerts;
-      for (var ai = 0; ai < alerts.length; ai++) {
-        var a = alerts[ai];
-        if (a.kind === 'event' && a.pivot) {
-          add(a.country, a.pivot.id);
-          (a.members || []).forEach(function(m) { add(a.country, m.id); });
-        } else if (a.id) {
-          add(a.country, a.id);
-        }
-      }
-    }
-    // Convertir en arrays
-    var perCountryArr = {};
-    Object.keys(perCountry).forEach(function(c) {
-      perCountryArr[c] = Object.keys(perCountry[c]);
-    });
-
-    var country = filterCountry;
-    if (country === 'all') {
-      var best = null, bestN = -1;
-      for (var c in perCountryArr) {
-        if (perCountryArr[c].length > bestN) { best = c; bestN = perCountryArr[c].length; }
-      }
-      country = best;
-    }
-
-    var nodes = country && perCountryArr[country] ? perCountryArr[country] : [];
-    if (!nodes.length) {
-      cta.classList.add('disabled');
-      cta.setAttribute('aria-disabled', 'true');
-      cta.removeAttribute('href');
-      countEl.textContent = '0';
-      return;
-    }
-
-    cta.classList.remove('disabled');
-    cta.setAttribute('aria-disabled', 'false');
-    countEl.textContent = String(nodes.length);
-    var url = './evolution.html?country=' + encodeURIComponent(country)
-      + '&mode=tracking&gran=week'
-      + '&nodes=' + encodeURIComponent(nodes.join(','));
-    cta.setAttribute('href', url);
-  }
-
+  // ─── Render global ───────────────────────────────────────────
   function render() {
-    var container = document.getElementById('alertes-list');
-    if (!container) return;
-    var groups = getAlertGroups();
-    renderMethodology();
-    renderTimeline();
-    updateLivePill(groups);
-    updateEvolutionCta(groups);
-
-    if (!groups.length) {
-      var Tc = window.t || function(k){ return k; };
-      var key = filterStatus === 'ended' ? 'alertes.no_alerts_ended'
-              : filterStatus === 'current' ? 'alertes.no_alerts_current'
-              : 'alertes.no_alerts_all';
-      container.innerHTML = '<div id="alertes-empty">' + escapeHtml(Tc(key)) + '</div>';
-      return;
-    }
-
-    var html = '';
-    for (var gi = 0; gi < groups.length; gi++) {
-      var g       = groups[gi];
-      var count   = g.alerts.length;
-      var latest = '';
-      var Th = window.t || function(k){ return k; };
-      if (filterStatus === 'current' && g.isFirst) {
-        latest = '<span class="period-header-latest">' + Th('common.in_progress') + '</span>';
-      } else if (filterStatus === 'ended') {
-        latest = '<span class="period-header-latest">' + Th('common.ended') + '</span>';
-      }
-      // Sous-groupement par pays quand filtre = "Tous", pour qu'on voie
-      // d'un coup d'œil quelle alerte appartient à quel pays. Sinon
-      // (un seul pays sélectionné), on garde l'ancien layout uniforme.
-      var body;
-      if (filterCountry === 'all') {
-        // Grouper par country en respectant l'ordre QC > CAN > USA
-        var byCountry = {};
-        g.alerts.forEach(function(a) {
-          if (!byCountry[a.country]) byCountry[a.country] = [];
-          byCountry[a.country].push(a);
-        });
-        var orderedCountries = getActiveCountries().filter(function(c) {
-          return byCountry[c] && byCountry[c].length;
-        });
-        var sigOne = Th('alertes.signal_one');
-        var sigMany = Th('alertes.signal_many');
-        body = orderedCountries.map(function(c) {
-          var label = Th('country.' + c) || c;
-          var n = byCountry[c].length;
-          var cards2 = byCountry[c].map(renderCard).join('');
-          return '<div class="country-section">'
-            + '<div class="country-header">'
-            +   '<span class="country-header-flag">' + escapeHtml(label) + '</span>'
-            +   '<span class="country-header-count">' + n + ' ' + escapeHtml(n > 1 ? sigMany : sigOne) + '</span>'
-            + '</div>'
-            + '<div class="alerts-grid">' + cards2 + '</div>'
-            + '</div>';
-        }).join('');
-      } else {
-        body = '<div class="alerts-grid">' + g.alerts.map(renderCard).join('') + '</div>';
-      }
-
-      html += '<div class="period-group">'
-        + '<div class="period-header">'
-        +   '<span class="period-header-label">' + escapeHtml(formatPeriodLabel(g.period.label || g.period.key)) + '</span>'
-        +   '<span class="period-header-count">'  + escapeHtml(String(count)) + ' ' + escapeHtml((window.t||function(k){return k;})(count > 1 ? 'alertes.signal_many' : 'alertes.signal_one')) + '</span>'
-        +   latest
-        + '</div>'
-        + body
-        + '</div>';
-    }
-    container.innerHTML = html;
+    if (!graphData || !timeseriesData) return;
+    renderKPIs();
+    renderCurrentAlerts();
+    renderRecentEvents();
+    var ep = document.getElementById('episodes-collapsible');
+    if (ep && ep.open) renderEpisodesTable();
   }
 
-  document.getElementById('filter-country').addEventListener('change', function() { filterCountry = this.value; render(); });
-  document.getElementById('filter-status').addEventListener('change',  function() {
-    filterStatus = this.value;
-    // Changer le statut quitte la sélection de période timeline
-    filterPeriodKey = null;
+  // ─── Hooks ───────────────────────────────────────────────────
+  document.getElementById('filter-country').addEventListener('change', function() {
+    filterCountry = this.value;
     render();
   });
-  document.getElementById('filter-level').addEventListener('change',   function() { filterLevel   = this.value; render(); });
-  document.getElementById('filter-search').addEventListener('input',   function() { filterSearch  = this.value; render(); });
-  document.getElementById('alertes-timeline-reset').addEventListener('click', function() {
-    filterPeriodKey = null;
+  document.getElementById('filter-min-level').addEventListener('change', function() {
+    filterMinLevel = this.value;
     render();
   });
-
-  // Bascule d'onglets
-  document.querySelectorAll('.alertes-tab').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      setTab(btn.getAttribute('data-tab'));
-    });
+  var epColl = document.getElementById('episodes-collapsible');
+  if (epColl) {
+    epColl.addEventListener('toggle', function() { if (epColl.open) renderEpisodesTable(); });
+  }
+  document.addEventListener('i18n:applied', function() {
+    if (graphData && timeseriesData) render();
   });
-
-  // Quand on change de pays, re-rendre la heatmap si on est en mode cycles
-  ['filter-country'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.addEventListener('change', function() {
-      if (currentTab === 'cycles' && timeseriesData) renderCycles();
-    });
-  });
-
-  // Re-render au changement de langue (textes générés dynamiquement)
-  document.addEventListener('i18n:applied', function () {
-    if (graphData) render();
-    if (currentTab === 'cycles' && timeseriesData) renderCycles();
-  });
-
-  // Init: lire le hash pour deeplink #cycles
-  var initialTab = (window.location.hash || '').replace('#', '') === 'cycles' ? 'cycles' : 'current';
-  setTab(initialTab);
 
   loadData();
 })();
 </script>
 </body>
 </html>
+
