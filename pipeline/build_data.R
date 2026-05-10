@@ -401,25 +401,26 @@ for (lvl in names(tier_counts)) {
 }
 
 # ─── Paliers de saillance absolue (par pays) ──────────────────────────────────
-# Calibrés sur la distribution empirique des saillances "qui comptent"
-# (>= ALERT_MIN_ABS_SCORE, même plancher que celui qui décide si une alerte
-# est légitime). Sans ce filtre, la médiane était noyée par les milliers
-# d'objets isolés à saillance < 1, tirant tous les seuils vers le bas.
-# Permettent de RELATIVISER l'absolu : un objet à saillance 8 est-il rare
-# ou banal ? Affichés comme repères horizontaux sur la page Évolution.
-#   moderate  = p50 (médiane)
-#   high      = p90 (top 10%)
-#   very_high = p99 (top 1%)
-#   extreme   = p99.9 (top 0.1% — pic vraiment exceptionnel, ~1-2/an)
-cat("Calcul des paliers de saillance par pays (saillance >= ", ALERT_MIN_ABS_SCORE, ")...\n", sep = "")
+# Calibrés sur les PICS par période (max(saillance) par country×date×bloc 4h),
+# car c'est l'unité que le chart Évolution dessine (MAX agrégé). Calibrer sur
+# tous les couples (period × object) tirait les seuils vers le bas — la base
+# contenait des milliers d'objets modérés à saillance ~1-3, alors que la
+# courbe ne garde que le pic. Résultat : seuils alignés sur ce qui est plotté.
+#   moderate  = p50 (médiane des pics)
+#   high      = p80 (top 20%)
+#   very_high = p95 (top 5%)
+#   extreme   = p99 (top 1% — pic vraiment exceptionnel)
+cat("Calcul des paliers de saillance par pays (pics par bloc 4h, saillance >= ", ALERT_MIN_ABS_SCORE, ")...\n", sep = "")
 salience_tiers_df <- df_index |>
   dplyr::filter(absolute_normalized_index >= ALERT_MIN_ABS_SCORE) |>
+  dplyr::group_by(country_id, date_utc, time_interval_utc) |>
+  dplyr::summarise(peak = max(absolute_normalized_index, na.rm = TRUE), .groups = "drop") |>
   dplyr::group_by(country_id) |>
   dplyr::summarise(
-    moderate  = stats::quantile(absolute_normalized_index, 0.50,  na.rm = TRUE),
-    high      = stats::quantile(absolute_normalized_index, 0.90,  na.rm = TRUE),
-    very_high = stats::quantile(absolute_normalized_index, 0.99,  na.rm = TRUE),
-    extreme   = stats::quantile(absolute_normalized_index, 0.999, na.rm = TRUE),
+    moderate  = stats::quantile(peak, 0.50, na.rm = TRUE),
+    high      = stats::quantile(peak, 0.80, na.rm = TRUE),
+    very_high = stats::quantile(peak, 0.95, na.rm = TRUE),
+    extreme   = stats::quantile(peak, 0.99, na.rm = TRUE),
     .groups   = "drop"
   )
 salience_tiers <- list()
