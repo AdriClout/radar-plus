@@ -408,18 +408,18 @@ for (lvl in names(tier_counts)) {
 # Permettent de RELATIVISER l'absolu : un objet à saillance 8 est-il rare
 # ou banal ? Affichés comme repères horizontaux sur la page Évolution.
 #   moderate  = p50 (médiane)
-#   high      = p80 (top 20%)
-#   very_high = p95 (top 5%)
-#   extreme   = p99 (top 1% — vraiment marquant)
+#   high      = p90 (top 10%)
+#   very_high = p99 (top 1%)
+#   extreme   = p99.9 (top 0.1% — pic vraiment exceptionnel, ~1-2/an)
 cat("Calcul des paliers de saillance par pays (saillance >= ", ALERT_MIN_ABS_SCORE, ")...\n", sep = "")
 salience_tiers_df <- df_index |>
   dplyr::filter(absolute_normalized_index >= ALERT_MIN_ABS_SCORE) |>
   dplyr::group_by(country_id) |>
   dplyr::summarise(
-    moderate  = stats::quantile(absolute_normalized_index, 0.50, na.rm = TRUE),
-    high      = stats::quantile(absolute_normalized_index, 0.80, na.rm = TRUE),
-    very_high = stats::quantile(absolute_normalized_index, 0.95, na.rm = TRUE),
-    extreme   = stats::quantile(absolute_normalized_index, 0.99, na.rm = TRUE),
+    moderate  = stats::quantile(absolute_normalized_index, 0.50,  na.rm = TRUE),
+    high      = stats::quantile(absolute_normalized_index, 0.90,  na.rm = TRUE),
+    very_high = stats::quantile(absolute_normalized_index, 0.99,  na.rm = TRUE),
+    extreme   = stats::quantile(absolute_normalized_index, 0.999, na.rm = TRUE),
     .groups   = "drop"
   )
 salience_tiers <- list()
