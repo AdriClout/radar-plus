@@ -2490,9 +2490,16 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left + chartW + 5, y + 3);
     }
 
-    // Paliers de saillance absolue (calibrés par pays). Permettent de
-    // SITUER les courbes sur l'échelle du pays — extrême, très élevé, etc.
-    const salienceTiersR = tsData?.meta?.salience_tiers?.[currentCountry];
+    // Paliers de saillance absolue (calibrés par pays). NE s'affichent
+    // QU'EN granularité 4h — les autres granularités (week/month/year/
+    // total) cumulent les saillances par bucket via getWinPeriodGD, ce
+    // qui rend les paliers (calibrés sur saillance instantanée) NON
+    // comparables. Ex: en mode année, le cumul atteint 200 alors que
+    // l'extrême instantané est ~28 — les lignes paliers paraîtraient
+    // ridiculement basses.
+    const salienceTiersR = (rankedGranularity === '4h')
+      ? (tsData?.meta?.salience_tiers?.[currentCountry])
+      : null;
     if (salienceTiersR) {
       const TIER_COLORS_R = {
         moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
