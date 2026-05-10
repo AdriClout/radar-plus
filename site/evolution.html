@@ -2179,6 +2179,39 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left + chartW + 5, y + 3);
     }
 
+    // Paliers de saillance absolue (calibrés par pays). Visibles aussi
+    // dans le mode journée pour lecture cohérente.
+    const salienceTiersD = tsData?.meta?.salience_tiers?.[currentCountry];
+    if (salienceTiersD) {
+      const TIER_COLORS_D = {
+        moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
+        high:      { line: 'rgba(212,188,88,0.65)',  text: 'rgba(255,224,140,0.95)' },
+        very_high: { line: 'rgba(255,143,92,0.70)',  text: 'rgba(255,200,160,0.98)' },
+        extreme:   { line: 'rgba(220,140,255,0.80)', text: 'rgba(235,200,255,1)'    }
+      };
+      const tierLabelD = window.t || ((k) => k);
+      const TIER_ORDER_D = ['moderate', 'high', 'very_high', 'extreme'];
+      ctx.font = '9px "Orbitron", "Space Mono", monospace';
+      TIER_ORDER_D.forEach(tk => {
+        const v = Number(salienceTiersD[tk]);
+        if (!Number.isFinite(v) || v <= 0 || v > maxVal * 1.05) return;
+        const y = yOf(Math.min(v, maxVal));
+        const c = TIER_COLORS_D[tk] || TIER_COLORS_D.moderate;
+        ctx.strokeStyle = c.line; ctx.lineWidth = 1; ctx.setLineDash([2, 5]);
+        ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + chartW, y); ctx.stroke();
+        ctx.setLineDash([]);
+        const label = (tierLabelD('evolution.salience_' + tk) || tk).toUpperCase()
+                    + '  ' + v.toFixed(1);
+        const padX = 6;
+        ctx.textAlign = 'right';
+        const tw = ctx.measureText(label).width + padX * 2;
+        ctx.fillStyle = 'rgba(0,2,18,0.78)';
+        ctx.fillRect(PAD.left + chartW - tw - 2, y - 8, tw, 14);
+        ctx.fillStyle = c.text;
+        ctx.fillText(label, PAD.left + chartW - 4, y + 3);
+      });
+    }
+
     // X grid vertical : lignes pâles à 2h, foncées à 4h
     [2, 6, 10, 14, 18, 22].forEach(h => {
       ctx.strokeStyle = 'rgba(38,55,125,0.13)'; ctx.lineWidth = 1; ctx.setLineDash([2, 8]);
@@ -2455,6 +2488,39 @@
       ctx.fillStyle = 'rgba(110,150,215,0.55)';
       ctx.textAlign = 'left';
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left + chartW + 5, y + 3);
+    }
+
+    // Paliers de saillance absolue (calibrés par pays). Permettent de
+    // SITUER les courbes sur l'échelle du pays — extrême, très élevé, etc.
+    const salienceTiersR = tsData?.meta?.salience_tiers?.[currentCountry];
+    if (salienceTiersR) {
+      const TIER_COLORS_R = {
+        moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
+        high:      { line: 'rgba(212,188,88,0.65)',  text: 'rgba(255,224,140,0.95)' },
+        very_high: { line: 'rgba(255,143,92,0.70)',  text: 'rgba(255,200,160,0.98)' },
+        extreme:   { line: 'rgba(220,140,255,0.80)', text: 'rgba(235,200,255,1)'    }
+      };
+      const tierLabelR = window.t || ((k) => k);
+      const TIER_ORDER_R = ['moderate', 'high', 'very_high', 'extreme'];
+      ctx.font = '9px "Orbitron", "Space Mono", monospace';
+      TIER_ORDER_R.forEach(tk => {
+        const v = Number(salienceTiersR[tk]);
+        if (!Number.isFinite(v) || v <= 0 || v > maxVal * 1.05) return;
+        const y = yOf(Math.min(v, maxVal));
+        const c = TIER_COLORS_R[tk] || TIER_COLORS_R.moderate;
+        ctx.strokeStyle = c.line; ctx.lineWidth = 1; ctx.setLineDash([2, 5]);
+        ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + chartW, y); ctx.stroke();
+        ctx.setLineDash([]);
+        const label = (tierLabelR('evolution.salience_' + tk) || tk).toUpperCase()
+                    + '  ' + v.toFixed(1);
+        const padX = 6;
+        ctx.textAlign = 'right';
+        const tw = ctx.measureText(label).width + padX * 2;
+        ctx.fillStyle = 'rgba(0,2,18,0.78)';
+        ctx.fillRect(PAD.left + chartW - tw - 2, y - 8, tw, 14);
+        ctx.fillStyle = c.text;
+        ctx.fillText(label, PAD.left + chartW - 4, y + 3);
+      });
     }
 
     // Axes + X ticks - labels courts, lisibles et adaptes a chaque filtre.
