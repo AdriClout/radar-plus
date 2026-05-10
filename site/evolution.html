@@ -756,13 +756,19 @@
   function getWinPeriodGD(country, winPeriod) {
     if (!winPeriod) return { nodes: [], links: [] };
     if (winPeriod.isDay && Array.isArray(winPeriod.periodKeys) && winPeriod.periodKeys.length) {
+      // Agrégation MAX (et non somme) : la saillance affichée pour une
+      // période agrégée (jour, semaine, mois, année) = le PIC atteint
+      // par le sujet sur cette fenêtre. Garde les valeurs Y comparables
+      // aux paliers de saillance absolue (calibrés sur saillance
+      // instantanée) quelle que soit la granularité.
       const sizeMap = new Map();
       const articleMap = new Map();
       const seenUrls = new Map();
       for (const pk of winPeriod.periodKeys) {
         const g = getGD(country, pk);
         for (const n of (g.nodes || [])) {
-          sizeMap.set(n.id, (sizeMap.get(n.id) || 0) + (Number(n.size) || 0));
+          const v = Number(n.size) || 0;
+          sizeMap.set(n.id, Math.max(sizeMap.get(n.id) || 0, v));
           if (!articleMap.has(n.id)) { articleMap.set(n.id, []); seenUrls.set(n.id, new Set()); }
           for (const a of (n.articles || [])) {
             const key = a.url || a.title;
@@ -2490,16 +2496,11 @@
       ctx.fillText(v >= 100 ? v.toFixed(0) : v.toFixed(1), PAD.left + chartW + 5, y + 3);
     }
 
-    // Paliers de saillance absolue (calibrés par pays). NE s'affichent
-    // QU'EN granularité 4h — les autres granularités (week/month/year/
-    // total) cumulent les saillances par bucket via getWinPeriodGD, ce
-    // qui rend les paliers (calibrés sur saillance instantanée) NON
-    // comparables. Ex: en mode année, le cumul atteint 200 alors que
-    // l'extrême instantané est ~28 — les lignes paliers paraîtraient
-    // ridiculement basses.
-    const salienceTiersR = (rankedGranularity === '4h')
-      ? (tsData?.meta?.salience_tiers?.[currentCountry])
-      : null;
+    // Paliers de saillance absolue (calibrés par pays). Affichés dans
+    // toutes les granularités: getWinPeriodGD agrège désormais en MAX
+    // (pic atteint dans la fenêtre) et non en somme, donc les valeurs Y
+    // restent comparables aux paliers calibrés sur saillance instantanée.
+    const salienceTiersR = tsData?.meta?.salience_tiers?.[currentCountry];
     if (salienceTiersR) {
       const TIER_COLORS_R = {
         moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
