@@ -34,9 +34,70 @@
       padding: 80px 24px 90px;
     }
 
+    /* ── Filtres partagés au-dessus des onglets ── */
+    .alertes-filters-shared {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 8px;
+    }
+    .alertes-filters-shared select {
+      background: rgba(10,18,50,0.7);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 10px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ── Onglets ── */
+    .alertes-tabs {
+      display: flex;
+      gap: 0;
+      margin: 14px 0 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .alertes-tab {
+      padding: 10px 18px 10px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: rgba(160,200,255,0.62);
+      font-family: var(--orbitron);
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .alertes-tab:hover { color: rgba(200,225,255,0.92); }
+    .alertes-tab.active {
+      color: rgba(220,235,255,1);
+      border-bottom-color: var(--accent);
+    }
+    .alertes-tab-count {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 7px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: rgba(180,210,255,0.78);
+    }
+    .alertes-tab.active .alertes-tab-count {
+      border-color: var(--accent);
+      color: rgba(220,235,255,0.96);
+    }
+
     /* ── Header ── */
     .alertes-header {
-      margin-bottom: 32px;
+      margin-bottom: 14px;
     }
     .alertes-title {
       font-family: var(--orbitron);
@@ -750,6 +811,168 @@
       letter-spacing: 0.4px;
       color: rgba(140,180,230,0.55);
     }
+
+    /* ── Cycles (heatmap + tableau d'épisodes) — onglet "Cycles" ── */
+    .cycles-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .summary-stat {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(10,18,50,0.6);
+    }
+    .summary-stat-icon { width: 10px; height: 10px; border-radius: 2px; }
+    .summary-stat-icon.lvl-tsunami      { background: rgba(220,140,255,1); box-shadow: 0 0 6px rgba(220,150,255,0.6); }
+    .summary-stat-icon.lvl-eclipse      { background: rgba(200,140,255,0.92); }
+    .summary-stat-icon.lvl-strong       { background: rgba(255,110,110,0.92); }
+    .summary-stat-icon.lvl-alert        { background: rgba(255,143,92,0.92); }
+    .summary-stat-icon.lvl-watch        { background: rgba(212,188,88,0.85); }
+    .summary-stat-icon.lvl-surveillance { background: rgba(150,180,220,0.6); }
+    .summary-stat-val {
+      font-family: var(--orbitron);
+      font-size: 18px; font-weight: 700;
+      color: rgba(220,235,255,0.96);
+    }
+    .summary-stat-lbl { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+
+    .heatmap-section { margin-bottom: 32px; }
+    .heatmap-section-title {
+      font-family: var(--orbitron);
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(160,200,255,0.85);
+      margin-bottom: 10px;
+    }
+    .heatmap-container {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(8,16,42,0.55);
+      padding: 12px 0 4px;
+      overflow-x: auto;
+    }
+    .heatmap-axis {
+      display: grid; grid-template-columns: 200px 1fr; gap: 8px;
+      padding: 0 12px 6px;
+      font-size: 8px; letter-spacing: 0.6px; color: rgba(140,180,230,0.55);
+      text-transform: uppercase;
+    }
+    .heatmap-axis-dates { display: flex; justify-content: space-between; }
+    .heatmap-row {
+      display: grid; grid-template-columns: 200px 1fr; gap: 8px;
+      align-items: center; padding: 0 12px; min-height: 22px;
+    }
+    .heatmap-row:hover .heatmap-label { color: rgba(220,235,255,1); }
+    .heatmap-row + .heatmap-row { margin-top: 1px; }
+    .heatmap-label {
+      font-size: 11px; color: rgba(200,220,255,0.84); text-transform: capitalize;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      cursor: pointer; transition: color 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    a.heatmap-label { text-decoration: none; }
+    .heatmap-label-tier {
+      font-family: var(--orbitron); font-size: 7px; letter-spacing: 0.6px;
+      text-transform: uppercase; padding: 1px 5px; border-radius: 999px;
+      border: 1px solid; flex-shrink: 0;
+    }
+    .heatmap-cells { display: grid; gap: 1px; height: 18px; }
+    .heatmap-cell {
+      background: rgba(60,90,140,0.10); border-radius: 1px;
+      cursor: pointer; transition: filter 0.15s, transform 0.1s;
+    }
+    .heatmap-cell:hover { filter: brightness(1.5); transform: scaleY(1.2); }
+    .heatmap-cell.lvl-surveillance { background: rgba(150,180,220,0.45); }
+    .heatmap-cell.lvl-watch        { background: rgba(212,188,88,0.78); }
+    .heatmap-cell.lvl-alert        { background: rgba(255,143,92,0.85); }
+    .heatmap-cell.lvl-strong       { background: rgba(255,110,110,0.92); }
+    .heatmap-cell.lvl-eclipse      { background: rgba(200,140,255,0.92); }
+    .heatmap-cell.lvl-tsunami      { background: rgba(230,150,255,1); box-shadow: 0 0 4px rgba(220,150,255,0.4); }
+
+    /* Tier badge label couleurs (réutilisées de cycles.html) */
+    .tier-tsunami      { color: rgba(245,220,255,1);    border-color: rgba(230,160,255,0.80); background: rgba(96,40,144,0.55); }
+    .tier-eclipse      { color: rgba(230,200,255,0.98); border-color: rgba(200,140,255,0.65); background: rgba(72,32,114,0.55); }
+    .tier-strong       { color: rgba(255,196,196,0.98); border-color: rgba(255,110,110,0.64); background: rgba(98,22,28,0.55); }
+    .tier-alert        { color: rgba(255,186,136,0.98); border-color: rgba(255,143,92,0.58); background: rgba(88,40,24,0.55); }
+    .tier-watch        { color: rgba(255,224,112,0.96); border-color: rgba(224,196,88,0.48); background: rgba(74,60,16,0.55); }
+    .tier-surveillance { color: rgba(190,210,235,0.92); border-color: rgba(150,180,220,0.50); background: rgba(28,38,62,0.55); }
+
+    .heatmap-legend {
+      display: flex; flex-wrap: wrap; gap: 14px;
+      padding: 10px 12px 4px;
+      font-size: 9px; letter-spacing: 0.6px; color: var(--muted); text-transform: uppercase;
+    }
+    .heatmap-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .heatmap-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+    .heatmap-legend-dot.lvl-tsunami      { background: rgba(230,150,255,1); }
+    .heatmap-legend-dot.lvl-eclipse      { background: rgba(200,140,255,0.92); }
+    .heatmap-legend-dot.lvl-strong       { background: rgba(255,110,110,0.92); }
+    .heatmap-legend-dot.lvl-alert        { background: rgba(255,143,92,0.85); }
+    .heatmap-legend-dot.lvl-watch        { background: rgba(212,188,88,0.78); }
+    .heatmap-legend-dot.lvl-surveillance { background: rgba(150,180,220,0.45); }
+
+    .episodes-section { margin-top: 32px; }
+    .episodes-table-wrap {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(8,16,42,0.55);
+      overflow-x: auto;
+    }
+    .episodes-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .episodes-table th, .episodes-table td {
+      padding: 8px 12px; text-align: left;
+      border-bottom: 1px solid rgba(90,140,255,0.10);
+      white-space: nowrap;
+    }
+    .episodes-table th {
+      font-family: var(--orbitron); font-size: 8px; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted);
+      cursor: pointer; user-select: none;
+    }
+    .episodes-table th:hover { color: rgba(200,220,255,0.95); }
+    .episodes-table th.sort-asc::after  { content: ' ↑'; color: rgba(120,170,255,0.7); }
+    .episodes-table th.sort-desc::after { content: ' ↓'; color: rgba(120,170,255,0.7); }
+    .episodes-table tbody tr { cursor: pointer; transition: background 0.12s; }
+    .episodes-table tbody tr:hover { background: rgba(20,40,90,0.30); }
+    .episodes-table .ep-subject {
+      font-weight: 700; color: rgba(220,235,255,0.95); text-transform: capitalize;
+    }
+    .episodes-table .ep-tier {
+      font-family: var(--orbitron); font-size: 8px; letter-spacing: 0.7px;
+      text-transform: uppercase; padding: 2px 7px; border-radius: 999px;
+      border: 1px solid;
+    }
+    .episodes-table .ep-num { font-family: var(--orbitron); color: rgba(220,235,255,0.92); }
+    .episodes-table .ep-share { font-family: var(--orbitron); color: rgba(200,220,255,0.82); }
+    .ep-salience-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 7px; border-radius: 999px;
+      font-family: var(--orbitron); font-size: 7px;
+      letter-spacing: 0.7px; text-transform: uppercase; border: 1px solid;
+      white-space: nowrap;
+    }
+    .ep-salience-pill::before { content: '◆'; font-size: 7px; }
+    .ep-salience-pill.salience-moderate  { color: rgba(170,200,255,0.85); border-color: rgba(120,170,255,0.45); background: rgba(20,40,90,0.45); }
+    .ep-salience-pill.salience-high      { color: rgba(255,224,140,0.95); border-color: rgba(212,188,88,0.55); background: rgba(74,60,16,0.50); }
+    .ep-salience-pill.salience-very_high { color: rgba(255,200,160,0.98); border-color: rgba(255,143,92,0.62); background: rgba(86,42,24,0.55); }
+    .ep-salience-pill.salience-extreme   { color: rgba(235,200,255,1);    border-color: rgba(230,160,255,0.78); background: rgba(96,40,144,0.55); }
+
+    .cycles-loading, .cycles-empty {
+      text-align: center; padding: 40px 20px;
+      color: var(--muted); font-size: 11px;
+    }
+    .cycles-loading { font-family: var(--orbitron); letter-spacing: 2px; text-transform: uppercase; }
+
+    @media (max-width: 700px) {
+      .heatmap-row, .heatmap-axis { grid-template-columns: 130px 1fr; gap: 6px; }
+    }
   </style>
 </head>
 <body>
@@ -784,7 +1007,18 @@
     </a>
   </div>
 
-  <div id="alertes-filters">
+  <div class="alertes-tabs" role="tablist">
+    <button type="button" class="alertes-tab active" role="tab" data-tab="current" aria-selected="true">
+      <span data-i18n="alertes.tab_current">En cours</span>
+    </button>
+    <button type="button" class="alertes-tab" role="tab" data-tab="cycles" aria-selected="false">
+      <span data-i18n="alertes.tab_cycles">Cycles d'attention</span>
+      <span class="alertes-tab-count" data-i18n="alertes.tab_cycles_window">130 j</span>
+    </button>
+  </div>
+
+  <!-- Filtre Pays commun aux deux onglets -->
+  <div id="alertes-filters-shared" class="alertes-filters-shared">
     <span class="filter-label" data-i18n="alertes.filter_country">Pays</span>
     <select id="filter-country">
       <option value="all" selected data-i18n="common.all_countries">Tous</option>
@@ -792,7 +1026,11 @@
       <option value="CAN" data-i18n="country.CAN">Canada</option>
       <option value="USA" data-i18n="country.USA">États-Unis</option>
     </select>
-    <div class="filter-sep"></div>
+  </div>
+
+  <div id="alertes-tab-current">
+
+  <div id="alertes-filters">
     <span class="filter-label" data-i18n="alertes.filter_status">Statut</span>
     <select id="filter-status">
       <option value="current" selected data-i18n="alertes.status_current">En cours</option>
@@ -818,6 +1056,32 @@
   <div id="alertes-methodology" class="alertes-methodology"></div>
 
   <div id="alertes-list"><div id="alertes-loading" data-i18n="common.loading">Chargement des alertes…</div></div>
+
+  </div><!-- /alertes-tab-current -->
+
+  <div id="alertes-tab-cycles" hidden>
+    <div id="cycles-summary" class="cycles-summary"></div>
+    <div class="heatmap-section">
+      <div class="heatmap-section-title" data-i18n="cycles.heatmap_title">Carte des cycles · sujet × jour</div>
+      <div class="heatmap-container" id="heatmap-container">
+        <div class="cycles-loading" data-i18n="common.loading">chargement…</div>
+      </div>
+      <div class="heatmap-legend">
+        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-tsunami"></span><span data-i18n="alertes.level_tsunami">Tsunami</span></span>
+        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-eclipse"></span><span data-i18n="alertes.level_eclipse">Éclipse</span></span>
+        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-strong"></span><span data-i18n="alertes.level_strong">Alerte forte</span></span>
+        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-alert"></span><span data-i18n="alertes.level_alert">Alerte</span></span>
+        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-watch"></span><span data-i18n="alertes.level_watch">Veille</span></span>
+        <span class="heatmap-legend-item"><span class="heatmap-legend-dot lvl-surveillance"></span><span data-i18n="alertes.level_surveillance">Surveillance</span></span>
+      </div>
+    </div>
+    <div class="episodes-section">
+      <div class="heatmap-section-title" data-i18n="cycles.episodes_title">Épisodes recensés</div>
+      <div class="episodes-table-wrap" id="episodes-table-wrap">
+        <div class="cycles-loading" data-i18n="common.loading">chargement…</div>
+      </div>
+    </div>
+  </div><!-- /alertes-tab-cycles -->
 </div>
 
 <!-- Ticker manchettes -->
@@ -893,6 +1157,355 @@
       document.getElementById('alertes-list').innerHTML =
         '<div id="alertes-empty">Erreur de chargement des données.</div>';
     }
+  }
+
+  // Lazy load: timeseries.json est gros (14 Mo) et ne sert qu'à l'onglet
+  // Cycles. On ne le charge qu'à la première bascule.
+  let timeseriesData = null;
+  let timeseriesLoading = null;
+  function ensureTimeseriesLoaded() {
+    if (timeseriesData) return Promise.resolve(timeseriesData);
+    if (timeseriesLoading) return timeseriesLoading;
+    timeseriesLoading = fetch('./timeseries.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { timeseriesData = d; return d; })
+      .catch(() => null);
+    return timeseriesLoading;
+  }
+
+  // ───────────── Onglets : "En cours" vs "Cycles d'attention" ─────────────
+  let currentTab = 'current';
+  let cyclesSortBy = 'duration';
+  let cyclesSortDir = 'desc';
+  const ALERTE_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert'];
+
+  function setTab(tab) {
+    if (tab !== 'current' && tab !== 'cycles') tab = 'current';
+    currentTab = tab;
+    document.querySelectorAll('.alertes-tab').forEach(b => {
+      var on = b.getAttribute('data-tab') === tab;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    var panelCurrent = document.getElementById('alertes-tab-current');
+    var panelCycles = document.getElementById('alertes-tab-cycles');
+    if (panelCurrent) panelCurrent.hidden = tab !== 'current';
+    if (panelCycles) panelCycles.hidden = tab !== 'cycles';
+
+    // Hash URL pour deeplink (sans rechargement)
+    try {
+      var newHash = tab === 'cycles' ? '#cycles' : '';
+      if (window.location.hash !== newHash) {
+        history.replaceState({}, '', window.location.pathname + window.location.search + newHash);
+      }
+    } catch(_) {}
+
+    if (tab === 'cycles') {
+      ensureTimeseriesLoaded().then(function() { renderCycles(); });
+    }
+  }
+
+  // ── Cycles : agrégation jour, tableau d'épisodes (depuis ex-cycles.html) ──
+
+  function periodToDate(periodKey) { return String(periodKey).split('_')[0]; }
+  function levelRank(lvl) {
+    var idx = LEVEL_ORDER.indexOf(lvl);
+    return idx === -1 ? 999 : idx;
+  }
+  function maxLevel(a, b) { return levelRank(a) <= levelRank(b) ? a : b; }
+
+  function buildPerCountryDayMatrix(country) {
+    var m = {};
+    var cg = timeseriesData && timeseriesData.graphs && timeseriesData.graphs[country];
+    if (!cg) return m;
+    for (var pk in cg) {
+      var day = periodToDate(pk);
+      var nodes = (cg[pk] && cg[pk].nodes) || [];
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        if (!n.alert_level || n.alert_level === 'none' || n.alert_level === 'emerging') continue;
+        if (!m[n.id]) m[n.id] = {};
+        var existing = m[n.id][day];
+        var nSize = (typeof n.size === 'number') ? n.size : null;
+        var newWins = !existing || levelRank(n.alert_level) < levelRank(existing.level);
+        if (newWins) {
+          m[n.id][day] = {
+            level: n.alert_level,
+            score: n.alert_score || null,
+            top_share: n.alert_top_share || null,
+            streak: n.alert_streak || 0,
+            size: nSize
+          };
+        } else if (nSize !== null && (existing.size === null || nSize > existing.size)) {
+          existing.size = nSize;
+        }
+      }
+    }
+    return m;
+  }
+
+  function buildAllDays() {
+    if (!timeseriesData || !timeseriesData.meta) return [];
+    var set = {};
+    var periods = timeseriesData.meta.periods || [];
+    for (var i = 0; i < periods.length; i++) set[periodToDate(periods[i].key)] = true;
+    return Object.keys(set).sort();
+  }
+
+  function buildEpisodesForObject(byDay) {
+    var keys = Object.keys(byDay).sort();
+    var episodes = [];
+    var current = null;
+    var prev = null;
+    function dayDiff(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+    for (var i = 0; i < keys.length; i++) {
+      var dk = keys[i];
+      var d = byDay[dk];
+      var isAlertLevel = ALERTE_LEVELS.indexOf(d.level) !== -1;
+      if (!isAlertLevel) {
+        if (current) { episodes.push(current); current = null; }
+        prev = dk;
+        continue;
+      }
+      if (current && prev !== null && dayDiff(prev, dk) === 1) {
+        current.lastDay = dk;
+        current.maxLevel = maxLevel(current.maxLevel, d.level);
+        if ((d.top_share || 0) > current.maxTopShare) current.maxTopShare = d.top_share;
+        if ((d.streak || 0) > current.maxStreak) current.maxStreak = d.streak;
+        if ((d.size || 0) > current.peakSalience) current.peakSalience = d.size || 0;
+      } else {
+        if (current) episodes.push(current);
+        current = {
+          firstDay: dk, lastDay: dk,
+          maxLevel: d.level,
+          maxTopShare: d.top_share || 0,
+          maxStreak: d.streak || 0,
+          peakSalience: d.size || 0
+        };
+      }
+      prev = dk;
+    }
+    if (current) episodes.push(current);
+    episodes.forEach(function(e) {
+      e.durationDays = Math.round((new Date(e.lastDay) - new Date(e.firstDay)) / 86400000) + 1;
+    });
+    return episodes;
+  }
+
+  var FR_MONTHS_SHORT_C = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  var EN_MONTHS_SHORT_C = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function currentLangC() {
+    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
+  }
+  function formatDayShort(dayStr) {
+    if (!dayStr) return '';
+    var parts = dayStr.split('-');
+    if (parts.length !== 3) return dayStr;
+    var d = parseInt(parts[2], 10);
+    var mo = parseInt(parts[1], 10) - 1;
+    var months = currentLangC() === 'fr' ? FR_MONTHS_SHORT_C : EN_MONTHS_SHORT_C;
+    return d + ' ' + months[mo];
+  }
+  function tierLabelC(lvl) {
+    var T = window.t || function(k){ return k; };
+    return T('alertes.level_' + lvl) || lvl;
+  }
+
+  function renderCyclesSummary(allEpisodes) {
+    var el = document.getElementById('cycles-summary');
+    if (!el) return;
+    var counts = { tsunami: 0, eclipse: 0, strong: 0, alert: 0 };
+    allEpisodes.forEach(function(e) {
+      if (counts[e.maxLevel] !== undefined) counts[e.maxLevel]++;
+    });
+    var html = '';
+    LEVEL_ORDER.forEach(function(lvl) {
+      if (counts[lvl] === undefined) return;
+      html += '<div class="summary-stat">'
+        +   '<span class="summary-stat-icon lvl-' + lvl + '"></span>'
+        +   '<span class="summary-stat-val">' + counts[lvl] + '</span>'
+        +   '<span class="summary-stat-lbl">' + escapeHtml(tierLabelC(lvl)) + (counts[lvl] !== 1 ? 's' : '') + '</span>'
+        + '</div>';
+    });
+    el.innerHTML = html;
+  }
+
+  function renderHeatmap(rowsByCountry, allDays) {
+    var container = document.getElementById('heatmap-container');
+    if (!container) return;
+    var T = window.t || function(k){ return k; };
+    if (!rowsByCountry.length || !allDays.length) {
+      container.innerHTML = '<div class="cycles-empty">' + escapeHtml(T('cycles.heatmap_empty')) + '</div>';
+      return;
+    }
+    var firstDay = allDays[0];
+    var lastDay = allDays[allDays.length - 1];
+    var midDay = allDays[Math.floor(allDays.length / 2)];
+    var html = ''
+      + '<div class="heatmap-axis">'
+      +   '<div></div>'
+      +   '<div class="heatmap-axis-dates">'
+      +     '<span>' + escapeHtml(formatDayShort(firstDay)) + '</span>'
+      +     '<span>' + escapeHtml(formatDayShort(midDay)) + '</span>'
+      +     '<span>' + escapeHtml(formatDayShort(lastDay)) + ' →</span>'
+      +   '</div>'
+      + '</div>';
+    var cellsTpl = 'repeat(' + allDays.length + ', minmax(2px, 1fr))';
+    rowsByCountry.forEach(function(group) {
+      if (filterCountry === 'all') {
+        var cTitle = T('country.' + group.country) || group.country;
+        html += '<div style="padding: 12px 12px 6px; font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.4px; color: rgba(160,200,255,0.78); text-transform: uppercase; border-top: 1px solid rgba(90,140,255,0.10); margin-top: 6px;">'
+          + escapeHtml(cTitle) + ' · ' + group.rows.length + '</div>';
+      }
+      group.rows.forEach(function(row) {
+        var cellsHtml = '';
+        for (var di = 0; di < allDays.length; di++) {
+          var d = row.byDay[allDays[di]];
+          if (d) {
+            var tip = formatDayShort(allDays[di]) + ' · ' + tierLabelC(d.level)
+              + (d.score !== null ? ' · z ' + d.score.toFixed(1) + '×' : '')
+              + (d.top_share !== null ? ' · ' + Math.round(d.top_share * 100) + '% du Top' : '');
+            cellsHtml += '<div class="heatmap-cell lvl-' + d.level + '" title="' + escapeHtml(tip) + '"></div>';
+          } else {
+            cellsHtml += '<div class="heatmap-cell"></div>';
+          }
+        }
+        var qCountry = encodeURIComponent(group.country);
+        var qNode = encodeURIComponent(row.id);
+        var evoUrl = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
+        html += '<div class="heatmap-row">'
+          +   '<a class="heatmap-label" href="' + escapeHtml(evoUrl) + '" title="' + escapeHtml(row.id) + '">'
+          +     '<span class="heatmap-label-tier tier-' + row.maxLevel + '">' + escapeHtml(tierLabelC(row.maxLevel)) + '</span>'
+          +     '<span>' + escapeHtml(row.id) + '</span>'
+          +   '</a>'
+          +   '<div class="heatmap-cells" style="grid-template-columns: ' + cellsTpl + '">'
+          +     cellsHtml
+          +   '</div>'
+          + '</div>';
+      });
+    });
+    container.innerHTML = html;
+  }
+
+  function getSalienceTierForCountry(country, size) {
+    var src = timeseriesData || graphData;
+    if (!src || !src.meta || !src.meta.salience_tiers) return null;
+    var tiers = src.meta.salience_tiers[country];
+    if (!tiers || typeof size !== 'number') return null;
+    var order = ['extreme', 'very_high', 'high', 'moderate'];
+    for (var i = 0; i < order.length; i++) {
+      var k = order[i];
+      if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
+    }
+    return null;
+  }
+  function salienceTierLabelLocal(tier) {
+    var T = window.t || function(k){ return k; };
+    return T('evolution.salience_' + tier) || tier;
+  }
+
+  function renderEpisodesTable(episodes) {
+    var wrap = document.getElementById('episodes-table-wrap');
+    if (!wrap) return;
+    var T = window.t || function(k){ return k; };
+    if (!episodes.length) {
+      wrap.innerHTML = '<div class="cycles-empty">' + escapeHtml(T('cycles.episodes_empty')) + '</div>';
+      return;
+    }
+    var sorted = episodes.slice().sort(function(a, b) {
+      var av, bv;
+      if (cyclesSortBy === 'duration')           { av = a.durationDays; bv = b.durationDays; }
+      else if (cyclesSortBy === 'maxLevel')      { av = -levelRank(a.maxLevel); bv = -levelRank(b.maxLevel); }
+      else if (cyclesSortBy === 'peakSalience')  { av = a.peakSalience || 0; bv = b.peakSalience || 0; }
+      else if (cyclesSortBy === 'start')         { av = a.firstDay; bv = b.firstDay; }
+      else if (cyclesSortBy === 'subject')       { av = a.id; bv = b.id; }
+      else if (cyclesSortBy === 'country')       { av = a.country; bv = b.country; }
+      else                                        { av = a.maxTopShare; bv = b.maxTopShare; }
+      var cmp = av < bv ? -1 : av > bv ? 1 : 0;
+      return cyclesSortDir === 'asc' ? cmp : -cmp;
+    });
+    function thCls(col) { return cyclesSortBy === col ? ' class="sort-' + cyclesSortDir + '"' : ''; }
+    var html = '<table class="episodes-table"><thead><tr>'
+      + '<th data-sort="subject"' + thCls('subject') + '>' + escapeHtml(T('cycles.col_subject')) + '</th>'
+      + '<th data-sort="country"' + thCls('country') + '>' + escapeHtml(T('cycles.col_country')) + '</th>'
+      + '<th data-sort="start"' + thCls('start') + '>' + escapeHtml(T('cycles.col_start')) + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_end')) + '</th>'
+      + '<th data-sort="duration"' + thCls('duration') + '>' + escapeHtml(T('cycles.col_duration')) + '</th>'
+      + '<th data-sort="maxLevel"' + thCls('maxLevel') + '>' + escapeHtml(T('cycles.col_max_level')) + '</th>'
+      + '<th data-sort="peakSalience"' + thCls('peakSalience') + '>' + escapeHtml(T('cycles.col_peak_salience')) + '</th>'
+      + '<th>' + escapeHtml(T('cycles.col_top_share_max')) + '</th>'
+      + '</tr></thead><tbody>';
+    for (var i = 0; i < sorted.length; i++) {
+      var e = sorted[i];
+      var qCountry = encodeURIComponent(e.country);
+      var qNode = encodeURIComponent(e.id);
+      var url = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
+      var cTitle = T('country.' + e.country) || e.country;
+      var peakTier = getSalienceTierForCountry(e.country, e.peakSalience);
+      var peakCellHtml = peakTier
+        ? '<span class="ep-salience-pill salience-' + peakTier + '">' + escapeHtml(salienceTierLabelLocal(peakTier)) + ' · ' + e.peakSalience.toFixed(1) + '</span>'
+        : (e.peakSalience ? e.peakSalience.toFixed(1) : '—');
+      html += '<tr data-href="' + escapeHtml(url) + '">'
+        + '<td class="ep-subject">' + escapeHtml(e.id) + '</td>'
+        + '<td>' + escapeHtml(cTitle) + '</td>'
+        + '<td>' + escapeHtml(formatDayShort(e.firstDay)) + '</td>'
+        + '<td>' + escapeHtml(formatDayShort(e.lastDay)) + '</td>'
+        + '<td class="ep-num">' + e.durationDays + ' ' + escapeHtml(T(e.durationDays > 1 ? 'cycles.days' : 'cycles.day')) + '</td>'
+        + '<td><span class="ep-tier tier-' + e.maxLevel + '">' + escapeHtml(tierLabelC(e.maxLevel)) + '</span></td>'
+        + '<td>' + peakCellHtml + '</td>'
+        + '<td class="ep-share">' + (e.maxTopShare ? Math.round(e.maxTopShare * 100) + '%' : '—') + '</td>'
+        + '</tr>';
+    }
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('th[data-sort]').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var col = th.getAttribute('data-sort');
+        if (cyclesSortBy === col) cyclesSortDir = cyclesSortDir === 'asc' ? 'desc' : 'asc';
+        else { cyclesSortBy = col; cyclesSortDir = (col === 'subject' || col === 'country' || col === 'start') ? 'asc' : 'desc'; }
+        renderEpisodesTable(episodes);
+      });
+    });
+    wrap.querySelectorAll('tr[data-href]').forEach(function(tr) {
+      tr.addEventListener('click', function() {
+        window.location.href = tr.getAttribute('data-href');
+      });
+    });
+  }
+
+  function renderCycles() {
+    if (!timeseriesData) return;
+    var allDays = buildAllDays();
+    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+    var rowsByCountry = [];
+    var allEpisodes = [];
+    countries.forEach(function(country) {
+      var matrix = buildPerCountryDayMatrix(country);
+      var rows = [];
+      Object.keys(matrix).forEach(function(id) {
+        var byDay = matrix[id];
+        var tiers = Object.values(byDay).map(function(d) { return d.level; });
+        var rowMaxLevel = tiers.reduce(function(acc, l) { return acc === null ? l : maxLevel(acc, l); }, null);
+        if (!rowMaxLevel) return;
+        // Filtre niveau min: par défaut on prend "alert" et plus
+        if (levelRank(rowMaxLevel) > levelRank('alert')) return;
+        rows.push({ id: id, byDay: byDay, maxLevel: rowMaxLevel, totalDays: tiers.length });
+        var eps = buildEpisodesForObject(byDay);
+        eps.forEach(function(e) {
+          e.id = id; e.country = country;
+          if (levelRank(e.maxLevel) <= levelRank('alert')) allEpisodes.push(e);
+        });
+      });
+      rows.sort(function(a, b) {
+        var lo = levelRank(a.maxLevel) - levelRank(b.maxLevel);
+        if (lo !== 0) return lo;
+        return b.totalDays - a.totalDays;
+      });
+      if (rows.length) rowsByCountry.push({ country: country, rows: rows });
+    });
+    renderCyclesSummary(allEpisodes);
+    renderHeatmap(rowsByCountry, allDays);
+    renderEpisodesTable(allEpisodes);
   }
 
   function getActiveCountries() {
@@ -1600,10 +2213,30 @@
     render();
   });
 
+  // Bascule d'onglets
+  document.querySelectorAll('.alertes-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      setTab(btn.getAttribute('data-tab'));
+    });
+  });
+
+  // Quand on change de pays, re-rendre la heatmap si on est en mode cycles
+  ['filter-country'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('change', function() {
+      if (currentTab === 'cycles' && timeseriesData) renderCycles();
+    });
+  });
+
   // Re-render au changement de langue (textes générés dynamiquement)
   document.addEventListener('i18n:applied', function () {
     if (graphData) render();
+    if (currentTab === 'cycles' && timeseriesData) renderCycles();
   });
+
+  // Init: lire le hash pour deeplink #cycles
+  var initialTab = (window.location.hash || '').replace('#', '') === 'cycles' ? 'cycles' : 'current';
+  setTab(initialTab);
 
   loadData();
 })();
