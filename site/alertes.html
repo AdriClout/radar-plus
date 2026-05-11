@@ -126,7 +126,13 @@
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      user-select: none;
     }
+    .kpi:hover { background: rgba(20,32,72,0.85); border-color: rgba(120,170,255,0.55); transform: translateY(-1px); }
+    .kpi.is-active { border-color: var(--accent); background: rgba(85,136,255,0.14); box-shadow: 0 0 12px rgba(85,136,255,0.15); }
+    .kpi.is-dim { opacity: 0.45; }
     .kpi-mark {
       width: 14px; height: 14px;
       border-radius: 3px;
@@ -821,8 +827,6 @@
       </select>
       <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
     </div>
-
-    <div class="kpi-row" id="kpi-row"></div>
   </header>
 
   <!-- ── Section MAINTENANT ─────────────────────────────────────── -->
@@ -842,6 +846,8 @@
       <span class="section-title" data-i18n="alertes.section_chronique">Chronique</span>
       <span class="section-sub" id="section-chronique-window">—</span>
     </div>
+
+    <div class="kpi-row" id="kpi-row"></div>
 
     <div class="chronique-toolbar">
       <button class="zoom-btn" data-zoom="30"  data-i18n="alertes.zoom_30d">30 j</button>
@@ -910,8 +916,6 @@
   const MAIN_TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte'];
   const MINOR_TIERS = ['veille', 'emergence'];
   const TIER_RANK = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4, veille: 5, emergence: 6, none: 99 };
-  // Hauteur du bloc dans le swimlane (proportionnel à la magnitude)
-  const TIER_HEIGHT_PCT = { tsunami: 1.0, eclipse: 1.0, tempete: 0.85, forte: 0.85, alerte: 0.6, veille: 0.45, emergence: 0.32 };
   const TIER_ICON = { tsunami: '🌊', eclipse: '🌑', tempete: '⛈', forte: '⚡', alerte: '📍', veille: '▾', emergence: '◦' };
   const COUNTRY_ORDER = ['QC', 'CAN', 'USA'];
 
@@ -926,6 +930,7 @@
   let zoomDays = 130;
   let isEmergenceOpen = false;
   let selectedEpisodeKey = null;
+  let kpiTierFilter = null; // null = pas de filtre tier-only ; sinon tier sélectionné
 
   // ─── Helpers ───────────────────────────────────────────────────
   function T(key, fallback) {
@@ -951,6 +956,10 @@
   function countryLabel(c) { return T('country.' + c, c); }
   function passesFilter(tier, country) {
     if (filterCountry !== 'all' && country !== filterCountry) return false;
+    if (kpiTierFilter) {
+      // Quand un tier est sélectionné via KPI, on n'affiche QUE ce tier-là.
+      return tier === kpiTierFilter;
+    }
     if (tierRank(tier) > tierRank(filterMinLevel)) return false;
     return true;
   }
@@ -1134,14 +1143,18 @@
     var el = document.getElementById('kpi-row');
     if (!el) return;
     var episodes = buildEpisodesFromTimeseries();
-    var counts = { tsunami: 0, eclipse: 0, tempete: 0, poussee: 0, emergence: 0 };
+    var counts = {};
+    TIERS.forEach(function(t) { counts[t] = 0; });
     episodes.forEach(function(e) {
       if (filterCountry !== 'all' && e.country !== filterCountry) return;
       counts[e.tier] = (counts[e.tier] || 0) + 1;
     });
     var html = '';
     TIERS.forEach(function(tier) {
-      html += '<div class="kpi">'
+      var cls = 'kpi';
+      if (kpiTierFilter && kpiTierFilter === tier) cls += ' is-active';
+      else if (kpiTierFilter) cls += ' is-dim';
+      html += '<div class="' + cls + '" data-tier="' + tier + '" role="button" tabindex="0" aria-pressed="' + (kpiTierFilter === tier) + '" title="' + esc(T('alertes.level_tip_' + tier, '')) + '">'
         + '<span class="kpi-mark lvl-' + tier + '"></span>'
         + '<span class="kpi-val">' + (counts[tier] || 0) + '</span>'
         + '<span class="kpi-lbl">' + esc(tierLabel(tier))
@@ -1149,6 +1162,18 @@
         + '</span></div>';
     });
     el.innerHTML = html;
+    el.querySelectorAll('.kpi').forEach(function(node) {
+      var tier = node.getAttribute('data-tier');
+      node.addEventListener('click', function() { toggleKpiFilter(tier); });
+      node.addEventListener('keydown', function(ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleKpiFilter(tier); }
+      });
+    });
+  }
+
+  function toggleKpiFilter(tier) {
+    kpiTierFilter = (kpiTierFilter === tier) ? null : tier;
+    render();
   }
 
   // ─── Render "Maintenant" ──────────────────────────────────────
@@ -1176,7 +1201,11 @@
     });
 
     var html = '';
-    MAIN_TIERS.forEach(function(tier) {
+    // Quand un tier-only filter est actif, on affiche TOUS les tiers en cartes pleines
+    // (sinon Veille/Émergence resteraient cachées dans le dépliable même quand on les
+    // a explicitement demandées).
+    var mainList = kpiTierFilter ? TIERS : MAIN_TIERS;
+    mainList.forEach(function(tier) {
       if (!groups[tier].length) return;
       html += '<div class="now-tier-group">'
         + '<div class="now-tier-head">'
@@ -1189,7 +1218,8 @@
     });
 
     // Sous-bloc dépliable pour Veille + Émergence (signaux faibles)
-    var minorItems = MINOR_TIERS.reduce(function(acc, t) {
+    // (uniquement quand pas de filtre tier-only actif)
+    var minorItems = kpiTierFilter ? [] : MINOR_TIERS.reduce(function(acc, t) {
       return acc.concat(groups[t] || []);
     }, []);
     if (minorItems.length) {
@@ -1316,7 +1346,7 @@
       + '</div>';
   }
 
-  // ─── Render CHRONIQUE (SVG swimlanes) ─────────────────────────
+  // ─── Render CHRONIQUE (SVG swimlanes, blocs stackés sans chevauchement) ──
   function renderChronique() {
     var wrap = document.getElementById('chronique-svg-wrap');
     var svg  = document.getElementById('chronique-svg');
@@ -1332,36 +1362,90 @@
       return getCountries().indexOf(c) !== -1;
     }) : [filterCountry];
 
-    // Filtre par fenêtre temporelle + tier min
+    // Filtre par fenêtre temporelle + tier min + KPI filter
     var today = new Date(); today.setUTCHours(0,0,0,0);
     var windowStart = new Date(today.getTime() - zoomDays * 86400000);
 
     var filtered = episodes.filter(function(e) {
       if (countries.indexOf(e.country) === -1) return false;
-      if (tierRank(e.tier) > tierRank(filterMinLevel)) return false;
+      if (kpiTierFilter) {
+        if (e.tier !== kpiTierFilter) return false;
+      } else if (tierRank(e.tier) > tierRank(filterMinLevel)) {
+        return false;
+      }
       var last = new Date(e.last_day);
       if (last < windowStart) return false;
       return true;
     });
 
-    // Layout
+    // Layout horizontal (commun)
     var width = wrap.clientWidth - 28;
     if (width < 320) width = 320;
-    var laneCount = countries.length;
     var labelW = 50;
     var rightPad = 12;
     var chartW = Math.max(120, width - labelW - rightPad);
-    var laneH = 56;
-    var laneGap = 10;
-    var topPad = 22;   // pour les ticks de mois
+    var topPad = 22;
     var bottomPad = 4;
-    var height = topPad + laneCount * (laneH + laneGap) - laneGap + bottomPad;
+    var laneGap = 10;
+
+    // ─ Assignation des tracks (sous-rangées) par pays pour éviter chevauchements
+    var trackH = 14;
+    var trackVGap = 2;
+    var laneInnerPad = 4;
+
+    function startMs(e) { return new Date(e.first_day).getTime(); }
+    function endMs(e)   { return new Date(e.last_day).getTime() + 86400000; }
+
+    var byCountry = {};
+    countries.forEach(function(c) { byCountry[c] = []; });
+    filtered.forEach(function(e) {
+      if (byCountry[e.country]) byCountry[e.country].push(e);
+    });
+
+    var tracksUsedByCountry = {};
+    countries.forEach(function(c) {
+      // Tri par début ASC, puis tier (les plus importants d'abord en cas d'égalité)
+      byCountry[c].sort(function(a, b) {
+        var d = startMs(a) - startMs(b);
+        if (d !== 0) return d;
+        return tierRank(a.tier) - tierRank(b.tier);
+      });
+      var tracks = []; // tracks[i] = endMs du dernier épisode placé sur ce track
+      byCountry[c].forEach(function(e) {
+        var s = startMs(e);
+        var en = endMs(e);
+        var placed = false;
+        for (var t = 0; t < tracks.length; t++) {
+          if (tracks[t] <= s) {
+            e._track = t;
+            tracks[t] = en;
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          e._track = tracks.length;
+          tracks.push(en);
+        }
+      });
+      tracksUsedByCountry[c] = Math.max(1, tracks.length);
+    });
+
+    // Hauteur dynamique de chaque lane
+    var laneInfo = []; // [{country, y, h}]
+    var cur = topPad;
+    countries.forEach(function(c) {
+      var n = tracksUsedByCountry[c];
+      var h = n * (trackH + trackVGap) - trackVGap + laneInnerPad * 2;
+      laneInfo.push({ country: c, y: cur, h: h });
+      cur += h + laneGap;
+    });
+    var height = cur - laneGap + bottomPad;
 
     svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
     svg.setAttribute('width',  width);
     svg.setAttribute('height', height);
 
-    // Helper position
     function xForDate(dateStr) {
       var d = new Date(dateStr);
       var offset = Math.max(0, (d - windowStart) / 86400000);
@@ -1373,11 +1457,10 @@
 
     var parts = [];
 
-    // Background lanes
-    countries.forEach(function(country, idx) {
-      var y = topPad + idx * (laneH + laneGap);
-      parts.push('<rect class="swimlane-bg" x="' + labelW + '" y="' + y + '" width="' + chartW + '" height="' + laneH + '" rx="3" />');
-      parts.push('<text class="swimlane-label" x="' + (labelW - 8) + '" y="' + (y + laneH/2 + 4) + '" text-anchor="end">' + esc(country) + '</text>');
+    // Background lanes + labels
+    laneInfo.forEach(function(li) {
+      parts.push('<rect class="swimlane-bg" x="' + labelW + '" y="' + li.y + '" width="' + chartW + '" height="' + li.h + '" rx="3" />');
+      parts.push('<text class="swimlane-label" x="' + (labelW - 8) + '" y="' + (li.y + li.h/2 + 4) + '" text-anchor="end">' + esc(li.country) + '</text>');
     });
 
     // Month ticks
@@ -1389,28 +1472,31 @@
       parts.push('<text class="month-label" x="' + (x + 3) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
     });
 
-    // Episodes (sorted: tsunami/eclipse last so they paint on top)
+    // Episodes — paints fort en dernier pour qu'ils soient au-dessus
+    // (mais comme ils sont sur des tracks distincts, l'ordre importe peu)
+    var laneByCountry = {};
+    laneInfo.forEach(function(li) { laneByCountry[li.country] = li; });
+
     var sorted = filtered.slice().sort(function(a, b) {
       return tierRank(b.tier) - tierRank(a.tier);
     });
     sorted.forEach(function(e) {
-      var laneIdx = countries.indexOf(e.country);
-      if (laneIdx === -1) return;
-      var y0 = topPad + laneIdx * (laneH + laneGap);
-      var pct = TIER_HEIGHT_PCT[e.tier] || 0.5;
-      var blockH = Math.round(laneH * pct);
-      var yBlock = y0 + (laneH - blockH);   // align à la base
+      var li = laneByCountry[e.country];
+      if (!li) return;
+      var trackIdx = e._track || 0;
+      var yBlock = li.y + laneInnerPad + trackIdx * (trackH + trackVGap);
       var x = xForDate(e.first_day);
       var w = widthForDays(e.n_days);
       if (x + w < labelW || x > labelW + chartW) return;
       var selectedCls = selectedEpisodeKey === e.key ? ' selected' : '';
+      var showIcon = w >= 18 && (e.tier === 'tsunami' || e.tier === 'eclipse' || e.tier === 'tempete' || e.tier === 'forte');
       parts.push('<g>'
         + '<rect class="episode-block lvl-' + e.tier + selectedCls + '" '
-        +   'x="' + x.toFixed(1) + '" y="' + yBlock + '" width="' + w.toFixed(1) + '" height="' + blockH + '" rx="1.5" '
+        +   'x="' + x.toFixed(1) + '" y="' + yBlock.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + trackH + '" rx="2" '
         +   'fill="var(--' + e.tier + ')" '
         +   'data-key="' + esc(e.key) + '" />'
-        + (w >= 16 && (e.tier === 'tsunami' || e.tier === 'eclipse')
-            ? '<text class="episode-icon" x="' + (x + w/2).toFixed(1) + '" y="' + (yBlock + blockH/2 + 3) + '">' + TIER_ICON[e.tier] + '</text>'
+        + (showIcon
+            ? '<text class="episode-icon" x="' + (x + w/2).toFixed(1) + '" y="' + (yBlock + trackH/2 + 3).toFixed(1) + '">' + TIER_ICON[e.tier] + '</text>'
             : '')
         + '</g>');
     });
@@ -1638,7 +1724,11 @@
     if (!wrap) return;
     var episodes = buildEpisodesFromTimeseries().filter(function(e) {
       if (filterCountry !== 'all' && e.country !== filterCountry) return false;
-      if (tierRank(e.tier) > tierRank(filterMinLevel)) return false;
+      if (kpiTierFilter) {
+        if (e.tier !== kpiTierFilter) return false;
+      } else if (tierRank(e.tier) > tierRank(filterMinLevel)) {
+        return false;
+      }
       return true;
     });
     if (!episodes.length) {
