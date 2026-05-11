@@ -242,7 +242,7 @@ body.has-shared-menu .topbar {
   display: flex;
 }
 
-#global-alert-bar.bar-alert {
+#global-alert-bar.bar-forte {
   background: linear-gradient(to right, rgba(72,28,10,0.97), rgba(54,20,8,0.97));
   border-bottom-color: rgba(255,143,92,0.28);
 }
@@ -278,7 +278,7 @@ body.has-shared-menu .topbar {
 }
 .alert-bar-label:hover { background: rgba(255,80,80,0.1); }
 
-#global-alert-bar.bar-alert .alert-bar-label {
+#global-alert-bar.bar-forte .alert-bar-label {
   border-right-color: rgba(255,143,92,0.22);
   color: rgba(255,210,180,0.9);
 }
@@ -291,7 +291,7 @@ body.has-shared-menu .topbar {
   flex-shrink: 0;
   animation: alert-dot-pulse 1.6s ease-in-out infinite;
 }
-#global-alert-bar.bar-alert .alert-bar-dot {
+#global-alert-bar.bar-forte .alert-bar-dot {
   background: rgba(255,160,100,0.95);
 }
 @keyframes alert-dot-pulse {
@@ -339,7 +339,7 @@ body.has-shared-menu .topbar {
 a.alert-bar-item { cursor: pointer; }
 a.alert-bar-item:hover .alert-bar-item-name { text-decoration: underline; }
 a.alert-bar-item:hover { filter: brightness(1.15); }
-.alert-bar-item.level-alert {
+.alert-bar-item.level-forte {
   color: rgba(255,220,190,0.85);
 }
 
@@ -355,7 +355,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
   color: rgba(255,200,200,0.95);
   flex-shrink: 0;
 }
-.alert-bar-item.level-alert .alert-bar-item-badge {
+.alert-bar-item.level-forte .alert-bar-item-badge {
   border-color: rgba(255,143,92,0.5);
   background: rgba(88,40,24,0.55);
   color: rgba(255,210,175,0.95);
@@ -366,7 +366,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
   text-transform: capitalize;
   color: rgba(255,230,230,0.95);
 }
-.alert-bar-item.level-alert .alert-bar-item-name {
+.alert-bar-item.level-forte .alert-bar-item-name {
   color: rgba(255,235,215,0.95);
 }
 
@@ -389,7 +389,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
   color: rgba(255,235,235,0.98);
   letter-spacing: 0.3px;
 }
-.alert-bar-item.level-alert .alert-bar-event-pivot {
+.alert-bar-item.level-forte .alert-bar-event-pivot {
   color: rgba(255,225,200,0.98);
 }
 .alert-bar-event-link {
@@ -422,7 +422,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
   padding: 0 6px;
   font-size: 10px;
 }
-#global-alert-bar.bar-alert .alert-bar-sep {
+#global-alert-bar.bar-forte .alert-bar-sep {
   color: rgba(255,143,92,0.25);
 }
 

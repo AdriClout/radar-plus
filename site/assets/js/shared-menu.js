@@ -91,7 +91,6 @@
       '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
       '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
       '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
-      '<a href="./alertes.html#cycles" data-page="alertes.html"><span data-i18n="nav.cycles">Cycles</span> <span class="nav-badge" data-i18n="nav.badge_archive">ARCHIVE</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_monitoring">MONITORING</span></a>',
       '<a href="./index.html#hot20" data-i18n="nav.hot20">Hot 20</a>',
@@ -183,9 +182,8 @@
   ================================================================ */
 
   // Niveaux montrés dans le bandeau global. Ordre = priorité décroissante.
-  // Tsunami et éclipse sont les tiers qualitativement les plus alarmants;
-  // strong et alert sont les seuils classiques de "media storm".
-  var ALERT_BAR_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert'];
+  // Les 5 tiers majeurs (veille/émergence restent discrets, pas dans le bandeau).
+  var ALERT_BAR_LEVELS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte'];
 
   function alertBarLabel(level) {
     if (window.t) {
@@ -289,9 +287,10 @@
         var lvls = ev2.members.map(function(m){ return m.alert_level; });
         if (ev2.pivot.alert_active) lvls.push(ev2.pivot.alert_level);
         var topLvl = null;
-        if (lvls.indexOf('strong') !== -1) topLvl = 'strong';
-        else if (lvls.indexOf('alert') !== -1) topLvl = 'alert';
-        if (!topLvl) continue;  // bandeau ne montre que strong/alert
+        for (var li = 0; li < ALERT_BAR_LEVELS.length; li++) {
+          if (lvls.indexOf(ALERT_BAR_LEVELS[li]) !== -1) { topLvl = ALERT_BAR_LEVELS[li]; break; }
+        }
+        if (!topLvl) continue;  // bandeau ne montre que les 4 tiers principaux
         var key2 = country + ':event:' + ev2.pivot.id;
         if (seen[key2]) continue;
         seen[key2] = true;
@@ -300,9 +299,9 @@
         ev2.members.forEach(function(m){
           if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
         });
-        // Trier les noms de membres par niveau d'alerte (strong > alert > watch)
-        // pour afficher les plus saillants en premier dans le défilement.
-        var levelRank = { strong: 0, alert: 1, watch: 2, emerging: 3 };
+        // Trier les noms de membres par niveau d'alerte pour afficher
+        // les plus saillants en premier dans le défilement.
+        var levelRank = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4, veille: 5, emergence: 6 };
         var sortedMembers = ev2.members.slice().sort(function(a, b) {
           var la = levelRank[a.alert_level] !== undefined ? levelRank[a.alert_level] : 9;
           var lb = levelRank[b.alert_level] !== undefined ? levelRank[b.alert_level] : 9;
@@ -335,8 +334,8 @@
       }
     }
 
-    // Trier: tsunami > eclipse > strong > alert, puis score desc
-    var BAR_LEVEL_RANK = { tsunami: 0, eclipse: 1, strong: 2, alert: 3 };
+    // Trier: tsunami > eclipse > tempete > forte > alerte, puis score desc
+    var BAR_LEVEL_RANK = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4 };
     alerts.sort(function(a, b) {
       var la = BAR_LEVEL_RANK[a.level] !== undefined ? BAR_LEVEL_RANK[a.level] : 9;
       var lb = BAR_LEVEL_RANK[b.level] !== undefined ? BAR_LEVEL_RANK[b.level] : 9;
@@ -356,7 +355,7 @@
       return;
     }
 
-    bar.classList.remove('bar-tsunami', 'bar-eclipse', 'bar-strong', 'bar-alert');
+    bar.classList.remove('bar-tsunami', 'bar-eclipse', 'bar-tempete', 'bar-forte', 'bar-alerte');
     bar.classList.add('bar-' + alerts[0].level);
 
     // Toujours partir d'une seule copie de itemsHtml comme référence

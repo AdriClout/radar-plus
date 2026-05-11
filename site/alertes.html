@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RADAR+ · Alertes de saillance</title>
+  <title>RADAR+ · Alertes médiatiques</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -19,6 +19,22 @@
       --border: rgba(90,140,255,0.22);
       --orbitron: 'Orbitron', 'Space Mono', monospace;
       --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+
+      /* Tier palette — 7 tiers */
+      --tsunami:   #d0a0ff;
+      --tsunami-d: #6e2bb0;
+      --eclipse:   #a070e0;
+      --eclipse-d: #4a2580;
+      --tempete:   #ff6e6e;
+      --tempete-d: #8a1d1d;
+      --forte:     #ffa050;
+      --forte-d:   #8a4818;
+      --alerte:    #f2cd50;
+      --alerte-d:  #7a6420;
+      --veille:    #d8b830;
+      --veille-d:  #6a5520;
+      --emergence: #8aa8d8;
+      --emergence-d: #2a4570;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -27,1029 +43,44 @@
       font-family: var(--mono);
       min-height: 100vh;
     }
+    a { color: inherit; text-decoration: none; }
 
-    #alertes-wrap {
-      max-width: 1100px;
+    #wrap {
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 80px 24px 90px;
+      padding: 60px 24px 80px;
     }
 
-    /* ── Filtres partagés au-dessus des onglets ── */
-    .alertes-filters-shared {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 0 0 8px;
-    }
-    .alertes-filters-shared select {
-      background: rgba(10,18,50,0.7);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 6px 10px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    /* ── Onglets ── */
-    .alertes-tabs {
-      display: flex;
-      gap: 0;
-      margin: 14px 0 22px;
-      border-bottom: 1px solid var(--border);
-    }
-    .alertes-tab {
-      padding: 10px 18px 10px;
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: rgba(160,200,255,0.62);
+    /* ── Header ────────────────────────────────────────────── */
+    .page-header { margin-bottom: 26px; }
+    .page-title {
       font-family: var(--orbitron);
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
-      margin-bottom: -1px;
-    }
-    .alertes-tab:hover { color: rgba(200,225,255,0.92); }
-    .alertes-tab.active {
-      color: rgba(220,235,255,1);
-      border-bottom-color: var(--accent);
-    }
-    .alertes-tab-count {
-      display: inline-block;
-      margin-left: 6px;
-      padding: 1px 7px;
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.6px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: rgba(180,210,255,0.78);
-    }
-    .alertes-tab.active .alertes-tab-count {
-      border-color: var(--accent);
-      color: rgba(220,235,255,0.96);
-    }
-
-    /* ── Header ── */
-    .alertes-header {
-      margin-bottom: 14px;
-    }
-    .alertes-title {
-      font-family: var(--orbitron);
-      font-size: clamp(20px, 4vw, 30px);
+      font-size: clamp(22px, 4vw, 32px);
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 2.4px;
       text-transform: uppercase;
       color: #e8f0ff;
       margin-bottom: 6px;
     }
-    .alertes-title span { color: var(--accent); }
-    .alertes-subtitle {
-      font-size: 10px;
+    .page-title span.accent { color: var(--accent); }
+    .page-subtitle {
+      font-size: 11px;
       color: var(--muted);
-      letter-spacing: 0.7px;
+      letter-spacing: 0.8px;
       margin-bottom: 14px;
     }
-    .alertes-live-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 14px;
-      background: rgba(255,100,100,0.08);
-      border: 1px solid rgba(255,100,100,0.28);
-      border-radius: 999px;
-      font-size: 9px;
-      color: rgba(255,200,200,0.9);
-      letter-spacing: 0.9px;
-      text-transform: uppercase;
-    }
-    .alertes-live-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: rgba(255,120,120,0.95);
-      flex-shrink: 0;
-      animation: pulse-dot 1.8s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.5; transform: scale(0.72); }
-    }
-
-    /* ── Filtres ── */
-    #alertes-filters {
+    .page-filters {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 28px;
       align-items: center;
+      margin-bottom: 18px;
     }
     .filter-label {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 1.2px;
       color: var(--muted);
-    }
-    #alertes-filters select,
-    #alertes-filters input {
-      background: rgba(10,18,50,0.7);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 6px 10px;
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    #alertes-filters select:hover,
-    #alertes-filters input:hover { border-color: rgba(90,140,255,0.5); }
-    #alertes-filters select:focus,
-    #alertes-filters input:focus { border-color: var(--accent); }
-    #filter-search { min-width: 180px; cursor: text; }
-    #filter-search::placeholder { color: var(--muted); }
-    .filter-sep { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
-
-    .alertes-methodology {
-      margin-bottom: 20px;
-      border: 1px solid rgba(90,140,255,0.2);
-      border-radius: 6px;
-      background: rgba(8,16,42,0.65);
-      padding: 10px 14px 12px;
-      font-size: 10px;
-      color: rgba(180,210,250,0.85);
-      line-height: 1.5;
-    }
-    .alertes-methodology em {
-      color: rgba(214,229,255,0.96);
-      font-style: normal;
-      font-weight: 600;
-    }
-    .alertes-methodology strong {
-      color: rgba(220,234,255,0.98);
-    }
-    .alertes-methodology-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      padding: 4px 10px;
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 0.9px;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: rgba(190,220,255,0.92);
-      border: 1px solid rgba(120,170,255,0.4);
-      border-radius: 999px;
-      background: rgba(20,40,90,0.45);
-      transition: border-color 0.18s, background 0.18s, color 0.18s;
-    }
-    .alertes-methodology-link:hover {
-      border-color: rgba(160,200,255,0.7);
-      background: rgba(30,60,140,0.55);
-      color: rgba(230,240,255,1);
-    }
-
-    /* ── Groupes de périodes ── */
-    .period-group { margin-bottom: 36px; }
-    /* Section par pays (apparaît seulement quand pays = "Tous") */
-    .country-section { margin-top: 14px; }
-    .country-section:first-of-type { margin-top: 4px; }
-    .country-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-      padding: 4px 0 4px 8px;
-      border-left: 3px solid rgba(120,170,255,0.55);
-    }
-    .country-header-flag {
-      font-family: var(--orbitron);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      color: rgba(220,235,255,0.95);
-    }
-    .country-header-count {
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.6px;
-      padding: 2px 8px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-    }
-    .period-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(90,140,255,0.14);
-    }
-    .period-header-label {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 1.4px;
-      color: rgba(160,195,255,0.85);
-      text-transform: uppercase;
-    }
-    .period-header-count {
-      font-size: 8px;
-      color: var(--muted);
-      padding: 2px 7px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-    }
-    .period-header-latest {
-      font-size: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(255,100,100,0.1);
-      border: 1px solid rgba(255,100,100,0.3);
-      color: rgba(255,190,190,0.85);
-    }
-
-    /* ── Grille de cartes ── */
-    .alerts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-      gap: 10px;
-    }
-
-    /* ── Carte alerte ── */
-    .alert-card {
-      position: relative;
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--border);
-      border-radius: 6px;
-      background: var(--card-bg);
-      padding: 12px 14px 10px;
-      cursor: default;
-      transition: background 0.2s;
-    }
-    .alert-card.level-strong {
-      border-color: rgba(255,110,110,0.45);
-      border-left-color: rgba(255,100,100,0.9);
-      background: rgba(92,24,28,0.26);
-    }
-    .alert-card.level-strong:hover { background: rgba(92,24,28,0.42); }
-    .alert-card.level-alert {
-      border-color: rgba(255,143,92,0.38);
-      border-left-color: rgba(255,143,92,0.85);
-      background: rgba(86,38,24,0.26);
-    }
-    .alert-card.level-alert:hover { background: rgba(86,38,24,0.40); }
-    .alert-card.level-watch {
-      border-color: rgba(212,188,88,0.32);
-      border-left-color: rgba(212,188,88,0.8);
-      background: rgba(72,58,20,0.26);
-    }
-    .alert-card.level-watch:hover { background: rgba(72,58,20,0.40); }
-    .alert-card.level-emerging {
-      border-color: rgba(112,186,245,0.24);
-      border-left-color: rgba(112,186,245,0.65);
-      background: rgba(18,56,92,0.26);
-    }
-    .alert-card.level-emerging:hover { background: rgba(18,56,92,0.40); }
-    .alert-card.level-surveillance {
-      border-color: rgba(150,180,220,0.20);
-      border-left-color: rgba(150,180,220,0.55);
-      background: rgba(22,32,58,0.30);
-    }
-    .alert-card.level-surveillance:hover { background: rgba(22,32,58,0.45); }
-    /* Éclipse : violet — événement qui domine l'agenda */
-    .alert-card.level-eclipse {
-      border-color: rgba(180,120,255,0.50);
-      border-left-color: rgba(200,140,255,0.95);
-      background: rgba(48,24,80,0.32);
-    }
-    .alert-card.level-eclipse:hover { background: rgba(48,24,80,0.50); }
-    /* Tsunami : violet électrique + glow — agenda totalement rincé */
-    .alert-card.level-tsunami {
-      border-color: rgba(220,140,255,0.65);
-      border-left-color: rgba(240,160,255,1);
-      background: linear-gradient(135deg, rgba(72,28,110,0.45), rgba(40,16,72,0.55));
-      box-shadow: 0 0 18px rgba(200,140,255,0.18), inset 0 0 12px rgba(200,140,255,0.08);
-    }
-    .alert-card.level-tsunami:hover {
-      background: linear-gradient(135deg, rgba(86,36,128,0.55), rgba(48,20,88,0.65));
-      box-shadow: 0 0 24px rgba(220,150,255,0.32);
-    }
-
-    .alert-card-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .alert-card-badge {
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 7px;
-      border-radius: 999px;
-      font-size: 7px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      font-family: var(--orbitron);
-      border: 1px solid;
-    }
-    .level-strong .alert-card-badge {
-      color: rgba(255,196,196,0.98); border-color: rgba(255,110,110,0.64); background: rgba(98,22,28,0.66);
-    }
-    .level-alert .alert-card-badge {
-      color: rgba(255,186,136,0.98); border-color: rgba(255,143,92,0.58); background: rgba(88,40,24,0.60);
-    }
-    .level-watch .alert-card-badge {
-      color: rgba(255,224,112,0.96); border-color: rgba(224,196,88,0.48); background: rgba(74,60,16,0.56);
-    }
-    .level-emerging .alert-card-badge {
-      color: rgba(134,214,255,0.94); border-color: rgba(112,186,245,0.48); background: rgba(18,56,92,0.58);
-    }
-    .level-surveillance .alert-card-badge {
-      color: rgba(190,210,235,0.92); border-color: rgba(150,180,220,0.50); background: rgba(28,38,62,0.60);
-    }
-    .level-eclipse .alert-card-badge {
-      color: rgba(230,200,255,0.98); border-color: rgba(200,140,255,0.65); background: rgba(72,32,114,0.60);
-    }
-    .level-tsunami .alert-card-badge {
-      color: rgba(245,220,255,1); border-color: rgba(230,160,255,0.80); background: rgba(96,40,144,0.65);
-      box-shadow: 0 0 8px rgba(220,150,255,0.45);
-    }
-
-    /* ── Pill de palier de saillance (réf absolue par pays) ── */
-    .alert-salience-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 1px 6px;
-      border-radius: 999px;
-      font-family: var(--orbitron);
-      font-size: 6.5px;
-      letter-spacing: 0.7px;
-      text-transform: uppercase;
-      border: 1px solid;
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-    .alert-salience-pill::before {
-      content: '◆';
-      font-size: 6.5px;
-    }
-    .alert-salience-pill.salience-moderate  { color: rgba(170,200,255,0.85); border-color: rgba(120,170,255,0.45); background: rgba(20,40,90,0.45); }
-    .alert-salience-pill.salience-high      { color: rgba(255,224,140,0.95); border-color: rgba(212,188,88,0.55); background: rgba(74,60,16,0.50); }
-    .alert-salience-pill.salience-very_high { color: rgba(255,200,160,0.98); border-color: rgba(255,143,92,0.62); background: rgba(86,42,24,0.55); }
-    .alert-salience-pill.salience-extreme   { color: rgba(235,200,255,1);    border-color: rgba(230,160,255,0.78); background: rgba(96,40,144,0.55); box-shadow: 0 0 6px rgba(220,150,255,0.30); }
-
-    .alert-card-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: rgba(220,235,255,0.97);
-      text-transform: capitalize;
-      line-height: 1.3;
-      word-break: break-word;
-      flex: 1;
-    }
-    a.alert-card-name {
-      text-decoration: none;
-      cursor: pointer;
-      transition: color 0.15s;
-    }
-    a.alert-card-name:hover { color: rgba(150,200,255,1); }
-    .alert-card-country {
-      font-size: 8px;
-      letter-spacing: 1.2px;
-      color: var(--muted);
-      text-transform: uppercase;
-      white-space: nowrap;
-      flex-shrink: 0;
-      align-self: flex-start;
-      padding-top: 3px;
-    }
-
-    .alert-card-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 14px;
-      margin-bottom: 8px;
-      font-size: 10px;
-      color: var(--muted);
-    }
-    .alert-card-stat { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-    .alert-card-stat-val {
-      font-size: 14px;
-      font-weight: 700;
-      color: rgba(210,228,255,0.92);
-      line-height: 1.1;
-    }
-    .alert-card-stat-lbl {
-      font-size: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
-
-    /* Articles */
-    .alert-card-articles {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(90,140,255,0.12);
-      margin-top: 2px;
-    }
-    .alert-article-link {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      font-size: 9px;
-      color: rgba(160,195,255,0.72);
-      text-decoration: none;
-      line-height: 1.35;
-      transition: color 0.15s;
-    }
-    .alert-article-link:hover { color: rgba(200,225,255,0.95); }
-    .alert-article-media {
-      flex-shrink: 0;
-      font-size: 7px;
-      letter-spacing: 0.7px;
-      padding: 1px 4px;
-      border: 1px solid rgba(90,140,255,0.22);
-      border-radius: 2px;
-      color: rgba(140,175,240,0.65);
-      text-transform: uppercase;
-      margin-top: 1px;
-    }
-    .alert-article-title {
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    .alert-card-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(90,140,255,0.12);
-    }
-    .alert-card-nav-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 0.9px;
-      text-transform: uppercase;
-      color: rgba(160,200,255,0.78);
-      text-decoration: none;
-      padding: 4px 9px;
-      border: 1px solid rgba(90,140,255,0.28);
-      border-radius: 999px;
-      background: rgba(20,40,90,0.30);
-      transition: border-color 0.18s, background 0.18s, color 0.18s;
-    }
-    .alert-card-nav-link:hover {
-      border-color: rgba(150,200,255,0.7);
-      background: rgba(30,60,140,0.50);
-      color: rgba(220,235,255,1);
-    }
-    .alert-card-nav-link span[aria-hidden="true"] {
-      opacity: 0.7;
-      font-size: 9px;
-    }
-
-    /* ── Carte événement (cluster d'alertes autour d'un pivot) ── */
-    .alert-card.is-event {
-      grid-column: 1 / -1;
-      border-left-width: 4px;
-      background: linear-gradient(180deg, rgba(20,40,90,0.32), rgba(10,20,55,0.55));
-    }
-    .alert-event-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: rgba(180,210,255,0.85);
-      padding: 2px 9px 2px 7px;
-      border: 1px solid rgba(120,170,255,0.45);
-      border-radius: 999px;
-      background: rgba(20,50,110,0.55);
-      flex-shrink: 0;
-      margin-right: 8px;
-    }
-    .alert-event-tag::before {
-      content: '◆';
-      font-size: 8px;
-      color: rgba(150,200,255,0.9);
-    }
-    .alert-event-pivot-name {
-      font-family: var(--mono);
-      font-size: 16px;
-      font-weight: 700;
-      color: rgba(230,242,255,0.98);
-      text-transform: capitalize;
-      letter-spacing: 0.3px;
-      flex: 1;
-      word-break: break-word;
-    }
-    a.alert-event-pivot-name { text-decoration: none; cursor: pointer; transition: color 0.15s; }
-    a.alert-event-pivot-name:hover { color: rgba(170,210,255,1); }
-    .alert-event-pivot-meta {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 8px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-left: 4px;
-    }
-    .alert-event-pivot-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 7px;
-      border-radius: 999px;
-      font-size: 7px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      font-family: var(--orbitron);
-      border: 1px solid rgba(140,180,240,0.4);
-      color: rgba(190,220,255,0.85);
-      background: rgba(20,40,90,0.45);
-    }
-    .alert-event-pivot-badge.is-pivot-alert { /* if pivot itself alerts */
-      border-color: rgba(255,180,140,0.55);
-      color: rgba(255,210,180,0.95);
-      background: rgba(86,42,24,0.55);
-    }
-    .alert-event-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      font-size: 10px;
-      color: rgba(180,205,240,0.78);
-      margin: 10px 0 10px;
-    }
-    .alert-event-summary b { color: rgba(220,235,255,0.96); font-weight: 700; }
-    .alert-event-members {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    .event-member {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px 4px 8px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-size: 10px;
-      color: rgba(220,235,255,0.92);
-      text-decoration: none;
-      background: rgba(8,14,36,0.55);
-      cursor: pointer;
-      transition: filter 0.15s, border-color 0.15s, background 0.15s;
-    }
-    .event-member:hover { filter: brightness(1.18); border-color: rgba(150,200,255,0.7); }
-    .event-member.level-strong { border-color: rgba(255,110,110,0.55); background: rgba(92,24,28,0.45); color: rgba(255,200,200,0.96); }
-    .event-member.level-alert  { border-color: rgba(255,143,92,0.5);  background: rgba(86,38,24,0.45);  color: rgba(255,205,165,0.96); }
-    .event-member.level-watch  { border-color: rgba(212,188,88,0.45); background: rgba(72,58,20,0.45);  color: rgba(255,225,150,0.96); }
-    .event-member-score {
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 0.6px;
-      color: rgba(180,210,255,0.7);
-    }
-    .alert-event-pivot-articles-label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: rgba(140,175,220,0.7);
-      margin: 4px 0 6px;
-    }
-
-    /* Vide / chargement */
-    #alertes-empty, #alertes-loading {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-    #alertes-loading {
-      font-family: var(--orbitron);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 600px) {
-      #alertes-wrap { padding: 70px 12px 80px; }
-      .alerts-grid { grid-template-columns: 1fr; }
-      #alertes-filters { gap: 8px; }
-    }
-
-    /* ── CTA "Voir l'évolution" ── */
-    .alertes-evo-cta {
-      display: flex;
-      width: fit-content;
-      max-width: 100%;
-      align-items: center;
-      gap: 12px;
-      margin: 14px 0 4px;
-      padding: 14px 22px;
-      font-family: var(--orbitron);
-      font-size: 13px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: rgba(220,235,255,0.96);
-      background: linear-gradient(120deg, rgba(40,80,180,0.42), rgba(60,120,220,0.32));
-      border: 1px solid rgba(120,180,255,0.55);
-      border-radius: 6px;
-      box-shadow: 0 0 18px rgba(80,130,255,0.20), inset 0 0 12px rgba(80,130,255,0.08);
-      transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-    .alertes-evo-cta:hover {
-      border-color: rgba(150,200,255,0.85);
-      box-shadow: 0 0 26px rgba(110,170,255,0.35), inset 0 0 14px rgba(110,170,255,0.12);
-      transform: translateY(-1px);
-    }
-    .alertes-evo-cta-arrow { font-size: 16px; color: rgba(180,215,255,0.95); }
-    .alertes-evo-cta-count {
-      font-size: 9px;
-      letter-spacing: 1.4px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(10,28,72,0.65);
-      border: 1px solid rgba(120,180,255,0.4);
-      color: rgba(190,220,255,0.92);
-    }
-    .alertes-evo-cta.disabled {
-      opacity: 0.45;
-      pointer-events: none;
-      box-shadow: none;
-    }
-
-    /* ── Mini-timeline 14 jours ── */
-    .alertes-timeline {
-      margin: 14px 0 6px;
-      padding: 12px 14px 10px;
-      border: 1px solid rgba(90,140,255,0.18);
-      border-radius: 6px;
-      background: rgba(8,16,42,0.55);
-    }
-    .alertes-timeline-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    .alertes-timeline-label {
-      font-family: var(--orbitron);
-      font-size: 9px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: rgba(160,200,255,0.78);
-    }
-    .alertes-timeline-reset {
-      margin-left: auto;
-      padding: 3px 9px;
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      background: rgba(20,40,90,0.5);
-      border: 1px solid rgba(120,180,255,0.4);
-      border-radius: 999px;
-      color: rgba(190,220,255,0.92);
-      cursor: pointer;
-      transition: filter 0.15s, border-color 0.15s;
-    }
-    .alertes-timeline-reset:hover {
-      filter: brightness(1.2);
-      border-color: rgba(160,200,255,0.7);
-    }
-    .alertes-timeline-track {
-      display: flex;
-      align-items: flex-end;
-      gap: 1px;
-      height: 36px;
-      width: 100%;
-      overflow: hidden;
-      padding-bottom: 2px;
-      border-bottom: 1px solid rgba(90,140,255,0.10);
-    }
-    .timeline-bar {
-      flex: 1 1 0;
-      min-width: 3px;
-      max-width: 16px;
-      background: rgba(90,140,255,0.10);
-      border-radius: 2px 2px 0 0;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.15s, box-shadow 0.15s, opacity 0.15s;
-    }
-    .timeline-bar:hover { box-shadow: 0 0 0 2px rgba(120,170,255,0.55); }
-    .timeline-bar.lvl-watch  { background: rgba(212,188,88,0.75); }
-    .timeline-bar.lvl-alert  { background: rgba(255,143,92,0.82); }
-    .timeline-bar.lvl-strong { background: rgba(255,110,110,0.88); }
-    .timeline-bar.is-selected { box-shadow: 0 0 0 2px rgba(180,220,255,0.92); }
-    .timeline-bar.is-latest::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      bottom: -5px;
-      transform: translateX(-50%);
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: rgba(255,120,120,0.95);
-      animation: pulse-dot 1.6s ease-in-out infinite;
-    }
-    .alertes-timeline-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 8px;
-      font-size: 8px;
-      letter-spacing: 0.7px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .alertes-timeline-legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .legend-dot {
-      display: inline-block;
-      width: 8px; height: 8px;
-      border-radius: 2px;
-    }
-    .legend-dot.lvl-watch  { background: rgba(212,188,88,0.8); }
-    .legend-dot.lvl-alert  { background: rgba(255,143,92,0.85); }
-    .legend-dot.lvl-strong { background: rgba(255,110,110,0.9); }
-    .alertes-timeline-legend-hint {
-      margin-left: auto;
-      font-style: italic;
-      text-transform: none;
-      letter-spacing: 0.4px;
-      color: rgba(140,180,230,0.55);
-    }
-
-    /* ── Cycles (heatmap + tableau d'épisodes) — onglet "Cycles" ── */
-    .cycles-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 22px;
-    }
-    .summary-stat {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: rgba(10,18,50,0.6);
-    }
-    .summary-stat-icon { width: 10px; height: 10px; border-radius: 2px; }
-    .summary-stat-icon.lvl-tsunami      { background: rgba(220,140,255,1); box-shadow: 0 0 6px rgba(220,150,255,0.6); }
-    .summary-stat-icon.lvl-eclipse      { background: rgba(200,140,255,0.92); }
-    .summary-stat-icon.lvl-strong       { background: rgba(255,110,110,0.92); }
-    .summary-stat-icon.lvl-alert        { background: rgba(255,143,92,0.92); }
-    .summary-stat-icon.lvl-watch        { background: rgba(212,188,88,0.85); }
-    .summary-stat-icon.lvl-surveillance { background: rgba(150,180,220,0.6); }
-    .summary-stat-val {
-      font-family: var(--orbitron);
-      font-size: 18px; font-weight: 700;
-      color: rgba(220,235,255,0.96);
-    }
-    .summary-stat-lbl { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-
-    .heatmap-section { margin-bottom: 32px; }
-    .heatmap-section-title {
-      font-family: var(--orbitron);
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: rgba(160,200,255,0.85);
-      margin-bottom: 10px;
-    }
-    .heatmap-container {
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: rgba(8,16,42,0.55);
-      padding: 12px 0 4px;
-      overflow-x: auto;
-    }
-    .heatmap-axis {
-      display: grid; grid-template-columns: 200px 1fr; gap: 8px;
-      padding: 0 12px 6px;
-      font-size: 8px; letter-spacing: 0.6px; color: rgba(140,180,230,0.55);
-      text-transform: uppercase;
-    }
-    .heatmap-axis-dates { display: flex; justify-content: space-between; }
-    .heatmap-row {
-      display: grid; grid-template-columns: 200px 1fr; gap: 8px;
-      align-items: center; padding: 0 12px; min-height: 22px;
-    }
-    .heatmap-row:hover .heatmap-label { color: rgba(220,235,255,1); }
-    .heatmap-row + .heatmap-row { margin-top: 1px; }
-    .heatmap-label {
-      font-size: 11px; color: rgba(200,220,255,0.84); text-transform: capitalize;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      cursor: pointer; transition: color 0.15s;
-      display: flex; align-items: center; gap: 6px;
-    }
-    a.heatmap-label { text-decoration: none; }
-    .heatmap-label-tier {
-      font-family: var(--orbitron); font-size: 7px; letter-spacing: 0.6px;
-      text-transform: uppercase; padding: 1px 5px; border-radius: 999px;
-      border: 1px solid; flex-shrink: 0;
-    }
-    .heatmap-cells { display: grid; gap: 1px; height: 18px; }
-    .heatmap-cell {
-      background: rgba(60,90,140,0.10); border-radius: 1px;
-      cursor: pointer; transition: filter 0.15s, transform 0.1s;
-    }
-    .heatmap-cell:hover { filter: brightness(1.5); transform: scaleY(1.2); }
-    .heatmap-cell.lvl-surveillance { background: rgba(150,180,220,0.45); }
-    .heatmap-cell.lvl-watch        { background: rgba(212,188,88,0.78); }
-    .heatmap-cell.lvl-alert        { background: rgba(255,143,92,0.85); }
-    .heatmap-cell.lvl-strong       { background: rgba(255,110,110,0.92); }
-    .heatmap-cell.lvl-eclipse      { background: rgba(200,140,255,0.92); }
-    .heatmap-cell.lvl-tsunami      { background: rgba(230,150,255,1); box-shadow: 0 0 4px rgba(220,150,255,0.4); }
-
-    /* Tier badge label couleurs (réutilisées de cycles.html) */
-    .tier-tsunami      { color: rgba(245,220,255,1);    border-color: rgba(230,160,255,0.80); background: rgba(96,40,144,0.55); }
-    .tier-eclipse      { color: rgba(230,200,255,0.98); border-color: rgba(200,140,255,0.65); background: rgba(72,32,114,0.55); }
-    .tier-strong       { color: rgba(255,196,196,0.98); border-color: rgba(255,110,110,0.64); background: rgba(98,22,28,0.55); }
-    .tier-alert        { color: rgba(255,186,136,0.98); border-color: rgba(255,143,92,0.58); background: rgba(88,40,24,0.55); }
-    .tier-watch        { color: rgba(255,224,112,0.96); border-color: rgba(224,196,88,0.48); background: rgba(74,60,16,0.55); }
-    .tier-surveillance { color: rgba(190,210,235,0.92); border-color: rgba(150,180,220,0.50); background: rgba(28,38,62,0.55); }
-
-    .heatmap-legend {
-      display: flex; flex-wrap: wrap; gap: 14px;
-      padding: 10px 12px 4px;
-      font-size: 9px; letter-spacing: 0.6px; color: var(--muted); text-transform: uppercase;
-    }
-    .heatmap-legend-item { display: inline-flex; align-items: center; gap: 6px; }
-    .heatmap-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
-    .heatmap-legend-dot.lvl-tsunami      { background: rgba(230,150,255,1); }
-    .heatmap-legend-dot.lvl-eclipse      { background: rgba(200,140,255,0.92); }
-    .heatmap-legend-dot.lvl-strong       { background: rgba(255,110,110,0.92); }
-    .heatmap-legend-dot.lvl-alert        { background: rgba(255,143,92,0.85); }
-    .heatmap-legend-dot.lvl-watch        { background: rgba(212,188,88,0.78); }
-    .heatmap-legend-dot.lvl-surveillance { background: rgba(150,180,220,0.45); }
-
-    .episodes-section { margin-top: 32px; }
-    .episodes-table-wrap {
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: rgba(8,16,42,0.55);
-      overflow-x: auto;
-    }
-    .episodes-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    .episodes-table th, .episodes-table td {
-      padding: 8px 12px; text-align: left;
-      border-bottom: 1px solid rgba(90,140,255,0.10);
-      white-space: nowrap;
-    }
-    .episodes-table th {
-      font-family: var(--orbitron); font-size: 8px; letter-spacing: 1.2px;
-      text-transform: uppercase; color: var(--muted);
-      cursor: pointer; user-select: none;
-    }
-    .episodes-table th:hover { color: rgba(200,220,255,0.95); }
-    .episodes-table th.sort-asc::after  { content: ' ↑'; color: rgba(120,170,255,0.7); }
-    .episodes-table th.sort-desc::after { content: ' ↓'; color: rgba(120,170,255,0.7); }
-    .episodes-table tbody tr { cursor: pointer; transition: background 0.12s; }
-    .episodes-table tbody tr:hover { background: rgba(20,40,90,0.30); }
-    .episodes-table .ep-subject {
-      font-weight: 700; color: rgba(220,235,255,0.95); text-transform: capitalize;
-    }
-    .episodes-table .ep-tier {
-      font-family: var(--orbitron); font-size: 8px; letter-spacing: 0.7px;
-      text-transform: uppercase; padding: 2px 7px; border-radius: 999px;
-      border: 1px solid;
-    }
-    .episodes-table .ep-num { font-family: var(--orbitron); color: rgba(220,235,255,0.92); }
-    .episodes-table .ep-share { font-family: var(--orbitron); color: rgba(200,220,255,0.82); }
-    .ep-salience-pill {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 7px; border-radius: 999px;
-      font-family: var(--orbitron); font-size: 7px;
-      letter-spacing: 0.7px; text-transform: uppercase; border: 1px solid;
-      white-space: nowrap;
-    }
-    .ep-salience-pill::before { content: '◆'; font-size: 7px; }
-    .ep-salience-pill.salience-moderate  { color: rgba(170,200,255,0.85); border-color: rgba(120,170,255,0.45); background: rgba(20,40,90,0.45); }
-    .ep-salience-pill.salience-high      { color: rgba(255,224,140,0.95); border-color: rgba(212,188,88,0.55); background: rgba(74,60,16,0.50); }
-    .ep-salience-pill.salience-very_high { color: rgba(255,200,160,0.98); border-color: rgba(255,143,92,0.62); background: rgba(86,42,24,0.55); }
-    .ep-salience-pill.salience-extreme   { color: rgba(235,200,255,1);    border-color: rgba(230,160,255,0.78); background: rgba(96,40,144,0.55); }
-
-    .cycles-loading, .cycles-empty {
-      text-align: center; padding: 40px 20px;
-      color: var(--muted); font-size: 11px;
-    }
-    .cycles-loading { font-family: var(--orbitron); letter-spacing: 2px; text-transform: uppercase; }
-
-    @media (max-width: 700px) {
-      .heatmap-row, .heatmap-axis { grid-template-columns: 130px 1fr; gap: 6px; }
-    }
-
-    /* ╔══════ Refonte 2026-05 — page Alertes ═══════════════════════╗
-       Architecture en couches: KPIs persistants → Pouls de l'agenda
-       (multi-line par tier) → Slider temporel → Bandes par sujet →
-       Liste compacte des alertes de la période sélectionnée. Tout
-       sur une page, hiérarchie claire.                              */
-
-    .page-header { margin-bottom: 18px; }
-    .page-title {
-      font-family: var(--orbitron);
-      font-size: clamp(20px, 4vw, 30px);
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #e8f0ff;
-      margin-bottom: 6px;
-    }
-    .page-subtitle {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.4px;
-      max-width: 720px;
-      line-height: 1.5;
-      margin-bottom: 18px;
-    }
-
-    /* ── KPIs ── */
-    .page-kpis {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-    .kpi {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: rgba(10,18,50,0.55);
-      cursor: default;
-      transition: border-color 0.18s, background 0.18s;
-    }
-    .kpi:hover { border-color: rgba(120,170,255,0.5); background: rgba(20,32,72,0.6); }
-    .kpi-mark {
-      width: 12px; height: 12px;
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-    .kpi-mark.kpi-active     { background: rgba(255,120,120,0.95); animation: pulse-dot 1.6s ease-in-out infinite; }
-    .kpi-mark.lvl-tsunami    { background: rgba(220,140,255,1); box-shadow: 0 0 8px rgba(220,150,255,0.55); }
-    .kpi-mark.lvl-eclipse    { background: rgba(200,140,255,0.92); }
-    .kpi-mark.lvl-strong     { background: rgba(255,110,110,0.92); }
-    .kpi-val {
-      font-family: var(--orbitron);
-      font-size: 18px;
-      font-weight: 700;
-      color: rgba(220,235,255,0.96);
-      line-height: 1;
-    }
-    .kpi-lbl {
-      display: flex; flex-direction: column; gap: 2px;
-      font-size: 8.5px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: rgba(180,210,250,0.68);
-    }
-    .kpi-lbl-sub { color: rgba(140,180,225,0.55); font-size: 7.5px; letter-spacing: 0.6px; }
-
-    /* ── Filtres ligne haute (pays + niveau min + lien méthodo) ── */
-    .page-filters {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
     }
     .page-filters select {
       background: rgba(10,18,50,0.7);
@@ -1061,524 +92,797 @@
       padding: 6px 10px;
       outline: none;
       cursor: pointer;
+      transition: border-color 0.2s;
     }
+    .page-filters select:hover { border-color: rgba(90,140,255,0.5); }
+    .page-filters select:focus { border-color: var(--accent); }
     .page-methodo-link {
       margin-left: auto;
-      font-family: var(--orbitron);
-      font-size: 9px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      text-decoration: none;
-      padding: 6px 12px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: rgba(180,210,255,0.85);
-      transition: border-color 0.18s, color 0.18s;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      color: rgba(150,190,240,0.78);
+      transition: color 0.15s;
     }
-    .page-methodo-link:hover { border-color: rgba(150,200,255,0.7); color: rgba(220,235,255,1); }
+    .page-methodo-link:hover { color: rgba(220,235,255,1); }
 
-    /* ── Section commune des charts ── */
-    .chart-section { margin-bottom: 22px; }
-    .chart-section-header {
+    /* ── KPIs ───────────────────────────────────────────────── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 1100px) {
+      .kpi-row { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    .kpi {
       display: flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-    .chart-section-title {
-      font-family: var(--orbitron);
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: rgba(160,200,255,0.85);
-    }
-    .chart-section-window {
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.6px;
-    }
-    .chart-card {
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      background: rgba(8,16,42,0.55);
-      padding: 12px 14px;
-      overflow-x: auto;
     }
-
-    /* ── Pouls de l'agenda (SVG multi-line) ── */
-    #pulse-chart {
-      display: block;
-      width: 100%;
-      height: 200px;
-    }
-    .pulse-line { fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-    .pulse-line.lvl-tsunami      { stroke: rgba(230,150,255,1);     stroke-width: 2.4; filter: drop-shadow(0 0 4px rgba(220,150,255,0.45)); }
-    .pulse-line.lvl-eclipse      { stroke: rgba(200,140,255,0.92); }
-    .pulse-line.lvl-strong       { stroke: rgba(255,110,110,0.92); }
-    .pulse-line.lvl-alert        { stroke: rgba(255,143,92,0.85); }
-    .pulse-line.lvl-watch        { stroke: rgba(212,188,88,0.78); }
-    .pulse-grid line { stroke: rgba(55,85,175,0.18); stroke-dasharray: 3 6; }
-    .pulse-axis text { font-family: var(--mono); font-size: 9px; fill: rgba(110,150,215,0.55); }
-    .pulse-cursor { stroke: rgba(180,220,255,0.85); stroke-width: 1.4; stroke-dasharray: 2 3; }
-    .pulse-cursor-handle {
-      fill: rgba(15,30,75,0.9);
-      stroke: rgba(180,220,255,0.85);
-      stroke-width: 1.2;
-    }
-    .chart-legend {
-      display: flex; flex-wrap: wrap; gap: 14px;
-      margin-top: 10px;
-      font-size: 9px; letter-spacing: 0.6px; text-transform: uppercase;
-      color: var(--muted);
-    }
-    .chart-legend-item { display: inline-flex; align-items: center; gap: 6px; }
-    .chart-legend-mark {
-      display: inline-block;
-      width: 16px; height: 3px; border-radius: 2px;
-    }
-    .chart-legend-mark.lvl-tsunami    { background: rgba(230,150,255,1); }
-    .chart-legend-mark.lvl-eclipse    { background: rgba(200,140,255,0.92); }
-    .chart-legend-mark.lvl-strong     { background: rgba(255,110,110,0.92); }
-    .chart-legend-mark.lvl-alert      { background: rgba(255,143,92,0.85); }
-    .chart-legend-mark.lvl-watch      { background: rgba(212,188,88,0.78); }
-
-    /* ── Slider temporel ── */
-    .slider-section {
-      margin: 14px 0 26px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .slider-section input[type="range"] {
-      flex: 1;
-      cursor: pointer;
-      accent-color: rgba(180,220,255,0.92);
-    }
-    .slider-current {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: rgba(220,235,255,0.95);
-      padding: 5px 12px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: rgba(10,20,55,0.7);
-      min-width: 200px;
-      text-align: center;
-    }
-    .slider-now-btn {
-      font-family: var(--orbitron);
-      font-size: 9px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      padding: 5px 10px;
-      border: 1px solid rgba(120,180,255,0.45);
-      border-radius: 999px;
-      background: rgba(20,40,90,0.5);
-      color: rgba(190,220,255,0.92);
-      cursor: pointer;
-      transition: filter 0.15s, border-color 0.15s;
-    }
-    .slider-now-btn:hover { filter: brightness(1.18); border-color: rgba(160,200,255,0.7); }
-
-    /* ── Bandes (Top 25 sujets, ligne par sujet) ── */
-    .bands-row {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: 10px;
-      align-items: center;
-      padding: 0 12px;
-      min-height: 22px;
-    }
-    .bands-row + .bands-row { margin-top: 1px; }
-    .bands-row:hover .bands-label { color: rgba(220,235,255,1); }
-    .bands-label {
-      font-size: 11px;
-      color: rgba(200,220,255,0.84);
-      text-transform: capitalize;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: pointer;
-      transition: color 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-    }
-    .bands-label-tier {
-      font-family: var(--orbitron);
-      font-size: 7px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      padding: 1px 5px;
-      border-radius: 999px;
-      border: 1px solid;
+    .kpi-mark {
+      width: 14px; height: 14px;
+      border-radius: 3px;
       flex-shrink: 0;
     }
-    .bands-cells {
-      display: grid;
-      gap: 1px;
-      height: 14px;
-    }
-    .bands-cell {
-      background: transparent;
-      border-radius: 1px;
-      cursor: pointer;
-      transition: filter 0.15s, transform 0.1s;
-    }
-    .bands-cell:hover { filter: brightness(1.4); transform: scaleY(1.4); }
-    .bands-cell.lvl-surveillance { background: rgba(150,180,220,0.40); }
-    .bands-cell.lvl-watch        { background: rgba(212,188,88,0.78); }
-    .bands-cell.lvl-alert        { background: rgba(255,143,92,0.85); }
-    .bands-cell.lvl-strong       { background: rgba(255,110,110,0.92); }
-    .bands-cell.lvl-eclipse      { background: rgba(200,140,255,0.92); }
-    .bands-cell.lvl-tsunami      { background: rgba(230,150,255,1); box-shadow: 0 0 4px rgba(220,150,255,0.4); }
-    .bands-cell.is-selected-day {
-      box-shadow: 0 0 0 1.5px rgba(180,220,255,0.95);
-    }
-    .bands-axis {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: 10px;
-      padding: 0 12px 6px;
-      font-size: 8px;
-      letter-spacing: 0.6px;
-      color: rgba(140,180,230,0.55);
-      text-transform: uppercase;
-    }
-    .bands-axis-dates { display: flex; justify-content: space-between; }
-    .bands-country-header {
-      padding: 12px 12px 6px;
+    .kpi-mark.lvl-tsunami    { background: var(--tsunami);   box-shadow: 0 0 8px rgba(208,160,255,0.45); }
+    .kpi-mark.lvl-eclipse    { background: var(--eclipse); }
+    .kpi-mark.lvl-tempete    { background: var(--tempete); }
+    .kpi-mark.lvl-forte      { background: var(--forte); }
+    .kpi-mark.lvl-alerte     { background: var(--alerte); }
+    .kpi-mark.lvl-veille     { background: var(--veille); opacity: 0.9; }
+    .kpi-mark.lvl-emergence  { background: var(--emergence); opacity: 0.85; }
+    .kpi-val {
       font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 1.4px;
-      color: rgba(160,200,255,0.78);
+      font-size: 22px;
+      font-weight: 700;
+      color: #e8f0ff;
+      line-height: 1;
+    }
+    .kpi-lbl {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 9.5px;
+      letter-spacing: 0.7px;
       text-transform: uppercase;
-      border-top: 1px solid rgba(90,140,255,0.10);
-      margin-top: 6px;
+      color: rgba(180,210,255,0.78);
+    }
+    .kpi-lbl-sub {
+      font-size: 8px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: none;
     }
 
-    /* ── Alertes — liste compacte ── */
-    .alerts-section { margin-top: 6px; }
-    .alerts-section-title {
+    /* ── Sections ─────────────────────────────────────────── */
+    .section {
+      margin-bottom: 36px;
+    }
+    .section-head {
       display: flex;
       align-items: baseline;
       gap: 12px;
       margin-bottom: 12px;
-      font-family: var(--orbitron);
-      font-size: 12px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: rgba(220,235,255,0.92);
-    }
-    .alerts-section-title .alerts-section-period {
-      font-size: 9px;
-      letter-spacing: 0.6px;
-      color: var(--muted);
-      text-transform: none;
-    }
-
-    .compact-alerts { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-    .compact-alert {
-      display: grid;
-      grid-template-columns: 110px 1fr 80px auto 28px;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      cursor: pointer;
-      background: rgba(8,16,42,0.45);
-      border-top: 1px solid rgba(90,140,255,0.10);
-      transition: background 0.15s;
-    }
-    .compact-alert:first-child { border-top: none; }
-    .compact-alert:hover { background: rgba(20,40,90,0.45); }
-    .compact-alert.is-event { background: linear-gradient(180deg, rgba(20,40,90,0.32), rgba(10,20,55,0.55)); }
-    .compact-alert.is-expanded { background: rgba(15,28,72,0.72); }
-
-    .compact-alert-tier {
-      font-family: var(--orbitron);
-      font-size: 7.5px;
-      letter-spacing: 0.9px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid;
-      text-align: center;
-      white-space: nowrap;
-    }
-    .compact-alert-tier.lvl-tsunami    { color: rgba(245,220,255,1); border-color: rgba(230,160,255,0.80); background: rgba(96,40,144,0.55); box-shadow: 0 0 6px rgba(220,150,255,0.35); }
-    .compact-alert-tier.lvl-eclipse    { color: rgba(230,200,255,0.98); border-color: rgba(200,140,255,0.65); background: rgba(72,32,114,0.55); }
-    .compact-alert-tier.lvl-strong     { color: rgba(255,196,196,0.98); border-color: rgba(255,110,110,0.64); background: rgba(98,22,28,0.55); }
-    .compact-alert-tier.lvl-alert      { color: rgba(255,186,136,0.98); border-color: rgba(255,143,92,0.58); background: rgba(88,40,24,0.55); }
-    .compact-alert-tier.lvl-watch      { color: rgba(255,224,112,0.96); border-color: rgba(224,196,88,0.48); background: rgba(74,60,16,0.55); }
-    .compact-alert-tier.lvl-surveillance{color: rgba(190,210,235,0.92); border-color: rgba(150,180,220,0.50); background: rgba(28,38,62,0.60); }
-    .compact-alert-tier.is-event       { color: rgba(200,225,255,0.96); border-color: rgba(120,170,255,0.55); background: rgba(20,50,110,0.6); }
-
-    .compact-alert-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: rgba(220,235,255,0.98);
-      text-transform: capitalize;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .compact-alert-name-extra {
-      font-size: 9px;
-      font-weight: 400;
-      color: var(--muted);
-      letter-spacing: 0.3px;
-      text-transform: none;
-      margin-left: 8px;
-    }
-    .compact-alert-meta {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 0.5px;
-      color: rgba(200,220,255,0.85);
-      text-align: right;
-    }
-    .compact-alert-country {
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .compact-alert-arrow {
-      width: 28px;
-      text-align: center;
-      color: rgba(160,200,255,0.6);
-      font-size: 14px;
-      transition: transform 0.18s;
-    }
-    .compact-alert.is-expanded .compact-alert-arrow { transform: rotate(90deg); color: rgba(220,235,255,1); }
-
-    .compact-alert-detail {
-      grid-column: 1 / -1;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(90,140,255,0.18);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .compact-alert-detail .alert-card-stats { margin-bottom: 0; }
-    .compact-alert-detail .alert-card-articles { margin-top: 0; }
-
-    /* ── Vide / loading global ── */
-    .alerts-empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    /* ── Sections pliables (épisodes complets, méthodologie inline) ── */
-    .collapsible {
-      margin-top: 22px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: rgba(8,16,42,0.55);
-    }
-    .collapsible[open] { background: rgba(8,16,42,0.65); }
-    .collapsible summary {
-      list-style: none;
-      cursor: pointer;
-      padding: 12px 16px;
-      font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: rgba(180,210,255,0.78);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .collapsible summary::-webkit-details-marker { display: none; }
-    .collapsible summary::before {
-      content: '▸';
-      font-size: 10px;
-      color: rgba(120,170,255,0.7);
-      transition: transform 0.15s;
-    }
-    .collapsible[open] summary::before { transform: rotate(90deg); }
-    .collapsible summary:hover { color: rgba(220,235,255,0.95); }
-    .collapsible-body { padding: 0 16px 16px; }
-
-    @media (max-width: 700px) {
-      .compact-alert { grid-template-columns: 90px 1fr 60px 24px; }
-      .compact-alert-country { display: none; }
-      .bands-row, .bands-axis { grid-template-columns: 130px 1fr; }
-      #pulse-chart { height: 160px; }
-    }
-
-    /* ── Refonte v3 (cartes simples, sans charts) ──────────────────── */
-    .alerts-section { margin-bottom: 36px; }
-    .section-title {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      margin-bottom: 14px;
       padding-bottom: 8px;
-      border-bottom: 1px solid rgba(90,140,255,0.18);
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
       font-family: var(--orbitron);
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 600;
       letter-spacing: 1.6px;
       text-transform: uppercase;
-      color: rgba(220,235,255,0.94);
+      color: #e8f0ff;
     }
-    .section-title-icon { font-size: 14px; color: var(--accent); }
-    .section-title-meta {
+    .section-sub {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+    }
+
+    .section-empty {
+      padding: 26px 18px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+    }
+
+    /* ── Vue Maintenant — cartes ──────────────────────────── */
+    .now-tier-group {
+      margin-bottom: 16px;
+    }
+    .now-tier-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(200,225,255,0.8);
+    }
+    .now-tier-head .now-tier-dot {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+    }
+    .now-tier-head .now-tier-count {
       margin-left: auto;
-      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    .alert-card {
+      display: block;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border);
+      border-radius: 4px;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      cursor: pointer;
+    }
+    .alert-card:hover { background: rgba(18,30,72,0.85); transform: translateX(2px); }
+    .alert-card.level-tsunami   { border-left-color: var(--tsunami);   background: linear-gradient(90deg, rgba(110,43,176,0.28), rgba(10,18,50,0.7) 50%); }
+    .alert-card.level-eclipse   { border-left-color: var(--eclipse);   background: linear-gradient(90deg, rgba(74,37,128,0.25), rgba(10,18,50,0.7) 50%); }
+    .alert-card.level-tempete   { border-left-color: var(--tempete);   background: linear-gradient(90deg, rgba(138,29,29,0.22), rgba(10,18,50,0.7) 50%); }
+    .alert-card.level-forte     { border-left-color: var(--forte);     background: linear-gradient(90deg, rgba(138,72,24,0.22), rgba(10,18,50,0.7) 50%); }
+    .alert-card.level-alerte    { border-left-color: var(--alerte);    background: linear-gradient(90deg, rgba(122,100,32,0.18), rgba(10,18,50,0.65) 50%); }
+    .alert-card.level-veille    { border-left-color: var(--veille);    background: rgba(10,18,50,0.6); }
+    .alert-card.level-emergence { border-left-color: var(--emergence); background: rgba(10,18,50,0.6); }
+
+    .alert-card-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .alert-card-tier {
+      font-size: 9px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      font-family: var(--orbitron);
+      font-weight: 600;
+    }
+    .alert-card-tier.lvl-tsunami    { color: rgba(245,220,255,1);  background: rgba(110,43,176,0.55); border: 1px solid rgba(208,160,255,0.6); }
+    .alert-card-tier.lvl-eclipse    { color: rgba(230,200,255,0.98); background: rgba(74,37,128,0.55); border: 1px solid rgba(160,112,224,0.55); }
+    .alert-card-tier.lvl-tempete    { color: rgba(255,196,196,0.98); background: rgba(138,29,29,0.45); border: 1px solid rgba(255,110,110,0.55); }
+    .alert-card-tier.lvl-forte      { color: rgba(255,200,150,0.98); background: rgba(138,72,24,0.45); border: 1px solid rgba(255,160,80,0.55); }
+    .alert-card-tier.lvl-alerte     { color: rgba(250,225,140,0.98); background: rgba(122,100,32,0.45); border: 1px solid rgba(242,205,80,0.55); }
+    .alert-card-tier.lvl-veille     { color: rgba(240,220,140,0.95); background: rgba(106,85,32,0.40); border: 1px solid rgba(216,184,48,0.50); }
+    .alert-card-tier.lvl-emergence  { color: rgba(200,220,250,0.95); background: rgba(42,69,112,0.50); border: 1px solid rgba(138,168,216,0.50); }
+
+    .alert-card-name {
+      font-family: var(--orbitron);
+      font-size: 13px;
+      font-weight: 600;
+      color: #e8f0ff;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      flex: 1;
+      min-width: 0;
+    }
+    .alert-card-country {
+      font-size: 9px;
+      letter-spacing: 0.7px;
+      color: rgba(180,210,255,0.7);
+      padding: 2px 7px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .alert-card-status {
       font-size: 9px;
       letter-spacing: 0.6px;
       color: var(--muted);
-      text-transform: none;
+    }
+    .alert-card-status.is-active {
+      color: rgba(150,255,180,0.9);
     }
 
-    /* Cartes "Événements récents" — chronique horizontale */
-    .recent-events-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 10px;
-    }
-    .recent-card {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 12px 14px;
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--border);
-      border-radius: 6px;
-      background: var(--card-bg);
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-    }
-    .recent-card:hover { background: rgba(20,40,90,0.45); transform: translateY(-1px); }
-    .recent-card.level-tsunami { border-color: rgba(220,140,255,0.55); border-left-color: rgba(240,160,255,1); background: linear-gradient(135deg, rgba(72,28,110,0.40), rgba(40,16,72,0.52)); box-shadow: 0 0 12px rgba(200,140,255,0.18); }
-    .recent-card.level-eclipse { border-color: rgba(180,120,255,0.45); border-left-color: rgba(200,140,255,0.92); background: rgba(48,24,80,0.30); }
-    .recent-card.level-strong  { border-color: rgba(255,110,110,0.45); border-left-color: rgba(255,100,100,0.92); background: rgba(92,24,28,0.26); }
-    .recent-card.level-alert   { border-color: rgba(255,143,92,0.40); border-left-color: rgba(255,143,92,0.85); background: rgba(86,38,24,0.26); }
-    .recent-card-top { display: flex; align-items: center; gap: 10px; }
-    .recent-card-tier {
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 3px 9px;
-      border-radius: 999px;
-      border: 1px solid;
-      flex-shrink: 0;
-    }
-    .recent-card-country {
-      margin-left: auto;
-      font-family: var(--orbitron);
-      font-size: 8px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .recent-card-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: rgba(230,242,255,0.97);
-      text-transform: capitalize;
-      line-height: 1.25;
-      word-break: break-word;
-    }
-    .recent-card-meta {
-      display: flex;
-      gap: 12px;
-      font-size: 10px;
-      color: rgba(180,210,250,0.78);
-    }
-    .recent-card-dates { font-family: var(--mono); }
-    .recent-card-duration {
-      font-family: var(--orbitron);
-      letter-spacing: 0.6px;
-      color: rgba(200,225,255,0.85);
-    }
-    .recent-card-bottom {
+    .alert-card-metrics {
       display: flex;
       flex-wrap: wrap;
+      gap: 14px;
+      font-size: 10px;
+      color: rgba(190,215,240,0.85);
+    }
+    .alert-card-metric b {
+      color: #e8f0ff;
+      font-weight: 700;
+    }
+
+    .alert-card-cluster {
+      margin-top: 6px;
+      font-size: 9.5px;
+      color: rgba(170,200,235,0.75);
+    }
+    .alert-card-cluster b { color: rgba(220,235,255,0.92); font-weight: 600; }
+
+    /* Émergences dépliable */
+    .emergence-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      color: rgba(200,180,90,0.95);
+      background: rgba(106,90,24,0.18);
+      border: 1px solid rgba(200,176,72,0.35);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .emergence-toggle:hover { background: rgba(106,90,24,0.30); }
+    .emergence-section { margin-top: 8px; display: none; }
+    .emergence-section.is-open { display: block; }
+    .emergence-row {
+      display: flex;
+      align-items: center;
       gap: 10px;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      background: rgba(10,18,50,0.45);
+      border-left: 2px solid var(--emergence);
+      border-radius: 3px;
+      font-size: 10.5px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .emergence-row:hover { background: rgba(20,30,72,0.6); }
+    .emergence-row-name {
+      font-family: var(--orbitron);
+      font-weight: 500;
+      color: rgba(230,240,255,0.95);
+      flex: 1;
+      min-width: 0;
+      letter-spacing: 0.4px;
+    }
+    .emergence-row-country {
+      font-size: 8.5px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .emergence-row-metric {
+      font-size: 9px;
+      color: rgba(180,210,255,0.7);
+    }
+
+    /* ── Chronique 130j ──────────────────────────────────── */
+    .chronique-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .zoom-btn {
+      padding: 5px 12px;
+      background: rgba(10,18,50,0.7);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: rgba(180,210,255,0.78);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .zoom-btn:hover { color: rgba(220,235,255,0.95); border-color: rgba(90,140,255,0.5); }
+    .zoom-btn.is-active {
+      background: rgba(85,136,255,0.15);
+      border-color: var(--accent);
+      color: rgba(230,240,255,0.98);
+    }
+
+    .legend-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-block {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+    }
+    .legend-block.lvl-tsunami   { background: var(--tsunami);   box-shadow: 0 0 6px rgba(208,160,255,0.35); }
+    .legend-block.lvl-eclipse   { background: var(--eclipse); }
+    .legend-block.lvl-tempete   { background: var(--tempete); }
+    .legend-block.lvl-forte     { background: var(--forte); }
+    .legend-block.lvl-alerte    { background: var(--alerte); }
+    .legend-block.lvl-veille    { background: var(--veille); opacity: 0.85; }
+    .legend-block.lvl-emergence { background: var(--emergence); opacity: 0.85; }
+
+    #chronique-svg-wrap {
+      position: relative;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 14px 6px;
+    }
+    #chronique-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+    .swimlane-bg { fill: rgba(20,30,60,0.4); }
+    .swimlane-divider { stroke: rgba(90,140,255,0.12); stroke-width: 1; }
+    .swimlane-label {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      fill: rgba(200,225,255,0.85);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .month-tick { stroke: rgba(90,140,255,0.18); stroke-width: 1; stroke-dasharray: 2,3; }
+    .month-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      fill: var(--muted);
+      letter-spacing: 0.4px;
+    }
+    .now-line {
+      stroke: rgba(120,255,160,0.7);
+      stroke-width: 1.5;
+      stroke-dasharray: 3,3;
+    }
+    .now-label {
+      font-family: var(--mono);
+      font-size: 8px;
+      fill: rgba(140,255,180,0.9);
+      letter-spacing: 0.6px;
+    }
+    .episode-block {
+      cursor: pointer;
+      transition: filter 0.15s, stroke-width 0.15s;
+      stroke: rgba(0,0,0,0.4);
+      stroke-width: 0.5;
+    }
+    .episode-block:hover {
+      filter: brightness(1.25);
+      stroke-width: 1.5;
+      stroke: rgba(255,255,255,0.6);
+    }
+    .episode-block.selected {
+      stroke: #fff;
+      stroke-width: 1.5;
+      filter: brightness(1.3);
+    }
+    .episode-icon {
+      font-size: 9px;
+      fill: rgba(255,255,255,0.85);
+      text-anchor: middle;
+      pointer-events: none;
+      font-family: var(--mono);
+    }
+
+    /* ── Tooltip ──────────────────────────────────────────── */
+    #chronique-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(8,14,38,0.96);
+      border: 1px solid rgba(90,140,255,0.4);
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 10px;
+      color: rgba(220,235,255,0.95);
+      letter-spacing: 0.3px;
+      max-width: 240px;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+    }
+    #chronique-tooltip .tt-title {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      font-weight: 600;
+      color: #e8f0ff;
+      margin-bottom: 3px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    #chronique-tooltip .tt-meta {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    /* ── Side panel ──────────────────────────────────────── */
+    #side-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 420px;
+      max-width: 100vw;
+      height: 100vh;
+      background: rgba(6,12,32,0.98);
+      border-left: 1px solid var(--border);
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      z-index: 200;
+      overflow-y: auto;
+      box-shadow: -8px 0 32px rgba(0,0,0,0.5);
+    }
+    #side-panel.is-open { transform: translateX(0); }
+    .panel-head {
+      position: sticky; top: 0;
+      background: rgba(6,12,32,0.98);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-tier-badge {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      border-radius: 3px;
+    }
+    .panel-tier-badge.lvl-tsunami   { background: rgba(110,43,176,0.65); color: rgba(245,220,255,1); }
+    .panel-tier-badge.lvl-eclipse   { background: rgba(74,37,128,0.65); color: rgba(230,200,255,0.98); }
+    .panel-tier-badge.lvl-tempete   { background: rgba(138,29,29,0.55); color: rgba(255,196,196,0.98); }
+    .panel-tier-badge.lvl-forte     { background: rgba(138,72,24,0.55); color: rgba(255,200,150,0.98); }
+    .panel-tier-badge.lvl-alerte    { background: rgba(122,100,32,0.55); color: rgba(250,225,140,0.98); }
+    .panel-tier-badge.lvl-veille    { background: rgba(106,85,32,0.50); color: rgba(240,220,140,0.95); }
+    .panel-tier-badge.lvl-emergence { background: rgba(42,69,112,0.55); color: rgba(200,220,250,0.95); }
+
+    .panel-country {
+      font-size: 10px;
+      color: rgba(180,210,255,0.8);
+      letter-spacing: 0.8px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .panel-close {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: rgba(200,225,255,0.7);
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      transition: all 0.15s;
+    }
+    .panel-close:hover { color: #fff; border-color: rgba(200,225,255,0.7); background: rgba(200,225,255,0.08); }
+
+    .panel-body {
+      padding: 16px 20px 32px;
+    }
+    .panel-title {
+      font-family: var(--orbitron);
+      font-size: 17px;
+      font-weight: 700;
+      color: #e8f0ff;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+    .panel-period {
+      font-size: 10.5px;
+      color: rgba(200,225,255,0.78);
+      margin-bottom: 4px;
+    }
+    .panel-status {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .panel-status.is-active {
+      color: rgba(140,255,180,0.95);
+      border-color: rgba(120,200,150,0.4);
+      background: rgba(60,140,90,0.12);
+    }
+
+    .panel-section {
+      margin-top: 22px;
+    }
+    .panel-section-title {
+      font-size: 9px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(180,210,255,0.65);
+      margin-bottom: 8px;
+    }
+    .panel-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+      font-size: 11px;
+    }
+    .panel-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .panel-metric-val {
+      font-family: var(--orbitron);
+      font-size: 14px;
+      color: #e8f0ff;
+      font-weight: 600;
+    }
+    .panel-metric-lbl {
       font-size: 9px;
       color: var(--muted);
       letter-spacing: 0.4px;
-      padding-top: 6px;
-      border-top: 1px solid rgba(90,140,255,0.10);
-    }
-    .recent-events-more {
-      margin-top: 10px;
-      padding: 8px 12px;
-      font-size: 10px;
-      color: rgba(160,200,255,0.72);
-      text-align: center;
-      font-style: italic;
     }
 
+    .panel-member {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      background: rgba(10,18,50,0.5);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 10.5px;
+    }
+    .panel-member-name {
+      font-family: var(--orbitron);
+      font-size: 10.5px;
+      letter-spacing: 0.4px;
+      color: rgba(230,240,255,0.92);
+      flex: 1;
+      min-width: 0;
+    }
+    .panel-member-meta {
+      font-size: 9px;
+      color: var(--muted);
+    }
+    .panel-member-pivot {
+      font-size: 8px;
+      padding: 1px 6px;
+      background: rgba(85,136,255,0.18);
+      border: 1px solid rgba(85,136,255,0.4);
+      border-radius: 2px;
+      color: rgba(190,215,255,0.9);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .panel-article {
+      display: block;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      background: rgba(10,18,50,0.4);
+      border-left: 2px solid rgba(90,140,255,0.3);
+      border-radius: 2px;
+      font-size: 10px;
+      color: rgba(200,225,255,0.85);
+      transition: background 0.12s;
+    }
+    .panel-article:hover { background: rgba(18,30,72,0.7); }
+    .panel-article-media {
+      display: inline-block;
+      font-family: var(--orbitron);
+      font-size: 8.5px;
+      letter-spacing: 0.6px;
+      color: rgba(180,210,255,0.7);
+      margin-right: 6px;
+    }
+
+    .panel-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .panel-link-btn {
+      padding: 8px 12px;
+      background: rgba(85,136,255,0.10);
+      border: 1px solid rgba(85,136,255,0.35);
+      border-radius: 3px;
+      font-size: 10px;
+      letter-spacing: 0.6px;
+      color: rgba(200,225,255,0.9);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .panel-link-btn:hover {
+      background: rgba(85,136,255,0.22);
+      border-color: rgba(85,136,255,0.6);
+      color: #fff;
+    }
+
+    /* ── Tableau collapsible ─────────────────────────────── */
+    .collapsible {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    .collapsible summary {
+      padding: 14px 18px;
+      font-family: var(--orbitron);
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(200,225,255,0.85);
+      cursor: pointer;
+      list-style: none;
+    }
+    .collapsible summary::-webkit-details-marker { display: none; }
+    .collapsible summary::before {
+      content: '▸ ';
+      color: var(--accent);
+      transition: transform 0.15s;
+      display: inline-block;
+    }
+    .collapsible[open] summary::before { content: '▾ '; }
+    .collapsible-body {
+      padding: 8px 18px 18px;
+      overflow-x: auto;
+    }
+    .episodes-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10.5px;
+    }
+    .episodes-table th {
+      text-align: left;
+      padding: 8px 6px;
+      font-family: var(--orbitron);
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: rgba(180,210,255,0.7);
+      border-bottom: 1px solid var(--border);
+    }
+    .episodes-table td {
+      padding: 7px 6px;
+      border-bottom: 1px solid rgba(90,140,255,0.08);
+    }
+    .episodes-table tr { cursor: pointer; transition: background 0.12s; }
+    .episodes-table tr:hover { background: rgba(20,30,72,0.5); }
+    .ep-tier {
+      display: inline-block;
+      padding: 2px 7px;
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border-radius: 2px;
+    }
+    .ep-tier.lvl-tsunami    { background: rgba(110,43,176,0.5); color: rgba(245,220,255,1); }
+    .ep-tier.lvl-eclipse    { background: rgba(74,37,128,0.5); color: rgba(230,200,255,0.98); }
+    .ep-tier.lvl-tempete    { background: rgba(138,29,29,0.4); color: rgba(255,196,196,0.95); }
+    .ep-tier.lvl-forte      { background: rgba(138,72,24,0.4); color: rgba(255,200,150,0.95); }
+    .ep-tier.lvl-alerte     { background: rgba(122,100,32,0.4); color: rgba(250,225,140,0.95); }
+    .ep-tier.lvl-veille     { background: rgba(106,85,32,0.4); color: rgba(240,220,140,0.95); }
+    .ep-tier.lvl-emergence  { background: rgba(42,69,112,0.45); color: rgba(200,220,250,0.95); }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 900px) {
+      #side-panel { width: 100vw; }
+    }
   </style>
 </head>
 <body>
 
-<div id="alertes-wrap">
+<div id="wrap">
   <header class="page-header">
-    <h1 class="page-title"><span data-i18n="alertes.title">Alertes de</span> <span data-i18n="alertes.title_accent">saillance</span></h1>
-    <p class="page-subtitle" data-i18n="alertes.refonte_subtitle">Quand un sujet sort de l'ordinaire — par persistance dans le temps et dominance dans l'agenda médiatique. Six niveaux gradués, du signal isolé au tsunami médiatique.</p>
+    <h1 class="page-title">
+      <span data-i18n="alertes.title">Alertes</span>
+      <span class="accent" data-i18n="alertes.title_accent">médiatiques</span>
+    </h1>
+    <p class="page-subtitle" data-i18n="alertes.refonte_subtitle_v2">
+      Taxonomie en 7 tiers — échelle d’alarme + grille magnitude × temporalité — calibrée empiriquement sur 130 jours
+    </p>
 
     <div class="page-filters">
       <span class="filter-label" data-i18n="alertes.filter_country">Pays</span>
       <select id="filter-country">
         <option value="all" selected data-i18n="common.all_countries">Tous</option>
-        <option value="QC" data-i18n="country.QC">Québec</option>
+        <option value="QC"  data-i18n="country.QC">Québec</option>
         <option value="CAN" data-i18n="country.CAN">Canada</option>
         <option value="USA" data-i18n="country.USA">États-Unis</option>
       </select>
       <span class="filter-label" data-i18n="alertes.filter_min_level">Niveau min</span>
       <select id="filter-min-level">
-        <option value="watch" selected data-i18n="alertes.level_watch">Veille</option>
-        <option value="alert" data-i18n="alertes.level_alert">Alerte</option>
-        <option value="strong" data-i18n="alertes.level_strong">Alerte forte</option>
-        <option value="eclipse" data-i18n="alertes.level_eclipse">Éclipse</option>
-        <option value="tsunami" data-i18n="alertes.level_tsunami">Tsunami</option>
+        <option value="emergence" data-i18n="alertes.level_emergence">Émergence</option>
+        <option value="veille"    data-i18n="alertes.level_veille">Veille</option>
+        <option value="alerte"    selected data-i18n="alertes.level_alerte">Alerte</option>
+        <option value="forte"     data-i18n="alertes.level_forte">Alerte forte</option>
+        <option value="tempete"   data-i18n="alertes.level_tempete">Tempête</option>
+        <option value="eclipse"   data-i18n="alertes.level_eclipse">Éclipse</option>
+        <option value="tsunami"   data-i18n="alertes.level_tsunami">Tsunami</option>
       </select>
       <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
     </div>
 
-    <div class="page-kpis" id="page-kpis"></div>
+    <div class="kpi-row" id="kpi-row"></div>
   </header>
 
-  <section class="alerts-section">
-    <div class="section-title">
-      <span class="section-title-icon">⚡</span>
-      <span data-i18n="alertes.section_active">En cours</span>
-      <span class="section-title-meta" id="section-active-meta">—</span>
+  <!-- ── Section MAINTENANT ─────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-title" data-i18n="alertes.section_now">Maintenant</span>
+      <span class="section-sub" id="section-now-period">—</span>
     </div>
-    <div id="active-alerts"><div class="alerts-empty" data-i18n="common.loading">chargement…</div></div>
+    <div id="now-content">
+      <div class="section-empty" data-i18n="common.loading">chargement…</div>
+    </div>
   </section>
 
-  <section class="alerts-section">
-    <div class="section-title">
-      <span class="section-title-icon">▣</span>
-      <span data-i18n="alertes.section_recent">Événements récents</span>
-      <span class="section-title-meta" data-i18n="alertes.section_recent_window">130 derniers jours · triés par gravité puis durée</span>
+  <!-- ── Section CHRONIQUE ───────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-title" data-i18n="alertes.section_chronique">Chronique</span>
+      <span class="section-sub" id="section-chronique-window">—</span>
     </div>
-    <div id="recent-events"><div class="alerts-empty" data-i18n="common.loading">chargement…</div></div>
+
+    <div class="chronique-toolbar">
+      <button class="zoom-btn" data-zoom="30"  data-i18n="alertes.zoom_30d">30 j</button>
+      <button class="zoom-btn" data-zoom="90"  data-i18n="alertes.zoom_90d">90 j</button>
+      <button class="zoom-btn is-active" data-zoom="130" data-i18n="alertes.zoom_130d">130 j</button>
+    </div>
+
+    <div id="chronique-svg-wrap">
+      <svg id="chronique-svg" role="img" aria-label="Chronique des alertes par pays"></svg>
+      <div id="chronique-tooltip"></div>
+    </div>
+
+    <div class="legend-row">
+      <span class="legend-item"><span class="legend-block lvl-tsunami"></span><span data-i18n="alertes.level_tsunami">Tsunami</span></span>
+      <span class="legend-item"><span class="legend-block lvl-eclipse"></span><span data-i18n="alertes.level_eclipse">Éclipse</span></span>
+      <span class="legend-item"><span class="legend-block lvl-tempete"></span><span data-i18n="alertes.level_tempete">Tempête</span></span>
+      <span class="legend-item"><span class="legend-block lvl-forte"></span><span data-i18n="alertes.level_forte">Alerte forte</span></span>
+      <span class="legend-item"><span class="legend-block lvl-alerte"></span><span data-i18n="alertes.level_alerte">Alerte</span></span>
+      <span class="legend-item"><span class="legend-block lvl-veille"></span><span data-i18n="alertes.level_veille">Veille</span></span>
+      <span class="legend-item"><span class="legend-block lvl-emergence"></span><span data-i18n="alertes.level_emergence">Émergence</span></span>
+    </div>
   </section>
 
+  <!-- ── Section TABLE COMPLÈTE ──────────────────────────────────── -->
   <details class="collapsible" id="episodes-collapsible">
-    <summary><span data-i18n="alertes.episodes_collapsed">Tous les épisodes recensés (130 jours)</span></summary>
+    <summary><span data-i18n="alertes.section_episodes_table">Tous les épisodes (table)</span></summary>
     <div class="collapsible-body">
       <div id="episodes-table-wrap"></div>
     </div>
   </details>
 </div>
+
+<!-- ── Side panel ───────────────────────────────────────────────── -->
+<aside id="side-panel" aria-hidden="true">
+  <div class="panel-head">
+    <span id="panel-tier-badge" class="panel-tier-badge"></span>
+    <span id="panel-country" class="panel-country"></span>
+    <button class="panel-close" id="panel-close" aria-label="Fermer">×</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</aside>
 
 <!-- Ticker manchettes -->
 <section class="ticker-section" id="ticker-section" aria-label="Manchettes récentes">
@@ -1599,83 +903,107 @@
 (function() {
   'use strict';
 
-  // ─── Constantes & helpers ────────────────────────────────────────
-  const LEVEL_ORDER = ['tsunami', 'eclipse', 'strong', 'alert', 'watch', 'surveillance', 'emerging'];
-  const ACTIVE_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert', 'watch'];
-  const EPISODE_LEVELS = ['tsunami', 'eclipse', 'strong', 'alert']; // pour la chronique
-  const SALIENCE_TIER_ORDER_DESC = ['extreme', 'very_high', 'high', 'moderate'];
+  // ─── Constantes ────────────────────────────────────────────────
+  const TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte', 'veille', 'emergence'];
+  // MAIN_TIERS = ce qui s'affiche en cartes pleines dans "Maintenant"
+  // (les 4 du haut + alerte). Veille/émergence vont dans le sous-bloc dépliable.
+  const MAIN_TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte'];
+  const MINOR_TIERS = ['veille', 'emergence'];
+  const TIER_RANK = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4, veille: 5, emergence: 6, none: 99 };
+  // Hauteur du bloc dans le swimlane (proportionnel à la magnitude)
+  const TIER_HEIGHT_PCT = { tsunami: 1.0, eclipse: 1.0, tempete: 0.85, forte: 0.85, alerte: 0.6, veille: 0.45, emergence: 0.32 };
+  const TIER_ICON = { tsunami: '🌊', eclipse: '🌑', tempete: '⛈', forte: '⚡', alerte: '📍', veille: '▾', emergence: '◦' };
+  const COUNTRY_ORDER = ['QC', 'CAN', 'USA'];
+
   const FR_MONTHS_SHORT = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
   const EN_MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  function escapeHtml(v) {
-    return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
-      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
-    });
-  }
-  function levelRank(lvl) { var i = LEVEL_ORDER.indexOf(lvl); return i === -1 ? 999 : i; }
-  function maxLevel(a, b) { return levelRank(a) <= levelRank(b) ? a : b; }
-  function currentLang() {
-    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
-  }
-  function tierLabel(lvl) {
-    var T = window.t || function(k){ return k; };
-    return T('alertes.level_' + lvl) || lvl;
-  }
-  function formatDayShort(dayStr) {
-    if (!dayStr) return '';
-    var p = dayStr.split('-');
-    if (p.length !== 3) return dayStr;
-    var d = parseInt(p[2], 10);
-    var mo = parseInt(p[1], 10) - 1;
-    var months = currentLang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
-    return d + ' ' + months[mo];
-  }
-  var MONTHS_EN_TO_FR = { Jan:'janv.', Feb:'févr.', Mar:'mars', Apr:'avr.', May:'mai', Jun:'juin', Jul:'juil.', Aug:'août', Sep:'sept.', Oct:'oct.', Nov:'nov.', Dec:'déc.' };
-  function formatPeriodLabel(rawLabel) {
-    if (!rawLabel) return '';
-    if (currentLang() !== 'fr') return rawLabel;
-    return String(rawLabel)
-      .replace(/^([A-Z][a-z]{2})\s+0?(\d+)/, function(_, mon, day) {
-        var fr = MONTHS_EN_TO_FR[mon];
-        if (!fr) return _;
-        return parseInt(day, 10) + ' ' + fr;
-      })
-      .replace(/\bEDT\b/, 'HAE')
-      .replace(/\bEST\b/, 'HNE');
-  }
-  function periodToDay(pk) { return String(pk).split('_')[0]; }
-  function getActiveCountries() {
-    var src = graphData || timeseriesData;
-    if (!src || !src.graphs) return [];
-    var preferred = ['QC', 'CAN', 'USA'];
-    var available = Object.keys(src.graphs);
-    var out = [];
-    preferred.forEach(function(c) { if (available.indexOf(c) !== -1) out.push(c); });
-    available.forEach(function(c) { if (out.indexOf(c) === -1) out.push(c); });
-    return out;
-  }
-  function getSalienceTier(country, size) {
-    var src = graphData || timeseriesData;
-    if (!src || !src.meta || !src.meta.salience_tiers) return null;
-    var tiers = src.meta.salience_tiers[country];
-    if (!tiers || typeof size !== 'number') return null;
-    for (var i = 0; i < SALIENCE_TIER_ORDER_DESC.length; i++) {
-      var k = SALIENCE_TIER_ORDER_DESC[i];
-      if (typeof tiers[k] === 'number' && size >= tiers[k]) return k;
-    }
-    return null;
-  }
-  function salienceTierLabel(tier) {
-    var T = window.t || function(k){ return k; };
-    return T('evolution.salience_' + tier) || tier;
-  }
 
   // ─── État ──────────────────────────────────────────────────────
   let graphData = null;
   let timeseriesData = null;
   let filterCountry = 'all';
-  let filterMinLevel = 'watch';
-  let expandedCardKey = null; // pour déplier une carte d'événement récent
+  let filterMinLevel = 'alerte';
+  let zoomDays = 130;
+  let isEmergenceOpen = false;
+  let selectedEpisodeKey = null;
+
+  // ─── Helpers ───────────────────────────────────────────────────
+  function T(key, fallback) {
+    var v = window.t ? window.t(key) : null;
+    if (typeof v === 'string' && v !== key) return v;
+    return fallback !== undefined ? fallback : key;
+  }
+  function lang() {
+    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
+  }
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function tierRank(t) { return TIER_RANK[t] != null ? TIER_RANK[t] : 99; }
+  function tierLabel(t) { return T('alertes.level_' + t, t); }
+  function tierShort(t) {
+    var s = window.t ? window.t('alertes.level_short.' + t) : null;
+    if (s && s !== 'alertes.level_short.' + t) return s;
+    return t;
+  }
+  function countryLabel(c) { return T('country.' + c, c); }
+  function passesFilter(tier, country) {
+    if (filterCountry !== 'all' && country !== filterCountry) return false;
+    if (tierRank(tier) > tierRank(filterMinLevel)) return false;
+    return true;
+  }
+  function fmtDay(d) {
+    if (!d) return '';
+    var p = String(d).split('-');
+    if (p.length !== 3) return d;
+    var dd = parseInt(p[2], 10);
+    var mm = parseInt(p[1], 10) - 1;
+    var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
+    return dd + ' ' + months[mm];
+  }
+  function dayDiff(a, b) {
+    return Math.round((new Date(b) - new Date(a)) / 86400000);
+  }
+  function daysAgo(dateStr) {
+    var today = new Date(); today.setUTCHours(0,0,0,0);
+    var d = new Date(dateStr);
+    return Math.round((today - d) / 86400000);
+  }
+  function getCountries() {
+    var src = graphData || timeseriesData;
+    if (!src || !src.graphs) return [];
+    var out = [];
+    COUNTRY_ORDER.forEach(function(c) { if (src.graphs[c]) out.push(c); });
+    Object.keys(src.graphs).forEach(function(c) { if (out.indexOf(c) === -1) out.push(c); });
+    return out;
+  }
+  function getSalienceTier(country, size) {
+    if (!graphData || !graphData.meta || !graphData.meta.salience_tiers) return null;
+    var tiers = graphData.meta.salience_tiers[country];
+    if (!tiers || typeof size !== 'number') return null;
+    if (size >= tiers.extreme)   return 'extreme';
+    if (size >= tiers.very_high) return 'very_high';
+    if (size >= tiers.high)      return 'high';
+    if (size >= tiers.moderate)  return 'moderate';
+    return null;
+  }
+  function fmtPeakWithTier(country, size) {
+    if (typeof size !== 'number') return '—';
+    var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
+      ? graphData.meta.salience_tiers[country] : null;
+    var lbl = size.toFixed(1);
+    if (!tiers) return lbl;
+    var tier = getSalienceTier(country, size);
+    if (tier) {
+      var thr = tiers[tier];
+      if (typeof thr === 'number' && thr > 0) {
+        lbl += ' (' + (tier === 'extreme' ? 'ext' : tier === 'very_high' ? 'vhi' : tier) + ' ×' + (size / thr).toFixed(1) + ')';
+      }
+    }
+    return lbl;
+  }
 
   // ─── Chargement ────────────────────────────────────────────────
   async function loadData() {
@@ -1688,482 +1016,669 @@
       timeseriesData = t;
       render();
     } catch (e) {
-      var box = document.getElementById('active-alerts');
-      if (box) box.innerHTML = '<div class="alerts-empty">Erreur de chargement.</div>';
+      console.error('Erreur chargement:', e);
+      document.getElementById('now-content').innerHTML =
+        '<div class="section-empty">Erreur de chargement.</div>';
     }
   }
 
-  // ─── Matrice par jour pour le tableau d'épisodes (timeseries) ──
-  function buildPerCountryDayMatrix(country) {
-    var m = {};
-    var cg = timeseriesData && timeseriesData.graphs && timeseriesData.graphs[country];
-    if (!cg) return m;
-    for (var pk in cg) {
-      var day = periodToDay(pk);
-      var nodes = (cg[pk] && cg[pk].nodes) || [];
-      for (var i = 0; i < nodes.length; i++) {
-        var n = nodes[i];
-        if (!n.alert_level || n.alert_level === 'none' || n.alert_level === 'emerging') continue;
-        if (!m[n.id]) m[n.id] = {};
-        var existing = m[n.id][day];
-        var nSize = (typeof n.size === 'number') ? n.size : null;
-        var newWins = !existing || levelRank(n.alert_level) < levelRank(existing.level);
-        if (newWins) {
-          m[n.id][day] = {
-            level: n.alert_level,
-            score: n.alert_score || null,
-            top_share: n.alert_top_share || null,
-            streak: n.alert_streak || 0,
-            size: nSize
-          };
-        } else if (nSize !== null && (existing.size === null || nSize > existing.size)) {
-          existing.size = nSize;
-        }
-      }
-    }
-    return m;
-  }
-
-  function buildEpisodesForObject(byDay) {
-    var keys = Object.keys(byDay).sort();
-    var episodes = [];
-    var current = null;
-    var prev = null;
-    function dayDiff(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
-    for (var i = 0; i < keys.length; i++) {
-      var dk = keys[i];
-      var d = byDay[dk];
-      var isAlertLevel = EPISODE_LEVELS.indexOf(d.level) !== -1;
-      if (!isAlertLevel) {
-        if (current) { episodes.push(current); current = null; }
-        prev = dk;
-        continue;
-      }
-      if (current && prev !== null && dayDiff(prev, dk) === 1) {
-        current.lastDay = dk;
-        current.maxLevel = maxLevel(current.maxLevel, d.level);
-        if ((d.top_share || 0) > current.maxTopShare) current.maxTopShare = d.top_share;
-        if ((d.size || 0) > current.peakSalience) current.peakSalience = d.size || 0;
-      } else {
-        if (current) episodes.push(current);
-        current = { firstDay: dk, lastDay: dk, maxLevel: d.level, maxTopShare: d.top_share || 0, peakSalience: d.size || 0 };
-      }
-      prev = dk;
-    }
-    if (current) episodes.push(current);
-    episodes.forEach(function(e) {
-      e.durationDays = Math.round((new Date(e.lastDay) - new Date(e.firstDay)) / 86400000) + 1;
-    });
-    return episodes;
-  }
-
-  // ─── KPIs en haut ─────────────────────────────────────────────
-  function computeKPIs() {
-    var kpis = { active: 0, tsunami: 0, eclipse: 0, strong: 0 };
-    if (!graphData || !timeseriesData) return kpis;
-    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
-    var periods = (graphData.meta && graphData.meta.periods) || [];
-    var latestKey = periods.length ? periods[periods.length - 1].key : null;
-    if (latestKey) {
-      countries.forEach(function(c) {
-        var gd = graphData.graphs[c] && graphData.graphs[c][latestKey];
-        if (!gd) return;
-        var events = gd.events || [];
-        var inEvent = {};
-        events.forEach(function(e) {
-          if (e.pivot && e.pivot.alert_active) inEvent[e.pivot.id] = true;
-          (e.members || []).forEach(function(m) { inEvent[m.id] = true; });
+  // ─── Construction des données ──────────────────────────────────
+  // Pour la chronique : reconstruire les épisodes depuis timeseries.json
+  // en groupant par alert_episode_id (per-objet).
+  function buildEpisodesFromTimeseries() {
+    var out = [];
+    if (!timeseriesData || !timeseriesData.graphs) return out;
+    var byEp = {};
+    Object.keys(timeseriesData.graphs).forEach(function(country) {
+      var periods = timeseriesData.graphs[country];
+      Object.keys(periods).forEach(function(pk) {
+        var gd = periods[pk];
+        if (!gd || !gd.nodes) return;
+        gd.nodes.forEach(function(n) {
+          if (!n.alert_episode_id || !n.alert_level || n.alert_level === 'none') return;
+          var key = n.alert_episode_id;
+          if (!byEp[key]) {
+            byEp[key] = {
+              key: key,
+              country: country,
+              id: n.id,
+              tier: n.alert_level,
+              first_day: n.alert_episode_first_day,
+              last_day: n.alert_episode_last_day,
+              n_days: n.alert_episode_n_days,
+              peak: n.alert_episode_peak,
+              status: n.alert_episode_status,
+              max_top_share: n.alert_top_share || 0,
+              max_score: n.alert_score || 0
+            };
+          } else {
+            // Update tier if encountered better
+            if (tierRank(n.alert_level) < tierRank(byEp[key].tier)) byEp[key].tier = n.alert_level;
+            if ((n.alert_top_share || 0) > byEp[key].max_top_share) byEp[key].max_top_share = n.alert_top_share;
+            if ((n.alert_score || 0) > byEp[key].max_score) byEp[key].max_score = n.alert_score;
+          }
         });
-        var simple = (gd.nodes || []).filter(function(n) {
-          return n.alert_active && ACTIVE_LEVELS.indexOf(n.alert_level) !== -1 && !inEvent[n.id];
-        });
-        var activeEvents = events.filter(function(e) {
-          return (e.members || []).some(function(m) { return ACTIVE_LEVELS.indexOf(m.alert_level) !== -1; })
-            || (e.pivot && e.pivot.alert_active);
-        });
-        kpis.active += activeEvents.length + simple.length;
-      });
-    }
-    countries.forEach(function(c) {
-      var matrix = buildPerCountryDayMatrix(c);
-      Object.keys(matrix).forEach(function(id) {
-        var maxL = null;
-        Object.keys(matrix[id]).forEach(function(day) {
-          var l = matrix[id][day].level;
-          if (!maxL || levelRank(l) < levelRank(maxL)) maxL = l;
-        });
-        if (maxL === 'tsunami') kpis.tsunami++;
-        else if (maxL === 'eclipse') kpis.eclipse++;
-        else if (maxL === 'strong') kpis.strong++;
       });
     });
-    return kpis;
+    Object.keys(byEp).forEach(function(k) { out.push(byEp[k]); });
+    return out;
   }
 
-  function renderKPIs() {
-    var el = document.getElementById('page-kpis');
-    if (!el) return;
-    var k = computeKPIs();
-    var T = window.t || function(k){ return k; };
-    el.innerHTML = ''
-      + '<div class="kpi"><span class="kpi-mark kpi-active"></span><span class="kpi-val">' + k.active + '</span><span class="kpi-lbl">' + escapeHtml(T('alertes.kpi_active') || 'En cours') + '<span class="kpi-lbl-sub">' + escapeHtml(T('alertes.kpi_active_sub') || 'maintenant') + '</span></span></div>'
-      + '<div class="kpi"><span class="kpi-mark lvl-tsunami"></span><span class="kpi-val">' + k.tsunami + '</span><span class="kpi-lbl">' + escapeHtml(tierLabel('tsunami')) + '<span class="kpi-lbl-sub">130 j</span></span></div>'
-      + '<div class="kpi"><span class="kpi-mark lvl-eclipse"></span><span class="kpi-val">' + k.eclipse + '</span><span class="kpi-lbl">' + escapeHtml(tierLabel('eclipse')) + '<span class="kpi-lbl-sub">130 j</span></span></div>'
-      + '<div class="kpi"><span class="kpi-mark lvl-strong"></span><span class="kpi-val">' + k.strong + '</span><span class="kpi-lbl">' + escapeHtml(tierLabel('strong')) + '<span class="kpi-lbl-sub">130 j</span></span></div>';
-  }
-
-  // ─── Section "EN COURS" — cartes des alertes actives ──────────
-  function getCurrentAlertItems() {
-    if (!graphData || !graphData.meta) return [];
-    var periods = graphData.meta.periods || [];
-    var latestKey = periods.length ? periods[periods.length - 1].key : null;
-    if (!latestKey) return [];
-    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
+  // Pour le "Maintenant" : prendre la dernière période graph.json
+  function buildNowItems() {
     var items = [];
-    countries.forEach(function(country) {
+    if (!graphData || !graphData.meta || !graphData.meta.periods) return items;
+    var periods = graphData.meta.periods;
+    if (!periods.length) return items;
+    var latestKey = periods[periods.length - 1].key;
+
+    getCountries().forEach(function(country) {
       var gd = graphData.graphs[country] && graphData.graphs[country][latestKey];
       if (!gd) return;
+      var inCluster = {};
       var events = gd.events || [];
-      var inEvent = {};
+
       events.forEach(function(e) {
-        if (e.pivot && e.pivot.alert_active) inEvent[e.pivot.id] = true;
-        (e.members || []).forEach(function(m) { inEvent[m.id] = true; });
+        if (e.pivot && e.pivot.id) inCluster[e.pivot.id] = true;
+        (e.members || []).forEach(function(m) { inCluster[m.id] = true; });
       });
+
+      // Cards-événements (clusters)
       events.forEach(function(e) {
         if (!e.pivot || !Array.isArray(e.members) || !e.members.length) return;
-        var anyActive = (e.members || []).some(function(m) { return ACTIVE_LEVELS.indexOf(m.alert_level) !== -1; })
-          || (e.pivot && e.pivot.alert_active);
-        if (!anyActive) return;
         var lvls = (e.members || []).map(function(m) { return m.alert_level; });
-        if (e.pivot && e.pivot.alert_active && e.pivot.alert_level) lvls.push(e.pivot.alert_level);
-        var topLvl = 'watch';
-        for (var li = 0; li < LEVEL_ORDER.length; li++) {
-          if (lvls.indexOf(LEVEL_ORDER[li]) !== -1) { topLvl = LEVEL_ORDER[li]; break; }
+        if (e.pivot.alert_active && e.pivot.alert_level) lvls.push(e.pivot.alert_level);
+        var topLvl = 'emergence';
+        for (var i = 0; i < TIERS.length; i++) {
+          if (lvls.indexOf(TIERS[i]) !== -1) { topLvl = TIERS[i]; break; }
         }
-        if (levelRank(topLvl) > levelRank(filterMinLevel)) return;
+        if (!passesFilter(topLvl, country)) return;
         items.push({
-          kind: 'event', country: country, level: topLvl,
-          pivot: e.pivot, members: e.members,
-          sharedArticles: e.shared_articles || [],
-          sharedCount: e.shared_articles_count || 0
+          kind: 'event',
+          country: country,
+          tier: topLvl,
+          pivot: e.pivot,
+          members: e.members,
+          shared_articles: e.shared_articles || [],
+          shared_count: e.shared_articles_count || 0
         });
       });
+
+      // Cards standalone (alertes hors cluster)
       (gd.nodes || []).forEach(function(n) {
-        if (!n.alert_active) return;
-        if (ACTIVE_LEVELS.indexOf(n.alert_level) === -1) return;
-        if (inEvent[n.id]) return;
-        if (levelRank(n.alert_level) > levelRank(filterMinLevel)) return;
+        if (!n.alert_active || !n.alert_level || n.alert_level === 'none') return;
+        if (inCluster[n.id]) return;
+        if (!passesFilter(n.alert_level, country)) return;
         items.push({
-          kind: 'alert', country: country, level: n.alert_level, id: n.id,
-          score: n.alert_score || null, delta: n.alert_delta || null,
-          peakRatio: n.alert_peak_ratio || null, topShare: n.alert_top_share || null,
-          streak: n.alert_streak || 0, n: n.n || 0, size: n.size || null,
-          articles: Array.isArray(n.articles) ? n.articles : []
+          kind: 'alert',
+          country: country,
+          tier: n.alert_level,
+          node: n
         });
       });
     });
+
+    // Tri par tier puis par score
     items.sort(function(a, b) {
-      var lo = levelRank(a.level) - levelRank(b.level);
-      if (lo !== 0) return lo;
-      if (a.kind !== b.kind) return a.kind === 'event' ? -1 : 1;
-      var sa = a.kind === 'event' ? (a.pivot && a.pivot.alert_score) || 0 : (a.score || 0);
-      var sb = b.kind === 'event' ? (b.pivot && b.pivot.alert_score) || 0 : (b.score || 0);
+      var r = tierRank(a.tier) - tierRank(b.tier);
+      if (r !== 0) return r;
+      var sa = a.kind === 'event' ? (a.pivot.alert_score || 0) : (a.node.alert_score || 0);
+      var sb = b.kind === 'event' ? (b.pivot.alert_score || 0) : (b.node.alert_score || 0);
       return sb - sa;
     });
     return items;
   }
 
-  function renderCurrentAlerts() {
-    var container = document.getElementById('active-alerts');
-    var meta = document.getElementById('section-active-meta');
+  // ─── Render header / KPIs ─────────────────────────────────────
+  function renderKPIs() {
+    var el = document.getElementById('kpi-row');
+    if (!el) return;
+    var episodes = buildEpisodesFromTimeseries();
+    var counts = { tsunami: 0, eclipse: 0, tempete: 0, poussee: 0, emergence: 0 };
+    episodes.forEach(function(e) {
+      if (filterCountry !== 'all' && e.country !== filterCountry) return;
+      counts[e.tier] = (counts[e.tier] || 0) + 1;
+    });
+    var html = '';
+    TIERS.forEach(function(tier) {
+      html += '<div class="kpi">'
+        + '<span class="kpi-mark lvl-' + tier + '"></span>'
+        + '<span class="kpi-val">' + (counts[tier] || 0) + '</span>'
+        + '<span class="kpi-lbl">' + esc(tierLabel(tier))
+        +   '<span class="kpi-lbl-sub">130 j</span>'
+        + '</span></div>';
+    });
+    el.innerHTML = html;
+  }
+
+  // ─── Render "Maintenant" ──────────────────────────────────────
+  function renderNow() {
+    var container = document.getElementById('now-content');
+    var periodEl = document.getElementById('section-now-period');
     if (!container) return;
-    var T = window.t || function(k){ return k; };
-    var items = getCurrentAlertItems();
 
-    // Méta de la période courante
     var periods = (graphData && graphData.meta && graphData.meta.periods) || [];
-    var latestLabel = periods.length ? formatPeriodLabel(periods[periods.length - 1].label) : '';
-    if (meta) meta.textContent = latestLabel + ' · ' + items.length + ' ' + (items.length > 1 ? T('alertes.signal_many') || 'signaux' : T('alertes.signal_one') || 'signal');
+    if (periods.length && periodEl) {
+      var lbl = periods[periods.length - 1].label || '';
+      periodEl.textContent = lbl;
+    }
 
+    var items = buildNowItems();
     if (!items.length) {
-      container.innerHTML = '<div class="alerts-empty">' + escapeHtml(T('alertes.no_alerts_current') || 'Aucune alerte en cours pour les filtres sélectionnés.') + '</div>';
+      container.innerHTML = '<div class="section-empty">' + esc(T('alertes.no_alerts_current', 'Agenda calme — aucun signal actif.')) + '</div>';
       return;
     }
-    // Grouper par pays si filtre = all
-    if (filterCountry === 'all') {
-      var byCountry = {};
-      items.forEach(function(it) {
-        if (!byCountry[it.country]) byCountry[it.country] = [];
-        byCountry[it.country].push(it);
+
+    // Grouper par tier
+    var groups = { tsunami: [], eclipse: [], tempete: [], forte: [], alerte: [], veille: [], emergence: [] };
+    items.forEach(function(it) {
+      (groups[it.tier] || []).push(it);
+    });
+
+    var html = '';
+    MAIN_TIERS.forEach(function(tier) {
+      if (!groups[tier].length) return;
+      html += '<div class="now-tier-group">'
+        + '<div class="now-tier-head">'
+        +   '<span class="now-tier-dot legend-block lvl-' + tier + '"></span>'
+        +   '<span>' + esc(tierLabel(tier)) + '</span>'
+        +   '<span class="now-tier-count">' + groups[tier].length + '</span>'
+        + '</div>'
+        + groups[tier].map(renderCard).join('')
+        + '</div>';
+    });
+
+    // Sous-bloc dépliable pour Veille + Émergence (signaux faibles)
+    var minorItems = MINOR_TIERS.reduce(function(acc, t) {
+      return acc.concat(groups[t] || []);
+    }, []);
+    if (minorItems.length) {
+      var label = minorItems.length === 1
+        ? T('alertes.emergence_expand_one', 'Voir 1 signal faible')
+        : T('alertes.emergence_expand_many', 'Voir {n} signaux faibles').replace('{n}', minorItems.length);
+      html += '<button type="button" class="emergence-toggle" id="emergence-toggle">'
+        + '<span class="legend-block lvl-veille"></span>'
+        + '<span id="emergence-toggle-label">' + esc(isEmergenceOpen ? T('alertes.emergence_collapse', 'Masquer les signaux faibles') : label) + '</span>'
+        + '</button>'
+        + '<div class="emergence-section' + (isEmergenceOpen ? ' is-open' : '') + '" id="emergence-section">'
+        + minorItems.map(renderEmergenceRow).join('')
+        + '</div>';
+    }
+
+    container.innerHTML = html;
+
+    // Hooks
+    var toggle = document.getElementById('emergence-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', function() {
+        isEmergenceOpen = !isEmergenceOpen;
+        renderNow();
       });
-      var html = '';
-      getActiveCountries().forEach(function(c) {
-        var arr = byCountry[c];
-        if (!arr || !arr.length) return;
-        var label = T('country.' + c) || c;
-        html += '<div class="country-section">'
-          + '<div class="country-header">'
-          + '<span class="country-header-flag">' + escapeHtml(label) + '</span>'
-          + '<span class="country-header-count">' + arr.length + ' ' + (arr.length > 1 ? T('alertes.signal_many') || 'signaux' : T('alertes.signal_one') || 'signal') + '</span>'
-          + '</div>'
-          + '<div class="alerts-grid">' + arr.map(renderActiveCard).join('') + '</div>'
-          + '</div>';
-      });
-      container.innerHTML = html;
-    } else {
-      container.innerHTML = '<div class="alerts-grid">' + items.map(renderActiveCard).join('') + '</div>';
     }
   }
 
-  function renderActiveCard(item) {
-    var T = window.t || function(k){ return k; };
+  function renderCard(item) {
     var country = item.country;
-    var qCountry = encodeURIComponent(country);
-    var countryStr = T('country.' + country) || country;
+    var tier = item.tier;
+    var nKey, name, periodHint, metrics, clusterInfo = '';
 
     if (item.kind === 'event') {
       var pivotId = item.pivot.id;
-      var allIds = [pivotId].concat(item.members.map(function(m){ return m.id; }));
-      var qNodes = encodeURIComponent(allIds.join(','));
-      var evoUrl = './evolution.html?country=' + qCountry + '&nodes=' + qNodes + '&mode=tracking&gran=week';
-      var cstUrl = './constellation.html?country=' + qCountry + '&node=' + encodeURIComponent(pivotId);
-      var statsUrl = './statistiques.html?pays=' + qCountry + '&objet=' + encodeURIComponent(pivotId);
-      var pivotIsAlert = !!item.pivot.alert_active;
-      var pivotBadge = pivotIsAlert
-        ? '<span class="alert-event-pivot-badge is-pivot-alert">' + escapeHtml(tierLabel(item.pivot.alert_level)) + '</span>'
-        : '<span class="alert-event-pivot-badge">' + escapeHtml(T('alertes.event_pivot_context') || 'Sujet') + '</span>';
-      var pivotSize = (typeof item.pivot.size === 'number') ? item.pivot.size : null;
-      var pivotTier = pivotSize !== null ? getSalienceTier(country, pivotSize) : null;
-      var pivotTierPill = pivotTier ? '<span class="alert-salience-pill salience-' + pivotTier + '">' + escapeHtml(salienceTierLabel(pivotTier)) + '</span>' : '';
-
-      var sortedMembers = item.members.slice().sort(function(a, b) {
-        var lo = LEVEL_ORDER.indexOf(a.alert_level) - LEVEL_ORDER.indexOf(b.alert_level);
-        if (lo !== 0) return lo;
-        return (b.containment || 0) - (a.containment || 0);
+      nKey = 'now-event-' + country + '-' + pivotId;
+      name = pivotId;
+      var totalMentions = (item.pivot.n || 0)
+        + (item.members || []).reduce(function(s, m) { return s + (m.n || 0); }, 0);
+      var maxScore = item.pivot.alert_score || 0;
+      (item.members || []).forEach(function(m) {
+        if ((m.alert_score || 0) > maxScore) maxScore = m.alert_score;
       });
-      var membersHtml = sortedMembers.map(function(m) {
-        var mScore = (typeof m.alert_score === 'number') ? ('z ' + m.alert_score.toFixed(1) + '×') : '';
-        var mUrl = './evolution.html?country=' + qCountry + '&node=' + encodeURIComponent(m.id) + '&mode=tracking&gran=week';
-        return '<a class="event-member level-' + escapeHtml(m.alert_level) + '" href="' + escapeHtml(mUrl) + '">'
-          + escapeHtml(m.id)
-          + (mScore ? ' <span class="event-member-score">' + escapeHtml(mScore) + '</span>' : '')
-          + '</a>';
-      }).join('');
-
-      var arts = (item.sharedArticles || []).slice(0, 3);
-      var artsHtml = arts.map(function(a) {
-        return '<a class="alert-article-link" href="' + escapeHtml(a.url || '#') + '" target="_blank" rel="noopener">'
-          + (a.media_id ? '<span class="alert-article-media">' + escapeHtml(a.media_id) + '</span>' : '')
-          + '<span class="alert-article-title">' + escapeHtml(a.title || a.url || '') + '</span>'
-          + '</a>';
-      }).join('');
-
-      var totalMentions = (typeof item.pivot.n === 'number' ? item.pivot.n : 0)
-        + item.members.reduce(function(s, m){ return s + (typeof m.n === 'number' ? m.n : 0); }, 0);
-      var maxScore = (item.pivot.alert_active && typeof item.pivot.alert_score === 'number') ? item.pivot.alert_score : 0;
-      item.members.forEach(function(m) { if (typeof m.alert_score === 'number' && m.alert_score > maxScore) maxScore = m.alert_score; });
-
-      return '<div class="alert-card is-event level-' + escapeHtml(item.level) + '">'
-        + '<div class="alert-card-top">'
-        +   '<span class="alert-event-tag">' + escapeHtml(T('alertes.event_tag') || 'Événement') + '</span>'
-        +   '<a class="alert-event-pivot-name" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(pivotId) + '</a>'
-        +   pivotBadge
-        +   pivotTierPill
-        +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
-        + '</div>'
-        + '<div class="alert-event-summary">'
-        +   '<span class="event-stat"><b>' + item.members.length + '</b> ' + escapeHtml(T('alertes.event_entities') || 'entités liées') + '</span>'
-        +   '<span class="event-stat"><b>' + item.sharedCount + '</b> ' + escapeHtml(T('alertes.event_shared_short') || 'articles partagés') + '</span>'
-        +   '<span class="event-stat"><b>' + totalMentions + '</b> ' + escapeHtml(T('alertes.card_mentions') || 'mentions') + '</span>'
-        +   (maxScore > 0 ? '<span class="event-stat">z max <b>' + maxScore.toFixed(1) + '×</b></span>' : '')
-        + '</div>'
-        + '<div class="alert-event-members">' + membersHtml + '</div>'
-        + (artsHtml ? '<div class="alert-event-pivot-articles-label">' + escapeHtml(T('alertes.event_pivot_articles') || 'Articles partagés') + '</div><div class="alert-card-articles">' + artsHtml + '</div>' : '')
-        + '<div class="alert-card-nav">'
-        +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl) + '">' + escapeHtml(T('alertes.nav_evolution') || 'Évolution') + ' (' + (item.members.length + 1) + ') <span aria-hidden="true">→</span></a>'
-        +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl) + '">' + escapeHtml(T('alertes.nav_constellation') || 'Constellation') + ' <span aria-hidden="true">→</span></a>'
-        +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl) + '">' + escapeHtml(T('alertes.nav_stats') || 'Statistiques') + ' <span aria-hidden="true">→</span></a>'
-        + '</div>'
+      var memberNames = (item.members || []).slice(0, 4).map(function(m) { return m.id; }).join(' · ');
+      if ((item.members || []).length > 4) memberNames += ' +' + ((item.members || []).length - 4);
+      clusterInfo = '<div class="alert-card-cluster">'
+        + '<b>' + (item.members || []).length + '</b> ' + esc(T('alertes.event_entities', 'entités liées'))
+        + ' · <b>' + item.shared_count + '</b> ' + esc(T('alertes.event_shared_short', 'articles partagés'))
+        + ' · ' + esc(memberNames)
         + '</div>';
+      metrics = renderMetricsRow({
+        peak: item.pivot.size,
+        topShare: item.pivot.alert_top_share,
+        score: maxScore,
+        mentions: totalMentions
+      }, country);
+      periodHint = renderDayOffset(item.pivot);
+    } else {
+      var n = item.node;
+      nKey = 'now-alert-' + country + '-' + n.id;
+      name = n.id;
+      metrics = renderMetricsRow({
+        peak: n.size,
+        topShare: n.alert_top_share,
+        score: n.alert_score,
+        mentions: n.n
+      }, country);
+      periodHint = renderDayOffset(n);
     }
 
-    // Alerte simple
-    var qNode = encodeURIComponent(item.id);
-    var evoUrl2 = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=week';
-    var cstUrl2 = './constellation.html?country=' + qCountry + '&node=' + qNode;
-    var statsUrl2 = './statistiques.html?pays=' + qCountry + '&objet=' + qNode;
-    var levelLabel = tierLabel(item.level);
-    var scoreStr = item.score !== null ? item.score.toFixed(1) + '×' : '—';
-    var topShareStr = item.topShare !== null ? Math.round(item.topShare * 100) + '%' : '—';
-    var peakStr = item.peakRatio !== null ? Math.round(item.peakRatio * 100) + '%' : '—';
-    var deltaStr = item.delta !== null ? (item.delta >= 0 ? '+' : '') + item.delta.toFixed(1) : '—';
-    var alertTier = (typeof item.size === 'number') ? getSalienceTier(country, item.size) : null;
-    var tierPill = alertTier ? '<span class="alert-salience-pill salience-' + alertTier + '">' + escapeHtml(salienceTierLabel(alertTier)) + '</span>' : '';
-
-    var artsHtml2 = (item.articles || []).slice(0, 3).map(function(a) {
-      var url = (typeof a.url === 'string' && a.url) ? escapeHtml(a.url) : '#';
-      var title = (typeof a.title === 'string' && a.title) ? escapeHtml(a.title) : 'Article';
-      var media = (typeof a.media_id === 'string') ? escapeHtml(a.media_id) : '';
-      return '<a class="alert-article-link" href="' + url + '" target="_blank" rel="noopener">'
-        + (media ? '<span class="alert-article-media">' + media + '</span>' : '')
-        + '<span class="alert-article-title">' + title + '</span>'
-        + '</a>';
-    }).join('');
-
-    return '<div class="alert-card level-' + escapeHtml(item.level) + '">'
+    return '<div class="alert-card level-' + tier + '" data-key="' + esc(nKey) + '" data-kind="' + esc(item.kind) + '">'
       + '<div class="alert-card-top">'
-      +   '<span class="alert-card-badge">' + escapeHtml(levelLabel) + '</span>'
-      +   '<a class="alert-card-name" href="' + escapeHtml(evoUrl2) + '">' + escapeHtml(item.id) + '</a>'
-      +   tierPill
-      +   '<span class="alert-card-country">' + escapeHtml(countryStr) + '</span>'
+      +   '<span class="alert-card-tier lvl-' + tier + '">' + esc(tierLabel(tier)) + '</span>'
+      +   '<span class="alert-card-name">' + esc(name) + '</span>'
+      +   periodHint
+      +   '<span class="alert-card-country">' + esc(countryLabel(country)) + '</span>'
       + '</div>'
-      + '<div class="alert-card-stats">'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(scoreStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_score') || 'score z') + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(topShareStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_top_share') || 'part du top') + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(peakStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_peak_ratio') || 'vs pic') + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + escapeHtml(deltaStr) + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_delta') || 'delta') + '</span></div>'
-      +   '<div class="alert-card-stat"><span class="alert-card-stat-val">' + item.n + '</span><span class="alert-card-stat-lbl">' + escapeHtml(T('alertes.card_mentions') || 'mentions') + '</span></div>'
-      + '</div>'
-      + (artsHtml2 ? '<div class="alert-card-articles">' + artsHtml2 + '</div>' : '')
-      + '<div class="alert-card-nav">'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(evoUrl2) + '">' + escapeHtml(T('alertes.nav_evolution') || 'Évolution') + ' <span aria-hidden="true">→</span></a>'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(cstUrl2) + '">' + escapeHtml(T('alertes.nav_constellation') || 'Constellation') + ' <span aria-hidden="true">→</span></a>'
-      +   '<a class="alert-card-nav-link" href="' + escapeHtml(statsUrl2) + '">' + escapeHtml(T('alertes.nav_stats') || 'Statistiques') + ' <span aria-hidden="true">→</span></a>'
-      + '</div>'
+      + metrics
+      + clusterInfo
       + '</div>';
   }
 
-  // ─── Section "ÉVÉNEMENTS RÉCENTS" — chronique ────────────────
-  function buildRecentEpisodes() {
-    if (!timeseriesData) return [];
-    var countries = filterCountry === 'all' ? getActiveCountries() : [filterCountry];
-    var all = [];
-    countries.forEach(function(country) {
-      var matrix = buildPerCountryDayMatrix(country);
-      Object.keys(matrix).forEach(function(id) {
-        var byDay = matrix[id];
-        var maxL = null;
-        Object.keys(byDay).forEach(function(d) {
-          var l = byDay[d].level;
-          if (!maxL || levelRank(l) < levelRank(maxL)) maxL = l;
-        });
-        if (!maxL || levelRank(maxL) > levelRank(filterMinLevel)) return;
-        var eps = buildEpisodesForObject(byDay);
-        eps.forEach(function(e) {
-          if (levelRank(e.maxLevel) > levelRank(filterMinLevel)) return;
-          e.id = id; e.country = country;
-          all.push(e);
-        });
-      });
-    });
-    // Trier: gravité décroissante puis durée décroissante
-    all.sort(function(a, b) {
-      var lo = levelRank(a.maxLevel) - levelRank(b.maxLevel);
-      if (lo !== 0) return lo;
-      return b.durationDays - a.durationDays;
-    });
-    return all;
+  function renderDayOffset(node) {
+    if (!node || !node.alert_episode_first_day || !node.alert_episode_n_days) return '';
+    var n = node.alert_episode_n_days;
+    var lbl = n === 1
+      ? T('alertes.day_label_first', 'Jour 1')
+      : T('alertes.day_label_n', 'Jour {n}').replace('{n}', n);
+    var statusClass = node.alert_episode_status === 'active' ? ' is-active' : '';
+    return '<span class="alert-card-status' + statusClass + '">· ' + esc(lbl) + '</span>';
   }
 
-  function renderRecentEvents() {
-    var container = document.getElementById('recent-events');
-    if (!container) return;
-    var T = window.t || function(k){ return k; };
-    var episodes = buildRecentEpisodes();
-    if (!episodes.length) {
-      container.innerHTML = '<div class="alerts-empty">' + escapeHtml(T('alertes.no_recent_events') || 'Aucun événement récent pour ces filtres.') + '</div>';
-      return;
+  function renderMetricsRow(m, country) {
+    var parts = [];
+    if (typeof m.peak === 'number') {
+      parts.push('<span class="alert-card-metric">'
+        + esc(T('alertes.card_peak_size', 'pic')) + ' <b>' + esc(fmtPeakWithTier(country, m.peak)) + '</b></span>');
     }
-    // Limiter à 30 cartes pour ne pas surcharger
-    var cap = 30;
-    var displayed = episodes.slice(0, cap);
-    var more = episodes.length - displayed.length;
-    var html = '<div class="recent-events-grid">' + displayed.map(renderRecentCard).join('') + '</div>';
-    if (more > 0) {
-      html += '<div class="recent-events-more">'
-        + escapeHtml(T('alertes.recent_events_more', { n: more }) || ('… +' + more + ' autres dans le tableau pliable ci-dessous'))
+    if (typeof m.topShare === 'number') {
+      parts.push('<span class="alert-card-metric">'
+        + esc(T('alertes.card_top_share', 'dominance')) + ' <b>' + Math.round(m.topShare * 100) + '%</b></span>');
+    }
+    if (typeof m.score === 'number' && m.score > 0) {
+      parts.push('<span class="alert-card-metric">'
+        + esc(T('alertes.card_score', 'z')) + ' <b>' + m.score.toFixed(1) + '×</b></span>');
+    }
+    if (typeof m.mentions === 'number' && m.mentions > 0) {
+      parts.push('<span class="alert-card-metric">'
+        + '<b>' + m.mentions + '</b> ' + esc(T('alertes.card_mentions', 'mentions')) + '</span>');
+    }
+    return '<div class="alert-card-metrics">' + parts.join('') + '</div>';
+  }
+
+  function renderEmergenceRow(item) {
+    var n = item.node || item.pivot || {};
+    var country = item.country;
+    var key = 'now-emerg-' + country + '-' + n.id;
+    var size = typeof n.size === 'number' ? n.size.toFixed(1) : '—';
+    var streak = n.alert_streak ? n.alert_streak : 0;
+    return '<div class="emergence-row" data-key="' + esc(key) + '" data-kind="alert">'
+      + '<span class="emergence-row-name">' + esc(n.id || '') + '</span>'
+      + '<span class="emergence-row-metric">' + esc(T('alertes.card_peak_size', 'pic')) + ' ' + size + '</span>'
+      + '<span class="emergence-row-metric">' + streak + ' blocs</span>'
+      + '<span class="emergence-row-country">' + esc(countryLabel(country)) + '</span>'
+      + '</div>';
+  }
+
+  // ─── Render CHRONIQUE (SVG swimlanes) ─────────────────────────
+  function renderChronique() {
+    var wrap = document.getElementById('chronique-svg-wrap');
+    var svg  = document.getElementById('chronique-svg');
+    var winEl = document.getElementById('section-chronique-window');
+    if (!svg || !wrap) return;
+
+    if (winEl) {
+      winEl.textContent = T('alertes.section_chronique_window', '{days} derniers jours').replace('{days}', zoomDays);
+    }
+
+    var episodes = buildEpisodesFromTimeseries();
+    var countries = filterCountry === 'all' ? ['QC','CAN','USA'].filter(function(c) {
+      return getCountries().indexOf(c) !== -1;
+    }) : [filterCountry];
+
+    // Filtre par fenêtre temporelle + tier min
+    var today = new Date(); today.setUTCHours(0,0,0,0);
+    var windowStart = new Date(today.getTime() - zoomDays * 86400000);
+
+    var filtered = episodes.filter(function(e) {
+      if (countries.indexOf(e.country) === -1) return false;
+      if (tierRank(e.tier) > tierRank(filterMinLevel)) return false;
+      var last = new Date(e.last_day);
+      if (last < windowStart) return false;
+      return true;
+    });
+
+    // Layout
+    var width = wrap.clientWidth - 28;
+    if (width < 320) width = 320;
+    var laneCount = countries.length;
+    var labelW = 50;
+    var rightPad = 12;
+    var chartW = Math.max(120, width - labelW - rightPad);
+    var laneH = 56;
+    var laneGap = 10;
+    var topPad = 22;   // pour les ticks de mois
+    var bottomPad = 4;
+    var height = topPad + laneCount * (laneH + laneGap) - laneGap + bottomPad;
+
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    svg.setAttribute('width',  width);
+    svg.setAttribute('height', height);
+
+    // Helper position
+    function xForDate(dateStr) {
+      var d = new Date(dateStr);
+      var offset = Math.max(0, (d - windowStart) / 86400000);
+      return labelW + (offset / zoomDays) * chartW;
+    }
+    function widthForDays(nDays) {
+      return Math.max(2, (nDays / zoomDays) * chartW);
+    }
+
+    var parts = [];
+
+    // Background lanes
+    countries.forEach(function(country, idx) {
+      var y = topPad + idx * (laneH + laneGap);
+      parts.push('<rect class="swimlane-bg" x="' + labelW + '" y="' + y + '" width="' + chartW + '" height="' + laneH + '" rx="3" />');
+      parts.push('<text class="swimlane-label" x="' + (labelW - 8) + '" y="' + (y + laneH/2 + 4) + '" text-anchor="end">' + esc(country) + '</text>');
+    });
+
+    // Month ticks
+    var months = computeMonthTicks(windowStart, today);
+    months.forEach(function(m) {
+      var x = xForDate(m.date);
+      if (x < labelW || x > labelW + chartW) return;
+      parts.push('<line class="month-tick" x1="' + x + '" y1="' + topPad + '" x2="' + x + '" y2="' + height + '" />');
+      parts.push('<text class="month-label" x="' + (x + 3) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
+    });
+
+    // Episodes (sorted: tsunami/eclipse last so they paint on top)
+    var sorted = filtered.slice().sort(function(a, b) {
+      return tierRank(b.tier) - tierRank(a.tier);
+    });
+    sorted.forEach(function(e) {
+      var laneIdx = countries.indexOf(e.country);
+      if (laneIdx === -1) return;
+      var y0 = topPad + laneIdx * (laneH + laneGap);
+      var pct = TIER_HEIGHT_PCT[e.tier] || 0.5;
+      var blockH = Math.round(laneH * pct);
+      var yBlock = y0 + (laneH - blockH);   // align à la base
+      var x = xForDate(e.first_day);
+      var w = widthForDays(e.n_days);
+      if (x + w < labelW || x > labelW + chartW) return;
+      var selectedCls = selectedEpisodeKey === e.key ? ' selected' : '';
+      parts.push('<g>'
+        + '<rect class="episode-block lvl-' + e.tier + selectedCls + '" '
+        +   'x="' + x.toFixed(1) + '" y="' + yBlock + '" width="' + w.toFixed(1) + '" height="' + blockH + '" rx="1.5" '
+        +   'fill="var(--' + e.tier + ')" '
+        +   'data-key="' + esc(e.key) + '" />'
+        + (w >= 16 && (e.tier === 'tsunami' || e.tier === 'eclipse')
+            ? '<text class="episode-icon" x="' + (x + w/2).toFixed(1) + '" y="' + (yBlock + blockH/2 + 3) + '">' + TIER_ICON[e.tier] + '</text>'
+            : '')
+        + '</g>');
+    });
+
+    // Now line
+    var nowX = labelW + chartW;
+    parts.push('<line class="now-line" x1="' + nowX + '" y1="' + topPad + '" x2="' + nowX + '" y2="' + height + '" />');
+    parts.push('<text class="now-label" x="' + (nowX - 4) + '" y="' + (topPad - 6) + '" text-anchor="end">NOW</text>');
+
+    svg.innerHTML = parts.join('');
+
+    // Click handlers + tooltip
+    svg.querySelectorAll('.episode-block').forEach(function(rect) {
+      rect.addEventListener('click', function() {
+        var key = rect.getAttribute('data-key');
+        openEpisodePanel(key);
+      });
+      rect.addEventListener('mouseenter', function(ev) {
+        var key = rect.getAttribute('data-key');
+        var ep = filtered.find(function(e) { return e.key === key; });
+        if (!ep) return;
+        showTooltip(ev, ep);
+      });
+      rect.addEventListener('mousemove', moveTooltip);
+      rect.addEventListener('mouseleave', hideTooltip);
+    });
+  }
+
+  function computeMonthTicks(start, end) {
+    var ticks = [];
+    var cur = new Date(start);
+    cur.setUTCDate(1);
+    while (cur <= end) {
+      var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
+      ticks.push({
+        date: cur.toISOString().slice(0, 10),
+        label: months[cur.getUTCMonth()]
+      });
+      cur.setUTCMonth(cur.getUTCMonth() + 1);
+    }
+    return ticks;
+  }
+
+  function showTooltip(ev, ep) {
+    var tt = document.getElementById('chronique-tooltip');
+    if (!tt) return;
+    tt.style.display = 'block';
+    tt.innerHTML = '<div class="tt-title">' + TIER_ICON[ep.tier] + ' ' + esc(tierLabel(ep.tier)) + '</div>'
+      + '<div>' + esc(ep.id) + '</div>'
+      + '<div class="tt-meta">' + esc(fmtDay(ep.first_day))
+      + (ep.first_day !== ep.last_day ? ' → ' + esc(fmtDay(ep.last_day)) : '')
+      + ' · ' + ep.n_days + ' ' + (ep.n_days > 1 ? T('alertes.days', 'jours') : T('alertes.day', 'jour'))
+      + '</div>';
+    moveTooltip(ev);
+  }
+  function moveTooltip(ev) {
+    var tt = document.getElementById('chronique-tooltip');
+    var wrap = document.getElementById('chronique-svg-wrap');
+    if (!tt || !wrap) return;
+    var rect = wrap.getBoundingClientRect();
+    var x = ev.clientX - rect.left + 12;
+    var y = ev.clientY - rect.top - 8;
+    if (x + 250 > wrap.clientWidth) x = wrap.clientWidth - 250;
+    tt.style.left = x + 'px';
+    tt.style.top  = Math.max(0, y - 40) + 'px';
+  }
+  function hideTooltip() {
+    var tt = document.getElementById('chronique-tooltip');
+    if (tt) tt.style.display = 'none';
+  }
+
+  // ─── Side panel ──────────────────────────────────────────────
+  function openEpisodePanel(episodeKey) {
+    selectedEpisodeKey = episodeKey;
+    var episodes = buildEpisodesFromTimeseries();
+    var ep = episodes.find(function(e) { return e.key === episodeKey; });
+    if (!ep) return;
+    renderSidePanel(ep);
+    renderChronique();  // re-render to update "selected" visual
+  }
+
+  function renderSidePanel(ep) {
+    var panel = document.getElementById('side-panel');
+    var badge = document.getElementById('panel-tier-badge');
+    var country = document.getElementById('panel-country');
+    var body  = document.getElementById('panel-body');
+    if (!panel || !body) return;
+
+    badge.className = 'panel-tier-badge lvl-' + ep.tier;
+    badge.textContent = tierLabel(ep.tier);
+    country.textContent = countryLabel(ep.country);
+
+    var statusCls = ep.status === 'active' ? ' is-active' : '';
+    var statusLbl = ep.status === 'active'
+      ? T('alertes.status_active_label', 'En cours')
+      : T('alertes.status_ended_label', 'Terminé');
+    var dateRange = fmtDay(ep.first_day) + (ep.first_day !== ep.last_day ? ' → ' + fmtDay(ep.last_day) : '');
+    var durationStr = ep.n_days + ' ' + (ep.n_days > 1 ? T('alertes.days', 'jours') : T('alertes.day', 'jour'));
+
+    // Metrics (peak, top_share, score)
+    var peakStr = typeof ep.peak === 'number' ? fmtPeakWithTier(ep.country, ep.peak) : '—';
+    var tsStr = ep.max_top_share ? Math.round(ep.max_top_share * 100) + '%' : '—';
+    var scoreStr = ep.max_score ? ep.max_score.toFixed(1) + '×' : '—';
+
+    // Try to find articles + cluster info from latest period (only if episode is active)
+    var clusterHTML = '', articlesHTML = '';
+    if (ep.status === 'active' && graphData) {
+      var periods = graphData.meta && graphData.meta.periods;
+      if (periods && periods.length) {
+        var latestKey = periods[periods.length - 1].key;
+        var gd = graphData.graphs[ep.country] && graphData.graphs[ep.country][latestKey];
+        if (gd) {
+          // Find this object in latest period to get articles
+          var node = (gd.nodes || []).find(function(n) { return n.id === ep.id; });
+
+          // Find if object is in any event cluster
+          var ev = (gd.events || []).find(function(e) {
+            if (e.pivot && e.pivot.id === ep.id) return true;
+            return (e.members || []).some(function(m) { return m.id === ep.id; });
+          });
+
+          if (ev) {
+            var rows = [];
+            var pivotIsThisObj = ev.pivot && ev.pivot.id === ep.id;
+            // Pivot first
+            rows.push('<div class="panel-member">'
+              + '<span class="panel-member-name">' + esc(ev.pivot.id) + '</span>'
+              + (pivotIsThisObj ? '' : '<span class="panel-member-meta">' + (ev.pivot.alert_active ? esc(tierLabel(ev.pivot.alert_level)) : 'pivot') + '</span>')
+              + '<span class="panel-member-pivot">pivot</span>'
+              + '</div>');
+            (ev.members || []).forEach(function(m) {
+              rows.push('<div class="panel-member">'
+                + '<span class="panel-member-name">' + esc(m.id) + '</span>'
+                + '<span class="panel-member-meta">' + esc(tierLabel(m.alert_level)) + ' · ' + Math.round((m.containment || 0) * 100) + '%</span>'
+                + '</div>');
+            });
+            clusterHTML = '<div class="panel-section">'
+              + '<div class="panel-section-title">' + esc(T('alertes.detail_cluster_members', 'Membres du cluster')) + '</div>'
+              + rows.join('')
+              + '</div>';
+            // Shared articles
+            var arts = ev.shared_articles || [];
+            if (arts.length) {
+              articlesHTML = '<div class="panel-section">'
+                + '<div class="panel-section-title">' + esc(T('alertes.detail_articles', 'Articles partagés')) + ' (' + (ev.shared_articles_count || arts.length) + ')</div>'
+                + arts.slice(0, 5).map(renderArticle).join('')
+                + (arts.length > 5
+                    ? '<div class="panel-article">' + esc(T('alertes.detail_more_articles', '+{n} →').replace('{n}', arts.length - 5)) + '</div>'
+                    : '')
+                + '</div>';
+            }
+          } else if (node && node.articles && node.articles.length) {
+            articlesHTML = '<div class="panel-section">'
+              + '<div class="panel-section-title">' + esc(T('alertes.detail_articles', 'Articles partagés')) + '</div>'
+              + node.articles.slice(0, 5).map(renderArticle).join('')
+              + '</div>';
+          }
+        }
+      }
+    }
+    if (!articlesHTML && ep.status === 'ended') {
+      articlesHTML = '<div class="panel-section">'
+        + '<div class="panel-section-title">' + esc(T('alertes.detail_articles', 'Articles partagés')) + '</div>'
+        + '<div style="font-size:10px;color:var(--muted);">' + esc(T('alertes.detail_no_articles', 'Pas d\'articles disponibles (épisode terminé).')) + '</div>'
         + '</div>';
     }
-    container.innerHTML = html;
+
+    // Links
+    var qC = encodeURIComponent(ep.country);
+    var qN = encodeURIComponent(ep.id);
+    var evoUrl = './evolution.html?country=' + qC + '&node=' + qN + '&mode=tracking&gran=week';
+    var cstUrl = './constellation.html?country=' + qC + '&node=' + qN;
+    var statsUrl = './statistiques.html?pays=' + qC + '&objet=' + qN;
+
+    body.innerHTML =
+        '<div class="panel-title">' + esc(ep.id) + '</div>'
+      + '<div class="panel-period">' + esc(dateRange) + ' · ' + esc(durationStr) + '</div>'
+      + '<span class="panel-status' + statusCls + '">' + esc(statusLbl) + '</span>'
+      + '<div class="panel-section">'
+      +   '<div class="panel-section-title">' + esc(T('alertes.detail_metrics', 'Métriques')) + '</div>'
+      +   '<div class="panel-metrics">'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(peakStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_peak_salience', 'Pic saillance')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(tsStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_top_share_peak', 'Dominance')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(scoreStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.card_score', 'Score z')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + ep.n_days + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_duration', 'Durée')) + '</span></div>'
+      +   '</div>'
+      + '</div>'
+      + clusterHTML
+      + articlesHTML
+      + '<div class="panel-section">'
+      +   '<div class="panel-section-title">' + esc(T('alertes.detail_see_in', 'Voir ailleurs')) + '</div>'
+      +   '<div class="panel-links">'
+      +     '<a class="panel-link-btn" href="' + esc(evoUrl) + '">' + esc(T('alertes.detail_nav_evolution', 'Évolution')) + ' →</a>'
+      +     '<a class="panel-link-btn" href="' + esc(cstUrl) + '">' + esc(T('alertes.detail_nav_constellation', 'Constellation')) + ' →</a>'
+      +     '<a class="panel-link-btn" href="' + esc(statsUrl) + '">' + esc(T('alertes.detail_nav_stats', 'Statistiques')) + ' →</a>'
+      +   '</div>'
+      + '</div>';
+
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
   }
 
-  function renderRecentCard(e) {
-    var T = window.t || function(k){ return k; };
-    var qCountry = encodeURIComponent(e.country);
-    var qNode = encodeURIComponent(e.id);
-    var evoUrl = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
-    var cTitle = T('country.' + e.country) || e.country;
-    var peakTier = getSalienceTier(e.country, e.peakSalience);
-    var peakHtml = peakTier
-      ? '<span class="ep-salience-pill salience-' + peakTier + '">' + escapeHtml(salienceTierLabel(peakTier)) + ' · ' + e.peakSalience.toFixed(1) + '</span>'
-      : (e.peakSalience ? e.peakSalience.toFixed(1) : '—');
-    var topShareStr = e.maxTopShare ? Math.round(e.maxTopShare * 100) + '%' : '—';
-    var dateRange = formatDayShort(e.firstDay) + (e.firstDay !== e.lastDay ? ' → ' + formatDayShort(e.lastDay) : '');
-    var durationStr = e.durationDays + ' ' + (e.durationDays > 1 ? T('cycles.days') || 'jours' : T('cycles.day') || 'jour');
-
-    return '<a class="recent-card level-' + escapeHtml(e.maxLevel) + '" href="' + escapeHtml(evoUrl) + '">'
-      + '<div class="recent-card-top">'
-      +   '<span class="recent-card-tier tier-' + e.maxLevel + '">' + escapeHtml(tierLabel(e.maxLevel)) + '</span>'
-      +   '<span class="recent-card-country">' + escapeHtml(cTitle) + '</span>'
-      + '</div>'
-      + '<div class="recent-card-name">' + escapeHtml(e.id) + '</div>'
-      + '<div class="recent-card-meta">'
-      +   '<span class="recent-card-dates">' + escapeHtml(dateRange) + '</span>'
-      +   '<span class="recent-card-duration">' + escapeHtml(durationStr) + '</span>'
-      + '</div>'
-      + '<div class="recent-card-bottom">'
-      +   '<span class="recent-card-peak">' + escapeHtml(T('alertes.recent_peak') || 'Pic') + ': ' + peakHtml + '</span>'
-      +   '<span class="recent-card-share">' + escapeHtml(T('alertes.recent_share') || 'Top max') + ': ' + topShareStr + '</span>'
-      + '</div>'
+  function renderArticle(a) {
+    var url = (typeof a.url === 'string' && a.url) ? a.url : '#';
+    var title = (typeof a.title === 'string' && a.title) ? a.title : url;
+    var media = (typeof a.media_id === 'string' && a.media_id) ? a.media_id : '';
+    return '<a class="panel-article" href="' + esc(url) + '" target="_blank" rel="noopener">'
+      + (media ? '<span class="panel-article-media">' + esc(media) + '</span>' : '')
+      + esc(title)
       + '</a>';
   }
 
-  // ─── Tableau pliable des épisodes ─────────────────────────────
+  function closeSidePanel() {
+    var panel = document.getElementById('side-panel');
+    if (!panel) return;
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+    selectedEpisodeKey = null;
+    renderChronique();
+  }
+
+  // ─── Table complète ──────────────────────────────────────────
   function renderEpisodesTable() {
     var wrap = document.getElementById('episodes-table-wrap');
-    if (!wrap || !timeseriesData) return;
-    var T = window.t || function(k){ return k; };
-    var all = buildRecentEpisodes();
-    if (!all.length) {
-      wrap.innerHTML = '<div class="alerts-empty">' + escapeHtml(T('cycles.episodes_empty') || 'Aucun épisode pour ces filtres.') + '</div>';
+    if (!wrap) return;
+    var episodes = buildEpisodesFromTimeseries().filter(function(e) {
+      if (filterCountry !== 'all' && e.country !== filterCountry) return false;
+      if (tierRank(e.tier) > tierRank(filterMinLevel)) return false;
+      return true;
+    });
+    if (!episodes.length) {
+      wrap.innerHTML = '<div class="section-empty">' + esc(T('alertes.no_recent_events', 'Aucun épisode.')) + '</div>';
       return;
     }
-    // Tableau complet trié par durée
-    all.sort(function(a, b) { return b.durationDays - a.durationDays; });
+    episodes.sort(function(a, b) {
+      var r = tierRank(a.tier) - tierRank(b.tier);
+      if (r !== 0) return r;
+      return b.n_days - a.n_days;
+    });
     var html = '<table class="episodes-table"><thead><tr>'
-      + '<th>' + escapeHtml(T('cycles.col_subject') || 'Sujet') + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_country') || 'Pays') + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_start') || 'Début') + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_end') || 'Fin') + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_duration') || 'Durée') + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_max_level') || 'Niveau max') + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_peak_salience') || 'Pic saillance') + '</th>'
-      + '<th>' + escapeHtml(T('cycles.col_top_share_max') || 'Part max') + '</th>'
+      + '<th>' + esc(T('alertes.table_col_subject', 'Sujet')) + '</th>'
+      + '<th>' + esc(T('alertes.table_col_country', 'Pays')) + '</th>'
+      + '<th>' + esc(T('alertes.table_col_start', 'Début')) + '</th>'
+      + '<th>' + esc(T('alertes.table_col_end', 'Fin')) + '</th>'
+      + '<th>' + esc(T('alertes.table_col_duration', 'Durée')) + '</th>'
+      + '<th>' + esc(T('alertes.table_col_max_level', 'Niveau')) + '</th>'
+      + '<th>' + esc(T('alertes.table_col_peak_salience', 'Pic')) + '</th>'
+      + '<th>' + esc(T('alertes.table_col_top_share_max', 'Dominance max')) + '</th>'
       + '</tr></thead><tbody>';
-    all.forEach(function(e) {
-      var qCountry = encodeURIComponent(e.country);
-      var qNode = encodeURIComponent(e.id);
-      var url = './evolution.html?country=' + qCountry + '&node=' + qNode + '&mode=tracking&gran=month';
-      var cTitle = T('country.' + e.country) || e.country;
-      var peakTier = getSalienceTier(e.country, e.peakSalience);
-      var peakHtml = peakTier
-        ? '<span class="ep-salience-pill salience-' + peakTier + '">' + escapeHtml(salienceTierLabel(peakTier)) + ' · ' + e.peakSalience.toFixed(1) + '</span>'
-        : (e.peakSalience ? e.peakSalience.toFixed(1) : '—');
-      html += '<tr data-href="' + escapeHtml(url) + '">'
-        + '<td class="ep-subject">' + escapeHtml(e.id) + '</td>'
-        + '<td>' + escapeHtml(cTitle) + '</td>'
-        + '<td>' + escapeHtml(formatDayShort(e.firstDay)) + '</td>'
-        + '<td>' + escapeHtml(formatDayShort(e.lastDay)) + '</td>'
-        + '<td class="ep-num">' + e.durationDays + ' j</td>'
-        + '<td><span class="ep-tier tier-' + e.maxLevel + '">' + escapeHtml(tierLabel(e.maxLevel)) + '</span></td>'
-        + '<td>' + peakHtml + '</td>'
-        + '<td class="ep-share">' + (e.maxTopShare ? Math.round(e.maxTopShare * 100) + '%' : '—') + '</td>'
+    episodes.forEach(function(e) {
+      html += '<tr data-key="' + esc(e.key) + '">'
+        + '<td>' + esc(e.id) + '</td>'
+        + '<td>' + esc(countryLabel(e.country)) + '</td>'
+        + '<td>' + esc(fmtDay(e.first_day)) + '</td>'
+        + '<td>' + esc(fmtDay(e.last_day)) + '</td>'
+        + '<td>' + e.n_days + ' ' + esc(T('alertes.day', 'j').charAt(0)) + '</td>'
+        + '<td><span class="ep-tier lvl-' + e.tier + '">' + esc(tierLabel(e.tier)) + '</span></td>'
+        + '<td>' + esc(fmtPeakWithTier(e.country, e.peak)) + '</td>'
+        + '<td>' + (e.max_top_share ? Math.round(e.max_top_share * 100) + '%' : '—') + '</td>'
         + '</tr>';
     });
     html += '</tbody></table>';
     wrap.innerHTML = html;
-    wrap.querySelectorAll('tr[data-href]').forEach(function(tr) {
-      tr.addEventListener('click', function() { window.location.href = tr.getAttribute('data-href'); });
+
+    wrap.querySelectorAll('tr[data-key]').forEach(function(tr) {
+      tr.addEventListener('click', function() {
+        openEpisodePanel(tr.getAttribute('data-key'));
+      });
     });
   }
 
@@ -2171,8 +1686,8 @@
   function render() {
     if (!graphData || !timeseriesData) return;
     renderKPIs();
-    renderCurrentAlerts();
-    renderRecentEvents();
+    renderNow();
+    renderChronique();
     var ep = document.getElementById('episodes-collapsible');
     if (ep && ep.open) renderEpisodesTable();
   }
@@ -2186,12 +1701,35 @@
     filterMinLevel = this.value;
     render();
   });
-  var epColl = document.getElementById('episodes-collapsible');
-  if (epColl) {
-    epColl.addEventListener('toggle', function() { if (epColl.open) renderEpisodesTable(); });
+  document.querySelectorAll('.zoom-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.zoom-btn').forEach(function(b) { b.classList.remove('is-active'); });
+      btn.classList.add('is-active');
+      zoomDays = parseInt(btn.getAttribute('data-zoom'), 10);
+      renderChronique();
+    });
+  });
+  var ep = document.getElementById('episodes-collapsible');
+  if (ep) {
+    ep.addEventListener('toggle', function() {
+      if (ep.open) renderEpisodesTable();
+    });
   }
+  document.getElementById('panel-close').addEventListener('click', closeSidePanel);
+  document.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Escape') closeSidePanel();
+  });
   document.addEventListener('i18n:applied', function() {
     if (graphData && timeseriesData) render();
+  });
+
+  // Re-render chronique on resize
+  var resizeTO;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTO);
+    resizeTO = setTimeout(function() {
+      if (graphData && timeseriesData) renderChronique();
+    }, 120);
   });
 
   loadData();
@@ -2199,4 +1737,3 @@
 </script>
 </body>
 </html>
-

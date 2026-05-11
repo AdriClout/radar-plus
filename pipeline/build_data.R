@@ -20,60 +20,67 @@ HISTORY_DAYS     <- 130  # Fenêtre timeseries.json (évolution) — couvre tout
 TOP_N_OBJECTS    <- 30   # Nœuds max par période × pays
 MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
 
-ALERT_LOOKBACK_PERIODS <- 180  # 30 jours glissants de périodes 4h
+ALERT_LOOKBACK_PERIODS <- 180  # 30 jours glissants de périodes 4h (z-score robuste)
 ALERT_MIN_HISTORY      <- 18   # Historique minimal avant score robuste
 ALERT_MIN_MENTIONS     <- 2    # Plancher de mentions pour qu'un bloc compte
-# Plancher absolu de saillance courante. Relevé de 0.08 à 1.0 pour
-# éliminer les alertes sur des objets qui pèsent à peine sur le radar
-# (un objet à 0.3 absolu reste invisible par rapport à un Top à ~10).
-ALERT_MIN_ABS_SCORE    <- 1.0
-ALERT_SCALE_FLOOR      <- 0.08 # Évite les explosions sur séries quasi constantes
-# Seuils z d'anormalité (entrée dans le système d'alertes)
-ALERT_Z_THRESHOLD      <- 1.8  # En dessous: rien
-# Taxonomie 6-tiers basée sur la PERSISTANCE TEMPORELLE et la DOMINANCE.
-# Inspirée de la littérature en communication politique:
-#   - Boydstun et al. 2014 (media storm): montée brusque ET soutenue
-#   - Boydstun & Russell 2016 (alarme/patrouille): médias se fixent
-#   - Atkinson 2014 / Pinto 2018 (issue displacement): un sujet éclipse
-#   - Giasson (tsunami médiatique): dominance totale d'un événement
-#
-# Tier         | Persistance         | Dominance        | Sémantique
-# surveillance | 1 bloc 4h anormal   | -                | Signal isolé
-# watch        | 2-3 blocs cons.     | -                | "Le sujet tient"
-# alert        | 4-11 blocs (~1 j)   | -                | Montée nette
-# strong       | ≥ 12 blocs (≥ 2 j)  | -                | Media storm
-# eclipse      | ≥ 12 blocs (≥ 2 j)  | top_share ≥ 50%  | Éclipse: domine
-# tsunami      | ≥ 18 blocs (≥ 3 j)  | top_share ≥ 70%  | Agenda rincé
-ALERT_STREAK_WATCH    <- 2L
-ALERT_STREAK_ALERT    <- 4L
-ALERT_STREAK_STRONG   <- 12L
-ALERT_STREAK_ECLIPSE  <- 12L
-ALERT_STREAK_TSUNAMI  <- 18L
-ALERT_TOP_SHARE_ECLIPSE <- 0.50
-ALERT_TOP_SHARE_TSUNAMI <- 0.70
+ALERT_MIN_ABS_SCORE    <- 1.0  # Plancher absolu de saillance — sous ce seuil, rien
+ALERT_SCALE_FLOOR      <- 0.08 # Évite les explosions z sur séries quasi constantes
+ALERT_Z_THRESHOLD      <- 1.8  # Bloc anormal dès que z >= 1.8
 
-# Convergence d'agenda: à quel point la couverture médiatique d'une
-# période est concentrée sur peu de sujets. Calculée comme 1 - entropie
-# normalisée de Shannon sur les saillances >= 1. 0 = parfaitement
-# distribué, 1 = un seul sujet domine totalement. Utilisée comme entrée
-# additionnelle pour qualifier eclipse/tsunami: l'agenda est-il
-# globalement convergent en plus du sujet dominant ?
+# ─── Taxonomie 7 tiers (échelle d'alarme + grille magnitude) ─────────────────
+# Voir methodologie.html §10 pour les définitions complètes et la littérature.
 #
-# Seuils calibrés EMPIRIQUEMENT par pays, sur les percentiles de la
-# distribution observée (cf. salience_tiers): p85 = eclipse_min,
-# p98 = tsunami_min. Garantit que:
-#   - eclipse n'est requis que dans les 15% des périodes les plus
-#     convergentes du pays
-#   - tsunami uniquement dans le top 2% — vraiment rare
-# Recalibration auto à chaque run du pipeline.
-ALERT_CONVERGENCE_PCTL_ECLIPSE <- 0.85
-ALERT_CONVERGENCE_PCTL_TSUNAMI <- 0.98
+# Top (cas exceptionnels, grille magnitude × durée) :
+#   🌊 TSUNAMI       — extrême + court (≤3j) + agenda saturé
+#   🌑 ÉCLIPSE       — extrême + long (≥4j) + agenda obscurci
+#   ⛈ TEMPÊTE        — très haut + long (≥5j, Boydstun)
+#
+# Échelle standard (alertes quotidiennes/hebdomadaires) :
+#   ⚡ ALERTE FORTE  — très haut + court + anomalie z
+#   📍 ALERTE        — haut + anomalie z confirmée (streak ≥ 4)
+#   ▾ VEILLE        — haut + anomalie naissante (streak 2-3)
+#   ◦ ÉMERGENCE     — modéré + anomalie z (sous le radar normal)
+#
+# Références canoniques :
+#   Giasson 2008          → tsunami (dominance totale aiguë)
+#   Atkinson 2014 + Zhu 1992 → éclipse (agenda displacement)
+#   Boydstun et al. 2014  → tempête (media storm ≥ 5j)
+#   Bennett 2003 + Boydstun 2013 → alerte forte (alarm mode)
+#   Boydstun & Russell 2016 → alerte/veille (alarm-to-patrol gradient)
+#   Vasterman 2005 + Kepplinger 1995 → émergence (signal précurseur)
 
-# Anti-halo direct: filet de sécurité après le clustering événementiel.
-# Si deux alertes actives partagent ≥ N% d'articles MAIS ne sont pas
-# regroupées dans un même cluster, downgrade celle au z-score le plus
-# bas (un cran). Évite que deux alertes redondantes apparaissent quand
-# le clustering n'a pas trouvé de pivot évident.
+# Durées (granularité jour) — pivot entre court et long
+ALERT_DAYS_SHORT_MAX     <- 3L   # ≤ 3 j : court (tsunami / alerte forte)
+ALERT_DAYS_LONG_MIN_ECL  <- 4L   # ≥ 4 j : éclipse
+ALERT_DAYS_LONG_MIN_TMP  <- 5L   # ≥ 5 j : tempête (Boydstun 2014)
+
+# Structure d'événement — "plusieurs ondes" pour tsunami / éclipse
+ALERT_TSUNAMI_MIN_VHI_BLOCS <- 2L  # ≥ 2 blocs 4h à very_high dans l'épisode
+ALERT_ECLIPSE_MIN_VHI_DAYS  <- 2L  # ≥ 2 jours à very_high dans l'épisode
+
+# Streak (z-score anormal pour soi)
+ALERT_STREAK_ALERTE_FORTE <- 4L  # ≥ 4 blocs 4h anormaux ≈ 1 j
+ALERT_STREAK_ALERTE       <- 4L  # ≥ 4 blocs 4h ≈ 1 j (anomalie confirmée)
+ALERT_STREAK_VEILLE_MIN   <- 2L  # ≥ 2 blocs 4h ≈ 8h (anomalie naissante)
+ALERT_STREAK_VEILLE_MAX   <- 4L  # < 4 (sinon → Alerte)
+ALERT_STREAK_EMERGENCE    <- 4L
+
+# Top_share au pic (dominance locale)
+ALERT_TS_TSUNAMI_PEAK      <- 0.95   # quasi seul en tête
+ALERT_TS_ALERTE_FORTE_PEAK <- 0.70
+ALERT_TS_ALERTE_PEAK       <- 0.50
+ALERT_TS_VEILLE_PEAK       <- 0.50
+ALERT_TS_EMERGENCE_PEAK    <- 0.50
+ALERT_TS_ECLIPSE_MEAN      <- 0.80   # top_share MOYEN sur l'épisode (soutenu)
+
+# Convergence d'agenda (1 − entropie normalisée Shannon sur Top 30).
+# Seuils calibrés EMPIRIQUEMENT par pays — percentiles ajustés à chaque run.
+# Voir methodologie.html §10.4.
+ALERT_CONV_PCTL_TSUNAMI <- 0.95  # convergence au pic ≥ p95 pays
+ALERT_CONV_PCTL_ECLIPSE <- 0.85  # convergence moyenne sur épisode ≥ p85 pays
+
+# Anti-halo : si 2 alertes hors cluster partagent ≥ X% d'articles,
+# downgrade celle au z-score le plus bas d'un cran.
 ALERT_HALO_THRESHOLD  <- 0.80
 
 # Objets génériques exclus par pays (même logique que radar-hot-20)
@@ -319,97 +326,36 @@ df_convergence <- df_index |>
     .groups = "drop"
   )
 
-# Calibration empirique des seuils convergence par pays (percentiles
-# sur la distribution observée — auto-adaptable comme les paliers de
-# saillance).
+# Calibration empirique des seuils convergence par pays — percentiles
+# auto-adaptables à chaque run. p85 pour éclipse, p95 pour tsunami.
 convergence_thresholds_df <- df_convergence |>
   dplyr::filter(is.finite(convergence)) |>
   dplyr::group_by(country_id) |>
   dplyr::summarise(
-    eclipse_min = stats::quantile(convergence, ALERT_CONVERGENCE_PCTL_ECLIPSE, na.rm = TRUE),
-    tsunami_min = stats::quantile(convergence, ALERT_CONVERGENCE_PCTL_TSUNAMI, na.rm = TRUE),
+    eclipse_min = stats::quantile(convergence, ALERT_CONV_PCTL_ECLIPSE, na.rm = TRUE),
+    tsunami_min = stats::quantile(convergence, ALERT_CONV_PCTL_TSUNAMI, na.rm = TRUE),
     .groups     = "drop"
   )
 convergence_thresholds <- list()
-cat("Calibration des seuils convergence par pays (p85 eclipse / p98 tsunami)...\n")
+cat("Calibration des seuils convergence par pays (p85 éclipse / p95 tsunami)...\n")
 for (i in seq_len(nrow(convergence_thresholds_df))) {
   c <- as.character(convergence_thresholds_df$country_id[i])
   convergence_thresholds[[c]] <- list(
     eclipse = round(unname(convergence_thresholds_df$eclipse_min[i]), 3),
     tsunami = round(unname(convergence_thresholds_df$tsunami_min[i]), 3)
   )
-  cat(sprintf("  %s : eclipse>=%.3f, tsunami>=%.3f\n", c,
+  cat(sprintf("  %s : éclipse>=%.3f, tsunami>=%.3f\n", c,
               convergence_thresholds[[c]]$eclipse,
               convergence_thresholds[[c]]$tsunami))
 }
 
 df_index <- df_index |>
-  dplyr::left_join(df_convergence, by = c("country_id", "date_utc", "time_interval_utc")) |>
-  dplyr::mutate(
-    .conv_eclipse_min = vapply(country_id, function(c) {
-      v <- convergence_thresholds[[c]]$eclipse
-      if (is.null(v) || !is.finite(v)) NA_real_ else v
-    }, numeric(1)),
-    .conv_tsunami_min = vapply(country_id, function(c) {
-      v <- convergence_thresholds[[c]]$tsunami
-      if (is.null(v) || !is.finite(v)) NA_real_ else v
-    }, numeric(1))
-  )
+  dplyr::left_join(df_convergence, by = c("country_id", "date_utc", "time_interval_utc"))
 
-# Étape 3b : assignation du tier final, taxonomie 6-tiers.
-# Décision combine PERSISTANCE (streak) + DOMINANCE locale (top_share)
-# + DOMINANCE globale (convergence d'agenda).
-#   tsunami : streak ≥ 18 (≥ 3 j), top_share ≥ 70%, convergence ≥ 0.60
-#   eclipse : streak ≥ 12 (≥ 2 j), top_share ≥ 50%, convergence ≥ 0.45
-#   strong  : streak ≥ 12 (≥ 2 j)
-#   alert   : streak ≥ 4   (~1 j)
-#   watch   : streak ≥ 2   (~8 h)
-#   surveillance : 1 bloc anormal isolé
-#   emerging : historique trop court pour z-score
-assign_alert_tier <- function(streak, top_share, convergence, conv_eclipse_min, conv_tsunami_min, anomalous, emerging) {
-  if (isTRUE(anomalous)) {
-    cv_ok_t <- !is.na(convergence) && !is.na(conv_tsunami_min) && convergence >= conv_tsunami_min
-    cv_ok_e <- !is.na(convergence) && !is.na(conv_eclipse_min) && convergence >= conv_eclipse_min
-    if (!is.na(top_share) && streak >= ALERT_STREAK_TSUNAMI && top_share >= ALERT_TOP_SHARE_TSUNAMI && cv_ok_t) return("tsunami")
-    if (!is.na(top_share) && streak >= ALERT_STREAK_ECLIPSE && top_share >= ALERT_TOP_SHARE_ECLIPSE && cv_ok_e) return("eclipse")
-    if (streak >= ALERT_STREAK_STRONG) return("strong")
-    if (streak >= ALERT_STREAK_ALERT)  return("alert")
-    if (streak >= ALERT_STREAK_WATCH)  return("watch")
-    return("surveillance")
-  }
-  if (isTRUE(emerging)) return("emerging")
-  "none"
-}
-
-df_index <- df_index |>
-  dplyr::mutate(
-    alert_level = purrr::pmap_chr(
-      list(alert_streak, alert_top_share, convergence, .conv_eclipse_min, .conv_tsunami_min, alert_anomalous, alert_emerging),
-      assign_alert_tier
-    ),
-    # "Active" = signaux qui valent la peine d'être affichés comme alertes
-    # (surveillance et emerging restent visibles mais sont des signaux faibles).
-    alert_active = alert_level %in% c("tsunami", "eclipse", "strong", "alert", "watch")
-  ) |>
-  dplyr::select(-.conv_eclipse_min, -.conv_tsunami_min)
-
-cat("  →", sum(df_index$alert_active, na.rm = TRUE), "points d'alerte actifs sur", nrow(df_index), "lignes\n")
-cat("  → Distribution par tier:\n")
-tier_counts <- table(df_index$alert_level[df_index$alert_level != "none"])
-for (lvl in names(tier_counts)) {
-  cat("     ", sprintf("%-13s", lvl), tier_counts[[lvl]], "\n")
-}
-
-# ─── Paliers de saillance absolue (par pays) ──────────────────────────────────
-# Calibrés sur les PICS par période (max(saillance) par country×date×bloc 4h),
-# car c'est l'unité que le chart Évolution dessine (MAX agrégé). Calibrer sur
-# tous les couples (period × object) tirait les seuils vers le bas — la base
-# contenait des milliers d'objets modérés à saillance ~1-3, alors que la
-# courbe ne garde que le pic. Résultat : seuils alignés sur ce qui est plotté.
-#   moderate  = p50 (médiane des pics)
-#   high      = p80 (top 20%)
-#   very_high = p95 (top 5%)
-#   extreme   = p99 (top 1% — pic vraiment exceptionnel)
+# ─── Paliers de saillance absolue par pays (DÉPLACÉ EN AMONT) ─────────────────
+# Calibrés sur les PICS par bloc 4h (max(saillance) par country×date×bloc).
+# Voir methodologie.html §11 pour la justification de la calibration sur pics.
+#   moderate  = p50 · high = p80 · very_high = p95 · extreme = p99
 cat("Calcul des paliers de saillance par pays (pics par bloc 4h, saillance >= ", ALERT_MIN_ABS_SCORE, ")...\n", sep = "")
 salience_tiers_df <- df_index |>
   dplyr::filter(absolute_normalized_index >= ALERT_MIN_ABS_SCORE) |>
@@ -435,6 +381,246 @@ for (i in seq_len(nrow(salience_tiers_df))) {
   cat(sprintf("  %s : modéré=%.2f · élevé=%.2f · très élevé=%.2f · extrême=%.2f\n",
               c, salience_tiers[[c]]$moderate, salience_tiers[[c]]$high,
               salience_tiers[[c]]$very_high, salience_tiers[[c]]$extreme))
+}
+
+# ─── Helpers d'accès aux paliers et seuils convergence par pays ──────────────
+get_tier <- function(country, tier_name) {
+  s <- salience_tiers[[country]]
+  if (is.null(s) || is.null(s[[tier_name]])) return(NA_real_)
+  s[[tier_name]]
+}
+get_conv <- function(country, kind) {
+  v <- convergence_thresholds[[country]][[kind]]
+  if (is.null(v) || !is.finite(v)) NA_real_ else v
+}
+
+# ─── Étape 3 : épisodes par (pays, objet) ────────────────────────────────────
+# Un épisode = run de JOURS consécutifs où le pic quotidien >= palier_high.
+# C'est l'unité d'analyse pour la classification (vs bloc 4h isolé).
+
+cat("Détection des épisodes par (pays, objet) et classification 5 tiers...\n")
+
+# Agrégation jour-niveau
+df_daily <- df_index |>
+  dplyr::group_by(country_id, extracted_objects, date_utc) |>
+  dplyr::summarise(
+    day_peak          = max(absolute_normalized_index, na.rm = TRUE),
+    day_max_top_share = suppressWarnings(max(alert_top_share, na.rm = TRUE)),
+    day_max_conv      = suppressWarnings(max(convergence,     na.rm = TRUE)),
+    day_max_streak    = suppressWarnings(max(alert_streak,    na.rm = TRUE)),
+    .groups           = "drop"
+  ) |>
+  dplyr::mutate(
+    day_max_top_share = ifelse(is.finite(day_max_top_share), day_max_top_share, NA_real_),
+    day_max_conv      = ifelse(is.finite(day_max_conv),      day_max_conv,      NA_real_),
+    day_max_streak    = ifelse(is.finite(day_max_streak),    day_max_streak,    0L)
+  )
+
+# Identification des runs de jours consécutifs où peak >= palier_modéré.
+# Seuil abaissé à modéré pour permettre la classification des tiers Émergence
+# (modéré + anomalie) et Veille (haut + anomalie naissante). Les épisodes
+# qui ne passent aucun critère de tier resteront classés "none" et seront
+# filtrés à l'export.
+df_daily <- df_daily |>
+  dplyr::group_by(country_id, extracted_objects) |>
+  dplyr::arrange(date_utc) |>
+  dplyr::mutate(
+    .tier_mod     = vapply(country_id, function(c) get_tier(c, "moderate"), numeric(1)),
+    .in_event_day = !is.na(.tier_mod) & day_peak >= .tier_mod,
+    .day_diff     = as.integer(date_utc - dplyr::lag(date_utc)),
+    .prev_in      = dplyr::lag(.in_event_day, default = FALSE),
+    .new_episode  = .in_event_day & (is.na(.day_diff) | .day_diff != 1L | !.prev_in),
+    .episode_idx  = cumsum(.new_episode & .in_event_day) * as.integer(.in_event_day)
+  ) |>
+  dplyr::ungroup() |>
+  dplyr::select(-.day_diff, -.prev_in, -.new_episode, -.tier_mod)
+
+# Agrégats par épisode (granularité jour)
+df_episodes_daily <- df_daily |>
+  dplyr::filter(.in_event_day, .episode_idx > 0) |>
+  dplyr::group_by(country_id, extracted_objects, .episode_idx) |>
+  dplyr::summarise(
+    ep_first_day      = min(date_utc),
+    ep_last_day       = max(date_utc),
+    ep_n_days         = dplyr::n(),
+    ep_peak           = max(day_peak, na.rm = TRUE),
+    ep_mean_top_share = mean(day_max_top_share, na.rm = TRUE),
+    ep_mean_conv      = mean(day_max_conv, na.rm = TRUE),
+    ep_max_streak_day = max(day_max_streak, na.rm = TRUE),
+    .groups           = "drop"
+  ) |>
+  dplyr::mutate(
+    ep_n_vhi_days = vapply(seq_along(country_id), function(i) {
+      tv <- get_tier(country_id[i], "very_high")
+      if (is.na(tv)) return(NA_integer_)
+      sub <- df_daily[df_daily$country_id == country_id[i] &
+                        df_daily$extracted_objects == extracted_objects[i] &
+                        df_daily$.episode_idx == .episode_idx[i], ]
+      as.integer(sum(sub$day_peak >= tv, na.rm = TRUE))
+    }, integer(1))
+  )
+
+# Agrégats 4h-niveau par épisode (n_vhi_blocs + top_share/conv au pic)
+df_index_with_ep <- df_index |>
+  dplyr::left_join(
+    df_daily |> dplyr::select(country_id, extracted_objects, date_utc, .in_event_day, .episode_idx),
+    by = c("country_id", "extracted_objects", "date_utc")
+  )
+
+df_episodes_blocs <- df_index_with_ep |>
+  dplyr::filter(!is.na(.episode_idx) & .episode_idx > 0) |>
+  dplyr::mutate(
+    .tier_vhi_b = vapply(country_id, function(c) get_tier(c, "very_high"), numeric(1))
+  ) |>
+  dplyr::group_by(country_id, extracted_objects, .episode_idx) |>
+  dplyr::summarise(
+    ep_n_blocs        = dplyr::n(),
+    ep_n_vhi_blocs    = sum(!is.na(.tier_vhi_b) & absolute_normalized_index >= .tier_vhi_b, na.rm = TRUE),
+    ep_peak_top_share = {
+      idx <- which.max(absolute_normalized_index)
+      if (length(idx) == 0) NA_real_ else alert_top_share[idx]
+    },
+    ep_peak_conv = {
+      idx <- which.max(absolute_normalized_index)
+      if (length(idx) == 0) NA_real_ else convergence[idx]
+    },
+    .groups = "drop"
+  )
+
+df_episodes <- df_episodes_daily |>
+  dplyr::left_join(df_episodes_blocs,
+                   by = c("country_id", "extracted_objects", ".episode_idx"))
+
+# ─── Étape 4 : classification du tier par épisode (taxonomie 7 tiers) ────────
+classify_episode <- function(country, ep_peak, ep_n_days,
+                              ep_n_vhi_blocs, ep_n_vhi_days,
+                              ep_peak_top_share, ep_peak_conv,
+                              ep_mean_top_share, ep_mean_conv,
+                              ep_max_streak_day) {
+  tier_mod  <- get_tier(country, "moderate")
+  tier_high <- get_tier(country, "high")
+  tier_vhi  <- get_tier(country, "very_high")
+  tier_ext  <- get_tier(country, "extreme")
+  conv_p95  <- get_conv(country, "tsunami")
+  conv_p85  <- get_conv(country, "eclipse")
+
+  if (is.na(ep_peak) || is.na(tier_mod) || ep_peak < tier_mod) return("none")
+
+  # 🌊 Tsunami : extrême + court + ondes multiples + dominance écrasante + agenda saturé
+  if (!is.na(tier_ext) && ep_peak >= tier_ext &&
+      ep_n_days <= ALERT_DAYS_SHORT_MAX &&
+      !is.na(ep_n_vhi_blocs) && ep_n_vhi_blocs >= ALERT_TSUNAMI_MIN_VHI_BLOCS &&
+      !is.na(ep_peak_top_share) && ep_peak_top_share >= ALERT_TS_TSUNAMI_PEAK &&
+      !is.na(ep_peak_conv) && !is.na(conv_p95) && ep_peak_conv >= conv_p95) {
+    return("tsunami")
+  }
+  # 🌑 Éclipse : extrême + long + structure + dominance soutenue + agenda obscurci
+  if (!is.na(tier_ext) && ep_peak >= tier_ext &&
+      ep_n_days >= ALERT_DAYS_LONG_MIN_ECL &&
+      !is.na(ep_n_vhi_days) && ep_n_vhi_days >= ALERT_ECLIPSE_MIN_VHI_DAYS &&
+      !is.na(ep_mean_top_share) && ep_mean_top_share >= ALERT_TS_ECLIPSE_MEAN &&
+      !is.na(ep_mean_conv) && !is.na(conv_p85) && ep_mean_conv >= conv_p85) {
+    return("eclipse")
+  }
+  # ⛈ Tempête : très-haut + long (≥ 5 j), hors-tsunami/éclipse
+  if (!is.na(tier_vhi) && ep_peak >= tier_vhi &&
+      (is.na(tier_ext) || ep_peak < tier_ext) &&
+      ep_n_days >= ALERT_DAYS_LONG_MIN_TMP) {
+    return("tempete")
+  }
+  # ⚡ Alerte forte : très-haut + court + anomalie pour soi + dominance
+  if (!is.na(tier_vhi) && ep_peak >= tier_vhi &&
+      (is.na(tier_ext) || ep_peak < tier_ext) &&
+      ep_n_days <= ALERT_DAYS_SHORT_MAX &&
+      !is.na(ep_max_streak_day) && ep_max_streak_day >= ALERT_STREAK_ALERTE_FORTE &&
+      !is.na(ep_peak_top_share) && ep_peak_top_share >= ALERT_TS_ALERTE_FORTE_PEAK) {
+    return("forte")
+  }
+  # 📍 Alerte : haut + anomalie z confirmée (streak ≥ 4)
+  if (!is.na(tier_high) && ep_peak >= tier_high &&
+      (is.na(tier_vhi) || ep_peak < tier_vhi) &&
+      !is.na(ep_max_streak_day) && ep_max_streak_day >= ALERT_STREAK_ALERTE &&
+      !is.na(ep_peak_top_share) && ep_peak_top_share >= ALERT_TS_ALERTE_PEAK) {
+    return("alerte")
+  }
+  # ▾ Veille : haut + anomalie naissante (streak 2-3)
+  if (!is.na(tier_high) && ep_peak >= tier_high &&
+      (is.na(tier_vhi) || ep_peak < tier_vhi) &&
+      !is.na(ep_max_streak_day) &&
+      ep_max_streak_day >= ALERT_STREAK_VEILLE_MIN &&
+      ep_max_streak_day <  ALERT_STREAK_VEILLE_MAX &&
+      !is.na(ep_peak_top_share) && ep_peak_top_share >= ALERT_TS_VEILLE_PEAK) {
+    return("veille")
+  }
+  # ◦ Émergence : modéré (sans atteindre haut) + anomalie + dominance min
+  if (ep_peak >= tier_mod &&
+      (is.na(tier_high) || ep_peak < tier_high) &&
+      !is.na(ep_max_streak_day) && ep_max_streak_day >= ALERT_STREAK_EMERGENCE &&
+      !is.na(ep_peak_top_share) && ep_peak_top_share >= ALERT_TS_EMERGENCE_PEAK) {
+    return("emergence")
+  }
+  "none"
+}
+
+df_episodes <- df_episodes |>
+  dplyr::mutate(
+    ep_tier = purrr::pmap_chr(
+      list(country_id, ep_peak, ep_n_days, ep_n_vhi_blocs, ep_n_vhi_days,
+           ep_peak_top_share, ep_peak_conv, ep_mean_top_share, ep_mean_conv,
+           ep_max_streak_day),
+      classify_episode
+    )
+  )
+
+# Statut active/ended (active = épisode atteint le dernier jour observé du pays)
+latest_day_by_country <- df_index |>
+  dplyr::group_by(country_id) |>
+  dplyr::summarise(.latest_day = max(date_utc), .groups = "drop")
+
+df_episodes <- df_episodes |>
+  dplyr::left_join(latest_day_by_country, by = "country_id") |>
+  dplyr::mutate(
+    ep_status     = ifelse(ep_last_day == .latest_day, "active", "ended"),
+    ep_episode_id = paste0(country_id, "-", extracted_objects, "-", .episode_idx)
+  ) |>
+  dplyr::select(-.latest_day)
+
+# ─── Étape 5 : propagation tier + métadonnées épisode vers chaque bloc ───────
+df_index <- df_index_with_ep |>
+  dplyr::left_join(
+    df_episodes |> dplyr::select(country_id, extracted_objects, .episode_idx,
+                                 ep_tier, ep_episode_id, ep_first_day, ep_last_day,
+                                 ep_n_days, ep_peak, ep_status),
+    by = c("country_id", "extracted_objects", ".episode_idx")
+  ) |>
+  dplyr::mutate(
+    alert_level             = ifelse(is.na(ep_tier), "none", ep_tier),
+    alert_active            = alert_level %in% c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence"),
+    alert_episode_id        = ep_episode_id,
+    alert_episode_first_day = ep_first_day,
+    alert_episode_last_day  = ep_last_day,
+    alert_episode_n_days    = ep_n_days,
+    alert_episode_peak      = ep_peak,
+    alert_episode_status    = ep_status
+  ) |>
+  dplyr::select(-ep_tier, -ep_episode_id, -ep_first_day, -ep_last_day,
+                -ep_n_days, -ep_peak, -ep_status,
+                -.in_event_day, -.episode_idx)
+
+cat("  →", sum(df_index$alert_active, na.rm = TRUE), "blocs d'alerte sur", nrow(df_index), "lignes\n")
+cat("  → Distribution par tier (blocs):\n")
+tier_counts <- table(df_index$alert_level[df_index$alert_level != "none"])
+for (lvl in c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence")) {
+  if (!is.null(tier_counts[lvl]) && !is.na(tier_counts[lvl])) {
+    cat("     ", sprintf("%-12s", lvl), tier_counts[[lvl]], "\n")
+  }
+}
+cat("  → Épisodes distincts par tier:\n")
+ep_tier_counts <- table(df_episodes$ep_tier[df_episodes$ep_tier != "none"])
+for (lvl in c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence")) {
+  if (!is.null(ep_tier_counts[lvl]) && !is.na(ep_tier_counts[lvl])) {
+    cat("     ", sprintf("%-12s", lvl), ep_tier_counts[[lvl]], "\n")
+  }
 }
 
 # ─── Nœuds : top N par période × pays (toute la fenêtre historique) ───────────
@@ -688,13 +874,13 @@ build_alert_events <- function(nodes_i) {
 # rétrograde celle au z-score le plus bas d'un cran. Évite les doublons
 # redondants quand le clustering n'a pas trouvé de pivot évident.
 HALO_DOWNGRADE <- c(
-  tsunami      = "eclipse",
-  eclipse      = "strong",
-  strong       = "alert",
-  alert        = "watch",
-  watch        = "surveillance",
-  surveillance = "none",
-  emerging     = "none"
+  tsunami   = "eclipse",
+  eclipse   = "tempete",
+  tempete   = "forte",
+  forte     = "alerte",
+  alerte    = "veille",
+  veille    = "emergence",
+  emergence = "none"
 )
 
 apply_halo_protection <- function(nodes_i, events) {
@@ -736,7 +922,7 @@ apply_halo_protection <- function(nodes_i, events) {
         new_lvl <- HALO_DOWNGRADE[old_lvl]
         if (!is.na(new_lvl) && new_lvl != old_lvl) {
           nodes_i$alert_level[loser] <- unname(new_lvl)
-          nodes_i$alert_active[loser] <- new_lvl %in% c("tsunami", "eclipse", "strong", "alert", "watch")
+          nodes_i$alert_active[loser] <- new_lvl %in% c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence")
         }
       }
     }
@@ -825,6 +1011,12 @@ graphs_graph <- purrr::map(countries, function(country) {
         alert_streak = if (is.na(nodes_i$alert_streak[j])) NULL else as.integer(nodes_i$alert_streak[j]),
         alert_level = nodes_i$alert_level[j],
         alert_active = isTRUE(nodes_i$alert_active[j]),
+        alert_episode_id        = if (is.na(nodes_i$alert_episode_id[j])) NULL else nodes_i$alert_episode_id[j],
+        alert_episode_first_day = if (is.na(nodes_i$alert_episode_first_day[j])) NULL else as.character(nodes_i$alert_episode_first_day[j]),
+        alert_episode_last_day  = if (is.na(nodes_i$alert_episode_last_day[j]))  NULL else as.character(nodes_i$alert_episode_last_day[j]),
+        alert_episode_n_days    = if (is.na(nodes_i$alert_episode_n_days[j]))    NULL else as.integer(nodes_i$alert_episode_n_days[j]),
+        alert_episode_peak      = if (is.na(nodes_i$alert_episode_peak[j]))      NULL else round(nodes_i$alert_episode_peak[j], 3),
+        alert_episode_status    = if (is.na(nodes_i$alert_episode_status[j]))    NULL else nodes_i$alert_episode_status[j],
         articles  = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
         media_ids = {
           mm <- node_med_i |> dplyr::filter(extracted_objects == nodes_i$extracted_objects[j])
@@ -913,42 +1105,45 @@ result_graph <- list(
     graph_days   = GRAPH_DAYS,
     top_n        = TOP_N_OBJECTS,
     alert_thresholds = list(
-      # Taxonomie 6-tiers basée sur PERSISTANCE (streak de blocs anormaux
-      # consécutifs) et DOMINANCE (top_share = saillance / Top 1 du pays).
-      z_threshold = ALERT_Z_THRESHOLD,
-      min_mentions = ALERT_MIN_MENTIONS,
-      min_abs_score = ALERT_MIN_ABS_SCORE,
-      streak = list(
-        watch    = ALERT_STREAK_WATCH,
-        alert    = ALERT_STREAK_ALERT,
-        strong   = ALERT_STREAK_STRONG,
-        eclipse  = ALERT_STREAK_ECLIPSE,
-        tsunami  = ALERT_STREAK_TSUNAMI
+      # Taxonomie 5 tiers : magnitude (paliers saillance) × temporalité (durée).
+      # Voir methodologie.html §10 pour les définitions complètes.
+      z_threshold      = ALERT_Z_THRESHOLD,
+      min_mentions     = ALERT_MIN_MENTIONS,
+      min_abs_score    = ALERT_MIN_ABS_SCORE,
+      days_short_max   = ALERT_DAYS_SHORT_MAX,
+      days_eclipse_min = ALERT_DAYS_LONG_MIN_ECL,
+      days_tempete_min = ALERT_DAYS_LONG_MIN_TMP,
+      tsunami = list(
+        min_vhi_blocs    = ALERT_TSUNAMI_MIN_VHI_BLOCS,
+        top_share_peak   = ALERT_TS_TSUNAMI_PEAK,
+        convergence_pctl = ALERT_CONV_PCTL_TSUNAMI
       ),
-      top_share = list(
-        eclipse = ALERT_TOP_SHARE_ECLIPSE,
-        tsunami = ALERT_TOP_SHARE_TSUNAMI
+      eclipse = list(
+        min_vhi_days     = ALERT_ECLIPSE_MIN_VHI_DAYS,
+        top_share_mean   = ALERT_TS_ECLIPSE_MEAN,
+        convergence_pctl = ALERT_CONV_PCTL_ECLIPSE
       ),
-      # Convergence d'agenda (1 - entropie normalisée). Seuils requis pour
-      # eclipse/tsunami EN PLUS de la dominance locale (top_share).
-      # Seuils convergence calibrés empiriquement par pays
-      # (percentiles ALERT_CONVERGENCE_PCTL_*). Voir
-      # convergence_thresholds_by_country pour les valeurs.
-      convergence_percentiles = list(
-        eclipse = ALERT_CONVERGENCE_PCTL_ECLIPSE,
-        tsunami = ALERT_CONVERGENCE_PCTL_TSUNAMI
+      forte = list(
+        streak         = ALERT_STREAK_ALERTE_FORTE,
+        top_share_peak = ALERT_TS_ALERTE_FORTE_PEAK
+      ),
+      alerte = list(
+        streak         = ALERT_STREAK_ALERTE,
+        top_share_peak = ALERT_TS_ALERTE_PEAK
+      ),
+      veille = list(
+        streak_min     = ALERT_STREAK_VEILLE_MIN,
+        streak_max     = ALERT_STREAK_VEILLE_MAX,
+        top_share_peak = ALERT_TS_VEILLE_PEAK
+      ),
+      emergence = list(
+        streak         = ALERT_STREAK_EMERGENCE,
+        top_share_peak = ALERT_TS_EMERGENCE_PEAK
       ),
       convergence_thresholds_by_country = convergence_thresholds,
-      # Anti-halo: si 2 alertes hors cluster partagent ≥ X articles,
-      # downgrade celle au z-score le plus bas.
-      halo_threshold = ALERT_HALO_THRESHOLD,
-      # Conversion blocs → durée approchée (1 bloc = 4h)
-      block_hours = 4,
-      # Fenêtre glissante utilisée pour le calcul du z-score d'alerte
-      # (180 périodes × 4h ÷ 24 = 30 jours).
-      lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24,
-      # Seuil de containment d'articles pour regrouper deux alertes
-      # comme membres d'un même événement (cluster autour d'un pivot).
+      halo_threshold    = ALERT_HALO_THRESHOLD,
+      block_hours       = 4,
+      lookback_days     = ALERT_LOOKBACK_PERIODS * 4 / 24,
       event_containment = ALERT_EVENT_CONTAINMENT
     ),
     # Paliers de saillance absolue par pays (percentiles de la distribution
@@ -1020,7 +1215,13 @@ for (country in countries) {
           alert_top_share = if (is.na(nodes_i$alert_top_share[j])) NULL else round(nodes_i$alert_top_share[j], 3),
           alert_streak   = if (is.na(nodes_i$alert_streak[j])) NULL else as.integer(nodes_i$alert_streak[j]),
           alert_level    = nodes_i$alert_level[j],
-          alert_active   = isTRUE(nodes_i$alert_active[j])
+          alert_active   = isTRUE(nodes_i$alert_active[j]),
+          alert_episode_id        = if (is.na(nodes_i$alert_episode_id[j])) NULL else nodes_i$alert_episode_id[j],
+          alert_episode_first_day = if (is.na(nodes_i$alert_episode_first_day[j])) NULL else as.character(nodes_i$alert_episode_first_day[j]),
+          alert_episode_last_day  = if (is.na(nodes_i$alert_episode_last_day[j]))  NULL else as.character(nodes_i$alert_episode_last_day[j]),
+          alert_episode_n_days    = if (is.na(nodes_i$alert_episode_n_days[j]))    NULL else as.integer(nodes_i$alert_episode_n_days[j]),
+          alert_episode_peak      = if (is.na(nodes_i$alert_episode_peak[j]))      NULL else round(nodes_i$alert_episode_peak[j], 3),
+          alert_episode_status    = if (is.na(nodes_i$alert_episode_status[j]))    NULL else nodes_i$alert_episode_status[j]
         )
         arts <- build_articles(nodes_i$urls[j], nodes_i$titles[j])
         if (length(arts) > 0) period_articles[[nid]] <- arts
@@ -1045,31 +1246,43 @@ result_ts <- list(
     history_days  = HISTORY_DAYS,
     top_n         = TOP_N_OBJECTS,
     alert_thresholds = list(
-      z_threshold = ALERT_Z_THRESHOLD,
-      min_mentions = ALERT_MIN_MENTIONS,
-      min_abs_score = ALERT_MIN_ABS_SCORE,
-      streak = list(
-        watch    = ALERT_STREAK_WATCH,
-        alert    = ALERT_STREAK_ALERT,
-        strong   = ALERT_STREAK_STRONG,
-        eclipse  = ALERT_STREAK_ECLIPSE,
-        tsunami  = ALERT_STREAK_TSUNAMI
+      z_threshold      = ALERT_Z_THRESHOLD,
+      min_mentions     = ALERT_MIN_MENTIONS,
+      min_abs_score    = ALERT_MIN_ABS_SCORE,
+      days_short_max   = ALERT_DAYS_SHORT_MAX,
+      days_eclipse_min = ALERT_DAYS_LONG_MIN_ECL,
+      days_tempete_min = ALERT_DAYS_LONG_MIN_TMP,
+      tsunami = list(
+        min_vhi_blocs    = ALERT_TSUNAMI_MIN_VHI_BLOCS,
+        top_share_peak   = ALERT_TS_TSUNAMI_PEAK,
+        convergence_pctl = ALERT_CONV_PCTL_TSUNAMI
       ),
-      top_share = list(
-        eclipse = ALERT_TOP_SHARE_ECLIPSE,
-        tsunami = ALERT_TOP_SHARE_TSUNAMI
+      eclipse = list(
+        min_vhi_days     = ALERT_ECLIPSE_MIN_VHI_DAYS,
+        top_share_mean   = ALERT_TS_ECLIPSE_MEAN,
+        convergence_pctl = ALERT_CONV_PCTL_ECLIPSE
       ),
-      # Seuils convergence calibrés empiriquement par pays
-      # (percentiles ALERT_CONVERGENCE_PCTL_*). Voir
-      # convergence_thresholds_by_country pour les valeurs.
-      convergence_percentiles = list(
-        eclipse = ALERT_CONVERGENCE_PCTL_ECLIPSE,
-        tsunami = ALERT_CONVERGENCE_PCTL_TSUNAMI
+      forte = list(
+        streak         = ALERT_STREAK_ALERTE_FORTE,
+        top_share_peak = ALERT_TS_ALERTE_FORTE_PEAK
+      ),
+      alerte = list(
+        streak         = ALERT_STREAK_ALERTE,
+        top_share_peak = ALERT_TS_ALERTE_PEAK
+      ),
+      veille = list(
+        streak_min     = ALERT_STREAK_VEILLE_MIN,
+        streak_max     = ALERT_STREAK_VEILLE_MAX,
+        top_share_peak = ALERT_TS_VEILLE_PEAK
+      ),
+      emergence = list(
+        streak         = ALERT_STREAK_EMERGENCE,
+        top_share_peak = ALERT_TS_EMERGENCE_PEAK
       ),
       convergence_thresholds_by_country = convergence_thresholds,
       halo_threshold = ALERT_HALO_THRESHOLD,
-      block_hours = 4,
-      lookback_days = ALERT_LOOKBACK_PERIODS * 4 / 24
+      block_hours    = 4,
+      lookback_days  = ALERT_LOOKBACK_PERIODS * 4 / 24
     ),
     salience_tiers = salience_tiers,
     periods       = make_periods_list(periods_ts),

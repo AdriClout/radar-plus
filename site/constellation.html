@@ -209,10 +209,13 @@
       flex-shrink: 0; margin-top: 2px;
       background: rgba(120,160,220,0.55);
     }
-    .rleg-swatch.level-watch    { background: rgba(255,210,90,0.85); box-shadow: 0 0 6px rgba(255,210,90,0.45); }
-    .rleg-swatch.level-alert    { background: rgba(255,143,92,0.92); box-shadow: 0 0 6px rgba(255,143,92,0.5); }
-    .rleg-swatch.level-strong   { background: rgba(255,110,110,0.95); box-shadow: 0 0 8px rgba(255,110,110,0.55); }
-    .rleg-swatch.level-emerging { background: rgba(120,190,255,0.90); box-shadow: 0 0 6px rgba(120,190,255,0.45); }
+    .rleg-swatch.level-tsunami   { background: rgba(208,160,255,0.95); box-shadow: 0 0 8px rgba(208,160,255,0.55); }
+    .rleg-swatch.level-eclipse   { background: rgba(160,112,224,0.92); box-shadow: 0 0 6px rgba(160,112,224,0.5); }
+    .rleg-swatch.level-tempete   { background: rgba(255,110,110,0.92); box-shadow: 0 0 6px rgba(255,110,110,0.5); }
+    .rleg-swatch.level-forte     { background: rgba(255,160,80,0.92); box-shadow: 0 0 6px rgba(255,160,80,0.5); }
+    .rleg-swatch.level-alerte    { background: rgba(242,205,80,0.88); box-shadow: 0 0 5px rgba(242,205,80,0.45); }
+    .rleg-swatch.level-veille    { background: rgba(216,184,48,0.80); box-shadow: 0 0 4px rgba(216,184,48,0.35); }
+    .rleg-swatch.level-emergence { background: rgba(138,168,216,0.80); box-shadow: 0 0 4px rgba(138,168,216,0.35); }
     .rleg-rank {
       font-size: 11px;
       color: rgba(110,150,210,0.65);
@@ -242,10 +245,13 @@
       text-transform: uppercase;
       align-self: center;
     }
-    .rleg-alert-badge.level-watch    { color: rgba(255,224,112,0.96); border: 1px solid rgba(224,196,88,0.55); background: rgba(74,60,16,0.62); }
-    .rleg-alert-badge.level-alert    { color: rgba(255,186,136,0.98); border: 1px solid rgba(255,143,92,0.65); background: rgba(88,40,24,0.68); }
-    .rleg-alert-badge.level-strong   { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.72); background: rgba(98,22,28,0.72); }
-    .rleg-alert-badge.level-emerging { color: rgba(160,210,255,0.96); border: 1px solid rgba(112,186,245,0.55); background: rgba(18,56,92,0.62); }
+    .rleg-alert-badge.level-tsunami   { color: rgba(245,220,255,1); border: 1px solid rgba(208,160,255,0.65); background: rgba(110,43,176,0.6); }
+    .rleg-alert-badge.level-eclipse   { color: rgba(230,200,255,0.98); border: 1px solid rgba(160,112,224,0.6); background: rgba(74,37,128,0.6); }
+    .rleg-alert-badge.level-tempete   { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.6); background: rgba(138,29,29,0.55); }
+    .rleg-alert-badge.level-forte     { color: rgba(255,200,150,0.98); border: 1px solid rgba(255,160,80,0.6); background: rgba(138,72,24,0.55); }
+    .rleg-alert-badge.level-alerte    { color: rgba(250,225,140,0.98); border: 1px solid rgba(242,205,80,0.55); background: rgba(122,100,32,0.50); }
+    .rleg-alert-badge.level-veille    { color: rgba(240,220,140,0.95); border: 1px solid rgba(216,184,48,0.50); background: rgba(106,85,32,0.45); }
+    .rleg-alert-badge.level-emergence { color: rgba(200,220,250,0.95); border: 1px solid rgba(138,168,216,0.50); background: rgba(42,69,112,0.50); }
     .rleg-val {
       font-size: 12px;
       color: rgba(140,180,255,0.78);
@@ -1190,7 +1196,7 @@
   // Cap au top N par granularité — au-delà le graphe devient illisible
   // (ex: une année cumule >1000 objets uniques qui forment un blob).
   // Liens aussi filtrés aux paires entre nodes retenus.
-  const ALERT_RANK = { strong: 4, alert: 3, watch: 2, emerging: 1, none: 0, normal: 0 };
+  const ALERT_RANK = { tsunami: 7, eclipse: 6, tempete: 5, forte: 4, alerte: 3, veille: 2, emergence: 1, none: 0, normal: 0 };
   const SLOT_TOP_N = { day: 30, week: 40, month: 55, year: 70, total: 80 };
   function aggregateSlot(country, slot) {
     if (!slot || !slot.periodKeys.length) return { nodes: [], links: [] };
@@ -1451,7 +1457,14 @@
   // Hot 10 — format calqué sur evolution.html (.rleg-item) avec swatch
   // coloré (selon alerte courante), valeur de saillance, delta vs slot
   // précédent.
-  const ALERT_BADGE_LABELS = { strong: 'Fort', alert: 'Alerte', watch: 'Veille', emerging: 'Émerg.' };
+  const ALERT_BADGE_LABELS = (function() {
+    const out = {};
+    ['tsunami','eclipse','tempete','forte','alerte','veille','emergence'].forEach(function(k) {
+      const v = window.t ? window.t('alertes.level_short.' + k) : null;
+      out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
+    });
+    return out;
+  })();
   function renderHot10(gd, country) {
     const list = document.getElementById('top10-list');
     const countryEl = document.getElementById('top10-country');
