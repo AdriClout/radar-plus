@@ -283,6 +283,7 @@
 
     "kpi_active": "Active",
     "kpi_active_sub": "right now",
+    "kpi_hint": "Click a level to hide / show it in the timeline.",
 
     "card_score": "z-score",
     "card_top_share": "dominance",

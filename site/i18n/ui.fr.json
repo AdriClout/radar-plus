@@ -284,6 +284,7 @@
 
     "kpi_active": "En cours",
     "kpi_active_sub": "maintenant",
+    "kpi_hint": "Clique un niveau pour le masquer / afficher dans la chronique.",
 
     "card_score": "score z",
     "card_top_share": "dominance",

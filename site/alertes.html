@@ -108,15 +108,22 @@
     /* ── KPIs ───────────────────────────────────────────────── */
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 8px;
-      margin-bottom: 28px;
+      margin-bottom: 6px;
     }
     @media (max-width: 1100px) {
-      .kpi-row { grid-template-columns: repeat(4, 1fr); }
+      .kpi-row { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 700px) {
       .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    .kpi-hint {
+      font-size: 9.5px;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+      margin: 0 0 22px;
+      text-align: center;
     }
     .kpi {
       display: flex;
@@ -433,16 +440,15 @@
       height: auto;
       overflow: visible;
     }
-    .swimlane-bg { fill: rgba(20,30,60,0.4); }
-    .swimlane-divider { stroke: rgba(90,140,255,0.12); stroke-width: 1; }
-    .swimlane-label {
+    .tier-lane-label {
       font-family: var(--orbitron);
-      font-size: 10px;
-      fill: rgba(200,225,255,0.85);
-      letter-spacing: 1px;
+      font-size: 9px;
+      fill: rgba(200,225,255,0.7);
+      letter-spacing: 0.8px;
       text-transform: uppercase;
     }
-    .month-tick { stroke: rgba(90,140,255,0.18); stroke-width: 1; stroke-dasharray: 2,3; }
+    .tier-lane-divider { stroke: rgba(90,140,255,0.1); stroke-width: 1; stroke-dasharray: 2,3; }
+    .month-tick { stroke: rgba(90,140,255,0.15); stroke-width: 1; stroke-dasharray: 2,3; }
     .month-label {
       font-family: var(--mono);
       font-size: 9px;
@@ -460,28 +466,29 @@
       fill: rgba(140,255,180,0.9);
       letter-spacing: 0.6px;
     }
-    .episode-block {
-      cursor: pointer;
-      transition: filter 0.15s, stroke-width 0.15s;
-      stroke: rgba(0,0,0,0.4);
-      stroke-width: 0.5;
-    }
-    .episode-block:hover {
-      filter: brightness(1.25);
+    .object-line {
+      fill: none;
+      stroke: rgba(160,190,235,0.22);
       stroke-width: 1.5;
-      stroke: rgba(255,255,255,0.6);
-    }
-    .episode-block.selected {
-      stroke: #fff;
-      stroke-width: 1.5;
-      filter: brightness(1.3);
-    }
-    .episode-icon {
-      font-size: 9px;
-      fill: rgba(255,255,255,0.85);
-      text-anchor: middle;
+      stroke-linejoin: round;
       pointer-events: none;
-      font-family: var(--mono);
+    }
+    .object-line.highlighted { stroke: rgba(220,240,255,0.95); stroke-width: 2.5; }
+    .object-dot {
+      cursor: pointer;
+      stroke: rgba(8,14,38,0.85);
+      stroke-width: 0.8;
+      transition: r 0.12s, stroke-width 0.12s;
+    }
+    .object-dot:hover {
+      r: 5.5;
+      stroke: rgba(255,255,255,0.95);
+      stroke-width: 1.5;
+    }
+    .object-dot.selected {
+      r: 5.5;
+      stroke: #fff;
+      stroke-width: 2;
     }
 
     /* ── Tooltip ──────────────────────────────────────────── */
@@ -828,6 +835,25 @@
     </div>
   </header>
 
+  <!-- ── KPI bar : clic = toggle tier ───────────────────────────── -->
+  <div class="kpi-row" id="kpi-row"></div>
+  <div class="kpi-hint" id="kpi-hint" data-i18n="alertes.kpi_hint">Clique un niveau pour le masquer/afficher dans la chronique.</div>
+
+  <!-- ── ÉVOLUTION DES ALERTES (chart principal) ──────────────────── -->
+  <section class="section">
+    <div class="chronique-toolbar">
+      <button class="zoom-btn" data-zoom="30"  data-i18n="alertes.zoom_30d">30 j</button>
+      <button class="zoom-btn" data-zoom="90"  data-i18n="alertes.zoom_90d">90 j</button>
+      <button class="zoom-btn is-active" data-zoom="130" data-i18n="alertes.zoom_130d">130 j</button>
+      <span class="section-sub" id="section-chronique-window" style="margin-left:auto;">—</span>
+    </div>
+
+    <div id="chronique-svg-wrap">
+      <svg id="chronique-svg" role="img" aria-label="Évolution des alertes"></svg>
+      <div id="chronique-tooltip"></div>
+    </div>
+  </section>
+
   <!-- ── Section MAINTENANT ─────────────────────────────────────── -->
   <section class="section">
     <div class="section-head">
@@ -836,36 +862,6 @@
     </div>
     <div id="now-content">
       <div class="section-empty" data-i18n="common.loading">chargement…</div>
-    </div>
-  </section>
-
-  <!-- ── Section CHRONIQUE ───────────────────────────────────────── -->
-  <section class="section">
-    <div class="section-head">
-      <span class="section-title" data-i18n="alertes.section_chronique">Chronique</span>
-      <span class="section-sub" id="section-chronique-window">—</span>
-    </div>
-
-    <div class="kpi-row" id="kpi-row"></div>
-
-    <div class="chronique-toolbar">
-      <button class="zoom-btn" data-zoom="30"  data-i18n="alertes.zoom_30d">30 j</button>
-      <button class="zoom-btn" data-zoom="90"  data-i18n="alertes.zoom_90d">90 j</button>
-      <button class="zoom-btn is-active" data-zoom="130" data-i18n="alertes.zoom_130d">130 j</button>
-    </div>
-
-    <div id="chronique-svg-wrap">
-      <svg id="chronique-svg" role="img" aria-label="Chronique des alertes par pays"></svg>
-      <div id="chronique-tooltip"></div>
-    </div>
-
-    <div class="legend-row">
-      <span class="legend-item"><span class="legend-block lvl-tsunami"></span><span data-i18n="alertes.level_tsunami">Tsunami</span></span>
-      <span class="legend-item"><span class="legend-block lvl-eclipse"></span><span data-i18n="alertes.level_eclipse">Éclipse</span></span>
-      <span class="legend-item"><span class="legend-block lvl-tempete"></span><span data-i18n="alertes.level_tempete">Tempête</span></span>
-      <span class="legend-item"><span class="legend-block lvl-forte"></span><span data-i18n="alertes.level_forte">Alerte forte</span></span>
-      <span class="legend-item"><span class="legend-block lvl-alerte"></span><span data-i18n="alertes.level_alerte">Alerte</span></span>
-      <span class="legend-item"><span class="legend-block lvl-emergence"></span><span data-i18n="alertes.level_emergence">Émergence</span></span>
     </div>
   </section>
 
@@ -928,7 +924,9 @@
   let zoomDays = 130;
   let isEmergenceOpen = false;
   let selectedEpisodeKey = null;
-  let kpiTierFilter = null; // null = pas de filtre tier-only ; sinon tier sélectionné
+  // Multi-select : tiers cachés. Vide = tous visibles (défaut).
+  let kpiTiersHidden = new Set();
+  let selectedObjectKey = null; // "country|id"
 
   // ─── Helpers ───────────────────────────────────────────────────
   function T(key, fallback) {
@@ -954,10 +952,7 @@
   function countryLabel(c) { return T('country.' + c, c); }
   function passesFilter(tier, country) {
     if (filterCountry !== 'all' && country !== filterCountry) return false;
-    if (kpiTierFilter) {
-      // Quand un tier est sélectionné via KPI, on n'affiche QUE ce tier-là.
-      return tier === kpiTierFilter;
-    }
+    if (kpiTiersHidden.has(tier)) return false;
     if (tierRank(tier) > tierRank(filterMinLevel)) return false;
     return true;
   }
@@ -1241,10 +1236,9 @@
     });
     var html = '';
     TIERS.forEach(function(tier) {
-      var cls = 'kpi';
-      if (kpiTierFilter && kpiTierFilter === tier) cls += ' is-active';
-      else if (kpiTierFilter) cls += ' is-dim';
-      html += '<div class="' + cls + '" data-tier="' + tier + '" role="button" tabindex="0" aria-pressed="' + (kpiTierFilter === tier) + '" title="' + esc(T('alertes.level_tip_' + tier, '')) + '">'
+      var hidden = kpiTiersHidden.has(tier);
+      var cls = 'kpi' + (hidden ? ' is-dim' : ' is-active');
+      html += '<div class="' + cls + '" data-tier="' + tier + '" role="button" tabindex="0" aria-pressed="' + (!hidden) + '" title="' + esc(T('alertes.level_tip_' + tier, '')) + '">'
         + '<span class="kpi-mark lvl-' + tier + '"></span>'
         + '<span class="kpi-val">' + (counts[tier] || 0) + '</span>'
         + '<span class="kpi-lbl">' + esc(tierLabel(tier))
@@ -1262,7 +1256,8 @@
   }
 
   function toggleKpiFilter(tier) {
-    kpiTierFilter = (kpiTierFilter === tier) ? null : tier;
+    if (kpiTiersHidden.has(tier)) kpiTiersHidden.delete(tier);
+    else kpiTiersHidden.add(tier);
     render();
   }
 
@@ -1335,6 +1330,21 @@
         renderNow();
       });
     }
+    // Clic sur une card = ouvre le panneau objet
+    container.querySelectorAll('.alert-card[data-country][data-object-id]').forEach(function(c) {
+      c.addEventListener('click', function() {
+        openObjectPanel(c.getAttribute('data-country'), c.getAttribute('data-object-id'));
+      });
+    });
+    container.querySelectorAll('.emergence-row[data-key]').forEach(function(r) {
+      r.addEventListener('click', function() {
+        var key = r.getAttribute('data-key'); // 'now-emerg-CAN-iran'
+        var parts = key.split('-').slice(2);
+        var country = parts.shift();
+        var oid = parts.join('-');
+        openObjectPanel(country, oid);
+      });
+    });
   }
 
   function renderCard(item) {
@@ -1379,7 +1389,8 @@
       periodHint = renderDayOffset(n);
     }
 
-    return '<div class="alert-card level-' + tier + '" data-key="' + esc(nKey) + '" data-kind="' + esc(item.kind) + '">'
+    var objectId = item.kind === 'event' ? item.pivot.id : item.node.id;
+    return '<div class="alert-card level-' + tier + '" data-country="' + esc(country) + '" data-object-id="' + esc(objectId) + '">'
       + '<div class="alert-card-top">'
       +   '<span class="alert-card-tier lvl-' + tier + '">' + esc(tierLabel(tier)) + '</span>'
       +   '<span class="alert-card-name">' + esc(name) + '</span>'
@@ -1436,7 +1447,41 @@
       + '</div>';
   }
 
-  // ─── Render CHRONIQUE (SVG swimlanes, blocs stackés sans chevauchement) ──
+  // ─── Construction des timelines par objet ────────────────────
+  // Pour chaque (country, object_id) ayant été en alerte au moins 1 jour,
+  // construit un dictionnaire date → {tier, peak, top_share, score, cluster_id}.
+  // Si un objet a plusieurs tiers le même jour (différents blocs 4h), on
+  // garde le tier le plus élevé.
+  function buildObjectTimelines() {
+    if (!timeseriesData || !timeseriesData.graphs) return [];
+    var byObj = {};
+    Object.keys(timeseriesData.graphs).forEach(function(country) {
+      var periods = timeseriesData.graphs[country];
+      Object.keys(periods).forEach(function(pk) {
+        var date = pk.split('_')[0];
+        var gd = periods[pk];
+        if (!gd || !gd.nodes) return;
+        gd.nodes.forEach(function(n) {
+          if (!n.alert_level || n.alert_level === 'none') return;
+          var key = country + '|' + n.id;
+          if (!byObj[key]) byObj[key] = { country: country, id: n.id, days: {} };
+          var prev = byObj[key].days[date];
+          if (!prev || tierRank(n.alert_level) < tierRank(prev.tier)) {
+            byObj[key].days[date] = {
+              tier: n.alert_level,
+              peak: (typeof n.size === 'number') ? n.size : 0,
+              top_share: n.alert_top_share || 0,
+              score: n.alert_score || 0,
+              cluster_id: n.alert_cluster_id || null
+            };
+          }
+        });
+      });
+    });
+    return Object.keys(byObj).map(function(k) { return byObj[k]; });
+  }
+
+  // ─── Render Évolution des alertes (line chart step par objet) ──
   function renderChronique() {
     var wrap = document.getElementById('chronique-svg-wrap');
     var svg  = document.getElementById('chronique-svg');
@@ -1447,94 +1492,41 @@
       winEl.textContent = T('alertes.section_chronique_window', '{days} derniers jours').replace('{days}', zoomDays);
     }
 
-    var episodes = buildEpisodesFromTimeseries();
-    // Clustering R-side : chaque cluster_id = un événement.
-    // On dessine les CLUSTERS (pas les épisodes-objets), pour que
-    // Iran+Israel d'un même événement = 1 bloc, pas 2.
-    var clusters = buildClustersFromEpisodes(episodes);
-    var countries = filterCountry === 'all' ? ['QC','CAN','USA'].filter(function(c) {
-      return getCountries().indexOf(c) !== -1;
-    }) : [filterCountry];
-
-    // Filtre par fenêtre temporelle + tier min + KPI filter
+    // Y axis : 6 lanes (tsunami en haut → emergence en bas)
     var today = new Date(); today.setUTCHours(0,0,0,0);
     var windowStart = new Date(today.getTime() - zoomDays * 86400000);
 
-    var filtered = clusters.filter(function(e) {
-      if (countries.indexOf(e.country) === -1) return false;
-      if (kpiTierFilter) {
-        if (e.tier !== kpiTierFilter) return false;
-      } else if (tierRank(e.tier) > tierRank(filterMinLevel)) {
-        return false;
-      }
-      var last = new Date(e.last_day);
-      if (last < windowStart) return false;
-      return true;
-    });
+    var timelines = buildObjectTimelines();
+    // Filtrer par pays + par tier visible (KPI multi-select).
+    // Pour chaque timeline, on garde uniquement les jours dont le tier est visible
+    // ET qui passent le filtre min level.
+    var filteredTimelines = timelines.map(function(tl) {
+      if (filterCountry !== 'all' && tl.country !== filterCountry) return null;
+      var days = {};
+      Object.keys(tl.days).forEach(function(d) {
+        var dd = new Date(d);
+        if (dd < windowStart) return;
+        var tier = tl.days[d].tier;
+        if (kpiTiersHidden.has(tier)) return;
+        if (tierRank(tier) > tierRank(filterMinLevel)) return;
+        days[d] = tl.days[d];
+      });
+      var keys = Object.keys(days);
+      if (!keys.length) return null;
+      return Object.assign({}, tl, { days: days, dateKeys: keys.sort() });
+    }).filter(Boolean);
 
-    // Layout horizontal (commun)
+    // Layout
     var width = wrap.clientWidth - 28;
     if (width < 320) width = 320;
-    var labelW = 50;
-    var rightPad = 12;
+    var labelW = 110;
+    var rightPad = 14;
     var chartW = Math.max(120, width - labelW - rightPad);
     var topPad = 22;
-    var bottomPad = 4;
-    var laneGap = 10;
-
-    // ─ Assignation des tracks (sous-rangées) par pays pour éviter chevauchements
-    var trackH = 14;
-    var trackVGap = 2;
-    var laneInnerPad = 4;
-
-    function startMs(e) { return new Date(e.first_day).getTime(); }
-    function endMs(e)   { return new Date(e.last_day).getTime() + 86400000; }
-
-    var byCountry = {};
-    countries.forEach(function(c) { byCountry[c] = []; });
-    filtered.forEach(function(e) {
-      if (byCountry[e.country]) byCountry[e.country].push(e);
-    });
-
-    var tracksUsedByCountry = {};
-    countries.forEach(function(c) {
-      // Tri par début ASC, puis tier (les plus importants d'abord en cas d'égalité)
-      byCountry[c].sort(function(a, b) {
-        var d = startMs(a) - startMs(b);
-        if (d !== 0) return d;
-        return tierRank(a.tier) - tierRank(b.tier);
-      });
-      var tracks = []; // tracks[i] = endMs du dernier épisode placé sur ce track
-      byCountry[c].forEach(function(e) {
-        var s = startMs(e);
-        var en = endMs(e);
-        var placed = false;
-        for (var t = 0; t < tracks.length; t++) {
-          if (tracks[t] <= s) {
-            e._track = t;
-            tracks[t] = en;
-            placed = true;
-            break;
-          }
-        }
-        if (!placed) {
-          e._track = tracks.length;
-          tracks.push(en);
-        }
-      });
-      tracksUsedByCountry[c] = Math.max(1, tracks.length);
-    });
-
-    // Hauteur dynamique de chaque lane
-    var laneInfo = []; // [{country, y, h}]
-    var cur = topPad;
-    countries.forEach(function(c) {
-      var n = tracksUsedByCountry[c];
-      var h = n * (trackH + trackVGap) - trackVGap + laneInnerPad * 2;
-      laneInfo.push({ country: c, y: cur, h: h });
-      cur += h + laneGap;
-    });
-    var height = cur - laneGap + bottomPad;
+    var bottomPad = 8;
+    var laneH = 42;
+    var chartH = laneH * TIERS.length;
+    var height = topPad + chartH + bottomPad;
 
     svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
     svg.setAttribute('width',  width);
@@ -1545,16 +1537,26 @@
       var offset = Math.max(0, (d - windowStart) / 86400000);
       return labelW + (offset / zoomDays) * chartW;
     }
-    function widthForDays(nDays) {
-      return Math.max(2, (nDays / zoomDays) * chartW);
+    function yForTier(tier) {
+      var idx = TIERS.indexOf(tier);
+      if (idx === -1) return topPad + chartH;
+      return topPad + idx * laneH + laneH / 2;
     }
 
     var parts = [];
 
-    // Background lanes + labels
-    laneInfo.forEach(function(li) {
-      parts.push('<rect class="swimlane-bg" x="' + labelW + '" y="' + li.y + '" width="' + chartW + '" height="' + li.h + '" rx="3" />');
-      parts.push('<text class="swimlane-label" x="' + (labelW - 8) + '" y="' + (li.y + li.h/2 + 4) + '" text-anchor="end">' + esc(li.country) + '</text>');
+    // Lanes (1 par tier) + label gauche
+    TIERS.forEach(function(tier, idx) {
+      var y0 = topPad + idx * laneH;
+      var bgAlpha = 0.10 + (idx % 2) * 0.06;
+      parts.push('<rect x="' + labelW + '" y="' + y0 + '" width="' + chartW + '" height="' + laneH + '" fill="rgba(20,30,60,' + bgAlpha + ')" />');
+      // Petit carré couleur + label
+      parts.push('<rect x="' + (labelW - 90) + '" y="' + (y0 + laneH/2 - 5) + '" width="9" height="9" rx="2" fill="var(--' + tier + ')" />');
+      parts.push('<text class="tier-lane-label" x="' + (labelW - 76) + '" y="' + (y0 + laneH/2 + 4) + '">' + esc(tierLabel(tier)) + '</text>');
+      // Ligne horizontale fine
+      if (idx > 0) {
+        parts.push('<line class="tier-lane-divider" x1="' + labelW + '" y1="' + y0 + '" x2="' + (labelW + chartW) + '" y2="' + y0 + '" />');
+      }
     });
 
     // Month ticks
@@ -1562,61 +1564,84 @@
     months.forEach(function(m) {
       var x = xForDate(m.date);
       if (x < labelW || x > labelW + chartW) return;
-      parts.push('<line class="month-tick" x1="' + x + '" y1="' + topPad + '" x2="' + x + '" y2="' + height + '" />');
+      parts.push('<line class="month-tick" x1="' + x + '" y1="' + topPad + '" x2="' + x + '" y2="' + (topPad + chartH) + '" />');
       parts.push('<text class="month-label" x="' + (x + 3) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
     });
 
-    // Episodes — paints fort en dernier pour qu'ils soient au-dessus
-    // (mais comme ils sont sur des tracks distincts, l'ordre importe peu)
-    var laneByCountry = {};
-    laneInfo.forEach(function(li) { laneByCountry[li.country] = li; });
+    // Step-lines + dots par objet
+    filteredTimelines.forEach(function(tl) {
+      var keys = tl.dateKeys;
+      var pts = keys.map(function(d) {
+        return { date: d, info: tl.days[d], x: xForDate(d), y: yForTier(tl.days[d].tier) };
+      });
 
-    var sorted = filtered.slice().sort(function(a, b) {
-      return tierRank(b.tier) - tierRank(a.tier);
-    });
-    sorted.forEach(function(e) {
-      var li = laneByCountry[e.country];
-      if (!li) return;
-      var trackIdx = e._track || 0;
-      var yBlock = li.y + laneInnerPad + trackIdx * (trackH + trackVGap);
-      var x = xForDate(e.first_day);
-      var w = widthForDays(e.n_days);
-      if (x + w < labelW || x > labelW + chartW) return;
-      var selectedCls = selectedEpisodeKey === e.key ? ' selected' : '';
-      var showIcon = w >= 18 && (e.tier === 'tsunami' || e.tier === 'eclipse' || e.tier === 'tempete' || e.tier === 'forte');
-      parts.push('<g>'
-        + '<rect class="episode-block lvl-' + e.tier + selectedCls + '" '
-        +   'x="' + x.toFixed(1) + '" y="' + yBlock.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + trackH + '" rx="2" '
-        +   'fill="var(--' + e.tier + ')" '
-        +   'data-key="' + esc(e.key) + '" />'
-        + (showIcon
-            ? '<text class="episode-icon" x="' + (x + w/2).toFixed(1) + '" y="' + (yBlock + trackH/2 + 3).toFixed(1) + '">' + TIER_ICON[e.tier] + '</text>'
-            : '')
-        + '</g>');
+      // Découpe en segments contigus (interruption si gap > 1 jour)
+      var segs = [];
+      var cur = [pts[0]];
+      for (var i = 1; i < pts.length; i++) {
+        var prevDate = new Date(pts[i - 1].date);
+        var curDate  = new Date(pts[i].date);
+        var dayGap = Math.round((curDate - prevDate) / 86400000);
+        if (dayGap <= 1) cur.push(pts[i]);
+        else { segs.push(cur); cur = [pts[i]]; }
+      }
+      if (cur.length) segs.push(cur);
+
+      // Path step (horizontal puis vertical)
+      var keySel = tl.country + '|' + tl.id;
+      var highlightedCls = selectedObjectKey === keySel ? ' highlighted' : '';
+      segs.forEach(function(seg) {
+        if (seg.length < 2) return;
+        var d = 'M' + seg[0].x.toFixed(1) + ',' + seg[0].y.toFixed(1);
+        for (var k = 1; k < seg.length; k++) {
+          d += ' L' + seg[k].x.toFixed(1) + ',' + seg[k - 1].y.toFixed(1);
+          d += ' L' + seg[k].x.toFixed(1) + ',' + seg[k].y.toFixed(1);
+        }
+        parts.push('<path class="object-line' + highlightedCls + '" d="' + d + '" data-key="' + esc(keySel) + '" />');
+      });
+
+      // Dots — un par jour
+      pts.forEach(function(p) {
+        var selCls = (selectedObjectKey === keySel) ? ' selected' : '';
+        parts.push('<circle class="object-dot' + selCls + '" cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3.5" fill="var(--' + p.info.tier + ')" '
+          + 'data-country="' + esc(tl.country) + '" data-id="' + esc(tl.id) + '" data-date="' + esc(p.date) + '" data-tier="' + esc(p.info.tier) + '" />');
+      });
     });
 
     // Now line
     var nowX = labelW + chartW;
-    parts.push('<line class="now-line" x1="' + nowX + '" y1="' + topPad + '" x2="' + nowX + '" y2="' + height + '" />');
+    parts.push('<line class="now-line" x1="' + nowX + '" y1="' + topPad + '" x2="' + nowX + '" y2="' + (topPad + chartH) + '" />');
     parts.push('<text class="now-label" x="' + (nowX - 4) + '" y="' + (topPad - 6) + '" text-anchor="end">NOW</text>');
 
     svg.innerHTML = parts.join('');
 
-    // Click handlers + tooltip
-    svg.querySelectorAll('.episode-block').forEach(function(rect) {
-      rect.addEventListener('click', function() {
-        var key = rect.getAttribute('data-key');
-        openEpisodePanel(key);
+    // Click handlers + tooltip sur les dots
+    svg.querySelectorAll('.object-dot').forEach(function(circle) {
+      circle.addEventListener('click', function() {
+        var country = circle.getAttribute('data-country');
+        var id = circle.getAttribute('data-id');
+        openObjectPanel(country, id);
       });
-      rect.addEventListener('mouseenter', function(ev) {
-        var key = rect.getAttribute('data-key');
-        var ep = filtered.find(function(e) { return e.key === key; });
-        if (!ep) return;
-        showTooltip(ev, ep);
+      circle.addEventListener('mouseenter', function(ev) {
+        var country = circle.getAttribute('data-country');
+        var id = circle.getAttribute('data-id');
+        var date = circle.getAttribute('data-date');
+        var tier = circle.getAttribute('data-tier');
+        showObjectTooltip(ev, country, id, date, tier);
       });
-      rect.addEventListener('mousemove', moveTooltip);
-      rect.addEventListener('mouseleave', hideTooltip);
+      circle.addEventListener('mousemove', moveTooltip);
+      circle.addEventListener('mouseleave', hideTooltip);
     });
+  }
+
+  function showObjectTooltip(ev, country, id, date, tier) {
+    var tt = document.getElementById('chronique-tooltip');
+    if (!tt) return;
+    tt.style.display = 'block';
+    tt.innerHTML = '<div class="tt-title">' + esc(id) + '</div>'
+      + '<div class="tt-meta">' + esc(countryLabel(country)) + ' · ' + esc(fmtDay(date)) + '</div>'
+      + '<div class="tt-meta" style="color:var(--' + tier + ');"><b>' + esc(tierLabel(tier)) + '</b></div>';
+    moveTooltip(ev);
   }
 
   function computeMonthTicks(start, end) {
@@ -1662,7 +1687,106 @@
     if (tt) tt.style.display = 'none';
   }
 
-  // ─── Side panel ──────────────────────────────────────────────
+  // ─── Side panel — version "objet" (v4) ──────────────────────
+  // Affiche TOUS les épisodes d'un objet sur la fenêtre 130 j + liens
+  function openObjectPanel(country, objectId) {
+    selectedObjectKey = country + '|' + objectId;
+    var allEpisodes = buildEpisodesFromTimeseries();
+    var episodes = allEpisodes.filter(function(e) {
+      return e.country === country && e.id === objectId;
+    });
+
+    var panel = document.getElementById('side-panel');
+    var badge = document.getElementById('panel-tier-badge');
+    var countryEl = document.getElementById('panel-country');
+    var body = document.getElementById('panel-body');
+    if (!panel || !body) return;
+
+    // Tier le plus élevé jamais atteint
+    var maxTier = 'emergence';
+    episodes.forEach(function(e) {
+      if (tierRank(e.tier) < tierRank(maxTier)) maxTier = e.tier;
+    });
+
+    badge.className = 'panel-tier-badge lvl-' + maxTier;
+    badge.textContent = tierLabel(maxTier);
+    countryEl.textContent = countryLabel(country);
+
+    // Tri épisodes (récent en premier)
+    episodes.sort(function(a, b) { return new Date(b.first_day) - new Date(a.first_day); });
+
+    // Status global : actif si un épisode est en cours
+    var anyActive = episodes.some(function(e) { return e.status === 'active'; });
+    var statusCls = anyActive ? ' is-active' : '';
+    var statusLbl = anyActive
+      ? T('alertes.status_active_label', 'En cours')
+      : T('alertes.status_ended_label', 'Terminé');
+
+    // Pic max + autres agrégats
+    var maxPeak = 0, maxScore = 0, maxTopShare = 0, totalDays = 0;
+    episodes.forEach(function(e) {
+      if ((e.peak || 0) > maxPeak) maxPeak = e.peak;
+      if ((e.max_score || 0) > maxScore) maxScore = e.max_score;
+      if ((e.max_top_share || 0) > maxTopShare) maxTopShare = e.max_top_share;
+      totalDays += (e.n_days || 0);
+    });
+
+    var peakStr = maxPeak > 0 ? fmtPeakWithTier(country, maxPeak) : '—';
+    var tsStr = maxTopShare > 0 ? Math.round(maxTopShare * 100) + '%' : '—';
+    var scoreStr = maxScore > 0 ? maxScore.toFixed(1) + '×' : '—';
+
+    // Liste des épisodes
+    var episodesHTML = episodes.map(function(e) {
+      var dateRange = fmtDay(e.first_day) + (e.first_day !== e.last_day ? ' → ' + fmtDay(e.last_day) : '');
+      var clusterBadge = (e.cluster_size && e.cluster_size > 1)
+        ? ' <span class="panel-member-pivot">cluster ' + e.cluster_size + '</span>'
+        : '';
+      return '<div class="panel-member" data-episode-key="' + esc(e.key) + '">'
+        + '<span class="panel-member-name"><span class="ep-tier lvl-' + e.tier + '" style="margin-right:6px;">' + esc(tierLabel(e.tier)) + '</span>' + esc(dateRange) + '</span>'
+        + '<span class="panel-member-meta">' + e.n_days + 'j · pic ' + (e.peak || 0).toFixed(1) + '</span>'
+        + clusterBadge
+        + '</div>';
+    }).join('');
+
+    // Liens
+    var qC = encodeURIComponent(country);
+    var qN = encodeURIComponent(objectId);
+    var evoUrl = './evolution.html?country=' + qC + '&node=' + qN + '&mode=tracking&gran=week';
+    var cstUrl = './constellation.html?country=' + qC + '&node=' + qN;
+    var statsUrl = './statistiques.html?pays=' + qC + '&objet=' + qN;
+
+    body.innerHTML =
+        '<div class="panel-title">' + esc(objectId) + '</div>'
+      + '<div class="panel-period">' + episodes.length + ' épisode(s) · ' + totalDays + ' jours cumulés</div>'
+      + '<span class="panel-status' + statusCls + '">' + esc(statusLbl) + '</span>'
+      + '<div class="panel-section">'
+      +   '<div class="panel-section-title">' + esc(T('alertes.detail_metrics', 'Métriques')) + '</div>'
+      +   '<div class="panel-metrics">'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(peakStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_peak_salience', 'Pic saillance')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(tsStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_top_share_peak', 'Dominance max')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(scoreStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.card_score', 'Score z')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + episodes.length + '</span><span class="panel-metric-lbl">Épisodes</span></div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="panel-section">'
+      +   '<div class="panel-section-title">Historique des alertes (' + episodes.length + ')</div>'
+      +   episodesHTML
+      + '</div>'
+      + '<div class="panel-section">'
+      +   '<div class="panel-section-title">' + esc(T('alertes.detail_see_in', 'Voir ailleurs')) + '</div>'
+      +   '<div class="panel-links">'
+      +     '<a class="panel-link-btn" href="' + esc(evoUrl) + '">' + esc(T('alertes.detail_nav_evolution', 'Évolution')) + ' →</a>'
+      +     '<a class="panel-link-btn" href="' + esc(cstUrl) + '">' + esc(T('alertes.detail_nav_constellation', 'Constellation')) + ' →</a>'
+      +     '<a class="panel-link-btn" href="' + esc(statsUrl) + '">' + esc(T('alertes.detail_nav_stats', 'Statistiques')) + ' →</a>'
+      +   '</div>'
+      + '</div>';
+
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+    renderChronique(); // refresh visual selection
+  }
+
+  // ─── Side panel (compatibilité) — utilisé par cluster click depuis le swimlane historique
   function openEpisodePanel(episodeKey) {
     selectedEpisodeKey = episodeKey;
     var episodes = buildEpisodesFromTimeseries();
@@ -1839,6 +1963,7 @@
     panel.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');
     selectedEpisodeKey = null;
+    selectedObjectKey = null;
     renderChronique();
   }
 
@@ -1881,7 +2006,7 @@
       if (e.cluster_size && e.cluster_size > 1) {
         subjectLabel += ' <span style="color:var(--muted);font-size:9px;">+' + (e.cluster_size - 1) + '</span>';
       }
-      html += '<tr data-key="' + esc(e.key) + '">'
+      html += '<tr data-country="' + esc(e.country) + '" data-id="' + esc(e.id) + '">'
         + '<td>' + subjectLabel + '</td>'
         + '<td>' + esc(countryLabel(e.country)) + '</td>'
         + '<td>' + esc(fmtDay(e.first_day)) + '</td>'
@@ -1895,9 +2020,9 @@
     html += '</tbody></table>';
     wrap.innerHTML = html;
 
-    wrap.querySelectorAll('tr[data-key]').forEach(function(tr) {
+    wrap.querySelectorAll('tr[data-country]').forEach(function(tr) {
       tr.addEventListener('click', function() {
-        openEpisodePanel(tr.getAttribute('data-key'));
+        openObjectPanel(tr.getAttribute('data-country'), tr.getAttribute('data-id'));
       });
     });
   }
