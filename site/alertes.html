@@ -818,7 +818,6 @@
       <span class="filter-label" data-i18n="alertes.filter_min_level">Niveau min</span>
       <select id="filter-min-level">
         <option value="emergence" data-i18n="alertes.level_emergence">Émergence</option>
-        <option value="veille"    data-i18n="alertes.level_veille">Veille</option>
         <option value="alerte"    selected data-i18n="alertes.level_alerte">Alerte</option>
         <option value="forte"     data-i18n="alertes.level_forte">Alerte forte</option>
         <option value="tempete"   data-i18n="alertes.level_tempete">Tempête</option>
@@ -866,7 +865,6 @@
       <span class="legend-item"><span class="legend-block lvl-tempete"></span><span data-i18n="alertes.level_tempete">Tempête</span></span>
       <span class="legend-item"><span class="legend-block lvl-forte"></span><span data-i18n="alertes.level_forte">Alerte forte</span></span>
       <span class="legend-item"><span class="legend-block lvl-alerte"></span><span data-i18n="alertes.level_alerte">Alerte</span></span>
-      <span class="legend-item"><span class="legend-block lvl-veille"></span><span data-i18n="alertes.level_veille">Veille</span></span>
       <span class="legend-item"><span class="legend-block lvl-emergence"></span><span data-i18n="alertes.level_emergence">Émergence</span></span>
     </div>
   </section>
@@ -910,13 +908,13 @@
   'use strict';
 
   // ─── Constantes ────────────────────────────────────────────────
-  const TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte', 'veille', 'emergence'];
+  const TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte', 'emergence'];
   // MAIN_TIERS = ce qui s'affiche en cartes pleines dans "Maintenant"
-  // (les 4 du haut + alerte). Veille/émergence vont dans le sous-bloc dépliable.
+  // (les 4 du haut + alerte). Émergence va dans le sous-bloc dépliable.
   const MAIN_TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte'];
-  const MINOR_TIERS = ['veille', 'emergence'];
-  const TIER_RANK = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4, veille: 5, emergence: 6, none: 99 };
-  const TIER_ICON = { tsunami: '🌊', eclipse: '🌑', tempete: '⛈', forte: '⚡', alerte: '📍', veille: '▾', emergence: '◦' };
+  const MINOR_TIERS = ['emergence'];
+  const TIER_RANK = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4, emergence: 5, none: 99 };
+  const TIER_ICON = { tsunami: '🌊', eclipse: '🌑', tempete: '⛈', forte: '⚡', alerte: '📍', emergence: '◦' };
   const COUNTRY_ORDER = ['QC', 'CAN', 'USA'];
 
   const FR_MONTHS_SHORT = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
@@ -1058,10 +1056,12 @@
               peak: n.alert_episode_peak,
               status: n.alert_episode_status,
               max_top_share: n.alert_top_share || 0,
-              max_score: n.alert_score || 0
+              max_score: n.alert_score || 0,
+              cluster_id: n.alert_cluster_id || null,
+              cluster_pivot: !!n.alert_cluster_pivot,
+              cluster_size: n.alert_cluster_size || 1
             };
           } else {
-            // Update tier if encountered better
             if (tierRank(n.alert_level) < tierRank(byEp[key].tier)) byEp[key].tier = n.alert_level;
             if ((n.alert_top_share || 0) > byEp[key].max_top_share) byEp[key].max_top_share = n.alert_top_share;
             if ((n.alert_score || 0) > byEp[key].max_score) byEp[key].max_score = n.alert_score;
@@ -1071,6 +1071,96 @@
     });
     Object.keys(byEp).forEach(function(k) { out.push(byEp[k]); });
     return out;
+  }
+
+  // Regroupe les épisodes par cluster_id (R-side computed). Chaque cluster
+  // est représenté par son "pivot" (l'épisode du tier le plus élevé / pic
+  // le plus haut). Les autres épisodes du cluster sont stockés dans `members`.
+  // Retourne une liste de "super-épisodes" pour affichage agrégé.
+  function buildClustersFromEpisodes(episodes) {
+    var byCluster = {};
+    var solos = [];
+    episodes.forEach(function(e) {
+      if (!e.cluster_id) {
+        solos.push(e);
+        return;
+      }
+      if (!byCluster[e.cluster_id]) {
+        byCluster[e.cluster_id] = { pivot: null, members: [] };
+      }
+      if (e.cluster_pivot) {
+        byCluster[e.cluster_id].pivot = e;
+      } else {
+        byCluster[e.cluster_id].members.push(e);
+      }
+    });
+    var clusters = [];
+    Object.keys(byCluster).forEach(function(cid) {
+      var c = byCluster[cid];
+      var pivot = c.pivot;
+      // Fallback : si pas de pivot marqué, prendre le membre au tier le plus haut
+      if (!pivot && c.members.length) {
+        pivot = c.members.slice().sort(function(a, b) {
+          var r = tierRank(a.tier) - tierRank(b.tier);
+          if (r !== 0) return r;
+          return (b.peak || 0) - (a.peak || 0);
+        })[0];
+        c.members = c.members.filter(function(m) { return m !== pivot; });
+      }
+      if (!pivot) return;
+      // Construire le super-épisode (basé sur pivot + members)
+      var allMembers = c.members.slice();
+      var first_day = pivot.first_day, last_day = pivot.last_day;
+      var peak = pivot.peak || 0, max_top_share = pivot.max_top_share || 0;
+      var max_score = pivot.max_score || 0, tier = pivot.tier;
+      allMembers.forEach(function(m) {
+        if (m.first_day < first_day) first_day = m.first_day;
+        if (m.last_day > last_day) last_day = m.last_day;
+        if ((m.peak || 0) > peak) peak = m.peak;
+        if ((m.max_top_share || 0) > max_top_share) max_top_share = m.max_top_share;
+        if ((m.max_score || 0) > max_score) max_score = m.max_score;
+        if (tierRank(m.tier) < tierRank(tier)) tier = m.tier;
+      });
+      var n_days = Math.round((new Date(last_day) - new Date(first_day)) / 86400000) + 1;
+      clusters.push({
+        key: cid,
+        kind: 'cluster',
+        country: pivot.country,
+        pivot: pivot,
+        members: allMembers,
+        id: pivot.id, // label visuel = pivot
+        tier: tier,
+        first_day: first_day,
+        last_day: last_day,
+        n_days: n_days,
+        peak: peak,
+        max_top_share: max_top_share,
+        max_score: max_score,
+        status: pivot.status,
+        cluster_size: 1 + allMembers.length
+      });
+    });
+    // Ajouter les solos (épisodes sans cluster) en tant que clusters singletons
+    solos.forEach(function(e) {
+      clusters.push({
+        key: e.key,
+        kind: 'solo',
+        country: e.country,
+        pivot: e,
+        members: [],
+        id: e.id,
+        tier: e.tier,
+        first_day: e.first_day,
+        last_day: e.last_day,
+        n_days: e.n_days,
+        peak: e.peak,
+        max_top_share: e.max_top_share,
+        max_score: e.max_score,
+        status: e.status,
+        cluster_size: 1
+      });
+    });
+    return clusters;
   }
 
   // Pour le "Maintenant" : prendre la dernière période graph.json
@@ -1358,6 +1448,10 @@
     }
 
     var episodes = buildEpisodesFromTimeseries();
+    // Clustering R-side : chaque cluster_id = un événement.
+    // On dessine les CLUSTERS (pas les épisodes-objets), pour que
+    // Iran+Israel d'un même événement = 1 bloc, pas 2.
+    var clusters = buildClustersFromEpisodes(episodes);
     var countries = filterCountry === 'all' ? ['QC','CAN','USA'].filter(function(c) {
       return getCountries().indexOf(c) !== -1;
     }) : [filterCountry];
@@ -1366,7 +1460,7 @@
     var today = new Date(); today.setUTCHours(0,0,0,0);
     var windowStart = new Date(today.getTime() - zoomDays * 86400000);
 
-    var filtered = episodes.filter(function(e) {
+    var filtered = clusters.filter(function(e) {
       if (countries.indexOf(e.country) === -1) return false;
       if (kpiTierFilter) {
         if (e.tier !== kpiTierFilter) return false;
@@ -1572,10 +1666,16 @@
   function openEpisodePanel(episodeKey) {
     selectedEpisodeKey = episodeKey;
     var episodes = buildEpisodesFromTimeseries();
-    var ep = episodes.find(function(e) { return e.key === episodeKey; });
+    var clusters = buildClustersFromEpisodes(episodes);
+    // Cherche d'abord dans les clusters (qui incluent solos)
+    var ep = clusters.find(function(c) { return c.key === episodeKey; });
+    if (!ep) {
+      // Fallback : peut-être qu'on a passé un episode_id (depuis la table)
+      ep = episodes.find(function(e) { return e.key === episodeKey; });
+    }
     if (!ep) return;
     renderSidePanel(ep);
-    renderChronique();  // re-render to update "selected" visual
+    renderChronique();
   }
 
   function renderSidePanel(ep) {
@@ -1601,8 +1701,30 @@
     var tsStr = ep.max_top_share ? Math.round(ep.max_top_share * 100) + '%' : '—';
     var scoreStr = ep.max_score ? ep.max_score.toFixed(1) + '×' : '—';
 
-    // Try to find articles + cluster info from latest period (only if episode is active)
+    // Membres du cluster historique (R-side computed)
+    // ep.members peut exister si ep est un "cluster" (kind === 'cluster')
     var clusterHTML = '', articlesHTML = '';
+    if (ep.members && ep.members.length > 0) {
+      var rows = [];
+      rows.push('<div class="panel-member">'
+        + '<span class="panel-member-name">' + esc(ep.pivot ? ep.pivot.id : ep.id) + '</span>'
+        + '<span class="panel-member-meta">' + esc(tierLabel(ep.tier)) + ' · pic ' + (ep.pivot ? ep.pivot.peak.toFixed(1) : '—') + '</span>'
+        + '<span class="panel-member-pivot">pivot</span>'
+        + '</div>');
+      ep.members.forEach(function(m) {
+        rows.push('<div class="panel-member">'
+          + '<span class="panel-member-name">' + esc(m.id) + '</span>'
+          + '<span class="panel-member-meta">' + esc(tierLabel(m.tier)) + ' · pic ' + (m.peak || 0).toFixed(1) + '</span>'
+          + '</div>');
+      });
+      clusterHTML = '<div class="panel-section">'
+        + '<div class="panel-section-title">' + esc(T('alertes.detail_cluster_members', 'Membres du cluster')) + ' (' + (ep.cluster_size || (1 + ep.members.length)) + ')</div>'
+        + rows.join('')
+        + '</div>';
+    }
+
+    // Articles : si l'épisode est actif, on essaie de récupérer les articles
+    // de la dernière période graph.json (avec event clustering 14j)
     if (ep.status === 'active' && graphData) {
       var periods = graphData.meta && graphData.meta.periods;
       if (periods && periods.length) {
@@ -1619,25 +1741,27 @@
           });
 
           if (ev) {
-            var rows = [];
-            var pivotIsThisObj = ev.pivot && ev.pivot.id === ep.id;
-            // Pivot first
-            rows.push('<div class="panel-member">'
-              + '<span class="panel-member-name">' + esc(ev.pivot.id) + '</span>'
-              + (pivotIsThisObj ? '' : '<span class="panel-member-meta">' + (ev.pivot.alert_active ? esc(tierLabel(ev.pivot.alert_level)) : 'pivot') + '</span>')
-              + '<span class="panel-member-pivot">pivot</span>'
-              + '</div>');
-            (ev.members || []).forEach(function(m) {
+            // Si on n'a pas déjà un clusterHTML historique, le construire depuis l'event 14j.
+            if (!clusterHTML) {
+              var rows = [];
+              var pivotIsThisObj = ev.pivot && ev.pivot.id === ep.id;
               rows.push('<div class="panel-member">'
-                + '<span class="panel-member-name">' + esc(m.id) + '</span>'
-                + '<span class="panel-member-meta">' + esc(tierLabel(m.alert_level)) + ' · ' + Math.round((m.containment || 0) * 100) + '%</span>'
+                + '<span class="panel-member-name">' + esc(ev.pivot.id) + '</span>'
+                + (pivotIsThisObj ? '' : '<span class="panel-member-meta">' + (ev.pivot.alert_active ? esc(tierLabel(ev.pivot.alert_level)) : 'pivot') + '</span>')
+                + '<span class="panel-member-pivot">pivot</span>'
                 + '</div>');
-            });
-            clusterHTML = '<div class="panel-section">'
-              + '<div class="panel-section-title">' + esc(T('alertes.detail_cluster_members', 'Membres du cluster')) + '</div>'
-              + rows.join('')
-              + '</div>';
-            // Shared articles
+              (ev.members || []).forEach(function(m) {
+                rows.push('<div class="panel-member">'
+                  + '<span class="panel-member-name">' + esc(m.id) + '</span>'
+                  + '<span class="panel-member-meta">' + esc(tierLabel(m.alert_level)) + ' · ' + Math.round((m.containment || 0) * 100) + '%</span>'
+                  + '</div>');
+              });
+              clusterHTML = '<div class="panel-section">'
+                + '<div class="panel-section-title">' + esc(T('alertes.detail_cluster_members', 'Membres du cluster')) + '</div>'
+                + rows.join('')
+                + '</div>';
+            }
+            // Articles partagés viennent toujours du 14j event si disponibles
             var arts = ev.shared_articles || [];
             if (arts.length) {
               articlesHTML = '<div class="panel-section">'
@@ -1722,7 +1846,9 @@
   function renderEpisodesTable() {
     var wrap = document.getElementById('episodes-table-wrap');
     if (!wrap) return;
-    var episodes = buildEpisodesFromTimeseries().filter(function(e) {
+    // Utilise les CLUSTERS (regroupés par événement), pas les épisodes-objets
+    var allEpisodes = buildEpisodesFromTimeseries();
+    var episodes = buildClustersFromEpisodes(allEpisodes).filter(function(e) {
       if (filterCountry !== 'all' && e.country !== filterCountry) return false;
       if (kpiTierFilter) {
         if (e.tier !== kpiTierFilter) return false;
@@ -1751,8 +1877,12 @@
       + '<th>' + esc(T('alertes.table_col_top_share_max', 'Dominance max')) + '</th>'
       + '</tr></thead><tbody>';
     episodes.forEach(function(e) {
+      var subjectLabel = esc(e.id);
+      if (e.cluster_size && e.cluster_size > 1) {
+        subjectLabel += ' <span style="color:var(--muted);font-size:9px;">+' + (e.cluster_size - 1) + '</span>';
+      }
       html += '<tr data-key="' + esc(e.key) + '">'
-        + '<td>' + esc(e.id) + '</td>'
+        + '<td>' + subjectLabel + '</td>'
         + '<td>' + esc(countryLabel(e.country)) + '</td>'
         + '<td>' + esc(fmtDay(e.first_day)) + '</td>'
         + '<td>' + esc(fmtDay(e.last_day)) + '</td>'

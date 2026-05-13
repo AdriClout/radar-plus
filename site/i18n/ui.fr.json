@@ -48,7 +48,6 @@
       "tempete": "Tempête",
       "forte": "Alerte forte",
       "alerte": "Alerte",
-      "veille": "Veille",
       "emergence": "Émergence"
     }
   },
@@ -244,7 +243,6 @@
     "level_tempete": "Tempête",
     "level_forte": "Alerte forte",
     "level_alerte": "Alerte",
-    "level_veille": "Veille",
     "level_emergence": "Émergence",
     "level_short": {
       "tsunami": "Tsunami",
@@ -252,7 +250,6 @@
       "tempete": "Tempête",
       "forte": "Forte",
       "alerte": "Alerte",
-      "veille": "Veille",
       "emergence": "Émerg."
     },
     "level_tip_tsunami": "Pic extrême, court (≤ 3 j), agenda saturé. Rare.",
@@ -260,7 +257,6 @@
     "level_tip_tempete": "Couverture soutenue (≥ 5 j) à magnitude très haute — media storm (Boydstun 2014).",
     "level_tip_forte": "Montée brève et nette à magnitude très haute — mode alarm (Bennett-Boydstun).",
     "level_tip_alerte": "Sujet à magnitude haute avec anomalie z confirmée (≥ 1 j).",
-    "level_tip_veille": "Anomalie naissante à magnitude haute (8h-1j), pas encore confirmée.",
     "level_tip_emergence": "Signal précurseur sous le seuil normal — magnitude modérée + anomalie.",
 
     "status_active": "en cours",

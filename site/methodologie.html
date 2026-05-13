@@ -536,7 +536,7 @@
 <p>Une publication méthodologique détaillée <a href="#fn27" class="footnote-ref" id="fnref27" role="doc-noteref"><sup>27</sup></a> est en préparation et viendra compléter la documentation officielle.</p>
 <hr />
 <h2 id="alertes">10. Alertes médiatiques — taxonomie des signaux d’agenda</h2>
-<p>Les <strong>alertes médiatiques</strong> identifient les sujets dont la couverture sort de l’ordinaire à un degré qui mérite l’attention de l’analyste. Radar+ publie une taxonomie de <strong>sept niveaux</strong> structurée en deux ensembles : une <strong>échelle d’alarme standard</strong> (Émergence → Veille → Alerte → Alerte forte) et trois <strong>cas exceptionnels qualitativement distincts</strong> (Tempête, Éclipse, Tsunami). La taxonomie combine deux axes orthogonaux : la <strong>magnitude absolue</strong> (paliers de saillance calibrés par pays, §11) et la <strong>temporalité</strong> (court vs long, anomalie naissante vs confirmée). Tous les seuils sont calibrés empiriquement sur la distribution observée des 130 derniers jours.</p>
+<p>Les <strong>alertes médiatiques</strong> identifient les sujets dont la couverture sort de l’ordinaire à un degré qui mérite l’attention de l’analyste. Radar+ publie une taxonomie de <strong>six niveaux</strong> structurée en deux ensembles : une <strong>échelle d’alarme standard</strong> (Émergence → Alerte → Alerte forte) et trois <strong>cas exceptionnels qualitativement distincts</strong> (Tempête, Éclipse, Tsunami). La taxonomie combine deux axes orthogonaux : la <strong>magnitude absolue</strong> (paliers de saillance calibrés par pays, §11) et la <strong>temporalité</strong> (court vs long). Tous les seuils sont calibrés empiriquement sur la distribution observée des 130 derniers jours. Un <strong>clustering historique</strong> regroupe en outre les épisodes simultanés du même pays en un seul événement (§10.7).</p>
 
 <h3 id="alertes-cadre">10.1 Cadre théorique : magnitude × temporalité</h3>
 <p>La taxonomie repose sur deux postulats issus de la littérature :</p>
@@ -554,10 +554,10 @@ EXTRÊME (≥p99)    │    🌊 TSUNAMI         │    🌑 ÉCLIPSE           
 TRÈS HAUT (≥p95)  │    ⚡ ALERTE FORTE    │    ⛈ TEMPÊTE             │
                   └───────────────────────┴──────────────────────────┘
 
-Échelle d’alarme standard (haut + anomalie z) :
+Échelle d’alarme standard (haut + anomalie z confirmée) :
                   ┌───────────────────────────────────────────────────┐
 HAUT (≥p80)       │  📍 ALERTE         (streak ≥ 4 ≈ 1j anormal)      │
-+ anomalie        │  ▾ VEILLE          (streak 2-3 ≈ 8h-1j)           │
++ anomalie        │                                                   │
                   ├───────────────────────────────────────────────────┤
 MODÉRÉ (≥p50)     │  ◦ ÉMERGENCE       (anomalie sous le seuil normal)│
 + anomalie        │                                                   │
@@ -583,7 +583,7 @@ MODÉRÉ (≥p50)     │  ◦ ÉMERGENCE       (anomalie sous le seuil normal)�
 </ul>
 <p>Les seuils de convergence sont calibrés par pays sur la distribution observée (percentiles), pas fixés a priori, ce qui rend la taxonomie sensible aux régimes médiatiques nationaux. Ils opérationnalisent les concepts de <em>media tsunami</em><a href="#fn-bb4" class="footnote-ref"><sup>bb4</sup></a> et d’<em>agenda displacement</em><a href="#fn-bb5" class="footnote-ref"><sup>bb5</sup></a><a href="#fn-bb6" class="footnote-ref"><sup>bb6</sup></a>.</p>
 
-<h3 id="alertes-tiers">10.5 Les sept tiers</h3>
+<h3 id="alertes-tiers">10.5 Les six tiers</h3>
 <p>Chaque tier est défini d’abord <em>conceptuellement</em> (selon la littérature), puis <em>opérationnellement</em> (avec ses conditions cumulatives mesurables). Les volumes empiriques cités proviennent de l’analyse rétrospective sur 130 jours et 3 pays (QC, CAN, USA) au moment de la rédaction.</p>
 
 <h4 id="alertes-tsunami">10.5.1 Tsunami médiatique</h4>
@@ -631,17 +631,7 @@ MODÉRÉ (≥p50)     │  ◦ ÉMERGENCE       (anomalie sous le seuil normal)�
 </ul>
 <p>Empiriquement, ~35-40 alertes sur 130 jours, soit ~2 par semaine. C’est le tier de plus haut volume parmi les signaux à magnitude haute.</p>
 
-<h4 id="alertes-veille">10.5.5 Veille</h4>
-<p><strong>Définition conceptuelle.</strong> Une veille signale un sujet à magnitude haute dont l’anomalie est <em>naissante</em> mais pas encore confirmée — un signal qui mérite l’œil mais qui pourrait tout aussi bien fader. Conceptuellement, c’est le moment-précurseur d’une alerte : 2 à 3 blocs anormaux consécutifs (8h-1j) sans avoir encore atteint le seuil d’alerte (≥ 4 blocs ≈ 1 jour). Si l’anomalie se confirme, la veille devient alerte. Si elle s’interrompt, elle disparaît.</p>
-<p><strong>Opérationnalisation.</strong> Un sujet est classé <em>veille</em> lorsque, simultanément :</p>
-<ul>
-<li>le pic de saillance atteint le palier <strong>élevé</strong> (≥ p80) sans atteindre le très élevé ;</li>
-<li><strong>streak ∈ [2, 4) blocs 4 h</strong> (8h à 1j anormal — pas encore confirmé) ;</li>
-<li><strong>top_share ≥ 0,50</strong> au pic.</li>
-</ul>
-<p>Empiriquement, ~20-25 veilles sur 130 jours, soit ~1.2 par semaine.</p>
-
-<h4 id="alertes-tempete">10.5.4 Tempête médiatique</h4>
+<h4 id="alertes-tempete">10.5.5 Tempête médiatique</h4>
 <p><strong>Définition conceptuelle.</strong> Une tempête est une montée brusque, large et <em>soutenue</em> de la couverture d’un sujet, qui se maintient au-dessus de l’ordinaire pendant plusieurs jours. Contrairement au tsunami, elle ne rince pas tout : d’autres sujets continuent d’exister à côté. Mais le sujet <em>occupe</em> l’agenda de façon visible et persistante. La référence canonique est Boydstun, Hardy &amp; Walgrave (2014)<a href="#fn-bb2" class="footnote-ref"><sup>bb2</sup></a>, qui définissent rigoureusement le <em>media storm</em> : un pic de couverture qui se maintient ≥ 5-7 jours, partagé largement entre médias, dont chaque jour individuel est sensiblement au-dessus de la moyenne.</p>
 <p><strong>Opérationnalisation.</strong> Un sujet est classé <em>tempête</em> lorsque, simultanément :</p>
 <ul>
@@ -671,19 +661,23 @@ MODÉRÉ (≥p50)     │  ◦ ÉMERGENCE       (anomalie sous le seuil normal)�
 </ul>
 <p>Ces statuts ne sont pas des tiers, mais des métadonnées qui qualifient la temporalité de l’alerte par rapport au moment de la lecture. Ils permettent à l’interface de distinguer ce qui demande attention <em>maintenant</em> de ce qui est <em>archivable</em>.</p>
 
-<h3 id="alertes-cluster">10.7 Clustering événementiel (pivot d’articles)</h3>
-<p>Plusieurs alertes simultanées peuvent recouvrir un seul événement (ex. WHO + Alberta + Ontario lors d’une éclosion de hantavirus ; Iran + Israël lors d’une frappe militaire). Pour éviter de fragmenter l’information, le pipeline regroupe les alertes par <strong>cluster autour d’un pivot</strong> :</p>
+<h3 id="alertes-cluster">10.7 Clustering événementiel</h3>
+<p>Le pipeline applique <strong>deux niveaux de clustering</strong> complémentaires pour éviter de fragmenter un événement réel en plusieurs alertes apparentes.</p>
+
+<p><strong>(a) Clustering par pivot d’articles, fenêtre 14 jours.</strong> Plusieurs alertes simultanées peuvent recouvrir un seul événement (ex. WHO + Alberta + Ontario lors d’une éclosion de hantavirus). Pour chaque période 4 h :</p>
 <ol>
 <li>Pour chaque candidat-pivot du Top 30 d’une période, on calcule le <em>containment</em> de chaque alerte active vers ce pivot : <code>|articles(alerte) ∩ articles(pivot)| / |articles(alerte)|</code>.</li>
 <li>Les alertes dont le containment ≥ 50 % sont rattachées au pivot comme <em>membres</em>.</li>
 <li>Quand plusieurs pivots concurrent pour les mêmes membres, on retient celui maximisant <em>précision × rappel</em>.</li>
 <li>Une <em>marche gloutonne</em> garantit qu’une alerte n’appartient qu’à un seul cluster.</li>
 </ol>
-<p>Cette approche s’apparente aux mesures d’<em>agenda displacement</em> (Atkinson 2014<a href="#fn-bb5" class="footnote-ref"><sup>bb5</sup></a>, Pinto 2019<a href="#fn-bb6" class="footnote-ref"><sup>bb6</sup></a>) mais opère à granularité fine (4 h) et publie le pivot d’événement directement dans la donnée. La persistance d’<em>event_id</em> entre périodes consécutives (chevauchement Jaccard ≥ 0,5) permet de reconnaître qu’un événement de 5 périodes 4 h est <em>un</em> événement, pas cinq.</p>
+<p>La persistance d’<em>event_id</em> entre périodes consécutives (chevauchement Jaccard ≥ 0,5) permet de reconnaître qu’un événement de 5 périodes 4 h est <em>un</em> événement, pas cinq.</p>
+
+<p><strong>(b) Clustering historique 130 jours, par chevauchement temporel.</strong> Pour les épisodes en dehors de la fenêtre des articles (≥ 14 jours dans le passé), on regroupe les épisodes du <em>même pays</em> dont les intervalles temporels se chevauchent à ≥ 50 % de la durée du plus court. Permet de fusionner sur l’axe long terme : Iran + Israël le même jour au CAN = 1 événement géopolitique ; Liberal Party + Mark Carney + circonscriptions le jour d’une élection = 1 événement politique. Le <em>pivot</em> du cluster est l’épisode au tier le plus élevé, à égalité le pic le plus haut. Cette approche s’apparente aux mesures d’<em>agenda displacement</em> (Atkinson 2014<a href="#fn-bb5" class="footnote-ref"><sup>bb5</sup></a>, Pinto 2019<a href="#fn-bb6" class="footnote-ref"><sup>bb6</sup></a>) mais agit comme une <em>compression sémantique</em> post-hoc plutôt que comme une détection de pivot d’articles. Limite reconnue : le clustering 130 jours ne traverse pas les frontières nationales (Iran-CAN et Iran-USA restent deux événements distincts).</p>
 
 <h3 id="alertes-calibration">10.8 Calibration empirique et validation</h3>
 <p>Tous les seuils numériques de la taxonomie — paliers de saillance (§11), seuils de convergence par pays, niveaux de top_share, durées planchers — sont calibrés sur la <strong>distribution empirique observée sur les 130 derniers jours</strong>, et non fixés a priori. Le pipeline les recalcule à chaque exécution (toutes les 4 h) et les publie dans <code>meta.alert_thresholds</code> et <code>meta.salience_tiers</code>. Si la couverture médiatique change radicalement (campagne électorale, crise majeure, période estivale), les seuils s’ajustent automatiquement.</p>
-<p>Les valeurs calibrées ont été choisies pour produire des volumes qualitativement cohérents avec la conception théorique : ~1 tsunami toutes les 3-4 semaines, ~1 éclipse toutes les 2-3 semaines, ~1 tempête toutes les 2-3 semaines, ~1 alerte forte toutes les 2-3 semaines, ~2 alertes/semaine, ~1.2 veille/semaine, ~1.7 émergence/semaine. Total : ~5-6 signaux/semaine tous tiers confondus. Ces ordres de grandeur sont cohérents avec les rythmes documentés en science politique (Boydstun &amp; Russell 2016 sur les ratios alarm-to-storm).</p>
+<p>Les valeurs calibrées ont été choisies pour produire des volumes qualitativement cohérents avec la conception théorique : ~1 tsunami toutes les 6-8 semaines, ~1 éclipse toutes les 2-3 semaines, ~1 tempête toutes les 2-3 semaines, ~1 alerte forte toutes les 2-3 semaines, ~2 alertes/semaine, ~1.7 émergence/semaine. Total : ~5 signaux/semaine tous tiers confondus, ramenés par clustering historique (§10.7) à ~3-4 <em>événements distincts</em>/semaine. Ces ordres de grandeur sont cohérents avec les rythmes documentés en science politique (Boydstun &amp; Russell 2016 sur les ratios alarm-to-storm).</p>
 
 <h3 id="alertes-archives">10.9 Vue historique (130 jours)</h3>
 <p>La page <em>Alertes</em> intègre, en plus de la vue « maintenant », une <strong>vue historique sur 130 jours</strong> : chronique des événements passés (tsunamis, éclipses, tempêtes, poussées) avec, pour chacun, sujet, début, fin, durée, tier max atteint, pic de saillance et part max du Top. La structure des bandes révèle visuellement les cycles d’attention de Downs<a href="#fn-bb7" class="footnote-ref"><sup>bb7</sup></a>, les déplacements d’agenda et les éclipses persistantes — sans nécessiter une page distincte.</p>
@@ -1003,7 +997,7 @@ MODÉRÉ (≥p50)     │  ◦ ÉMERGENCE       (anomalie sous le seuil normal)�
 <p>A detailed methodological publication<a href="#en-fn27" class="footnote-ref" id="en-fnref27" role="doc-noteref"><sup>27</sup></a> is in preparation and will complete the official documentation.</p>
 <hr />
 <h2 id="en-alertes">10. Media alerts — taxonomy of agenda signals</h2>
-<p><strong>Media alerts</strong> identify topics whose coverage steps out of the ordinary to a degree that deserves analyst attention. Radar+ publishes a taxonomy of <strong>seven tiers</strong> structured in two groups: a <strong>standard alarm ladder</strong> (Emergence → Watch → Alert → Strong alert) and three <strong>qualitatively distinct exceptional cases</strong> (Storm, Eclipse, Tsunami). The taxonomy combines two orthogonal axes: <strong>absolute magnitude</strong> (country-calibrated saliency tiers, §11) and <strong>temporality</strong> (short vs long, nascent vs confirmed anomaly). All thresholds are calibrated empirically on the past 130 days of observed distribution.</p>
+<p><strong>Media alerts</strong> identify topics whose coverage steps out of the ordinary to a degree that deserves analyst attention. Radar+ publishes a taxonomy of <strong>six tiers</strong> structured in two groups: a <strong>standard alarm ladder</strong> (Emergence → Alert → Strong alert) and three <strong>qualitatively distinct exceptional cases</strong> (Storm, Eclipse, Tsunami). The taxonomy combines two orthogonal axes: <strong>absolute magnitude</strong> (country-calibrated saliency tiers, §11) and <strong>temporality</strong> (short vs long). All thresholds are calibrated empirically on the past 130 days of observed distribution. A <strong>historical clustering</strong> further groups simultaneous episodes of the same country into a single event (§10.7).</p>
 
 <h3 id="en-cadre">10.1 Theoretical framework: magnitude × temporality</h3>
 <p>The taxonomy rests on two postulates drawn from the literature:</p>
@@ -1097,17 +1091,7 @@ MODERATE (≥p50)    │  ◦ EMERGENCE      (anomaly below normal threshold)│
 </ul>
 <p>Empirically, ~35-40 alerts over 130 days, about 2/week. The highest-volume tier among high-magnitude signals.</p>
 
-<h4 id="en-veille">10.5.5 Watch</h4>
-<p><strong>Conceptual definition.</strong> A watch flags a topic at high magnitude whose anomaly is <em>nascent</em> but not yet confirmed — a signal worth keeping an eye on but which could just as easily fade. Conceptually it is the precursor-moment of an alert: 2-3 consecutive anomalous blocks (8h-1d) without yet reaching the alert threshold (≥ 4 blocks ≈ 1d). If confirmed, the watch becomes alert. If interrupted, it disappears.</p>
-<p><strong>Operationalization.</strong> A topic is classified as <em>watch</em> when, simultaneously:</p>
-<ul>
-<li>peak saliency reaches the <strong>high</strong> tier (≥ p80) without reaching very high;</li>
-<li><strong>streak ∈ [2, 4) 4h blocks</strong> (8h to 1d anomalous — not yet confirmed);</li>
-<li><strong>top_share ≥ 0.50</strong> at peak.</li>
-</ul>
-<p>Empirically, ~20-25 watches over 130 days, about 1.2/week.</p>
-
-<h4 id="en-tempete">10.5.4 Media storm</h4>
+<h4 id="en-tempete">10.5.5 Media storm</h4>
 <p><strong>Conceptual definition.</strong> A storm is a sudden, broad and <em>sustained</em> rise in coverage of a topic, which holds above the ordinary for several days. Unlike the tsunami, it does not rinse everything: other topics continue to exist alongside. But the topic <em>occupies</em> the agenda visibly and persistently. The canonical reference is Boydstun, Hardy &amp; Walgrave (2014), who rigorously define the <em>media storm</em>: a coverage peak that holds ≥ 5-7 days, broadly shared across outlets, with each individual day appreciably above average.</p>
 <p><strong>Operationalization.</strong> A topic is classified as <em>storm</em> when, simultaneously:</p>
 <ul>
@@ -1137,19 +1121,23 @@ MODERATE (≥p50)    │  ◦ EMERGENCE      (anomaly below normal threshold)│
 </ul>
 <p>These statuses are not tiers, but metadata that qualifies the temporality of the alert relative to reading time. They let the interface distinguish what demands attention <em>now</em> from what is <em>archivable</em>.</p>
 
-<h3 id="en-cluster">10.7 Event clustering (article pivot)</h3>
-<p>Several simultaneous alerts may cover a single event (e.g. WHO + Alberta + Ontario during a hantavirus outbreak; Iran + Israel during a military strike). To avoid fragmenting the information, the pipeline groups alerts into <strong>clusters around a pivot</strong>:</p>
+<h3 id="en-cluster">10.7 Event clustering</h3>
+<p>The pipeline applies <strong>two complementary clustering layers</strong> to avoid fragmenting a real event into multiple apparent alerts.</p>
+
+<p><strong>(a) Article-pivot clustering, 14-day window.</strong> Several simultaneous alerts may cover a single event (e.g. WHO + Alberta + Ontario during a hantavirus outbreak). For each 4h period:</p>
 <ol>
 <li>For each candidate-pivot from the period’s Top 30, compute each active alert’s <em>containment</em> toward the pivot: <code>|articles(alert) ∩ articles(pivot)| / |articles(alert)|</code>.</li>
 <li>Alerts with containment ≥ 50% are attached to the pivot as <em>members</em>.</li>
 <li>When several pivots compete for the same members, we keep the one maximizing <em>precision × recall</em>.</li>
 <li>A <em>greedy walk</em> ensures an alert belongs to only one cluster.</li>
 </ol>
-<p>This approach relates to <em>agenda displacement</em> measures (Atkinson 2014, Pinto 2019) but operates at fine granularity (4h) and publishes the event pivot directly in the data. The persistence of <em>event_id</em> across consecutive periods (Jaccard overlap ≥ 0.5) lets us recognize that an event over 5 4h periods is <em>one</em> event, not five.</p>
+<p>Persistence of <em>event_id</em> across consecutive periods (Jaccard overlap ≥ 0.5) lets us recognize that an event over 5 4h periods is <em>one</em> event, not five.</p>
+
+<p><strong>(b) Historical clustering 130 days, by temporal overlap.</strong> For episodes outside the article window (≥ 14 days in the past), we group episodes from the <em>same country</em> whose temporal intervals overlap by ≥ 50% of the shorter episode duration. Merges on the long-term axis: Iran + Israel the same day in CAN = 1 geopolitical event; Liberal Party + Mark Carney + ridings on election day = 1 political event. The cluster <em>pivot</em> is the episode at the highest tier, breaking ties by highest peak. Approach related to <em>agenda displacement</em> measures (Atkinson 2014, Pinto 2019), but acting as a <em>post-hoc semantic compression</em> rather than article-pivot detection. Acknowledged limit: 130-day clustering does not cross national borders (Iran-CAN and Iran-USA remain two distinct events).</p>
 
 <h3 id="en-calibration">10.8 Empirical calibration and validation</h3>
 <p>All numerical thresholds of the taxonomy — saliency tiers (§11), per-country convergence thresholds, top_share levels, minimum durations — are calibrated on the <strong>observed empirical distribution over the past 130 days</strong>, not fixed a priori. The pipeline recomputes them at every run (every 4h) and publishes them in <code>meta.alert_thresholds</code> and <code>meta.salience_tiers</code>. If media coverage shifts radically (election campaign, major crisis, summer period), the thresholds adjust automatically.</p>
-<p>Calibrated values were chosen to produce volumes qualitatively consistent with the theoretical conception: ~1 tsunami every 3-4 weeks, ~1 eclipse every 2-3 weeks, ~1 storm every 2-3 weeks, ~1 strong alert every 2-3 weeks, ~2 alerts/week, ~1.2 watches/week, ~1.7 emergences/week. Total: ~5-6 signals/week across all tiers. These orders of magnitude are consistent with rhythms documented in political science (Boydstun &amp; Russell 2016 on alarm-to-storm ratios).</p>
+<p>Calibrated values were chosen to produce volumes qualitatively consistent with the theoretical conception: ~1 tsunami every 6-8 weeks, ~1 eclipse every 2-3 weeks, ~1 storm every 2-3 weeks, ~1 strong alert every 2-3 weeks, ~2 alerts/week, ~1.7 emergences/week. Total: ~5 signals/week across all tiers, compressed by historical clustering (§10.7) to ~3-4 distinct <em>events</em>/week. These orders of magnitude are consistent with rhythms documented in political science (Boydstun &amp; Russell 2016 on alarm-to-storm ratios).</p>
 
 <h3 id="en-archives">10.9 Historical view (130 days)</h3>
 <p>The <em>Alerts</em> page integrates, in addition to the “now” view, a <strong>historical view over 130 days</strong>: a chronicle of past events (tsunamis, eclipses, storms, surges) with, for each, subject, start, end, duration, max tier reached, peak saliency, and max Top share. The structure of bands visually reveals Downs’ attention cycles, agenda displacements, and persistent eclipses — without requiring a separate page.</p>

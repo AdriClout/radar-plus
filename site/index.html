@@ -342,14 +342,12 @@
 
     /* Alertes en cours — override visuel (priorité sur la médaille) */
     .hot20-row.alert-emergence { border-left: 3px solid rgba(138,168,216,0.75); background: rgba(28,42,72,0.20); }
-    .hot20-row.alert-veille    { border-left: 3px solid rgba(216,184,48,0.80); background: rgba(74,60,20,0.20); }
     .hot20-row.alert-alerte    { border-left: 3px solid rgba(242,205,80,0.85); background: rgba(86,70,26,0.22); }
     .hot20-row.alert-forte     { border-left: 3px solid rgba(255,160,80,0.85); background: rgba(86,42,24,0.22); }
     .hot20-row.alert-tempete   { border-left: 3px solid rgba(255,110,110,0.92); background: rgba(92,24,28,0.26); box-shadow: inset 3px 0 12px rgba(255,90,90,0.10); }
     .hot20-row.alert-eclipse   { border-left: 3px solid rgba(160,112,224,0.92); background: rgba(50,28,90,0.28); box-shadow: inset 3px 0 12px rgba(160,112,224,0.12); }
     .hot20-row.alert-tsunami   { border-left: 3px solid rgba(208,160,255,0.96); background: rgba(72,30,118,0.30); box-shadow: inset 3px 0 14px rgba(208,160,255,0.18); }
     .hot20-row.alert-emergence:hover { background: rgba(36,52,86,0.26); }
-    .hot20-row.alert-veille:hover    { background: rgba(94,76,28,0.28); }
     .hot20-row.alert-alerte:hover    { background: rgba(108,88,32,0.28); }
     .hot20-row.alert-forte:hover     { background: rgba(112,52,30,0.30); }
     .hot20-row.alert-tempete:hover   { background: rgba(120,32,36,0.34); }
@@ -370,7 +368,6 @@
       flex-shrink: 0;
     }
     .hot20-alert-badge.level-emergence { color: rgba(200,220,250,0.95); border: 1px solid rgba(138,168,216,0.5); background: rgba(42,69,112,0.55); }
-    .hot20-alert-badge.level-veille    { color: rgba(240,220,140,0.95); border: 1px solid rgba(216,184,48,0.55); background: rgba(106,85,32,0.55); }
     .hot20-alert-badge.level-alerte    { color: rgba(250,225,140,0.98); border: 1px solid rgba(242,205,80,0.6); background: rgba(122,100,32,0.58); }
     .hot20-alert-badge.level-forte     { color: rgba(255,200,150,0.98); border: 1px solid rgba(255,160,80,0.6); background: rgba(138,72,24,0.55); }
     .hot20-alert-badge.level-tempete   { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.65); background: rgba(138,29,29,0.6); animation: hot20-alert-pulse 1.6s ease-in-out infinite; }
@@ -1817,7 +1814,7 @@ function renderHot20() {
   var currentAlertByName = {};
   var ALERT_BADGE_LABELS = (function() {
     var out = {};
-    ['tsunami','eclipse','tempete','forte','alerte','veille','emergence'].forEach(function(k) {
+    ['tsunami','eclipse','tempete','forte','alerte','emergence'].forEach(function(k) {
       var v = window.t ? window.t('alertes.level_short.' + k) : null;
       out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
     });

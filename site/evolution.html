@@ -483,11 +483,6 @@
       border-color: rgba(138, 168, 216, 0.5);
       background: rgba(42, 69, 112, 0.50);
     }
-    .left-track-badge.level-veille {
-      color: rgba(240, 220, 140, 0.95);
-      border-color: rgba(216, 184, 48, 0.50);
-      background: rgba(106, 85, 32, 0.45);
-    }
     .left-track-badge.level-alerte {
       color: rgba(250, 225, 140, 0.98);
       border-color: rgba(242, 205, 80, 0.55);
@@ -591,9 +586,6 @@
     }
     .rleg-alert-badge.level-alerte {
       color: rgba(250,225,140,0.98); border-color: rgba(242,205,80,0.50); background: rgba(122,100,32,0.45);
-    }
-    .rleg-alert-badge.level-veille {
-      color: rgba(240,220,140,0.95); border-color: rgba(216,184,48,0.45); background: rgba(106,85,32,0.40);
     }
     .rleg-alert-badge.level-emergence {
       color: rgba(200,220,250,0.95); border-color: rgba(138,168,216,0.45); background: rgba(42,69,112,0.45);
@@ -1680,7 +1672,6 @@
     if (level === 'tempete')   return { level, label: labelOf('tempete'),   scoreText, itemClass: 'alert-tempete',   active: true };
     if (level === 'forte')     return { level, label: labelOf('forte'),     scoreText, itemClass: 'alert-forte',     active: true };
     if (level === 'alerte')    return { level, label: labelOf('alerte'),    scoreText, itemClass: 'alert-alerte',    active: true };
-    if (level === 'veille')    return { level, label: labelOf('veille'),    scoreText, itemClass: 'alert-veille',    active: true };
     if (level === 'emergence') return { level, label: labelOf('emergence'), scoreText, itemClass: 'alert-emergence', active: true };
     return {
       level: 'normal',
@@ -1868,7 +1859,7 @@
     const nodeAlertMap = new Map((curAlertGd.nodes || []).map(n => [n.id, n]));
     const ALERT_BADGE_LABELS = (function() {
       const out = {};
-      ['tsunami','eclipse','tempete','forte','alerte','veille','emergence'].forEach(function(k) {
+      ['tsunami','eclipse','tempete','forte','alerte','emergence'].forEach(function(k) {
         const v = window.t ? window.t('alertes.level_short.' + k) : null;
         out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
       });

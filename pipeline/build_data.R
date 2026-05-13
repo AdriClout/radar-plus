@@ -27,7 +27,7 @@ ALERT_MIN_ABS_SCORE    <- 1.0  # Plancher absolu de saillance — sous ce seuil,
 ALERT_SCALE_FLOOR      <- 0.08 # Évite les explosions z sur séries quasi constantes
 ALERT_Z_THRESHOLD      <- 1.8  # Bloc anormal dès que z >= 1.8
 
-# ─── Taxonomie 7 tiers (échelle d'alarme + grille magnitude) ─────────────────
+# ─── Taxonomie 6 tiers (échelle d'alarme + grille magnitude) ─────────────────
 # Voir methodologie.html §10 pour les définitions complètes et la littérature.
 #
 # Top (cas exceptionnels, grille magnitude × durée) :
@@ -36,17 +36,20 @@ ALERT_Z_THRESHOLD      <- 1.8  # Bloc anormal dès que z >= 1.8
 #   ⛈ TEMPÊTE        — très haut + long (≥5j, Boydstun)
 #
 # Échelle standard (alertes quotidiennes/hebdomadaires) :
-#   ⚡ ALERTE FORTE  — très haut + court + anomalie z
+#   ⚡ ALERTE FORTE  — très haut + court + anomalie z (streak ≥ 4)
 #   📍 ALERTE        — haut + anomalie z confirmée (streak ≥ 4)
-#   ▾ VEILLE        — haut + anomalie naissante (streak 2-3)
 #   ◦ ÉMERGENCE     — modéré + anomalie z (sous le radar normal)
+#
+# Note v3 : le tier "Veille" (haut + streak 2-3) a été retiré car
+# conceptuellement un cul-de-sac (signaux qui n'ont jamais confirmé).
+# Tout sujet qui dépasse streak ≥ 4 devient Alerte ou plus.
 #
 # Références canoniques :
 #   Giasson 2008          → tsunami (dominance totale aiguë)
 #   Atkinson 2014 + Zhu 1992 → éclipse (agenda displacement)
 #   Boydstun et al. 2014  → tempête (media storm ≥ 5j)
 #   Bennett 2003 + Boydstun 2013 → alerte forte (alarm mode)
-#   Boydstun & Russell 2016 → alerte/veille (alarm-to-patrol gradient)
+#   Boydstun & Russell 2016 → alerte (alarm-to-patrol confirmed)
 #   Vasterman 2005 + Kepplinger 1995 → émergence (signal précurseur)
 
 # Durées (granularité jour) — pivot entre court et long
@@ -61,17 +64,21 @@ ALERT_ECLIPSE_MIN_VHI_DAYS  <- 2L  # ≥ 2 jours à very_high dans l'épisode
 # Streak (z-score anormal pour soi)
 ALERT_STREAK_ALERTE_FORTE <- 4L  # ≥ 4 blocs 4h anormaux ≈ 1 j
 ALERT_STREAK_ALERTE       <- 4L  # ≥ 4 blocs 4h ≈ 1 j (anomalie confirmée)
-ALERT_STREAK_VEILLE_MIN   <- 2L  # ≥ 2 blocs 4h ≈ 8h (anomalie naissante)
-ALERT_STREAK_VEILLE_MAX   <- 4L  # < 4 (sinon → Alerte)
 ALERT_STREAK_EMERGENCE    <- 4L
 
 # Top_share au pic (dominance locale)
 ALERT_TS_TSUNAMI_PEAK      <- 0.95   # quasi seul en tête
 ALERT_TS_ALERTE_FORTE_PEAK <- 0.70
 ALERT_TS_ALERTE_PEAK       <- 0.50
-ALERT_TS_VEILLE_PEAK       <- 0.50
 ALERT_TS_EMERGENCE_PEAK    <- 0.50
 ALERT_TS_ECLIPSE_MEAN      <- 0.80   # top_share MOYEN sur l'épisode (soutenu)
+
+# Clustering historique 130j : 2 épisodes du même pays sont considérés comme
+# faisant partie du MÊME événement si leur intervalle temporel se chevauche
+# ≥ N% de la durée du plus court. Permet de regrouper Iran+Israel (même date,
+# même pays) ou les multiples objets d'une élection (Liberal Party +
+# circonscriptions le même jour).
+ALERT_CLUSTER_OVERLAP_FRAC <- 0.5
 
 # Convergence d'agenda (1 − entropie normalisée Shannon sur Top 30).
 # Seuils calibrés EMPIRIQUEMENT par pays — percentiles ajustés à chaque run.
@@ -543,15 +550,6 @@ classify_episode <- function(country, ep_peak, ep_n_days,
       !is.na(ep_peak_top_share) && ep_peak_top_share >= ALERT_TS_ALERTE_PEAK) {
     return("alerte")
   }
-  # ▾ Veille : haut + anomalie naissante (streak 2-3)
-  if (!is.na(tier_high) && ep_peak >= tier_high &&
-      (is.na(tier_vhi) || ep_peak < tier_vhi) &&
-      !is.na(ep_max_streak_day) &&
-      ep_max_streak_day >= ALERT_STREAK_VEILLE_MIN &&
-      ep_max_streak_day <  ALERT_STREAK_VEILLE_MAX &&
-      !is.na(ep_peak_top_share) && ep_peak_top_share >= ALERT_TS_VEILLE_PEAK) {
-    return("veille")
-  }
   # ◦ Émergence : modéré (sans atteindre haut) + anomalie + dominance min
   if (ep_peak >= tier_mod &&
       (is.na(tier_high) || ep_peak < tier_high) &&
@@ -585,39 +583,153 @@ df_episodes <- df_episodes |>
   ) |>
   dplyr::select(-.latest_day)
 
+# ─── Étape 4b : Clustering historique 130j (regroupe les épisodes du même
+#                pays qui se chevauchent temporellement) ────────────────────
+# Objectif : éviter qu'Iran+Israel le 28 fév CAN soient 2 événements distincts
+# sur la chronique. Ou que 12 circonscriptions le jour d'élection soient 12
+# alertes au lieu d'1 événement. Heuristique : chevauchement temporel ≥ N%
+# de la durée du plus court épisode + même pays.
+cat("Clustering historique des épisodes par chevauchement temporel...\n")
+
+# On ne clusterise que les épisodes "actifs" (tier ≠ none)
+active_eps <- df_episodes |> dplyr::filter(ep_tier != "none") |>
+  dplyr::arrange(country_id, ep_first_day)
+
+if (nrow(active_eps) > 0) {
+  active_eps$cluster_id <- NA_character_
+  active_eps$cluster_pivot <- FALSE
+  cluster_counter <- 0L
+
+  for (c_name in unique(active_eps$country_id)) {
+    rows_idx <- which(active_eps$country_id == c_name)
+    if (length(rows_idx) < 2) {
+      # Un seul épisode → cluster solo
+      cluster_counter <- cluster_counter + 1L
+      cid <- sprintf("%s-cl-%03d", c_name, cluster_counter)
+      active_eps$cluster_id[rows_idx]    <- cid
+      active_eps$cluster_pivot[rows_idx] <- TRUE
+      next
+    }
+
+    # Pour chaque épisode, soit le rattacher à un cluster existant (overlap suffisant)
+    # soit créer un nouveau cluster
+    for (i in seq_along(rows_idx)) {
+      ri <- rows_idx[i]
+      ei_start <- as.Date(active_eps$ep_first_day[ri])
+      ei_end   <- as.Date(active_eps$ep_last_day[ri])
+      ei_dur   <- as.integer(ei_end - ei_start) + 1L
+
+      best_cid <- NA_character_
+      best_overlap_frac <- 0
+
+      for (j in seq_len(i - 1L)) {
+        rj <- rows_idx[j]
+        if (is.na(active_eps$cluster_id[rj])) next
+        ej_start <- as.Date(active_eps$ep_first_day[rj])
+        ej_end   <- as.Date(active_eps$ep_last_day[rj])
+        ej_dur   <- as.integer(ej_end - ej_start) + 1L
+
+        # Chevauchement temporel
+        ov_start <- max(ei_start, ej_start)
+        ov_end   <- min(ei_end, ej_end)
+        if (ov_end < ov_start) next  # pas de chevauchement
+        ov_dur <- as.integer(ov_end - ov_start) + 1L
+        frac <- ov_dur / min(ei_dur, ej_dur)
+        if (frac >= ALERT_CLUSTER_OVERLAP_FRAC && frac > best_overlap_frac) {
+          best_overlap_frac <- frac
+          best_cid <- active_eps$cluster_id[rj]
+        }
+      }
+
+      if (!is.na(best_cid)) {
+        active_eps$cluster_id[ri] <- best_cid
+      } else {
+        cluster_counter <- cluster_counter + 1L
+        cid <- sprintf("%s-cl-%03d", c_name, cluster_counter)
+        active_eps$cluster_id[ri] <- cid
+        active_eps$cluster_pivot[ri] <- TRUE  # initialement pivot — peut être ajusté plus bas
+      }
+    }
+  }
+
+  # Pour chaque cluster, élire le "pivot" : le tier le plus élevé (rang le plus
+  # bas dans la priorité), à égalité le pic le plus haut.
+  TIER_RANK_R <- c(tsunami=1L, eclipse=2L, tempete=3L, forte=4L, alerte=5L, emergence=6L, none=99L)
+  active_eps <- active_eps |>
+    dplyr::mutate(.tier_rank = vapply(ep_tier, function(t) {
+      v <- TIER_RANK_R[t]; if (is.na(v)) 99L else v
+    }, integer(1))) |>
+    dplyr::group_by(cluster_id) |>
+    dplyr::mutate(
+      .min_rank = min(.tier_rank, na.rm = TRUE),
+      .max_peak_in_min_rank = max(ifelse(.tier_rank == .min_rank, ep_peak, -Inf), na.rm = TRUE),
+      cluster_pivot = (.tier_rank == .min_rank) & (ep_peak == .max_peak_in_min_rank),
+      cluster_size  = dplyr::n()
+    ) |>
+    # En cas d'égalité parfaite (deux objets pic identique), on garde le
+    # premier (déterministe par ordre row_number()).
+    dplyr::mutate(
+      cluster_pivot = cluster_pivot & (dplyr::row_number(dplyr::if_else(cluster_pivot, 1L, 0L)) == 1L)
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::select(-.tier_rank, -.min_rank, -.max_peak_in_min_rank)
+
+  # Joindre cluster_id, cluster_pivot, cluster_size sur df_episodes
+  df_episodes <- df_episodes |>
+    dplyr::left_join(
+      active_eps |> dplyr::select(country_id, extracted_objects, .episode_idx,
+                                  cluster_id, cluster_pivot, cluster_size),
+      by = c("country_id", "extracted_objects", ".episode_idx")
+    )
+
+  n_clusters <- length(unique(active_eps$cluster_id))
+  n_eps <- nrow(active_eps)
+  cat("  →", n_eps, "épisodes regroupés en", n_clusters, "événements distincts (compression",
+      sprintf("%.1f", n_eps / n_clusters), "x)\n")
+} else {
+  df_episodes$cluster_id    <- NA_character_
+  df_episodes$cluster_pivot <- NA
+  df_episodes$cluster_size  <- NA_integer_
+}
+
 # ─── Étape 5 : propagation tier + métadonnées épisode vers chaque bloc ───────
 df_index <- df_index_with_ep |>
   dplyr::left_join(
     df_episodes |> dplyr::select(country_id, extracted_objects, .episode_idx,
                                  ep_tier, ep_episode_id, ep_first_day, ep_last_day,
-                                 ep_n_days, ep_peak, ep_status),
+                                 ep_n_days, ep_peak, ep_status,
+                                 cluster_id, cluster_pivot, cluster_size),
     by = c("country_id", "extracted_objects", ".episode_idx")
   ) |>
   dplyr::mutate(
     alert_level             = ifelse(is.na(ep_tier), "none", ep_tier),
-    alert_active            = alert_level %in% c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence"),
+    alert_active            = alert_level %in% c("tsunami", "eclipse", "tempete", "forte", "alerte", "emergence"),
     alert_episode_id        = ep_episode_id,
     alert_episode_first_day = ep_first_day,
     alert_episode_last_day  = ep_last_day,
     alert_episode_n_days    = ep_n_days,
     alert_episode_peak      = ep_peak,
-    alert_episode_status    = ep_status
+    alert_episode_status    = ep_status,
+    alert_cluster_id        = cluster_id,
+    alert_cluster_pivot     = ifelse(is.na(cluster_pivot), FALSE, cluster_pivot),
+    alert_cluster_size      = cluster_size
   ) |>
   dplyr::select(-ep_tier, -ep_episode_id, -ep_first_day, -ep_last_day,
                 -ep_n_days, -ep_peak, -ep_status,
+                -cluster_id, -cluster_pivot, -cluster_size,
                 -.in_event_day, -.episode_idx)
 
 cat("  →", sum(df_index$alert_active, na.rm = TRUE), "blocs d'alerte sur", nrow(df_index), "lignes\n")
 cat("  → Distribution par tier (blocs):\n")
 tier_counts <- table(df_index$alert_level[df_index$alert_level != "none"])
-for (lvl in c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence")) {
+for (lvl in c("tsunami", "eclipse", "tempete", "forte", "alerte", "emergence")) {
   if (!is.null(tier_counts[lvl]) && !is.na(tier_counts[lvl])) {
     cat("     ", sprintf("%-12s", lvl), tier_counts[[lvl]], "\n")
   }
 }
 cat("  → Épisodes distincts par tier:\n")
 ep_tier_counts <- table(df_episodes$ep_tier[df_episodes$ep_tier != "none"])
-for (lvl in c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence")) {
+for (lvl in c("tsunami", "eclipse", "tempete", "forte", "alerte", "emergence")) {
   if (!is.null(ep_tier_counts[lvl]) && !is.na(ep_tier_counts[lvl])) {
     cat("     ", sprintf("%-12s", lvl), ep_tier_counts[[lvl]], "\n")
   }
@@ -878,8 +990,7 @@ HALO_DOWNGRADE <- c(
   eclipse   = "tempete",
   tempete   = "forte",
   forte     = "alerte",
-  alerte    = "veille",
-  veille    = "emergence",
+  alerte    = "emergence",
   emergence = "none"
 )
 
@@ -922,7 +1033,7 @@ apply_halo_protection <- function(nodes_i, events) {
         new_lvl <- HALO_DOWNGRADE[old_lvl]
         if (!is.na(new_lvl) && new_lvl != old_lvl) {
           nodes_i$alert_level[loser] <- unname(new_lvl)
-          nodes_i$alert_active[loser] <- new_lvl %in% c("tsunami", "eclipse", "tempete", "forte", "alerte", "veille", "emergence")
+          nodes_i$alert_active[loser] <- new_lvl %in% c("tsunami", "eclipse", "tempete", "forte", "alerte", "emergence")
         }
       }
     }
@@ -1017,6 +1128,9 @@ graphs_graph <- purrr::map(countries, function(country) {
         alert_episode_n_days    = if (is.na(nodes_i$alert_episode_n_days[j]))    NULL else as.integer(nodes_i$alert_episode_n_days[j]),
         alert_episode_peak      = if (is.na(nodes_i$alert_episode_peak[j]))      NULL else round(nodes_i$alert_episode_peak[j], 3),
         alert_episode_status    = if (is.na(nodes_i$alert_episode_status[j]))    NULL else nodes_i$alert_episode_status[j],
+        alert_cluster_id        = if (is.na(nodes_i$alert_cluster_id[j]))    NULL else nodes_i$alert_cluster_id[j],
+        alert_cluster_pivot     = isTRUE(nodes_i$alert_cluster_pivot[j]),
+        alert_cluster_size      = if (is.na(nodes_i$alert_cluster_size[j])) NULL else as.integer(nodes_i$alert_cluster_size[j]),
         articles  = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
         media_ids = {
           mm <- node_med_i |> dplyr::filter(extracted_objects == nodes_i$extracted_objects[j])
@@ -1131,11 +1245,6 @@ result_graph <- list(
         streak         = ALERT_STREAK_ALERTE,
         top_share_peak = ALERT_TS_ALERTE_PEAK
       ),
-      veille = list(
-        streak_min     = ALERT_STREAK_VEILLE_MIN,
-        streak_max     = ALERT_STREAK_VEILLE_MAX,
-        top_share_peak = ALERT_TS_VEILLE_PEAK
-      ),
       emergence = list(
         streak         = ALERT_STREAK_EMERGENCE,
         top_share_peak = ALERT_TS_EMERGENCE_PEAK
@@ -1221,7 +1330,10 @@ for (country in countries) {
           alert_episode_last_day  = if (is.na(nodes_i$alert_episode_last_day[j]))  NULL else as.character(nodes_i$alert_episode_last_day[j]),
           alert_episode_n_days    = if (is.na(nodes_i$alert_episode_n_days[j]))    NULL else as.integer(nodes_i$alert_episode_n_days[j]),
           alert_episode_peak      = if (is.na(nodes_i$alert_episode_peak[j]))      NULL else round(nodes_i$alert_episode_peak[j], 3),
-          alert_episode_status    = if (is.na(nodes_i$alert_episode_status[j]))    NULL else nodes_i$alert_episode_status[j]
+          alert_episode_status    = if (is.na(nodes_i$alert_episode_status[j]))    NULL else nodes_i$alert_episode_status[j],
+          alert_cluster_id        = if (is.na(nodes_i$alert_cluster_id[j]))    NULL else nodes_i$alert_cluster_id[j],
+          alert_cluster_pivot     = isTRUE(nodes_i$alert_cluster_pivot[j]),
+          alert_cluster_size      = if (is.na(nodes_i$alert_cluster_size[j])) NULL else as.integer(nodes_i$alert_cluster_size[j])
         )
         arts <- build_articles(nodes_i$urls[j], nodes_i$titles[j])
         if (length(arts) > 0) period_articles[[nid]] <- arts
@@ -1269,11 +1381,6 @@ result_ts <- list(
       alerte = list(
         streak         = ALERT_STREAK_ALERTE,
         top_share_peak = ALERT_TS_ALERTE_PEAK
-      ),
-      veille = list(
-        streak_min     = ALERT_STREAK_VEILLE_MIN,
-        streak_max     = ALERT_STREAK_VEILLE_MAX,
-        top_share_peak = ALERT_TS_VEILLE_PEAK
       ),
       emergence = list(
         streak         = ALERT_STREAK_EMERGENCE,

@@ -48,7 +48,6 @@
       "tempete": "Storm",
       "forte": "Strong alert",
       "alerte": "Alert",
-      "veille": "Watch",
       "emergence": "Emergence"
     }
   },
@@ -243,7 +242,6 @@
     "level_tempete": "Storm",
     "level_forte": "Strong alert",
     "level_alerte": "Alert",
-    "level_veille": "Watch",
     "level_emergence": "Emergence",
     "level_short": {
       "tsunami": "Tsunami",
@@ -251,7 +249,6 @@
       "tempete": "Storm",
       "forte": "Strong",
       "alerte": "Alert",
-      "veille": "Watch",
       "emergence": "Emerg."
     },
     "level_tip_tsunami": "Extreme peak, brief (≤ 3 d), saturated agenda. Rare.",
@@ -259,7 +256,6 @@
     "level_tip_tempete": "Sustained coverage (≥ 5 d) at very-high magnitude — media storm (Boydstun 2014).",
     "level_tip_forte": "Brief, sharp rise at very-high magnitude — alarm mode (Bennett-Boydstun).",
     "level_tip_alerte": "High-magnitude topic with confirmed z-anomaly (≥ 1 d).",
-    "level_tip_veille": "Nascent anomaly at high magnitude (8h-1d), not yet confirmed.",
     "level_tip_emergence": "Precursor signal below normal threshold — moderate magnitude + anomaly.",
 
     "status_active": "active",
