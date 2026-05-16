@@ -8,6 +8,10 @@
      sont envoyés ailleurs dans le code via window.gtag('event', ...).
   ================================================================ */
   var GA_MEASUREMENT_ID = 'G-Y2X19DCWGZ';
+  var REPORT_REPO = 'AdriClout/radar-plus';
+  var REPORT_EVENT_TYPE = 'radar-report-issue';
+  var REPORT_TOKEN = (window.RADAR_REPORT_DISPATCH_TOKEN || '').trim();
+  var REPORT_ENABLED = REPORT_TOKEN.length > 0;
   (function loadGtag() {
     if (window.gtag || !GA_MEASUREMENT_ID) return;
     window.dataLayer = window.dataLayer || [];
@@ -101,6 +105,7 @@
       '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>',
       '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>',
       '<a href="./acces-donnees.html" data-page="acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>',
+      '<a href="#" id="nav-report-link" data-i18n="nav.report_issue">Signaler un problème</a>',
       '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener" class="nav-github" data-i18n-aria-label="nav.github" aria-label="GitHub">' +
         '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">' +
           '<path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.87-1.54-3.87-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18.92-.26 1.91-.39 2.89-.39s1.97.13 2.89.39c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.25 5.69.41.36.78 1.07.78 2.16 0 1.56-.01 2.82-.01 3.2 0 .31.21.68.8.56 4.57-1.52 7.85-5.83 7.85-10.91C23.5 5.65 18.35.5 12 .5z"/>' +
@@ -167,12 +172,296 @@
     });
     refreshLangButtons();
     document.addEventListener('i18n:applied', refreshLangButtons);
+
+    var reportLink = document.getElementById('nav-report-link');
+    if (reportLink) {
+      reportLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        setNavOpen(false);
+        if (typeof window.__radarIssueReporterOpen === 'function') {
+          window.__radarIssueReporterOpen();
+        }
+      });
+    }
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupSharedMenu, { once: true });
   } else {
     setupSharedMenu();
+  }
+
+  function reportText(key, fallback) {
+    if (typeof window.t !== 'function') return fallback;
+    var out = window.t(key);
+    return (!out || out === key) ? fallback : out;
+  }
+
+  function closestSectionLabel(target) {
+    if (!target || !target.closest) return '';
+
+    var explicit = target.closest('[data-section]');
+    if (explicit && explicit.getAttribute('data-section')) {
+      return explicit.getAttribute('data-section').trim();
+    }
+
+    var container = target.closest('section, article, main, [id]');
+    if (!container) return '';
+
+    var heading = container.querySelector('h1, h2, h3');
+    if (heading && heading.textContent) {
+      return heading.textContent.replace(/\s+/g, ' ').trim().slice(0, 120);
+    }
+
+    if (container.id) return container.id;
+    return '';
+  }
+
+  function initIssueReporter() {
+    if (document.getElementById('rp-issue-menu')) return;
+
+    var uiState = 'idle';
+    var reportCtx = {
+      section: '',
+      elementContext: '',
+      page: window.location.pathname,
+      url: window.location.href
+    };
+
+    var menu = document.createElement('div');
+    menu.id = 'rp-issue-menu';
+    menu.className = 'rp-issue-menu';
+    menu.innerHTML = '<button type="button" id="rp-issue-menu-btn" data-i18n="report.menu_item">Signaler un problème</button>';
+    document.body.appendChild(menu);
+
+    var modal = document.createElement('div');
+    modal.id = 'rp-issue-modal';
+    modal.className = 'rp-issue-modal';
+    modal.innerHTML = [
+      '<div class="rp-issue-dialog" role="dialog" aria-modal="true" aria-labelledby="rp-issue-title">',
+      '  <p class="rp-issue-kicker" id="rp-issue-kicker">Radar+</p>',
+      '  <h2 id="rp-issue-title" data-i18n="report.modal_title">Signaler un problème</h2>',
+      '  <p class="rp-issue-dek" data-i18n="report.modal_dek">Décris brièvement ce qui ne va pas, avec le plus de contexte possible.</p>',
+      '  <p class="rp-issue-context" id="rp-issue-context"></p>',
+      '  <textarea id="rp-issue-text" maxlength="2000" data-i18n-placeholder="report.placeholder" placeholder="Ex: le score affiché semble incohérent avec les articles listés."></textarea>',
+      '  <p class="rp-issue-note" id="rp-issue-note"></p>',
+      '  <div class="rp-issue-actions">',
+      '    <button type="button" class="rp-issue-btn ghost" id="rp-issue-cancel" data-i18n="report.cancel">Annuler</button>',
+      '    <button type="button" class="rp-issue-btn" id="rp-issue-submit" data-i18n="report.submit">Envoyer</button>',
+      '  </div>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(modal);
+
+    var menuBtn = document.getElementById('rp-issue-menu-btn');
+    var textarea = document.getElementById('rp-issue-text');
+    var note = document.getElementById('rp-issue-note');
+    var contextLine = document.getElementById('rp-issue-context');
+    var kicker = document.getElementById('rp-issue-kicker');
+    var submitBtn = document.getElementById('rp-issue-submit');
+    var cancelBtn = document.getElementById('rp-issue-cancel');
+
+    function applyReportTexts() {
+      if (!note) return;
+      if (!REPORT_ENABLED) {
+        note.textContent = reportText('report.token_missing', 'Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l\'envoi.');
+      }
+    }
+
+    function closeMenu() {
+      menu.classList.remove('open');
+      uiState = uiState === 'menu' ? 'idle' : uiState;
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      if (textarea) textarea.value = '';
+      if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l\'envoi.');
+      uiState = 'idle';
+    }
+
+    function openModal() {
+      closeMenu();
+      if (kicker) kicker.textContent = reportCtx.section || 'Radar+';
+      if (contextLine) {
+        contextLine.textContent = reportCtx.elementContext
+          ? reportText('report.context_prefix', 'Contexte: ') + reportCtx.elementContext
+          : '';
+      }
+      applyReportTexts();
+      modal.classList.add('open');
+      uiState = 'modal';
+      setTimeout(function() { if (textarea) textarea.focus(); }, 10);
+    }
+
+    function showSubmitResult(ok) {
+      if (!note) return;
+      note.textContent = ok
+        ? reportText('report.success', 'Merci, le signalement a été transmis.')
+        : reportText('report.error', 'Échec de l\'envoi. Réessaie dans quelques instants.');
+      note.classList.toggle('ok', !!ok);
+      note.classList.toggle('error', !ok);
+    }
+
+    function openFromNav() {
+      reportCtx = {
+        section: reportText('report.default_section', 'Navigation Radar+'),
+        elementContext: '',
+        page: window.location.pathname,
+        url: window.location.href
+      };
+      openModal();
+    }
+
+    async function submitReport() {
+      if (!textarea || !submitBtn) return;
+      var description = (textarea.value || '').trim();
+      if (!description) return;
+      if (!REPORT_ENABLED) {
+        showSubmitResult(false);
+        return;
+      }
+
+      submitBtn.disabled = true;
+      cancelBtn.disabled = true;
+      if (note) {
+        note.classList.remove('ok', 'error');
+        note.textContent = reportText('report.sending', 'Envoi en cours...');
+      }
+
+      try {
+        var payload = {
+          event_type: REPORT_EVENT_TYPE,
+          client_payload: {
+            description: description,
+            section: reportCtx.section,
+            element_context: reportCtx.elementContext,
+            page: reportCtx.page,
+            url: reportCtx.url,
+            language: (window.__i18n && window.__i18n.currentLang && window.__i18n.currentLang()) || document.documentElement.lang || 'fr',
+            user_agent: navigator.userAgent,
+            submitted_at: new Date().toISOString()
+          }
+        };
+
+        var res = await fetch('https://api.github.com/repos/' + REPORT_REPO + '/dispatches', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: 'Bearer ' + REPORT_TOKEN,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        showSubmitResult(res.ok);
+        if (res.ok) {
+          if (textarea) textarea.value = '';
+        }
+      } catch (_) {
+        showSubmitResult(false);
+      } finally {
+        submitBtn.disabled = false;
+        cancelBtn.disabled = false;
+      }
+    }
+
+    window.__radarIssueReporterOpen = openFromNav;
+
+    if (menuBtn) {
+      menuBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        openModal();
+      });
+    }
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function() {
+        closeModal();
+      });
+    }
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function() {
+        submitReport();
+      });
+    }
+    if (textarea) {
+      textarea.addEventListener('keydown', function(event) {
+        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+          event.preventDefault();
+          submitReport();
+        }
+      });
+    }
+
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        if (modal.classList.contains('open')) {
+          closeModal();
+          return;
+        }
+        if (menu.classList.contains('open')) closeMenu();
+      }
+    });
+
+    document.addEventListener('click', function(event) {
+      if (!menu.classList.contains('open')) return;
+      if (menu.contains(event.target)) return;
+      closeMenu();
+    });
+
+    document.addEventListener('contextmenu', function(event) {
+      var target = event.target;
+      if (!target || !(target instanceof Element)) return;
+      if (target.closest('input, textarea, select, [contenteditable="true"]')) return;
+
+      event.preventDefault();
+      reportCtx = {
+        section: closestSectionLabel(target) || reportText('report.default_section', 'Radar+'),
+        elementContext: ((target.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 180)),
+        page: window.location.pathname,
+        url: window.location.href
+      };
+
+      if (kicker) kicker.textContent = reportCtx.section;
+      if (contextLine) {
+        contextLine.textContent = reportCtx.elementContext
+          ? reportText('report.context_prefix', 'Contexte: ') + reportCtx.elementContext
+          : '';
+      }
+
+      var x = event.clientX;
+      var y = event.clientY;
+      var maxX = Math.max(12, window.innerWidth - 220);
+      var maxY = Math.max(12, window.innerHeight - 58);
+      menu.style.left = Math.min(x, maxX) + 'px';
+      menu.style.top = Math.min(y, maxY) + 'px';
+      menu.classList.add('open');
+      uiState = 'menu';
+    });
+
+    document.addEventListener('i18n:applied', function() {
+      if (window.__i18n && typeof window.__i18n.applyTo === 'function') {
+        window.__i18n.applyTo(menu);
+        window.__i18n.applyTo(modal);
+      }
+      applyReportTexts();
+    });
+
+    if (window.__i18n && typeof window.__i18n.applyTo === 'function') {
+      window.__i18n.applyTo(menu);
+      window.__i18n.applyTo(modal);
+    }
+    applyReportTexts();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initIssueReporter, { once: true });
+  } else {
+    initIssueReporter();
   }
 
   /* ================================================================

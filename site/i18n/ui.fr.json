@@ -27,6 +27,7 @@
     "methodologie": "Méthodologie",
     "partenaires": "Partenaires & contributeurs",
     "acces_donnees": "Accès aux données",
+    "report_issue": "Signaler un problème",
     "github": "GitHub",
     "badge_live": "LIVE",
     "badge_timeline": "TIMELINE",
@@ -47,6 +48,21 @@
       "tres_eleve": "Très élevé",
       "eleve": "Élevé"
     }
+  },
+
+  "report": {
+    "menu_item": "Signaler un problème",
+    "modal_title": "Signaler un problème",
+    "modal_dek": "Décris brièvement ce que tu observes. Le signalement sera transmis à l'équipe Radar+.",
+    "placeholder": "Ex: le score affiché semble incohérent avec les articles listés.",
+    "cancel": "Annuler",
+    "submit": "Envoyer",
+    "sending": "Envoi en cours...",
+    "success": "Merci, le signalement a été transmis.",
+    "error": "Échec de l'envoi. Réessaie dans quelques instants.",
+    "context_prefix": "Contexte: ",
+    "default_section": "Navigation Radar+",
+    "token_missing": "Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l'envoi."
   },
 
   "common": {

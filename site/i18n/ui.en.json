@@ -27,6 +27,7 @@
     "methodologie": "Methodology",
     "partenaires": "Partners & contributors",
     "acces_donnees": "Data access",
+    "report_issue": "Report an issue",
     "github": "GitHub",
     "badge_live": "LIVE",
     "badge_timeline": "TIMELINE",
@@ -47,6 +48,21 @@
       "tres_eleve": "Very high",
       "eleve": "High"
     }
+  },
+
+  "report": {
+    "menu_item": "Report an issue",
+    "modal_title": "Report an issue",
+    "modal_dek": "Briefly describe what you observed. The report will be sent to the Radar+ team.",
+    "placeholder": "Example: the displayed score seems inconsistent with the listed articles.",
+    "cancel": "Cancel",
+    "submit": "Send",
+    "sending": "Sending...",
+    "success": "Thanks, your report has been sent.",
+    "error": "Sending failed. Please try again in a moment.",
+    "context_prefix": "Context: ",
+    "default_section": "Radar+ navigation",
+    "token_missing": "Offline reporting: configure RADAR_REPORT_DISPATCH_TOKEN to enable submissions."
   },
 
   "common": {

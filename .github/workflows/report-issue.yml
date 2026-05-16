@@ -1,0 +1,98 @@
+name: User Report to Issue
+
+on:
+  repository_dispatch:
+    types: [radar-report-issue]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate payload
+        id: validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          desc='${{ github.event.client_payload.description }}'
+          if [[ -z "$desc" ]]; then
+            echo "Missing description" >&2
+            exit 1
+          fi
+          if [[ ${#desc} -lt 6 ]]; then
+            echo "Description too short" >&2
+            exit 1
+          fi
+
+      - name: Create issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            function safeText(v, max = 2000) {
+              if (!v) return "";
+              const cleaned = String(v).replace(/\r/g, "").trim();
+              return cleaned.slice(0, max);
+            }
+
+            const p = context.payload.client_payload || {};
+            const description = safeText(p.description, 4000);
+            const section = safeText(p.section, 140) || "Section inconnue";
+            const elementContext = safeText(p.element_context, 240);
+            const page = safeText(p.page, 240);
+            const url = safeText(p.url, 800);
+            const language = safeText(p.language, 24) || "fr";
+            const submittedAt = safeText(p.submitted_at, 64) || new Date().toISOString();
+
+            const date = new Date(submittedAt);
+            const dateLabel = Number.isNaN(date.getTime()) ? submittedAt : date.toISOString().slice(0, 16).replace("T", " ");
+            const title = `[Signalement] ${section} · ${dateLabel}`.slice(0, 250);
+
+            const body = [
+              "## Signalement utilisateur",
+              "",
+              `- Section: ${section}`,
+              `- Page: ${page || "(non fournie)"}`,
+              `- URL: ${url || "(non fournie)"}`,
+              `- Langue UI: ${language}`,
+              `- Horodatage: ${submittedAt}`,
+              "",
+              "### Description",
+              description,
+              "",
+              "### Contexte capturé",
+              elementContext || "(aucun)"
+            ].join("\n");
+
+            // Ensure label exists before creating the issue.
+            const labelName = "signalement-utilisateur";
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: labelName
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName,
+                  color: "0e8a16",
+                  description: "Signalement envoyé depuis le site public"
+                });
+              } else {
+                throw error;
+              }
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: [labelName]
+            });
