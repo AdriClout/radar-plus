@@ -320,6 +320,12 @@
       fill: var(--muted);
       letter-spacing: 0.4px;
     }
+    .day-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      fill: rgba(160,190,235,0.7);
+      letter-spacing: 0.3px;
+    }
     .now-line {
       stroke: rgba(120,255,160,0.7);
       stroke-width: 1.5;
@@ -1035,7 +1041,7 @@
     var DAYS = range.days;
     var labelW = 200;
     var topPad = 22;
-    var bottomPad = 8;
+    var bottomPad = 22;
     var rowH = 18;
     var width = wrap.clientWidth - 28;
     if (width < 480) width = 480;
@@ -1076,6 +1082,17 @@
       parts.push('<line class="month-tick" x1="' + x.toFixed(1) + '" y1="' + topPad + '" x2="' + x.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
       parts.push('<text class="month-label" x="' + (x + 3).toFixed(1) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
     });
+
+    // Day labels along x-axis (bottom)
+    var monthsShort = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
+    var labelStep = Math.max(1, Math.ceil(48 / cellW));
+    var labelY = height - bottomPad + 14;
+    for (var di = 0; di < DAYS; di += labelStep) {
+      var dDate = new Date(windowStart.getTime() + di * 86400000);
+      var dLbl = String(dDate.getUTCDate()).padStart(2, '0') + ' ' + monthsShort[dDate.getUTCMonth()];
+      var dX = labelW + (di + 0.5) * cellW;
+      parts.push('<text class="day-label" x="' + dX.toFixed(1) + '" y="' + labelY + '" text-anchor="middle">' + esc(dLbl) + '</text>');
+    }
 
     // Now line — vertical marker at today's column (only when today falls in window)
     if (today >= windowStart && today <= windowEnd) {
