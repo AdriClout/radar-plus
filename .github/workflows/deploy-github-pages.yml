@@ -20,6 +20,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      RADAR_REPORT_DISPATCH_TOKEN: ${{ secrets.RADAR_REPORT_DISPATCH_TOKEN }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -30,6 +32,31 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      - name: Inject public report token in built assets
+        shell: bash
+        run: |
+          if [ -z "${RADAR_REPORT_DISPATCH_TOKEN}" ]; then
+            echo "RADAR_REPORT_DISPATCH_TOKEN not set; report submit stays offline"
+            exit 0
+          fi
+
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = 'site/assets/js/shared-menu.js';
+          const placeholder = '__RADAR_REPORT_DISPATCH_TOKEN__';
+          const token = process.env.RADAR_REPORT_DISPATCH_TOKEN || '';
+          if (!token) process.exit(0);
+
+          const src = fs.readFileSync(path, 'utf8');
+          if (!src.includes(placeholder)) {
+            throw new Error('Placeholder not found in shared-menu.js');
+          }
+
+          const out = src.replace(placeholder, token);
+          fs.writeFileSync(path, out, 'utf8');
+          console.log('Report token injected in shared-menu.js');
+          NODE
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -10,7 +10,8 @@
   var GA_MEASUREMENT_ID = 'G-Y2X19DCWGZ';
   var REPORT_REPO = 'AdriClout/radar-plus';
   var REPORT_EVENT_TYPE = 'radar-report-issue';
-  var REPORT_TOKEN = (window.RADAR_REPORT_DISPATCH_TOKEN || '').trim();
+  var REPORT_TOKEN = (window.RADAR_REPORT_DISPATCH_TOKEN || '__RADAR_REPORT_DISPATCH_TOKEN__').trim();
+  if (REPORT_TOKEN === '__RADAR_REPORT_DISPATCH_TOKEN__') REPORT_TOKEN = '';
   var REPORT_ENABLED = REPORT_TOKEN.length > 0;
   (function loadGtag() {
     if (window.gtag || !GA_MEASUREMENT_ID) return;
