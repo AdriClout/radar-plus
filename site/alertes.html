@@ -20,21 +20,13 @@
       --orbitron: 'Orbitron', 'Space Mono', monospace;
       --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
 
-      /* Tier palette — 7 tiers */
-      --tsunami:   #d0a0ff;
-      --tsunami-d: #6e2bb0;
-      --eclipse:   #a070e0;
-      --eclipse-d: #4a2580;
-      --tempete:   #ff6e6e;
-      --tempete-d: #8a1d1d;
-      --forte:     #ffa050;
-      --forte-d:   #8a4818;
-      --alerte:    #f2cd50;
-      --alerte-d:  #7a6420;
-      --veille:    #d8b830;
-      --veille-d:  #6a5520;
-      --emergence: #8aa8d8;
-      --emergence-d: #2a4570;
+      /* Palette 3 niveaux — dérivée du pic */
+      --extreme:      #ff5050;
+      --extreme-d:    #8a1d1d;
+      --tres-eleve:   #ffa050;
+      --tres-eleve-d: #8a4818;
+      --eleve:        #f2cd50;
+      --eleve-d:      #7a6420;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -52,7 +44,7 @@
     }
 
     /* ── Header ────────────────────────────────────────────── */
-    .page-header { margin-bottom: 26px; }
+    .page-header { margin-bottom: 22px; }
     .page-title {
       font-family: var(--orbitron);
       font-size: clamp(22px, 4vw, 32px);
@@ -67,37 +59,9 @@
       font-size: 11px;
       color: var(--muted);
       letter-spacing: 0.8px;
-      margin-bottom: 14px;
-    }
-    .page-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
       margin-bottom: 18px;
     }
-    .filter-label {
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: var(--muted);
-    }
-    .page-filters select {
-      background: rgba(10,18,50,0.7);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 6px 10px;
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .page-filters select:hover { border-color: rgba(90,140,255,0.5); }
-    .page-filters select:focus { border-color: var(--accent); }
     .page-methodo-link {
-      margin-left: auto;
       font-size: 10px;
       letter-spacing: 0.8px;
       color: rgba(150,190,240,0.78);
@@ -105,31 +69,109 @@
     }
     .page-methodo-link:hover { color: rgba(220,235,255,1); }
 
+    /* ── Barre de filtres ─────────────────────────────────── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 18px;
+      margin-bottom: 14px;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-label-txt {
+      font-size: 9px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+    .pill-btn {
+      padding: 6px 12px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: 0.6px;
+      color: rgba(180,210,255,0.78);
+      background: rgba(10,18,50,0.55);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .pill-btn:hover {
+      color: rgba(230,240,255,0.95);
+      border-color: rgba(120,170,255,0.45);
+      background: rgba(20,32,72,0.75);
+    }
+    .pill-btn.is-active {
+      background: rgba(85,136,255,0.20);
+      border-color: var(--accent);
+      color: rgba(240,245,255,1);
+    }
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 180px;
+      max-width: 280px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 7px 30px 7px 12px;
+      background: rgba(10,18,50,0.55);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.3px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input::placeholder { color: rgba(140,170,220,0.55); }
+    .search-input:focus { border-color: var(--accent); }
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px;
+      border: none;
+      background: transparent;
+      color: rgba(180,210,255,0.6);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      display: none;
+    }
+    .search-clear:hover { color: rgba(255,200,200,0.95); }
+    .search-input.has-value + .search-clear { display: block; }
+    .methodo-link-wrap { margin-left: auto; }
+
     /* ── KPIs ───────────────────────────────────────────────── */
     .kpi-row {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
       margin-bottom: 6px;
     }
-    @media (max-width: 1100px) {
-      .kpi-row { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (max-width: 700px) {
-      .kpi-row { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width: 700px) { .kpi-row { grid-template-columns: 1fr; } }
     .kpi-hint {
       font-size: 9.5px;
       color: var(--muted);
       letter-spacing: 0.4px;
-      margin: 0 0 22px;
+      margin: 0 0 18px;
       text-align: center;
     }
     .kpi {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
+      gap: 12px;
+      padding: 14px 18px;
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -138,23 +180,19 @@
       user-select: none;
     }
     .kpi:hover { background: rgba(20,32,72,0.85); border-color: rgba(120,170,255,0.55); transform: translateY(-1px); }
-    .kpi.is-active { border-color: var(--accent); background: rgba(85,136,255,0.14); box-shadow: 0 0 12px rgba(85,136,255,0.15); }
-    .kpi.is-dim { opacity: 0.45; }
+    .kpi.is-active { border-color: var(--accent); background: rgba(85,136,255,0.10); }
+    .kpi.is-dim { opacity: 0.42; }
     .kpi-mark {
-      width: 14px; height: 14px;
+      width: 16px; height: 16px;
       border-radius: 3px;
       flex-shrink: 0;
     }
-    .kpi-mark.lvl-tsunami    { background: var(--tsunami);   box-shadow: 0 0 8px rgba(208,160,255,0.45); }
-    .kpi-mark.lvl-eclipse    { background: var(--eclipse); }
-    .kpi-mark.lvl-tempete    { background: var(--tempete); }
-    .kpi-mark.lvl-forte      { background: var(--forte); }
-    .kpi-mark.lvl-alerte     { background: var(--alerte); }
-    .kpi-mark.lvl-veille     { background: var(--veille); opacity: 0.9; }
-    .kpi-mark.lvl-emergence  { background: var(--emergence); opacity: 0.85; }
+    .kpi-mark.lvl-extreme    { background: var(--extreme);    box-shadow: 0 0 10px rgba(255,80,80,0.55); }
+    .kpi-mark.lvl-tres-eleve { background: var(--tres-eleve); box-shadow: 0 0 8px rgba(255,160,80,0.45); }
+    .kpi-mark.lvl-eleve      { background: var(--eleve);      box-shadow: 0 0 6px rgba(242,205,80,0.35); }
     .kpi-val {
       font-family: var(--orbitron);
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
       color: #e8f0ff;
       line-height: 1;
@@ -163,22 +201,20 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      font-size: 9.5px;
+      font-size: 10px;
       letter-spacing: 0.7px;
       text-transform: uppercase;
-      color: rgba(180,210,255,0.78);
+      color: rgba(180,210,255,0.85);
     }
     .kpi-lbl-sub {
-      font-size: 8px;
+      font-size: 8.5px;
       color: var(--muted);
       letter-spacing: 0.5px;
       text-transform: none;
     }
 
-    /* ── Sections ─────────────────────────────────────────── */
-    .section {
-      margin-bottom: 36px;
-    }
+    /* ── Section ─────────────────────────────────────────── */
+    .section { margin-bottom: 24px; }
     .section-head {
       display: flex;
       align-items: baseline;
@@ -200,7 +236,6 @@
       color: var(--muted);
       letter-spacing: 0.6px;
     }
-
     .section-empty {
       padding: 26px 18px;
       text-align: center;
@@ -210,245 +245,38 @@
       border-radius: 6px;
     }
 
-    /* ── Vue Maintenant — cartes ──────────────────────────── */
-    .now-tier-group {
-      margin-bottom: 16px;
-    }
-    .now-tier-head {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      font-size: 10px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: rgba(200,225,255,0.8);
-    }
-    .now-tier-head .now-tier-dot {
-      width: 10px; height: 10px;
-      border-radius: 2px;
-    }
-    .now-tier-head .now-tier-count {
-      margin-left: auto;
-      font-size: 9px;
-      color: var(--muted);
-    }
-
-    .alert-card {
-      display: block;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--border);
-      border-radius: 4px;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-      cursor: pointer;
-    }
-    .alert-card:hover { background: rgba(18,30,72,0.85); transform: translateX(2px); }
-    .alert-card.level-tsunami   { border-left-color: var(--tsunami);   background: linear-gradient(90deg, rgba(110,43,176,0.28), rgba(10,18,50,0.7) 50%); }
-    .alert-card.level-eclipse   { border-left-color: var(--eclipse);   background: linear-gradient(90deg, rgba(74,37,128,0.25), rgba(10,18,50,0.7) 50%); }
-    .alert-card.level-tempete   { border-left-color: var(--tempete);   background: linear-gradient(90deg, rgba(138,29,29,0.22), rgba(10,18,50,0.7) 50%); }
-    .alert-card.level-forte     { border-left-color: var(--forte);     background: linear-gradient(90deg, rgba(138,72,24,0.22), rgba(10,18,50,0.7) 50%); }
-    .alert-card.level-alerte    { border-left-color: var(--alerte);    background: linear-gradient(90deg, rgba(122,100,32,0.18), rgba(10,18,50,0.65) 50%); }
-    .alert-card.level-veille    { border-left-color: var(--veille);    background: rgba(10,18,50,0.6); }
-    .alert-card.level-emergence { border-left-color: var(--emergence); background: rgba(10,18,50,0.6); }
-
-    .alert-card-top {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-    .alert-card-tier {
-      font-size: 9px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 2px;
-      font-family: var(--orbitron);
-      font-weight: 600;
-    }
-    .alert-card-tier.lvl-tsunami    { color: rgba(245,220,255,1);  background: rgba(110,43,176,0.55); border: 1px solid rgba(208,160,255,0.6); }
-    .alert-card-tier.lvl-eclipse    { color: rgba(230,200,255,0.98); background: rgba(74,37,128,0.55); border: 1px solid rgba(160,112,224,0.55); }
-    .alert-card-tier.lvl-tempete    { color: rgba(255,196,196,0.98); background: rgba(138,29,29,0.45); border: 1px solid rgba(255,110,110,0.55); }
-    .alert-card-tier.lvl-forte      { color: rgba(255,200,150,0.98); background: rgba(138,72,24,0.45); border: 1px solid rgba(255,160,80,0.55); }
-    .alert-card-tier.lvl-alerte     { color: rgba(250,225,140,0.98); background: rgba(122,100,32,0.45); border: 1px solid rgba(242,205,80,0.55); }
-    .alert-card-tier.lvl-veille     { color: rgba(240,220,140,0.95); background: rgba(106,85,32,0.40); border: 1px solid rgba(216,184,48,0.50); }
-    .alert-card-tier.lvl-emergence  { color: rgba(200,220,250,0.95); background: rgba(42,69,112,0.50); border: 1px solid rgba(138,168,216,0.50); }
-
-    .alert-card-name {
-      font-family: var(--orbitron);
-      font-size: 13px;
-      font-weight: 600;
-      color: #e8f0ff;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      flex: 1;
-      min-width: 0;
-    }
-    .alert-card-country {
-      font-size: 9px;
-      letter-spacing: 0.7px;
-      color: rgba(180,210,255,0.7);
-      padding: 2px 7px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-    }
-    .alert-card-status {
-      font-size: 9px;
-      letter-spacing: 0.6px;
-      color: var(--muted);
-    }
-    .alert-card-status.is-active {
-      color: rgba(150,255,180,0.9);
-    }
-
-    .alert-card-metrics {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      font-size: 10px;
-      color: rgba(190,215,240,0.85);
-    }
-    .alert-card-metric b {
-      color: #e8f0ff;
-      font-weight: 700;
-    }
-
-    .alert-card-cluster {
-      margin-top: 6px;
-      font-size: 9.5px;
-      color: rgba(170,200,235,0.75);
-    }
-    .alert-card-cluster b { color: rgba(220,235,255,0.92); font-weight: 600; }
-
-    /* Émergences dépliable */
-    .emergence-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      font-size: 10px;
-      letter-spacing: 0.8px;
-      color: rgba(200,180,90,0.95);
-      background: rgba(106,90,24,0.18);
-      border: 1px solid rgba(200,176,72,0.35);
-      border-radius: 999px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .emergence-toggle:hover { background: rgba(106,90,24,0.30); }
-    .emergence-section { margin-top: 8px; display: none; }
-    .emergence-section.is-open { display: block; }
-    .emergence-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 10px;
-      margin-bottom: 4px;
-      background: rgba(10,18,50,0.45);
-      border-left: 2px solid var(--emergence);
-      border-radius: 3px;
-      font-size: 10.5px;
-      cursor: pointer;
-      transition: background 0.12s;
-    }
-    .emergence-row:hover { background: rgba(20,30,72,0.6); }
-    .emergence-row-name {
-      font-family: var(--orbitron);
-      font-weight: 500;
-      color: rgba(230,240,255,0.95);
-      flex: 1;
-      min-width: 0;
-      letter-spacing: 0.4px;
-    }
-    .emergence-row-country {
-      font-size: 8.5px;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-    }
-    .emergence-row-metric {
-      font-size: 9px;
-      color: rgba(180,210,255,0.7);
-    }
-
-    /* ── Chronique 130j ──────────────────────────────────── */
-    .chronique-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .zoom-btn {
-      padding: 5px 12px;
-      background: rgba(10,18,50,0.7);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      color: rgba(180,210,255,0.78);
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.8px;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-    }
-    .zoom-btn:hover { color: rgba(220,235,255,0.95); border-color: rgba(90,140,255,0.5); }
-    .zoom-btn.is-active {
-      background: rgba(85,136,255,0.15);
-      border-color: var(--accent);
-      color: rgba(230,240,255,0.98);
-    }
-
-    .legend-row {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.6px;
-    }
-    .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .legend-block {
-      display: inline-block;
-      width: 10px; height: 10px;
-      border-radius: 2px;
-    }
-    .legend-block.lvl-tsunami   { background: var(--tsunami);   box-shadow: 0 0 6px rgba(208,160,255,0.35); }
-    .legend-block.lvl-eclipse   { background: var(--eclipse); }
-    .legend-block.lvl-tempete   { background: var(--tempete); }
-    .legend-block.lvl-forte     { background: var(--forte); }
-    .legend-block.lvl-alerte    { background: var(--alerte); }
-    .legend-block.lvl-veille    { background: var(--veille); opacity: 0.85; }
-    .legend-block.lvl-emergence { background: var(--emergence); opacity: 0.85; }
-
-    #chronique-svg-wrap {
+    /* ── Heatmap ──────────────────────────────────────────── */
+    .heatmap-wrap {
       position: relative;
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 14px 14px 6px;
+      padding: 14px;
+      overflow-x: auto;
     }
-    #chronique-svg {
-      display: block;
-      width: 100%;
-      height: auto;
-      overflow: visible;
+    .heatmap-cell {
+      stroke: rgba(8,14,38,0.4);
+      stroke-width: 0.4;
+      cursor: pointer;
+      transition: stroke 0.12s, stroke-width 0.12s;
     }
-    .tier-lane-label {
+    .heatmap-cell:hover {
+      stroke: rgba(255,255,255,0.92);
+      stroke-width: 1.4;
+    }
+    .heatmap-cell.is-selected {
+      stroke: #fff;
+      stroke-width: 1.8;
+    }
+    .heatmap-row-label {
       font-family: var(--orbitron);
-      font-size: 9px;
-      fill: rgba(200,225,255,0.7);
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
+      font-size: 10.5px;
+      fill: rgba(210,225,250,0.88);
+      letter-spacing: 0.4px;
+      cursor: pointer;
     }
-    .tier-lane-divider { stroke: rgba(90,140,255,0.1); stroke-width: 1; stroke-dasharray: 2,3; }
-    .month-tick { stroke: rgba(90,140,255,0.15); stroke-width: 1; stroke-dasharray: 2,3; }
+    .heatmap-row-label:hover { fill: #fff; }
+    .month-tick { stroke: rgba(90,140,255,0.18); stroke-width: 1; stroke-dasharray: 2,3; }
     .month-label {
       font-family: var(--mono);
       font-size: 9px;
@@ -466,33 +294,9 @@
       fill: rgba(140,255,180,0.9);
       letter-spacing: 0.6px;
     }
-    .object-line {
-      fill: none;
-      stroke: rgba(160,190,235,0.22);
-      stroke-width: 1.5;
-      stroke-linejoin: round;
-      pointer-events: none;
-    }
-    .object-line.highlighted { stroke: rgba(220,240,255,0.95); stroke-width: 2.5; }
-    .object-dot {
-      cursor: pointer;
-      stroke: rgba(8,14,38,0.85);
-      stroke-width: 0.8;
-      transition: r 0.12s, stroke-width 0.12s;
-    }
-    .object-dot:hover {
-      r: 5.5;
-      stroke: rgba(255,255,255,0.95);
-      stroke-width: 1.5;
-    }
-    .object-dot.selected {
-      r: 5.5;
-      stroke: #fff;
-      stroke-width: 2;
-    }
 
     /* ── Tooltip ──────────────────────────────────────────── */
-    #chronique-tooltip {
+    .ttip {
       position: absolute;
       pointer-events: none;
       background: rgba(8,14,38,0.96);
@@ -502,12 +306,12 @@
       font-size: 10px;
       color: rgba(220,235,255,0.95);
       letter-spacing: 0.3px;
-      max-width: 240px;
+      max-width: 280px;
       display: none;
       z-index: 100;
       box-shadow: 0 4px 18px rgba(0,0,0,0.5);
     }
-    #chronique-tooltip .tt-title {
+    .ttip .tt-title {
       font-family: var(--orbitron);
       font-size: 10px;
       font-weight: 600;
@@ -516,10 +320,7 @@
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
-    #chronique-tooltip .tt-meta {
-      color: var(--muted);
-      font-size: 9px;
-    }
+    .ttip .tt-meta { color: var(--muted); font-size: 9px; }
 
     /* ── Side panel ──────────────────────────────────────── */
     #side-panel {
@@ -555,14 +356,9 @@
       text-transform: uppercase;
       border-radius: 3px;
     }
-    .panel-tier-badge.lvl-tsunami   { background: rgba(110,43,176,0.65); color: rgba(245,220,255,1); }
-    .panel-tier-badge.lvl-eclipse   { background: rgba(74,37,128,0.65); color: rgba(230,200,255,0.98); }
-    .panel-tier-badge.lvl-tempete   { background: rgba(138,29,29,0.55); color: rgba(255,196,196,0.98); }
-    .panel-tier-badge.lvl-forte     { background: rgba(138,72,24,0.55); color: rgba(255,200,150,0.98); }
-    .panel-tier-badge.lvl-alerte    { background: rgba(122,100,32,0.55); color: rgba(250,225,140,0.98); }
-    .panel-tier-badge.lvl-veille    { background: rgba(106,85,32,0.50); color: rgba(240,220,140,0.95); }
-    .panel-tier-badge.lvl-emergence { background: rgba(42,69,112,0.55); color: rgba(200,220,250,0.95); }
-
+    .panel-tier-badge.lvl-extreme    { background: rgba(138,29,29,0.6);  color: rgba(255,210,210,1); }
+    .panel-tier-badge.lvl-tres-eleve { background: rgba(138,72,24,0.55); color: rgba(255,210,170,1); }
+    .panel-tier-badge.lvl-eleve      { background: rgba(122,100,32,0.50); color: rgba(250,230,150,0.98); }
     .panel-country {
       font-size: 10px;
       color: rgba(180,210,255,0.8);
@@ -584,10 +380,7 @@
       transition: all 0.15s;
     }
     .panel-close:hover { color: #fff; border-color: rgba(200,225,255,0.7); background: rgba(200,225,255,0.08); }
-
-    .panel-body {
-      padding: 16px 20px 32px;
-    }
+    .panel-body { padding: 16px 20px 32px; }
     .panel-title {
       font-family: var(--orbitron);
       font-size: 17px;
@@ -603,25 +396,7 @@
       color: rgba(200,225,255,0.78);
       margin-bottom: 4px;
     }
-    .panel-status {
-      display: inline-block;
-      font-size: 9px;
-      letter-spacing: 0.7px;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-    .panel-status.is-active {
-      color: rgba(140,255,180,0.95);
-      border-color: rgba(120,200,150,0.4);
-      background: rgba(60,140,90,0.12);
-    }
-
-    .panel-section {
-      margin-top: 22px;
-    }
+    .panel-section { margin-top: 22px; }
     .panel-section-title {
       font-size: 9px;
       letter-spacing: 1.4px;
@@ -635,11 +410,7 @@
       gap: 10px 14px;
       font-size: 11px;
     }
-    .panel-metric {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
+    .panel-metric { display: flex; flex-direction: column; gap: 2px; }
     .panel-metric-val {
       font-family: var(--orbitron);
       font-size: 14px;
@@ -651,7 +422,6 @@
       color: var(--muted);
       letter-spacing: 0.4px;
     }
-
     .panel-member {
       display: flex;
       align-items: center;
@@ -671,48 +441,20 @@
       flex: 1;
       min-width: 0;
     }
-    .panel-member-meta {
-      font-size: 9px;
-      color: var(--muted);
-    }
-    .panel-member-pivot {
+    .panel-member-meta { font-size: 9px; color: var(--muted); }
+    .panel-tier-mini {
       font-size: 8px;
-      padding: 1px 6px;
-      background: rgba(85,136,255,0.18);
-      border: 1px solid rgba(85,136,255,0.4);
-      border-radius: 2px;
-      color: rgba(190,215,255,0.9);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    .panel-article {
-      display: block;
-      padding: 6px 8px;
-      margin-bottom: 4px;
-      background: rgba(10,18,50,0.4);
-      border-left: 2px solid rgba(90,140,255,0.3);
-      border-radius: 2px;
-      font-size: 10px;
-      color: rgba(200,225,255,0.85);
-      transition: background 0.12s;
-    }
-    .panel-article:hover { background: rgba(18,30,72,0.7); }
-    .panel-article-media {
-      display: inline-block;
-      font-family: var(--orbitron);
-      font-size: 8.5px;
       letter-spacing: 0.6px;
-      color: rgba(180,210,255,0.7);
-      margin-right: 6px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-family: var(--orbitron);
+      font-weight: 600;
     }
-
-    .panel-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
-    }
+    .panel-tier-mini.lvl-extreme    { color: rgba(255,210,210,1);   background: rgba(138,29,29,0.55); border: 1px solid rgba(255,90,90,0.6); }
+    .panel-tier-mini.lvl-tres-eleve { color: rgba(255,210,170,1);   background: rgba(138,72,24,0.55); border: 1px solid rgba(255,160,80,0.6); }
+    .panel-tier-mini.lvl-eleve      { color: rgba(250,230,150,0.98); background: rgba(122,100,32,0.50); border: 1px solid rgba(242,205,80,0.6); }
+    .panel-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
     .panel-link-btn {
       padding: 8px 12px;
       background: rgba(85,136,255,0.10);
@@ -730,71 +472,46 @@
       color: #fff;
     }
 
-    /* ── Tableau collapsible ─────────────────────────────── */
-    .collapsible {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+    /* ── Légende ─────────────────────────────────────────── */
+    .legend-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
       margin-top: 10px;
-    }
-    .collapsible summary {
-      padding: 14px 18px;
-      font-family: var(--orbitron);
-      font-size: 11px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: rgba(200,225,255,0.85);
-      cursor: pointer;
-      list-style: none;
-    }
-    .collapsible summary::-webkit-details-marker { display: none; }
-    .collapsible summary::before {
-      content: '▸ ';
-      color: var(--accent);
-      transition: transform 0.15s;
-      display: inline-block;
-    }
-    .collapsible[open] summary::before { content: '▾ '; }
-    .collapsible-body {
-      padding: 8px 18px 18px;
-      overflow-x: auto;
-    }
-    .episodes-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 10.5px;
-    }
-    .episodes-table th {
-      text-align: left;
-      padding: 8px 6px;
-      font-family: var(--orbitron);
       font-size: 9px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      color: rgba(180,210,255,0.7);
-      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      letter-spacing: 0.6px;
     }
-    .episodes-table td {
-      padding: 7px 6px;
-      border-bottom: 1px solid rgba(90,140,255,0.08);
-    }
-    .episodes-table tr { cursor: pointer; transition: background 0.12s; }
-    .episodes-table tr:hover { background: rgba(20,30,72,0.5); }
-    .ep-tier {
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-block {
       display: inline-block;
-      padding: 2px 7px;
-      font-size: 9px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
+      width: 10px; height: 10px;
       border-radius: 2px;
     }
-    .ep-tier.lvl-tsunami    { background: rgba(110,43,176,0.5); color: rgba(245,220,255,1); }
-    .ep-tier.lvl-eclipse    { background: rgba(74,37,128,0.5); color: rgba(230,200,255,0.98); }
-    .ep-tier.lvl-tempete    { background: rgba(138,29,29,0.4); color: rgba(255,196,196,0.95); }
-    .ep-tier.lvl-forte      { background: rgba(138,72,24,0.4); color: rgba(255,200,150,0.95); }
-    .ep-tier.lvl-alerte     { background: rgba(122,100,32,0.4); color: rgba(250,225,140,0.95); }
-    .ep-tier.lvl-veille     { background: rgba(106,85,32,0.4); color: rgba(240,220,140,0.95); }
-    .ep-tier.lvl-emergence  { background: rgba(42,69,112,0.45); color: rgba(200,220,250,0.95); }
+    .legend-block.lvl-extreme    { background: var(--extreme); }
+    .legend-block.lvl-tres-eleve { background: var(--tres-eleve); }
+    .legend-block.lvl-eleve      { background: var(--eleve); }
+
+    /* ── Ticker restore badge ────────────────────────────── */
+    .ticker-restore {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: rgba(200,225,255,0.85);
+      background: rgba(85,136,255,0.18);
+      border: 1px solid rgba(85,136,255,0.4);
+      border-radius: 999px;
+      cursor: pointer;
+      margin-left: 8px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .ticker-restore.is-visible { display: inline-flex; }
+    .ticker-restore:hover { background: rgba(85,136,255,0.32); border-color: rgba(120,170,255,0.7); }
 
     /* ── Responsive ──────────────────────────────────────── */
     @media (max-width: 900px) {
@@ -810,68 +527,58 @@
       <span data-i18n="alertes.title">Alertes</span>
       <span class="accent" data-i18n="alertes.title_accent">médiatiques</span>
     </h1>
-    <p class="page-subtitle" data-i18n="alertes.refonte_subtitle_v2">
-      Taxonomie en 7 tiers — échelle d’alarme + grille magnitude × temporalité — calibrée empiriquement sur 130 jours
+    <p class="page-subtitle" data-i18n="alertes.subtitle_3lvl">
+      Trois niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours
     </p>
 
-    <div class="page-filters">
-      <span class="filter-label" data-i18n="alertes.filter_country">Pays</span>
-      <select id="filter-country">
-        <option value="all" selected data-i18n="common.all_countries">Tous</option>
-        <option value="QC"  data-i18n="country.QC">Québec</option>
-        <option value="CAN" data-i18n="country.CAN">Canada</option>
-        <option value="USA" data-i18n="country.USA">États-Unis</option>
-      </select>
-      <span class="filter-label" data-i18n="alertes.filter_min_level">Niveau min</span>
-      <select id="filter-min-level">
-        <option value="emergence" data-i18n="alertes.level_emergence">Émergence</option>
-        <option value="alerte"    selected data-i18n="alertes.level_alerte">Alerte</option>
-        <option value="forte"     data-i18n="alertes.level_forte">Alerte forte</option>
-        <option value="tempete"   data-i18n="alertes.level_tempete">Tempête</option>
-        <option value="eclipse"   data-i18n="alertes.level_eclipse">Éclipse</option>
-        <option value="tsunami"   data-i18n="alertes.level_tsunami">Tsunami</option>
-      </select>
-      <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
+    <div class="filter-bar">
+      <div class="filter-group" role="radiogroup" aria-label="Pays">
+        <span class="filter-label-txt" data-i18n="alertes.filter_country">Pays</span>
+        <button class="pill-btn is-active" data-country="all" role="radio" aria-checked="true" data-i18n="common.all_countries">Tous</button>
+        <button class="pill-btn" data-country="QC"  role="radio" aria-checked="false" data-i18n="country.QC">Québec</button>
+        <button class="pill-btn" data-country="CAN" role="radio" aria-checked="false" data-i18n="country.CAN">Canada</button>
+        <button class="pill-btn" data-country="USA" role="radio" aria-checked="false" data-i18n="country.USA">États-Unis</button>
+      </div>
+
+      <div class="filter-group" role="radiogroup" aria-label="Période">
+        <span class="filter-label-txt" data-i18n="alertes.filter_period">Période</span>
+        <button class="pill-btn" data-period="14"  role="radio" aria-checked="false">14 j</button>
+        <button class="pill-btn" data-period="30"  role="radio" aria-checked="false">30 j</button>
+        <button class="pill-btn" data-period="90"  role="radio" aria-checked="false">90 j</button>
+        <button class="pill-btn is-active" data-period="130" role="radio" aria-checked="true">130 j</button>
+      </div>
+
+      <div class="search-wrap">
+        <input type="text" id="search-input" class="search-input" placeholder="Rechercher un objet…" data-i18n-placeholder="alertes.search_placeholder" />
+        <button type="button" id="search-clear" class="search-clear" aria-label="Effacer">×</button>
+      </div>
+
+      <div class="methodo-link-wrap">
+        <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
+      </div>
     </div>
   </header>
 
-  <!-- ── KPI bar : clic = toggle tier ───────────────────────────── -->
+  <!-- ── KPI bar : clic = toggle tier ─────────────────────────── -->
   <div class="kpi-row" id="kpi-row"></div>
-  <div class="kpi-hint" id="kpi-hint" data-i18n="alertes.kpi_hint">Clique un niveau pour le masquer/afficher dans la chronique.</div>
+  <div class="kpi-hint" id="kpi-hint" data-i18n="alertes.kpi_hint_3lvl">Clique un niveau pour le masquer/afficher.</div>
 
-  <!-- ── ÉVOLUTION DES ALERTES (chart principal) ──────────────────── -->
-  <section class="section">
-    <div class="chronique-toolbar">
-      <button class="zoom-btn" data-zoom="30"  data-i18n="alertes.zoom_30d">30 j</button>
-      <button class="zoom-btn" data-zoom="90"  data-i18n="alertes.zoom_90d">90 j</button>
-      <button class="zoom-btn is-active" data-zoom="130" data-i18n="alertes.zoom_130d">130 j</button>
-      <span class="section-sub" id="section-chronique-window" style="margin-left:auto;">—</span>
-    </div>
-
-    <div id="chronique-svg-wrap">
-      <svg id="chronique-svg" role="img" aria-label="Évolution des alertes"></svg>
-      <div id="chronique-tooltip"></div>
-    </div>
-  </section>
-
-  <!-- ── Section MAINTENANT ─────────────────────────────────────── -->
+  <!-- ── Heatmap ──────────────────────────────────────────────── -->
   <section class="section">
     <div class="section-head">
-      <span class="section-title" data-i18n="alertes.section_now">Maintenant</span>
-      <span class="section-sub" id="section-now-period">—</span>
+      <span class="section-title" data-i18n="alertes.section_heatmap">Heatmap calendaire</span>
+      <span class="section-sub" data-i18n="alertes.heatmap_sub_v2">jour × objet · clic = articles du jour · clic objet = détail</span>
     </div>
-    <div id="now-content">
-      <div class="section-empty" data-i18n="common.loading">chargement…</div>
+    <div class="heatmap-wrap" id="heatmap-wrap">
+      <svg id="heatmap-svg" role="img" aria-label="Heatmap"></svg>
+      <div class="ttip" id="ttip-heatmap"></div>
+    </div>
+    <div class="legend-row">
+      <span class="legend-item"><span class="legend-block lvl-extreme"></span> <span data-i18n="alertes.level_extreme">Extrême</span></span>
+      <span class="legend-item"><span class="legend-block lvl-tres-eleve"></span> <span data-i18n="alertes.level_tres_eleve">Très élevé</span></span>
+      <span class="legend-item"><span class="legend-block lvl-eleve"></span> <span data-i18n="alertes.level_eleve">Élevé</span></span>
     </div>
   </section>
-
-  <!-- ── Section TABLE COMPLÈTE ──────────────────────────────────── -->
-  <details class="collapsible" id="episodes-collapsible">
-    <summary><span data-i18n="alertes.section_episodes_table">Tous les épisodes (table)</span></summary>
-    <div class="collapsible-body">
-      <div id="episodes-table-wrap"></div>
-    </div>
-  </details>
 </div>
 
 <!-- ── Side panel ───────────────────────────────────────────────── -->
@@ -890,6 +597,9 @@
     <span class="ticker-label-title" id="ticker-updated" data-i18n="ticker.label">Les Unes</span>
     <span class="ticker-radar" aria-hidden="true"></span>
   </a>
+  <button type="button" id="ticker-restore" class="ticker-restore" title="Revenir aux Unes courantes">
+    <span>↺</span><span data-i18n="alertes.ticker_restore">Unes du jour</span>
+  </button>
   <div class="ticker-viewport">
     <div class="ticker-track" id="ticker-track" aria-live="off"></div>
   </div>
@@ -904,29 +614,23 @@
   'use strict';
 
   // ─── Constantes ────────────────────────────────────────────────
-  const TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte', 'emergence'];
-  // MAIN_TIERS = ce qui s'affiche en cartes pleines dans "Maintenant"
-  // (les 4 du haut + alerte). Émergence va dans le sous-bloc dépliable.
-  const MAIN_TIERS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte'];
-  const MINOR_TIERS = ['emergence'];
-  const TIER_RANK = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4, emergence: 5, none: 99 };
-  const TIER_ICON = { tsunami: '🌊', eclipse: '🌑', tempete: '⛈', forte: '⚡', alerte: '📍', emergence: '◦' };
+  const TIERS = ['extreme', 'tres_eleve', 'eleve'];
+  const TIER_RANK = { extreme: 0, tres_eleve: 1, eleve: 2, none: 99 };
+  const TIER_CSS = { extreme: 'extreme', tres_eleve: 'tres-eleve', eleve: 'eleve' };
   const COUNTRY_ORDER = ['QC', 'CAN', 'USA'];
-
   const FR_MONTHS_SHORT = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
   const EN_MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   // ─── État ──────────────────────────────────────────────────────
   let graphData = null;
   let timeseriesData = null;
+  let articlesData = null;
+  let articlesLoadPromise = null;
   let filterCountry = 'all';
-  let filterMinLevel = 'alerte';
-  let zoomDays = 130;
-  let isEmergenceOpen = false;
-  let selectedEpisodeKey = null;
-  // Multi-select : tiers cachés. Vide = tous visibles (défaut).
+  let filterDays = 130;
+  let searchQuery = '';
   let kpiTiersHidden = new Set();
-  let selectedObjectKey = null; // "country|id"
+  let selectedCell = null;  // { country, id, date }
 
   // ─── Helpers ───────────────────────────────────────────────────
   function T(key, fallback) {
@@ -944,18 +648,9 @@
   }
   function tierRank(t) { return TIER_RANK[t] != null ? TIER_RANK[t] : 99; }
   function tierLabel(t) { return T('alertes.level_' + t, t); }
-  function tierShort(t) {
-    var s = window.t ? window.t('alertes.level_short.' + t) : null;
-    if (s && s !== 'alertes.level_short.' + t) return s;
-    return t;
-  }
+  function tierCss(t) { return TIER_CSS[t] || t; }
+  function tierVar(t) { return 'var(--' + tierCss(t) + ')'; }
   function countryLabel(c) { return T('country.' + c, c); }
-  function passesFilter(tier, country) {
-    if (filterCountry !== 'all' && country !== filterCountry) return false;
-    if (kpiTiersHidden.has(tier)) return false;
-    if (tierRank(tier) > tierRank(filterMinLevel)) return false;
-    return true;
-  }
   function fmtDay(d) {
     if (!d) return '';
     var p = String(d).split('-');
@@ -965,14 +660,6 @@
     var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
     return dd + ' ' + months[mm];
   }
-  function dayDiff(a, b) {
-    return Math.round((new Date(b) - new Date(a)) / 86400000);
-  }
-  function daysAgo(dateStr) {
-    var today = new Date(); today.setUTCHours(0,0,0,0);
-    var d = new Date(dateStr);
-    return Math.round((today - d) / 86400000);
-  }
   function getCountries() {
     var src = graphData || timeseriesData;
     if (!src || !src.graphs) return [];
@@ -981,27 +668,32 @@
     Object.keys(src.graphs).forEach(function(c) { if (out.indexOf(c) === -1) out.push(c); });
     return out;
   }
-  function getSalienceTier(country, size) {
-    if (!graphData || !graphData.meta || !graphData.meta.salience_tiers) return null;
-    var tiers = graphData.meta.salience_tiers[country];
-    if (!tiers || typeof size !== 'number') return null;
-    if (size >= tiers.extreme)   return 'extreme';
-    if (size >= tiers.very_high) return 'very_high';
-    if (size >= tiers.high)      return 'high';
-    if (size >= tiers.moderate)  return 'moderate';
-    return null;
+
+  // Dérive le niveau à partir du pic + des seuils du pays (canonique).
+  function deriveLevel(country, size) {
+    if (typeof size !== 'number' || !isFinite(size)) return 'none';
+    var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
+      ? graphData.meta.salience_tiers[country] : null;
+    if (!tiers) return 'none';
+    if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
+    if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
+    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    return 'none';
   }
+
   function fmtPeakWithTier(country, size) {
     if (typeof size !== 'number') return '—';
     var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
       ? graphData.meta.salience_tiers[country] : null;
     var lbl = size.toFixed(1);
     if (!tiers) return lbl;
-    var tier = getSalienceTier(country, size);
-    if (tier) {
-      var thr = tiers[tier];
+    var lvl = deriveLevel(country, size);
+    if (lvl !== 'none') {
+      var thrKey = lvl === 'extreme' ? 'extreme' : lvl === 'tres_eleve' ? 'very_high' : 'high';
+      var thr = tiers[thrKey];
       if (typeof thr === 'number' && thr > 0) {
-        lbl += ' (' + (tier === 'extreme' ? 'ext' : tier === 'very_high' ? 'vhi' : tier) + ' ×' + (size / thr).toFixed(1) + ')';
+        var short = lvl === 'extreme' ? 'ext' : lvl === 'tres_eleve' ? 'vhi' : 'hi';
+        lbl += ' (' + short + ' ×' + (size / thr).toFixed(1) + ')';
       }
     }
     return lbl;
@@ -1019,48 +711,50 @@
       render();
     } catch (e) {
       console.error('Erreur chargement:', e);
-      document.getElementById('now-content').innerHTML =
-        '<div class="section-empty">Erreur de chargement.</div>';
+      var hw = document.getElementById('heatmap-wrap');
+      if (hw) hw.innerHTML = '<div class="section-empty">Erreur de chargement.</div>';
     }
   }
 
-  // ─── Construction des données ──────────────────────────────────
-  // Pour la chronique : reconstruire les épisodes depuis timeseries.json
-  // en groupant par alert_episode_id (per-objet).
+  function loadArticles() {
+    if (articlesData) return Promise.resolve(articlesData);
+    if (articlesLoadPromise) return articlesLoadPromise;
+    articlesLoadPromise = fetch('./articles.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { articlesData = j; return j; })
+      .catch(e => { console.error('Erreur articles.json:', e); return null; });
+    return articlesLoadPromise;
+  }
+
+  // ─── Construction des épisodes (pour KPI compte) ──────────────
   function buildEpisodesFromTimeseries() {
     var out = [];
     if (!timeseriesData || !timeseriesData.graphs) return out;
+    var today = new Date(); today.setUTCHours(0,0,0,0);
+    var windowStart = new Date(today.getTime() - (filterDays - 1) * 86400000);
     var byEp = {};
     Object.keys(timeseriesData.graphs).forEach(function(country) {
+      if (filterCountry !== 'all' && country !== filterCountry) return;
       var periods = timeseriesData.graphs[country];
       Object.keys(periods).forEach(function(pk) {
         var gd = periods[pk];
         if (!gd || !gd.nodes) return;
         gd.nodes.forEach(function(n) {
-          if (!n.alert_episode_id || !n.alert_level || n.alert_level === 'none') return;
+          if (!n.alert_episode_id) return;
+          var peak = typeof n.alert_episode_peak === 'number' ? n.alert_episode_peak : null;
+          if (peak == null) return;
+          var derived = deriveLevel(country, peak);
+          if (derived === 'none') return;
+          // Filtre période : on garde l'épisode si son dernier jour est dans la fenêtre
+          if (n.alert_episode_last_day && new Date(n.alert_episode_last_day) < windowStart) return;
           var key = n.alert_episode_id;
-          if (!byEp[key]) {
-            byEp[key] = {
-              key: key,
-              country: country,
-              id: n.id,
-              tier: n.alert_level,
-              first_day: n.alert_episode_first_day,
-              last_day: n.alert_episode_last_day,
-              n_days: n.alert_episode_n_days,
-              peak: n.alert_episode_peak,
-              status: n.alert_episode_status,
-              max_top_share: n.alert_top_share || 0,
-              max_score: n.alert_score || 0,
-              cluster_id: n.alert_cluster_id || null,
-              cluster_pivot: !!n.alert_cluster_pivot,
-              cluster_size: n.alert_cluster_size || 1
-            };
-          } else {
-            if (tierRank(n.alert_level) < tierRank(byEp[key].tier)) byEp[key].tier = n.alert_level;
-            if ((n.alert_top_share || 0) > byEp[key].max_top_share) byEp[key].max_top_share = n.alert_top_share;
-            if ((n.alert_score || 0) > byEp[key].max_score) byEp[key].max_score = n.alert_score;
-          }
+          if (byEp[key]) return;
+          byEp[key] = {
+            key: key, country: country, id: n.id, tier: derived,
+            first_day: n.alert_episode_first_day,
+            last_day: n.alert_episode_last_day,
+            peak: peak
+          };
         });
       });
     });
@@ -1068,181 +762,23 @@
     return out;
   }
 
-  // Regroupe les épisodes par cluster_id (R-side computed). Chaque cluster
-  // est représenté par son "pivot" (l'épisode du tier le plus élevé / pic
-  // le plus haut). Les autres épisodes du cluster sont stockés dans `members`.
-  // Retourne une liste de "super-épisodes" pour affichage agrégé.
-  function buildClustersFromEpisodes(episodes) {
-    var byCluster = {};
-    var solos = [];
-    episodes.forEach(function(e) {
-      if (!e.cluster_id) {
-        solos.push(e);
-        return;
-      }
-      if (!byCluster[e.cluster_id]) {
-        byCluster[e.cluster_id] = { pivot: null, members: [] };
-      }
-      if (e.cluster_pivot) {
-        byCluster[e.cluster_id].pivot = e;
-      } else {
-        byCluster[e.cluster_id].members.push(e);
-      }
-    });
-    var clusters = [];
-    Object.keys(byCluster).forEach(function(cid) {
-      var c = byCluster[cid];
-      var pivot = c.pivot;
-      // Fallback : si pas de pivot marqué, prendre le membre au tier le plus haut
-      if (!pivot && c.members.length) {
-        pivot = c.members.slice().sort(function(a, b) {
-          var r = tierRank(a.tier) - tierRank(b.tier);
-          if (r !== 0) return r;
-          return (b.peak || 0) - (a.peak || 0);
-        })[0];
-        c.members = c.members.filter(function(m) { return m !== pivot; });
-      }
-      if (!pivot) return;
-      // Construire le super-épisode (basé sur pivot + members)
-      var allMembers = c.members.slice();
-      var first_day = pivot.first_day, last_day = pivot.last_day;
-      var peak = pivot.peak || 0, max_top_share = pivot.max_top_share || 0;
-      var max_score = pivot.max_score || 0, tier = pivot.tier;
-      allMembers.forEach(function(m) {
-        if (m.first_day < first_day) first_day = m.first_day;
-        if (m.last_day > last_day) last_day = m.last_day;
-        if ((m.peak || 0) > peak) peak = m.peak;
-        if ((m.max_top_share || 0) > max_top_share) max_top_share = m.max_top_share;
-        if ((m.max_score || 0) > max_score) max_score = m.max_score;
-        if (tierRank(m.tier) < tierRank(tier)) tier = m.tier;
-      });
-      var n_days = Math.round((new Date(last_day) - new Date(first_day)) / 86400000) + 1;
-      clusters.push({
-        key: cid,
-        kind: 'cluster',
-        country: pivot.country,
-        pivot: pivot,
-        members: allMembers,
-        id: pivot.id, // label visuel = pivot
-        tier: tier,
-        first_day: first_day,
-        last_day: last_day,
-        n_days: n_days,
-        peak: peak,
-        max_top_share: max_top_share,
-        max_score: max_score,
-        status: pivot.status,
-        cluster_size: 1 + allMembers.length
-      });
-    });
-    // Ajouter les solos (épisodes sans cluster) en tant que clusters singletons
-    solos.forEach(function(e) {
-      clusters.push({
-        key: e.key,
-        kind: 'solo',
-        country: e.country,
-        pivot: e,
-        members: [],
-        id: e.id,
-        tier: e.tier,
-        first_day: e.first_day,
-        last_day: e.last_day,
-        n_days: e.n_days,
-        peak: e.peak,
-        max_top_share: e.max_top_share,
-        max_score: e.max_score,
-        status: e.status,
-        cluster_size: 1
-      });
-    });
-    return clusters;
-  }
-
-  // Pour le "Maintenant" : prendre la dernière période graph.json
-  function buildNowItems() {
-    var items = [];
-    if (!graphData || !graphData.meta || !graphData.meta.periods) return items;
-    var periods = graphData.meta.periods;
-    if (!periods.length) return items;
-    var latestKey = periods[periods.length - 1].key;
-
-    getCountries().forEach(function(country) {
-      var gd = graphData.graphs[country] && graphData.graphs[country][latestKey];
-      if (!gd) return;
-      var inCluster = {};
-      var events = gd.events || [];
-
-      events.forEach(function(e) {
-        if (e.pivot && e.pivot.id) inCluster[e.pivot.id] = true;
-        (e.members || []).forEach(function(m) { inCluster[m.id] = true; });
-      });
-
-      // Cards-événements (clusters)
-      events.forEach(function(e) {
-        if (!e.pivot || !Array.isArray(e.members) || !e.members.length) return;
-        var lvls = (e.members || []).map(function(m) { return m.alert_level; });
-        if (e.pivot.alert_active && e.pivot.alert_level) lvls.push(e.pivot.alert_level);
-        var topLvl = 'emergence';
-        for (var i = 0; i < TIERS.length; i++) {
-          if (lvls.indexOf(TIERS[i]) !== -1) { topLvl = TIERS[i]; break; }
-        }
-        if (!passesFilter(topLvl, country)) return;
-        items.push({
-          kind: 'event',
-          country: country,
-          tier: topLvl,
-          pivot: e.pivot,
-          members: e.members,
-          shared_articles: e.shared_articles || [],
-          shared_count: e.shared_articles_count || 0
-        });
-      });
-
-      // Cards standalone (alertes hors cluster)
-      (gd.nodes || []).forEach(function(n) {
-        if (!n.alert_active || !n.alert_level || n.alert_level === 'none') return;
-        if (inCluster[n.id]) return;
-        if (!passesFilter(n.alert_level, country)) return;
-        items.push({
-          kind: 'alert',
-          country: country,
-          tier: n.alert_level,
-          node: n
-        });
-      });
-    });
-
-    // Tri par tier puis par score
-    items.sort(function(a, b) {
-      var r = tierRank(a.tier) - tierRank(b.tier);
-      if (r !== 0) return r;
-      var sa = a.kind === 'event' ? (a.pivot.alert_score || 0) : (a.node.alert_score || 0);
-      var sb = b.kind === 'event' ? (b.pivot.alert_score || 0) : (b.node.alert_score || 0);
-      return sb - sa;
-    });
-    return items;
-  }
-
-  // ─── Render header / KPIs ─────────────────────────────────────
+  // ─── Render KPIs ──────────────────────────────────────────────
   function renderKPIs() {
     var el = document.getElementById('kpi-row');
     if (!el) return;
-    var episodes = buildEpisodesFromTimeseries();
-    var counts = {};
-    TIERS.forEach(function(t) { counts[t] = 0; });
-    episodes.forEach(function(e) {
-      if (filterCountry !== 'all' && e.country !== filterCountry) return;
-      counts[e.tier] = (counts[e.tier] || 0) + 1;
-    });
+    var eps = buildEpisodesFromTimeseries();
+    var counts = { extreme: 0, tres_eleve: 0, eleve: 0 };
+    eps.forEach(function(e) { counts[e.tier] = (counts[e.tier] || 0) + 1; });
+    var subLbl = filterDays + ' j';
     var html = '';
     TIERS.forEach(function(tier) {
       var hidden = kpiTiersHidden.has(tier);
       var cls = 'kpi' + (hidden ? ' is-dim' : ' is-active');
-      html += '<div class="' + cls + '" data-tier="' + tier + '" role="button" tabindex="0" aria-pressed="' + (!hidden) + '" title="' + esc(T('alertes.level_tip_' + tier, '')) + '">'
-        + '<span class="kpi-mark lvl-' + tier + '"></span>'
+      html += '<div class="' + cls + '" data-tier="' + tier + '" role="button" tabindex="0" aria-pressed="' + (!hidden) + '">'
+        + '<span class="kpi-mark lvl-' + tierCss(tier) + '"></span>'
         + '<span class="kpi-val">' + (counts[tier] || 0) + '</span>'
         + '<span class="kpi-lbl">' + esc(tierLabel(tier))
-        +   '<span class="kpi-lbl-sub">130 j</span>'
+        +   '<span class="kpi-lbl-sub">' + esc(T('alertes.kpi_episodes_lbl', 'épisodes')) + ' · ' + subLbl + '</span>'
         + '</span></div>';
     });
     el.innerHTML = html;
@@ -1261,440 +797,284 @@
     render();
   }
 
-  // ─── Render "Maintenant" ──────────────────────────────────────
-  function renderNow() {
-    var container = document.getElementById('now-content');
-    var periodEl = document.getElementById('section-now-period');
-    if (!container) return;
-
-    var periods = (graphData && graphData.meta && graphData.meta.periods) || [];
-    if (periods.length && periodEl) {
-      var lbl = periods[periods.length - 1].label || '';
-      periodEl.textContent = lbl;
-    }
-
-    var items = buildNowItems();
-    if (!items.length) {
-      container.innerHTML = '<div class="section-empty">' + esc(T('alertes.no_alerts_current', 'Agenda calme — aucun signal actif.')) + '</div>';
-      return;
-    }
-
-    // Grouper par tier
-    var groups = { tsunami: [], eclipse: [], tempete: [], forte: [], alerte: [], veille: [], emergence: [] };
-    items.forEach(function(it) {
-      (groups[it.tier] || []).push(it);
-    });
-
-    var html = '';
-    // Quand un tier-only filter est actif, on affiche TOUS les tiers en cartes pleines
-    // (sinon Veille/Émergence resteraient cachées dans le dépliable même quand on les
-    // a explicitement demandées).
-    var mainList = kpiTierFilter ? TIERS : MAIN_TIERS;
-    mainList.forEach(function(tier) {
-      if (!groups[tier].length) return;
-      html += '<div class="now-tier-group">'
-        + '<div class="now-tier-head">'
-        +   '<span class="now-tier-dot legend-block lvl-' + tier + '"></span>'
-        +   '<span>' + esc(tierLabel(tier)) + '</span>'
-        +   '<span class="now-tier-count">' + groups[tier].length + '</span>'
-        + '</div>'
-        + groups[tier].map(renderCard).join('')
-        + '</div>';
-    });
-
-    // Sous-bloc dépliable pour Veille + Émergence (signaux faibles)
-    // (uniquement quand pas de filtre tier-only actif)
-    var minorItems = kpiTierFilter ? [] : MINOR_TIERS.reduce(function(acc, t) {
-      return acc.concat(groups[t] || []);
-    }, []);
-    if (minorItems.length) {
-      var label = minorItems.length === 1
-        ? T('alertes.emergence_expand_one', 'Voir 1 signal faible')
-        : T('alertes.emergence_expand_many', 'Voir {n} signaux faibles').replace('{n}', minorItems.length);
-      html += '<button type="button" class="emergence-toggle" id="emergence-toggle">'
-        + '<span class="legend-block lvl-veille"></span>'
-        + '<span id="emergence-toggle-label">' + esc(isEmergenceOpen ? T('alertes.emergence_collapse', 'Masquer les signaux faibles') : label) + '</span>'
-        + '</button>'
-        + '<div class="emergence-section' + (isEmergenceOpen ? ' is-open' : '') + '" id="emergence-section">'
-        + minorItems.map(renderEmergenceRow).join('')
-        + '</div>';
-    }
-
-    container.innerHTML = html;
-
-    // Hooks
-    var toggle = document.getElementById('emergence-toggle');
-    if (toggle) {
-      toggle.addEventListener('click', function() {
-        isEmergenceOpen = !isEmergenceOpen;
-        renderNow();
-      });
-    }
-    // Clic sur une card = ouvre le panneau objet
-    container.querySelectorAll('.alert-card[data-country][data-object-id]').forEach(function(c) {
-      c.addEventListener('click', function() {
-        openObjectPanel(c.getAttribute('data-country'), c.getAttribute('data-object-id'));
-      });
-    });
-    container.querySelectorAll('.emergence-row[data-key]').forEach(function(r) {
-      r.addEventListener('click', function() {
-        var key = r.getAttribute('data-key'); // 'now-emerg-CAN-iran'
-        var parts = key.split('-').slice(2);
-        var country = parts.shift();
-        var oid = parts.join('-');
-        openObjectPanel(country, oid);
-      });
-    });
-  }
-
-  function renderCard(item) {
-    var country = item.country;
-    var tier = item.tier;
-    var nKey, name, periodHint, metrics, clusterInfo = '';
-
-    if (item.kind === 'event') {
-      var pivotId = item.pivot.id;
-      nKey = 'now-event-' + country + '-' + pivotId;
-      name = pivotId;
-      var totalMentions = (item.pivot.n || 0)
-        + (item.members || []).reduce(function(s, m) { return s + (m.n || 0); }, 0);
-      var maxScore = item.pivot.alert_score || 0;
-      (item.members || []).forEach(function(m) {
-        if ((m.alert_score || 0) > maxScore) maxScore = m.alert_score;
-      });
-      var memberNames = (item.members || []).slice(0, 4).map(function(m) { return m.id; }).join(' · ');
-      if ((item.members || []).length > 4) memberNames += ' +' + ((item.members || []).length - 4);
-      clusterInfo = '<div class="alert-card-cluster">'
-        + '<b>' + (item.members || []).length + '</b> ' + esc(T('alertes.event_entities', 'entités liées'))
-        + ' · <b>' + item.shared_count + '</b> ' + esc(T('alertes.event_shared_short', 'articles partagés'))
-        + ' · ' + esc(memberNames)
-        + '</div>';
-      metrics = renderMetricsRow({
-        peak: item.pivot.size,
-        topShare: item.pivot.alert_top_share,
-        score: maxScore,
-        mentions: totalMentions
-      }, country);
-      periodHint = renderDayOffset(item.pivot);
-    } else {
-      var n = item.node;
-      nKey = 'now-alert-' + country + '-' + n.id;
-      name = n.id;
-      metrics = renderMetricsRow({
-        peak: n.size,
-        topShare: n.alert_top_share,
-        score: n.alert_score,
-        mentions: n.n
-      }, country);
-      periodHint = renderDayOffset(n);
-    }
-
-    var objectId = item.kind === 'event' ? item.pivot.id : item.node.id;
-    return '<div class="alert-card level-' + tier + '" data-country="' + esc(country) + '" data-object-id="' + esc(objectId) + '">'
-      + '<div class="alert-card-top">'
-      +   '<span class="alert-card-tier lvl-' + tier + '">' + esc(tierLabel(tier)) + '</span>'
-      +   '<span class="alert-card-name">' + esc(name) + '</span>'
-      +   periodHint
-      +   '<span class="alert-card-country">' + esc(countryLabel(country)) + '</span>'
-      + '</div>'
-      + metrics
-      + clusterInfo
-      + '</div>';
-  }
-
-  function renderDayOffset(node) {
-    if (!node || !node.alert_episode_first_day || !node.alert_episode_n_days) return '';
-    var n = node.alert_episode_n_days;
-    var lbl = n === 1
-      ? T('alertes.day_label_first', 'Jour 1')
-      : T('alertes.day_label_n', 'Jour {n}').replace('{n}', n);
-    var statusClass = node.alert_episode_status === 'active' ? ' is-active' : '';
-    return '<span class="alert-card-status' + statusClass + '">· ' + esc(lbl) + '</span>';
-  }
-
-  function renderMetricsRow(m, country) {
-    var parts = [];
-    if (typeof m.peak === 'number') {
-      parts.push('<span class="alert-card-metric">'
-        + esc(T('alertes.card_peak_size', 'pic')) + ' <b>' + esc(fmtPeakWithTier(country, m.peak)) + '</b></span>');
-    }
-    if (typeof m.topShare === 'number') {
-      parts.push('<span class="alert-card-metric">'
-        + esc(T('alertes.card_top_share', 'dominance')) + ' <b>' + Math.round(m.topShare * 100) + '%</b></span>');
-    }
-    if (typeof m.score === 'number' && m.score > 0) {
-      parts.push('<span class="alert-card-metric">'
-        + esc(T('alertes.card_score', 'z')) + ' <b>' + m.score.toFixed(1) + '×</b></span>');
-    }
-    if (typeof m.mentions === 'number' && m.mentions > 0) {
-      parts.push('<span class="alert-card-metric">'
-        + '<b>' + m.mentions + '</b> ' + esc(T('alertes.card_mentions', 'mentions')) + '</span>');
-    }
-    return '<div class="alert-card-metrics">' + parts.join('') + '</div>';
-  }
-
-  function renderEmergenceRow(item) {
-    var n = item.node || item.pivot || {};
-    var country = item.country;
-    var key = 'now-emerg-' + country + '-' + n.id;
-    var size = typeof n.size === 'number' ? n.size.toFixed(1) : '—';
-    var streak = n.alert_streak ? n.alert_streak : 0;
-    return '<div class="emergence-row" data-key="' + esc(key) + '" data-kind="alert">'
-      + '<span class="emergence-row-name">' + esc(n.id || '') + '</span>'
-      + '<span class="emergence-row-metric">' + esc(T('alertes.card_peak_size', 'pic')) + ' ' + size + '</span>'
-      + '<span class="emergence-row-metric">' + streak + ' blocs</span>'
-      + '<span class="emergence-row-country">' + esc(countryLabel(country)) + '</span>'
-      + '</div>';
-  }
-
-  // ─── Construction des timelines par objet ────────────────────
-  // Pour chaque (country, object_id) ayant été en alerte au moins 1 jour,
-  // construit un dictionnaire date → {tier, peak, top_share, score, cluster_id}.
-  // Si un objet a plusieurs tiers le même jour (différents blocs 4h), on
-  // garde le tier le plus élevé.
-  function buildObjectTimelines() {
-    if (!timeseriesData || !timeseriesData.graphs) return [];
-    var byObj = {};
-    Object.keys(timeseriesData.graphs).forEach(function(country) {
-      var periods = timeseriesData.graphs[country];
-      Object.keys(periods).forEach(function(pk) {
-        var date = pk.split('_')[0];
-        var gd = periods[pk];
-        if (!gd || !gd.nodes) return;
-        gd.nodes.forEach(function(n) {
-          if (!n.alert_level || n.alert_level === 'none') return;
-          var key = country + '|' + n.id;
-          if (!byObj[key]) byObj[key] = { country: country, id: n.id, days: {} };
-          var prev = byObj[key].days[date];
-          if (!prev || tierRank(n.alert_level) < tierRank(prev.tier)) {
-            byObj[key].days[date] = {
-              tier: n.alert_level,
-              peak: (typeof n.size === 'number') ? n.size : 0,
-              top_share: n.alert_top_share || 0,
-              score: n.alert_score || 0,
-              cluster_id: n.alert_cluster_id || null
-            };
-          }
-        });
-      });
-    });
-    return Object.keys(byObj).map(function(k) { return byObj[k]; });
-  }
-
-  // ─── Render Évolution des alertes (line chart step par objet) ──
-  function renderChronique() {
-    var wrap = document.getElementById('chronique-svg-wrap');
-    var svg  = document.getElementById('chronique-svg');
-    var winEl = document.getElementById('section-chronique-window');
-    if (!svg || !wrap) return;
-
-    if (winEl) {
-      winEl.textContent = T('alertes.section_chronique_window', '{days} derniers jours').replace('{days}', zoomDays);
-    }
-
-    // Y axis : 6 lanes (tsunami en haut → emergence en bas)
-    var today = new Date(); today.setUTCHours(0,0,0,0);
-    var windowStart = new Date(today.getTime() - zoomDays * 86400000);
-
-    var timelines = buildObjectTimelines();
-    // Filtrer par pays + par tier visible (KPI multi-select).
-    // Pour chaque timeline, on garde uniquement les jours dont le tier est visible
-    // ET qui passent le filtre min level.
-    var filteredTimelines = timelines.map(function(tl) {
-      if (filterCountry !== 'all' && tl.country !== filterCountry) return null;
-      var days = {};
-      Object.keys(tl.days).forEach(function(d) {
-        var dd = new Date(d);
-        if (dd < windowStart) return;
-        var tier = tl.days[d].tier;
-        if (kpiTiersHidden.has(tier)) return;
-        if (tierRank(tier) > tierRank(filterMinLevel)) return;
-        days[d] = tl.days[d];
-      });
-      var keys = Object.keys(days);
-      if (!keys.length) return null;
-      return Object.assign({}, tl, { days: days, dateKeys: keys.sort() });
-    }).filter(Boolean);
-
-    // Layout
-    var width = wrap.clientWidth - 28;
-    if (width < 320) width = 320;
-    var labelW = 110;
-    var rightPad = 14;
-    var chartW = Math.max(120, width - labelW - rightPad);
-    var topPad = 22;
-    var bottomPad = 8;
-    var laneH = 42;
-    var chartH = laneH * TIERS.length;
-    var height = topPad + chartH + bottomPad;
-
-    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
-    svg.setAttribute('width',  width);
-    svg.setAttribute('height', height);
-
-    function xForDate(dateStr) {
-      var d = new Date(dateStr);
-      var offset = Math.max(0, (d - windowStart) / 86400000);
-      return labelW + (offset / zoomDays) * chartW;
-    }
-    function yForTier(tier) {
-      var idx = TIERS.indexOf(tier);
-      if (idx === -1) return topPad + chartH;
-      return topPad + idx * laneH + laneH / 2;
-    }
-
-    var parts = [];
-
-    // Lanes (1 par tier) + label gauche
-    TIERS.forEach(function(tier, idx) {
-      var y0 = topPad + idx * laneH;
-      var bgAlpha = 0.10 + (idx % 2) * 0.06;
-      parts.push('<rect x="' + labelW + '" y="' + y0 + '" width="' + chartW + '" height="' + laneH + '" fill="rgba(20,30,60,' + bgAlpha + ')" />');
-      // Petit carré couleur + label
-      parts.push('<rect x="' + (labelW - 90) + '" y="' + (y0 + laneH/2 - 5) + '" width="9" height="9" rx="2" fill="var(--' + tier + ')" />');
-      parts.push('<text class="tier-lane-label" x="' + (labelW - 76) + '" y="' + (y0 + laneH/2 + 4) + '">' + esc(tierLabel(tier)) + '</text>');
-      // Ligne horizontale fine
-      if (idx > 0) {
-        parts.push('<line class="tier-lane-divider" x1="' + labelW + '" y1="' + y0 + '" x2="' + (labelW + chartW) + '" y2="' + y0 + '" />');
-      }
-    });
-
-    // Month ticks
-    var months = computeMonthTicks(windowStart, today);
-    months.forEach(function(m) {
-      var x = xForDate(m.date);
-      if (x < labelW || x > labelW + chartW) return;
-      parts.push('<line class="month-tick" x1="' + x + '" y1="' + topPad + '" x2="' + x + '" y2="' + (topPad + chartH) + '" />');
-      parts.push('<text class="month-label" x="' + (x + 3) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
-    });
-
-    // Step-lines + dots par objet
-    filteredTimelines.forEach(function(tl) {
-      var keys = tl.dateKeys;
-      var pts = keys.map(function(d) {
-        return { date: d, info: tl.days[d], x: xForDate(d), y: yForTier(tl.days[d].tier) };
-      });
-
-      // Découpe en segments contigus (interruption si gap > 1 jour)
-      var segs = [];
-      var cur = [pts[0]];
-      for (var i = 1; i < pts.length; i++) {
-        var prevDate = new Date(pts[i - 1].date);
-        var curDate  = new Date(pts[i].date);
-        var dayGap = Math.round((curDate - prevDate) / 86400000);
-        if (dayGap <= 1) cur.push(pts[i]);
-        else { segs.push(cur); cur = [pts[i]]; }
-      }
-      if (cur.length) segs.push(cur);
-
-      // Path step (horizontal puis vertical)
-      var keySel = tl.country + '|' + tl.id;
-      var highlightedCls = selectedObjectKey === keySel ? ' highlighted' : '';
-      segs.forEach(function(seg) {
-        if (seg.length < 2) return;
-        var d = 'M' + seg[0].x.toFixed(1) + ',' + seg[0].y.toFixed(1);
-        for (var k = 1; k < seg.length; k++) {
-          d += ' L' + seg[k].x.toFixed(1) + ',' + seg[k - 1].y.toFixed(1);
-          d += ' L' + seg[k].x.toFixed(1) + ',' + seg[k].y.toFixed(1);
-        }
-        parts.push('<path class="object-line' + highlightedCls + '" d="' + d + '" data-key="' + esc(keySel) + '" />');
-      });
-
-      // Dots — un par jour
-      pts.forEach(function(p) {
-        var selCls = (selectedObjectKey === keySel) ? ' selected' : '';
-        parts.push('<circle class="object-dot' + selCls + '" cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3.5" fill="var(--' + p.info.tier + ')" '
-          + 'data-country="' + esc(tl.country) + '" data-id="' + esc(tl.id) + '" data-date="' + esc(p.date) + '" data-tier="' + esc(p.info.tier) + '" />');
-      });
-    });
-
-    // Now line
-    var nowX = labelW + chartW;
-    parts.push('<line class="now-line" x1="' + nowX + '" y1="' + topPad + '" x2="' + nowX + '" y2="' + (topPad + chartH) + '" />');
-    parts.push('<text class="now-label" x="' + (nowX - 4) + '" y="' + (topPad - 6) + '" text-anchor="end">NOW</text>');
-
-    svg.innerHTML = parts.join('');
-
-    // Click handlers + tooltip sur les dots
-    svg.querySelectorAll('.object-dot').forEach(function(circle) {
-      circle.addEventListener('click', function() {
-        var country = circle.getAttribute('data-country');
-        var id = circle.getAttribute('data-id');
-        openObjectPanel(country, id);
-      });
-      circle.addEventListener('mouseenter', function(ev) {
-        var country = circle.getAttribute('data-country');
-        var id = circle.getAttribute('data-id');
-        var date = circle.getAttribute('data-date');
-        var tier = circle.getAttribute('data-tier');
-        showObjectTooltip(ev, country, id, date, tier);
-      });
-      circle.addEventListener('mousemove', moveTooltip);
-      circle.addEventListener('mouseleave', hideTooltip);
-    });
-  }
-
-  function showObjectTooltip(ev, country, id, date, tier) {
-    var tt = document.getElementById('chronique-tooltip');
-    if (!tt) return;
-    tt.style.display = 'block';
-    tt.innerHTML = '<div class="tt-title">' + esc(id) + '</div>'
-      + '<div class="tt-meta">' + esc(countryLabel(country)) + ' · ' + esc(fmtDay(date)) + '</div>'
-      + '<div class="tt-meta" style="color:var(--' + tier + ');"><b>' + esc(tierLabel(tier)) + '</b></div>';
-    moveTooltip(ev);
-  }
-
+  // ─── Outils SVG partagés ──────────────────────────────────────
   function computeMonthTicks(start, end) {
     var ticks = [];
     var cur = new Date(start);
     cur.setUTCDate(1);
     while (cur <= end) {
       var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
-      ticks.push({
-        date: cur.toISOString().slice(0, 10),
-        label: months[cur.getUTCMonth()]
-      });
+      ticks.push({ date: cur.toISOString().slice(0, 10), label: months[cur.getUTCMonth()] });
       cur.setUTCMonth(cur.getUTCMonth() + 1);
     }
     return ticks;
   }
 
-  function showTooltip(ev, ep) {
-    var tt = document.getElementById('chronique-tooltip');
-    if (!tt) return;
-    tt.style.display = 'block';
-    tt.innerHTML = '<div class="tt-title">' + TIER_ICON[ep.tier] + ' ' + esc(tierLabel(ep.tier)) + '</div>'
-      + '<div>' + esc(ep.id) + '</div>'
-      + '<div class="tt-meta">' + esc(fmtDay(ep.first_day))
-      + (ep.first_day !== ep.last_day ? ' → ' + esc(fmtDay(ep.last_day)) : '')
-      + ' · ' + ep.n_days + ' ' + (ep.n_days > 1 ? T('alertes.days', 'jours') : T('alertes.day', 'jour'))
-      + '</div>';
-    moveTooltip(ev);
-  }
-  function moveTooltip(ev) {
-    var tt = document.getElementById('chronique-tooltip');
-    var wrap = document.getElementById('chronique-svg-wrap');
-    if (!tt || !wrap) return;
+  function moveTooltip(ev, wrap, ttip) {
+    if (!ttip || !wrap) return;
     var rect = wrap.getBoundingClientRect();
     var x = ev.clientX - rect.left + 12;
     var y = ev.clientY - rect.top - 8;
-    if (x + 250 > wrap.clientWidth) x = wrap.clientWidth - 250;
-    tt.style.left = x + 'px';
-    tt.style.top  = Math.max(0, y - 40) + 'px';
-  }
-  function hideTooltip() {
-    var tt = document.getElementById('chronique-tooltip');
-    if (tt) tt.style.display = 'none';
+    if (x + 280 > wrap.clientWidth) x = wrap.clientWidth - 280;
+    ttip.style.left = x + 'px';
+    ttip.style.top  = Math.max(0, y - 40) + 'px';
   }
 
-  // ─── Side panel — version "objet" (v4) ──────────────────────
-  // Affiche TOUS les épisodes d'un objet sur la fenêtre 130 j + liens
-  function openObjectPanel(country, objectId) {
-    selectedObjectKey = country + '|' + objectId;
-    var allEpisodes = buildEpisodesFromTimeseries();
-    var episodes = allEpisodes.filter(function(e) {
-      return e.country === country && e.id === objectId;
+  function truncate(s, n) {
+    if (!s) return '';
+    return s.length > n ? s.slice(0, n - 1) + '…' : s;
+  }
+
+  // ─── Render Heatmap ──────────────────────────────────────────
+  function renderHeatmap() {
+    var svg = document.getElementById('heatmap-svg');
+    var wrap = document.getElementById('heatmap-wrap');
+    if (!svg || !wrap) return;
+
+    var today = new Date(); today.setUTCHours(0,0,0,0);
+    var windowStart = new Date(today.getTime() - (filterDays - 1) * 86400000);
+
+    // Reconstruire par (country, objectId) → map date → {tier, peak}
+    var byObj = {};
+    if (timeseriesData && timeseriesData.graphs) {
+      Object.keys(timeseriesData.graphs).forEach(function(country) {
+        if (filterCountry !== 'all' && country !== filterCountry) return;
+        var periods = timeseriesData.graphs[country];
+        Object.keys(periods).forEach(function(pk) {
+          var gd = periods[pk];
+          if (!gd || !gd.nodes) return;
+          var date = pk.split('_')[0];
+          var dd = new Date(date);
+          if (dd < windowStart) return;
+          gd.nodes.forEach(function(n) {
+            if (searchQuery && n.id.toLowerCase().indexOf(searchQuery) === -1) return;
+            var size = typeof n.size === 'number' ? n.size : 0;
+            var lvl = deriveLevel(country, size);
+            if (lvl === 'none' || kpiTiersHidden.has(lvl)) return;
+            var key = country + '|' + n.id;
+            if (!byObj[key]) byObj[key] = { country: country, id: n.id, days: {}, lastDate: '', topRank: 99, maxPeak: 0 };
+            var prev = byObj[key].days[date];
+            if (!prev || tierRank(lvl) < tierRank(prev.tier) || (tierRank(lvl) === tierRank(prev.tier) && size > prev.size)) {
+              byObj[key].days[date] = { tier: lvl, size: size };
+            }
+            if (date > byObj[key].lastDate) byObj[key].lastDate = date;
+            if (tierRank(lvl) < byObj[key].topRank) byObj[key].topRank = tierRank(lvl);
+            if (size > byObj[key].maxPeak) byObj[key].maxPeak = size;
+          });
+        });
+      });
+    }
+    var rows = Object.keys(byObj).map(function(k) { return byObj[k]; });
+    rows.sort(function(a, b) {
+      // Trier par récence (dernier jour) desc, puis par tier top, puis par pic
+      var d = b.lastDate.localeCompare(a.lastDate);
+      if (d !== 0) return d;
+      var r = a.topRank - b.topRank;
+      if (r !== 0) return r;
+      return b.maxPeak - a.maxPeak;
     });
+    var MAX_ROWS = 80;
+    if (rows.length > MAX_ROWS) rows = rows.slice(0, MAX_ROWS);
+
+    if (!rows.length) {
+      svg.innerHTML = '';
+      wrap.querySelectorAll('.no-data-msg').forEach(function(n) { n.remove(); });
+      var msg = document.createElement('div');
+      msg.className = 'section-empty no-data-msg';
+      msg.style.marginTop = '8px';
+      msg.textContent = searchQuery
+        ? T('alertes.no_heatmap_search', 'Aucun objet ne correspond à la recherche.')
+        : T('alertes.no_heatmap', 'Aucune donnée pour les filtres.');
+      wrap.appendChild(msg);
+      return;
+    } else {
+      wrap.querySelectorAll('.no-data-msg').forEach(function(n) { n.remove(); });
+    }
+
+    var DAYS = filterDays;
+    var labelW = 200;
+    var topPad = 22;
+    var bottomPad = 8;
+    var rowH = 18;
+    var width = wrap.clientWidth - 28;
+    if (width < 480) width = 480;
+    var rightPad = 10;
+    var gridW = Math.max(260, width - labelW - rightPad);
+    var cellW = gridW / DAYS;
+    var height = topPad + rows.length * rowH + bottomPad;
+
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    svg.setAttribute('width',  width);
+    svg.setAttribute('height', height);
+
+    var parts = [];
+
+    rows.forEach(function(r, idx) {
+      var y = topPad + idx * rowH;
+      parts.push('<text class="heatmap-row-label" x="8" y="' + (y + rowH/2 + 4) + '" data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '">'
+        + esc(truncate(r.id, 22)) + ' <tspan fill="rgba(140,170,220,0.55)" font-size="9">' + esc(r.country) + '</tspan></text>');
+      for (var i = 0; i < DAYS; i++) {
+        var date = new Date(today.getTime() - (DAYS - 1 - i) * 86400000);
+        var dateStr = date.toISOString().slice(0, 10);
+        var info = r.days[dateStr];
+        if (!info) continue;
+        var x = labelW + i * cellW;
+        var sel = (selectedCell && selectedCell.country === r.country && selectedCell.id === r.id && selectedCell.date === dateStr);
+        parts.push('<rect class="heatmap-cell' + (sel ? ' is-selected' : '') + '" x="' + x.toFixed(1) + '" y="' + (y + 1) + '" width="' + cellW.toFixed(2) + '" height="' + (rowH - 2) + '" fill="' + tierVar(info.tier) + '" '
+          + 'data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '" data-date="' + esc(dateStr) + '" data-tier="' + esc(info.tier) + '" data-size="' + info.size.toFixed(1) + '" />');
+      }
+    });
+
+    // Month ticks
+    var months = computeMonthTicks(windowStart, today);
+    months.forEach(function(m) {
+      var d = new Date(m.date);
+      var dayIdx = Math.round((d - windowStart) / 86400000);
+      if (dayIdx < 0 || dayIdx > DAYS) return;
+      var x = labelW + dayIdx * cellW;
+      parts.push('<line class="month-tick" x1="' + x.toFixed(1) + '" y1="' + topPad + '" x2="' + x.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
+      parts.push('<text class="month-label" x="' + (x + 3).toFixed(1) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
+    });
+
+    svg.innerHTML = parts.join('');
+
+    var ttip = document.getElementById('ttip-heatmap');
+    svg.querySelectorAll('.heatmap-cell').forEach(function(cell) {
+      cell.addEventListener('click', function() {
+        var country = cell.getAttribute('data-country');
+        var id = cell.getAttribute('data-id');
+        var date = cell.getAttribute('data-date');
+        selectedCell = { country: country, id: id, date: date };
+        renderHeatmap();  // refresh selection state
+        showDayArticlesInTicker(country, id, date);
+      });
+      cell.addEventListener('mouseenter', function(ev) {
+        if (!ttip) return;
+        var tier = cell.getAttribute('data-tier');
+        var size = cell.getAttribute('data-size');
+        ttip.style.display = 'block';
+        ttip.innerHTML = '<div class="tt-title">' + esc(cell.getAttribute('data-id')) + '</div>'
+          + '<div class="tt-meta">' + esc(countryLabel(cell.getAttribute('data-country'))) + ' · ' + esc(fmtDay(cell.getAttribute('data-date'))) + '</div>'
+          + '<div class="tt-meta" style="color:' + tierVar(tier) + ';"><b>' + esc(tierLabel(tier)) + '</b> · pic ' + esc(size) + '</div>'
+          + '<div class="tt-meta" style="margin-top:3px;">' + esc(T('alertes.click_for_articles', 'Clic = articles du jour')) + '</div>';
+        moveTooltip(ev, wrap, ttip);
+      });
+      cell.addEventListener('mousemove', function(ev) { moveTooltip(ev, wrap, ttip); });
+      cell.addEventListener('mouseleave', function() { if (ttip) ttip.style.display = 'none'; });
+    });
+    svg.querySelectorAll('.heatmap-row-label').forEach(function(lbl) {
+      lbl.addEventListener('click', function() {
+        openObjectPanel(lbl.getAttribute('data-country'), lbl.getAttribute('data-id'));
+      });
+    });
+  }
+
+  // ─── Ticker : injection d'articles d'un jour ─────────────────
+  // Le ticker partagé charge tickerData via shared-ticker.js. On override
+  // le contenu visible (track + label) pour montrer les articles cliqués.
+  function setTickerContent(items, label) {
+    var track = document.getElementById('ticker-track');
+    var updatedEl = document.getElementById('ticker-updated');
+    if (!track) return;
+    if (updatedEl && label) updatedEl.textContent = label;
+    if (!Array.isArray(items) || !items.length) {
+      track.innerHTML = '<span class="ticker-empty">' + esc(T('alertes.ticker_no_articles', 'Aucun article disponible.')) + '</span>';
+      return;
+    }
+    var payload = items.map(function(item) {
+      var media = esc(item.media_id || '');
+      var title = esc(item.title || 'Article');
+      var url = esc(item.url || '#');
+      return '<a class="ticker-item" href="' + url + '" target="_blank" rel="noopener"><span class="ticker-media">' + media + '</span>' + title + '</a>';
+    }).join('<span class="ticker-sep">&bull;</span>');
+    track.innerHTML = '<div class="ticker-strip">' + payload + '</div><div class="ticker-strip" aria-hidden="true">' + payload + '</div>';
+    window.requestAnimationFrame(function() {
+      var firstStrip = track.querySelector('.ticker-strip');
+      var px = firstStrip ? firstStrip.scrollWidth : 1600;
+      var duration = Math.max(35, Math.round(px / 70));
+      track.style.setProperty('--ticker-duration', duration + 's');
+    });
+  }
+
+  function showDayArticlesInTicker(country, id, date) {
+    var updatedEl = document.getElementById('ticker-updated');
+    var restoreBtn = document.getElementById('ticker-restore');
+    if (updatedEl) updatedEl.textContent = T('alertes.ticker_loading', 'Chargement…');
+    if (restoreBtn) restoreBtn.classList.add('is-visible');
+    loadArticles().then(function(data) {
+      var arts = [];
+      if (data && data.articles && data.articles[country]) {
+        var seenUrls = {};
+        Object.keys(data.articles[country]).forEach(function(pk) {
+          if (pk.split('_')[0] !== date) return;
+          var byObj = data.articles[country][pk];
+          if (byObj && byObj[id] && Array.isArray(byObj[id])) {
+            byObj[id].forEach(function(a) {
+              if (!a || !a.url || seenUrls[a.url]) return;
+              seenUrls[a.url] = true;
+              arts.push(a);
+            });
+          }
+        });
+      }
+      var label = esc(id.toUpperCase()) + ' · ' + esc(fmtDay(date));
+      setTickerContent(arts, label);
+    });
+  }
+
+  function restoreTicker() {
+    selectedCell = null;
+    renderHeatmap();
+    var restoreBtn = document.getElementById('ticker-restore');
+    if (restoreBtn) restoreBtn.classList.remove('is-visible');
+    // Réinitialise le ticker en relançant le script partagé
+    var section = document.getElementById('ticker-section');
+    if (section) {
+      delete section.dataset.tickerInitialized;
+      section.classList.remove('ready');
+    }
+    if (window.__initSharedTicker) {
+      window.__initSharedTicker();
+    } else {
+      // Fallback : reload via fetch
+      fetch('./ticker.json?t=' + Date.now(), { cache: 'no-store' })
+        .then(r => r.ok ? r.json() : null)
+        .then(function(j) {
+          if (j && j.items) {
+            var lbl = j.generated_at ? T('ticker.label', 'Les Unes') : T('ticker.label', 'Les Unes');
+            setTickerContent(j.items, lbl);
+          }
+        });
+    }
+  }
+
+  // ─── Side panel — version "objet" ─────────────────────────────
+  function openObjectPanel(country, objectId) {
+    var allEpisodes = [];
+    if (timeseriesData && timeseriesData.graphs && timeseriesData.graphs[country]) {
+      var periods = timeseriesData.graphs[country];
+      var seen = {};
+      Object.keys(periods).forEach(function(pk) {
+        var gd = periods[pk];
+        if (!gd || !gd.nodes) return;
+        gd.nodes.forEach(function(n) {
+          if (n.id !== objectId) return;
+          if (!n.alert_episode_id || seen[n.alert_episode_id]) return;
+          var peak = typeof n.alert_episode_peak === 'number' ? n.alert_episode_peak : null;
+          if (peak == null) return;
+          var derived = deriveLevel(country, peak);
+          if (derived === 'none') return;
+          seen[n.alert_episode_id] = true;
+          allEpisodes.push({
+            key: n.alert_episode_id, tier: derived,
+            first_day: n.alert_episode_first_day,
+            last_day: n.alert_episode_last_day,
+            n_days: n.alert_episode_n_days, peak: peak,
+            status: n.alert_episode_status
+          });
+        });
+      });
+    }
 
     var panel = document.getElementById('side-panel');
     var badge = document.getElementById('panel-tier-badge');
@@ -1702,53 +1082,32 @@
     var body = document.getElementById('panel-body');
     if (!panel || !body) return;
 
-    // Tier le plus élevé jamais atteint
-    var maxTier = 'emergence';
-    episodes.forEach(function(e) {
+    var maxTier = allEpisodes.length ? 'eleve' : 'none';
+    allEpisodes.forEach(function(e) {
       if (tierRank(e.tier) < tierRank(maxTier)) maxTier = e.tier;
     });
-
-    badge.className = 'panel-tier-badge lvl-' + maxTier;
-    badge.textContent = tierLabel(maxTier);
+    badge.className = 'panel-tier-badge lvl-' + tierCss(maxTier);
+    badge.textContent = maxTier === 'none' ? '—' : tierLabel(maxTier);
     countryEl.textContent = countryLabel(country);
 
-    // Tri épisodes (récent en premier)
-    episodes.sort(function(a, b) { return new Date(b.first_day) - new Date(a.first_day); });
+    allEpisodes.sort(function(a, b) { return new Date(b.first_day) - new Date(a.first_day); });
+    var anyActive = allEpisodes.some(function(e) { return e.status === 'active'; });
 
-    // Status global : actif si un épisode est en cours
-    var anyActive = episodes.some(function(e) { return e.status === 'active'; });
-    var statusCls = anyActive ? ' is-active' : '';
-    var statusLbl = anyActive
-      ? T('alertes.status_active_label', 'En cours')
-      : T('alertes.status_ended_label', 'Terminé');
-
-    // Pic max + autres agrégats
-    var maxPeak = 0, maxScore = 0, maxTopShare = 0, totalDays = 0;
-    episodes.forEach(function(e) {
+    var maxPeak = 0, totalDays = 0;
+    allEpisodes.forEach(function(e) {
       if ((e.peak || 0) > maxPeak) maxPeak = e.peak;
-      if ((e.max_score || 0) > maxScore) maxScore = e.max_score;
-      if ((e.max_top_share || 0) > maxTopShare) maxTopShare = e.max_top_share;
       totalDays += (e.n_days || 0);
     });
-
     var peakStr = maxPeak > 0 ? fmtPeakWithTier(country, maxPeak) : '—';
-    var tsStr = maxTopShare > 0 ? Math.round(maxTopShare * 100) + '%' : '—';
-    var scoreStr = maxScore > 0 ? maxScore.toFixed(1) + '×' : '—';
 
-    // Liste des épisodes
-    var episodesHTML = episodes.map(function(e) {
+    var episodesHTML = allEpisodes.map(function(e) {
       var dateRange = fmtDay(e.first_day) + (e.first_day !== e.last_day ? ' → ' + fmtDay(e.last_day) : '');
-      var clusterBadge = (e.cluster_size && e.cluster_size > 1)
-        ? ' <span class="panel-member-pivot">cluster ' + e.cluster_size + '</span>'
-        : '';
-      return '<div class="panel-member" data-episode-key="' + esc(e.key) + '">'
-        + '<span class="panel-member-name"><span class="ep-tier lvl-' + e.tier + '" style="margin-right:6px;">' + esc(tierLabel(e.tier)) + '</span>' + esc(dateRange) + '</span>'
+      return '<div class="panel-member">'
+        + '<span class="panel-member-name"><span class="panel-tier-mini lvl-' + tierCss(e.tier) + '" style="margin-right:6px;">' + esc(tierLabel(e.tier)) + '</span>' + esc(dateRange) + '</span>'
         + '<span class="panel-member-meta">' + e.n_days + 'j · pic ' + (e.peak || 0).toFixed(1) + '</span>'
-        + clusterBadge
         + '</div>';
     }).join('');
 
-    // Liens
     var qC = encodeURIComponent(country);
     var qN = encodeURIComponent(objectId);
     var evoUrl = './evolution.html?country=' + qC + '&node=' + qN + '&mode=tracking&gran=week';
@@ -1757,19 +1116,18 @@
 
     body.innerHTML =
         '<div class="panel-title">' + esc(objectId) + '</div>'
-      + '<div class="panel-period">' + episodes.length + ' épisode(s) · ' + totalDays + ' jours cumulés</div>'
-      + '<span class="panel-status' + statusCls + '">' + esc(statusLbl) + '</span>'
+      + '<div class="panel-period">' + allEpisodes.length + ' ' + esc(T('alertes.episodes_cumul', 'épisode(s)')) + ' · ' + totalDays + ' ' + esc(T('alertes.total_days', 'jours cumulés')) + (anyActive ? ' · <span style="color:rgba(140,255,180,0.95);">' + esc(T('alertes.status_active_label', 'En cours')) + '</span>' : '') + '</div>'
       + '<div class="panel-section">'
       +   '<div class="panel-section-title">' + esc(T('alertes.detail_metrics', 'Métriques')) + '</div>'
       +   '<div class="panel-metrics">'
       +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(peakStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_peak_salience', 'Pic saillance')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(tsStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_top_share_peak', 'Dominance max')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(scoreStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.card_score', 'Score z')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + episodes.length + '</span><span class="panel-metric-lbl">Épisodes</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + allEpisodes.length + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_episodes', 'Épisodes')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + totalDays + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_total_days', 'Jours cumulés')) + '</span></div>'
+      +     '<div class="panel-metric"><span class="panel-metric-val">' + (anyActive ? '✓' : '—') + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_active', 'Actif')) + '</span></div>'
       +   '</div>'
       + '</div>'
       + '<div class="panel-section">'
-      +   '<div class="panel-section-title">Historique des alertes (' + episodes.length + ')</div>'
+      +   '<div class="panel-section-title">' + esc(T('alertes.detail_history', 'Historique')) + ' (' + allEpisodes.length + ')</div>'
       +   episodesHTML
       + '</div>'
       + '<div class="panel-section">'
@@ -1783,178 +1141,6 @@
 
     panel.classList.add('is-open');
     panel.setAttribute('aria-hidden', 'false');
-    renderChronique(); // refresh visual selection
-  }
-
-  // ─── Side panel (compatibilité) — utilisé par cluster click depuis le swimlane historique
-  function openEpisodePanel(episodeKey) {
-    selectedEpisodeKey = episodeKey;
-    var episodes = buildEpisodesFromTimeseries();
-    var clusters = buildClustersFromEpisodes(episodes);
-    // Cherche d'abord dans les clusters (qui incluent solos)
-    var ep = clusters.find(function(c) { return c.key === episodeKey; });
-    if (!ep) {
-      // Fallback : peut-être qu'on a passé un episode_id (depuis la table)
-      ep = episodes.find(function(e) { return e.key === episodeKey; });
-    }
-    if (!ep) return;
-    renderSidePanel(ep);
-    renderChronique();
-  }
-
-  function renderSidePanel(ep) {
-    var panel = document.getElementById('side-panel');
-    var badge = document.getElementById('panel-tier-badge');
-    var country = document.getElementById('panel-country');
-    var body  = document.getElementById('panel-body');
-    if (!panel || !body) return;
-
-    badge.className = 'panel-tier-badge lvl-' + ep.tier;
-    badge.textContent = tierLabel(ep.tier);
-    country.textContent = countryLabel(ep.country);
-
-    var statusCls = ep.status === 'active' ? ' is-active' : '';
-    var statusLbl = ep.status === 'active'
-      ? T('alertes.status_active_label', 'En cours')
-      : T('alertes.status_ended_label', 'Terminé');
-    var dateRange = fmtDay(ep.first_day) + (ep.first_day !== ep.last_day ? ' → ' + fmtDay(ep.last_day) : '');
-    var durationStr = ep.n_days + ' ' + (ep.n_days > 1 ? T('alertes.days', 'jours') : T('alertes.day', 'jour'));
-
-    // Metrics (peak, top_share, score)
-    var peakStr = typeof ep.peak === 'number' ? fmtPeakWithTier(ep.country, ep.peak) : '—';
-    var tsStr = ep.max_top_share ? Math.round(ep.max_top_share * 100) + '%' : '—';
-    var scoreStr = ep.max_score ? ep.max_score.toFixed(1) + '×' : '—';
-
-    // Membres du cluster historique (R-side computed)
-    // ep.members peut exister si ep est un "cluster" (kind === 'cluster')
-    var clusterHTML = '', articlesHTML = '';
-    if (ep.members && ep.members.length > 0) {
-      var rows = [];
-      rows.push('<div class="panel-member">'
-        + '<span class="panel-member-name">' + esc(ep.pivot ? ep.pivot.id : ep.id) + '</span>'
-        + '<span class="panel-member-meta">' + esc(tierLabel(ep.tier)) + ' · pic ' + (ep.pivot ? ep.pivot.peak.toFixed(1) : '—') + '</span>'
-        + '<span class="panel-member-pivot">pivot</span>'
-        + '</div>');
-      ep.members.forEach(function(m) {
-        rows.push('<div class="panel-member">'
-          + '<span class="panel-member-name">' + esc(m.id) + '</span>'
-          + '<span class="panel-member-meta">' + esc(tierLabel(m.tier)) + ' · pic ' + (m.peak || 0).toFixed(1) + '</span>'
-          + '</div>');
-      });
-      clusterHTML = '<div class="panel-section">'
-        + '<div class="panel-section-title">' + esc(T('alertes.detail_cluster_members', 'Membres du cluster')) + ' (' + (ep.cluster_size || (1 + ep.members.length)) + ')</div>'
-        + rows.join('')
-        + '</div>';
-    }
-
-    // Articles : si l'épisode est actif, on essaie de récupérer les articles
-    // de la dernière période graph.json (avec event clustering 14j)
-    if (ep.status === 'active' && graphData) {
-      var periods = graphData.meta && graphData.meta.periods;
-      if (periods && periods.length) {
-        var latestKey = periods[periods.length - 1].key;
-        var gd = graphData.graphs[ep.country] && graphData.graphs[ep.country][latestKey];
-        if (gd) {
-          // Find this object in latest period to get articles
-          var node = (gd.nodes || []).find(function(n) { return n.id === ep.id; });
-
-          // Find if object is in any event cluster
-          var ev = (gd.events || []).find(function(e) {
-            if (e.pivot && e.pivot.id === ep.id) return true;
-            return (e.members || []).some(function(m) { return m.id === ep.id; });
-          });
-
-          if (ev) {
-            // Si on n'a pas déjà un clusterHTML historique, le construire depuis l'event 14j.
-            if (!clusterHTML) {
-              var rows = [];
-              var pivotIsThisObj = ev.pivot && ev.pivot.id === ep.id;
-              rows.push('<div class="panel-member">'
-                + '<span class="panel-member-name">' + esc(ev.pivot.id) + '</span>'
-                + (pivotIsThisObj ? '' : '<span class="panel-member-meta">' + (ev.pivot.alert_active ? esc(tierLabel(ev.pivot.alert_level)) : 'pivot') + '</span>')
-                + '<span class="panel-member-pivot">pivot</span>'
-                + '</div>');
-              (ev.members || []).forEach(function(m) {
-                rows.push('<div class="panel-member">'
-                  + '<span class="panel-member-name">' + esc(m.id) + '</span>'
-                  + '<span class="panel-member-meta">' + esc(tierLabel(m.alert_level)) + ' · ' + Math.round((m.containment || 0) * 100) + '%</span>'
-                  + '</div>');
-              });
-              clusterHTML = '<div class="panel-section">'
-                + '<div class="panel-section-title">' + esc(T('alertes.detail_cluster_members', 'Membres du cluster')) + '</div>'
-                + rows.join('')
-                + '</div>';
-            }
-            // Articles partagés viennent toujours du 14j event si disponibles
-            var arts = ev.shared_articles || [];
-            if (arts.length) {
-              articlesHTML = '<div class="panel-section">'
-                + '<div class="panel-section-title">' + esc(T('alertes.detail_articles', 'Articles partagés')) + ' (' + (ev.shared_articles_count || arts.length) + ')</div>'
-                + arts.slice(0, 5).map(renderArticle).join('')
-                + (arts.length > 5
-                    ? '<div class="panel-article">' + esc(T('alertes.detail_more_articles', '+{n} →').replace('{n}', arts.length - 5)) + '</div>'
-                    : '')
-                + '</div>';
-            }
-          } else if (node && node.articles && node.articles.length) {
-            articlesHTML = '<div class="panel-section">'
-              + '<div class="panel-section-title">' + esc(T('alertes.detail_articles', 'Articles partagés')) + '</div>'
-              + node.articles.slice(0, 5).map(renderArticle).join('')
-              + '</div>';
-          }
-        }
-      }
-    }
-    if (!articlesHTML && ep.status === 'ended') {
-      articlesHTML = '<div class="panel-section">'
-        + '<div class="panel-section-title">' + esc(T('alertes.detail_articles', 'Articles partagés')) + '</div>'
-        + '<div style="font-size:10px;color:var(--muted);">' + esc(T('alertes.detail_no_articles', 'Pas d\'articles disponibles (épisode terminé).')) + '</div>'
-        + '</div>';
-    }
-
-    // Links
-    var qC = encodeURIComponent(ep.country);
-    var qN = encodeURIComponent(ep.id);
-    var evoUrl = './evolution.html?country=' + qC + '&node=' + qN + '&mode=tracking&gran=week';
-    var cstUrl = './constellation.html?country=' + qC + '&node=' + qN;
-    var statsUrl = './statistiques.html?pays=' + qC + '&objet=' + qN;
-
-    body.innerHTML =
-        '<div class="panel-title">' + esc(ep.id) + '</div>'
-      + '<div class="panel-period">' + esc(dateRange) + ' · ' + esc(durationStr) + '</div>'
-      + '<span class="panel-status' + statusCls + '">' + esc(statusLbl) + '</span>'
-      + '<div class="panel-section">'
-      +   '<div class="panel-section-title">' + esc(T('alertes.detail_metrics', 'Métriques')) + '</div>'
-      +   '<div class="panel-metrics">'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(peakStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_peak_salience', 'Pic saillance')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(tsStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_top_share_peak', 'Dominance')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(scoreStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.card_score', 'Score z')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + ep.n_days + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_duration', 'Durée')) + '</span></div>'
-      +   '</div>'
-      + '</div>'
-      + clusterHTML
-      + articlesHTML
-      + '<div class="panel-section">'
-      +   '<div class="panel-section-title">' + esc(T('alertes.detail_see_in', 'Voir ailleurs')) + '</div>'
-      +   '<div class="panel-links">'
-      +     '<a class="panel-link-btn" href="' + esc(evoUrl) + '">' + esc(T('alertes.detail_nav_evolution', 'Évolution')) + ' →</a>'
-      +     '<a class="panel-link-btn" href="' + esc(cstUrl) + '">' + esc(T('alertes.detail_nav_constellation', 'Constellation')) + ' →</a>'
-      +     '<a class="panel-link-btn" href="' + esc(statsUrl) + '">' + esc(T('alertes.detail_nav_stats', 'Statistiques')) + ' →</a>'
-      +   '</div>'
-      + '</div>';
-
-    panel.classList.add('is-open');
-    panel.setAttribute('aria-hidden', 'false');
-  }
-
-  function renderArticle(a) {
-    var url = (typeof a.url === 'string' && a.url) ? a.url : '#';
-    var title = (typeof a.title === 'string' && a.title) ? a.title : url;
-    var media = (typeof a.media_id === 'string' && a.media_id) ? a.media_id : '';
-    return '<a class="panel-article" href="' + esc(url) + '" target="_blank" rel="noopener">'
-      + (media ? '<span class="panel-article-media">' + esc(media) + '</span>' : '')
-      + esc(title)
-      + '</a>';
   }
 
   function closeSidePanel() {
@@ -1962,104 +1148,68 @@
     if (!panel) return;
     panel.classList.remove('is-open');
     panel.setAttribute('aria-hidden', 'true');
-    selectedEpisodeKey = null;
-    selectedObjectKey = null;
-    renderChronique();
-  }
-
-  // ─── Table complète ──────────────────────────────────────────
-  function renderEpisodesTable() {
-    var wrap = document.getElementById('episodes-table-wrap');
-    if (!wrap) return;
-    // Utilise les CLUSTERS (regroupés par événement), pas les épisodes-objets
-    var allEpisodes = buildEpisodesFromTimeseries();
-    var episodes = buildClustersFromEpisodes(allEpisodes).filter(function(e) {
-      if (filterCountry !== 'all' && e.country !== filterCountry) return false;
-      if (kpiTierFilter) {
-        if (e.tier !== kpiTierFilter) return false;
-      } else if (tierRank(e.tier) > tierRank(filterMinLevel)) {
-        return false;
-      }
-      return true;
-    });
-    if (!episodes.length) {
-      wrap.innerHTML = '<div class="section-empty">' + esc(T('alertes.no_recent_events', 'Aucun épisode.')) + '</div>';
-      return;
-    }
-    episodes.sort(function(a, b) {
-      var r = tierRank(a.tier) - tierRank(b.tier);
-      if (r !== 0) return r;
-      return b.n_days - a.n_days;
-    });
-    var html = '<table class="episodes-table"><thead><tr>'
-      + '<th>' + esc(T('alertes.table_col_subject', 'Sujet')) + '</th>'
-      + '<th>' + esc(T('alertes.table_col_country', 'Pays')) + '</th>'
-      + '<th>' + esc(T('alertes.table_col_start', 'Début')) + '</th>'
-      + '<th>' + esc(T('alertes.table_col_end', 'Fin')) + '</th>'
-      + '<th>' + esc(T('alertes.table_col_duration', 'Durée')) + '</th>'
-      + '<th>' + esc(T('alertes.table_col_max_level', 'Niveau')) + '</th>'
-      + '<th>' + esc(T('alertes.table_col_peak_salience', 'Pic')) + '</th>'
-      + '<th>' + esc(T('alertes.table_col_top_share_max', 'Dominance max')) + '</th>'
-      + '</tr></thead><tbody>';
-    episodes.forEach(function(e) {
-      var subjectLabel = esc(e.id);
-      if (e.cluster_size && e.cluster_size > 1) {
-        subjectLabel += ' <span style="color:var(--muted);font-size:9px;">+' + (e.cluster_size - 1) + '</span>';
-      }
-      html += '<tr data-country="' + esc(e.country) + '" data-id="' + esc(e.id) + '">'
-        + '<td>' + subjectLabel + '</td>'
-        + '<td>' + esc(countryLabel(e.country)) + '</td>'
-        + '<td>' + esc(fmtDay(e.first_day)) + '</td>'
-        + '<td>' + esc(fmtDay(e.last_day)) + '</td>'
-        + '<td>' + e.n_days + ' ' + esc(T('alertes.day', 'j').charAt(0)) + '</td>'
-        + '<td><span class="ep-tier lvl-' + e.tier + '">' + esc(tierLabel(e.tier)) + '</span></td>'
-        + '<td>' + esc(fmtPeakWithTier(e.country, e.peak)) + '</td>'
-        + '<td>' + (e.max_top_share ? Math.round(e.max_top_share * 100) + '%' : '—') + '</td>'
-        + '</tr>';
-    });
-    html += '</tbody></table>';
-    wrap.innerHTML = html;
-
-    wrap.querySelectorAll('tr[data-country]').forEach(function(tr) {
-      tr.addEventListener('click', function() {
-        openObjectPanel(tr.getAttribute('data-country'), tr.getAttribute('data-id'));
-      });
-    });
   }
 
   // ─── Render global ───────────────────────────────────────────
   function render() {
     if (!graphData || !timeseriesData) return;
     renderKPIs();
-    renderNow();
-    renderChronique();
-    var ep = document.getElementById('episodes-collapsible');
-    if (ep && ep.open) renderEpisodesTable();
+    renderHeatmap();
   }
 
   // ─── Hooks ───────────────────────────────────────────────────
-  document.getElementById('filter-country').addEventListener('change', function() {
-    filterCountry = this.value;
-    render();
-  });
-  document.getElementById('filter-min-level').addEventListener('change', function() {
-    filterMinLevel = this.value;
-    render();
-  });
-  document.querySelectorAll('.zoom-btn').forEach(function(btn) {
+  // Filtres pays (pills)
+  document.querySelectorAll('[data-country]').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      document.querySelectorAll('.zoom-btn').forEach(function(b) { b.classList.remove('is-active'); });
-      btn.classList.add('is-active');
-      zoomDays = parseInt(btn.getAttribute('data-zoom'), 10);
-      renderChronique();
+      filterCountry = btn.getAttribute('data-country');
+      document.querySelectorAll('[data-country]').forEach(function(b) {
+        var active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+      render();
     });
   });
-  var ep = document.getElementById('episodes-collapsible');
-  if (ep) {
-    ep.addEventListener('toggle', function() {
-      if (ep.open) renderEpisodesTable();
+  // Filtres période (pills)
+  document.querySelectorAll('[data-period]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      filterDays = parseInt(btn.getAttribute('data-period'), 10) || 130;
+      document.querySelectorAll('[data-period]').forEach(function(b) {
+        var active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+      render();
+    });
+  });
+  // Recherche
+  var searchInput = document.getElementById('search-input');
+  var searchClear = document.getElementById('search-clear');
+  if (searchInput) {
+    var searchTO;
+    searchInput.addEventListener('input', function() {
+      var v = searchInput.value.trim().toLowerCase();
+      searchInput.classList.toggle('has-value', v.length > 0);
+      clearTimeout(searchTO);
+      searchTO = setTimeout(function() {
+        searchQuery = v;
+        renderHeatmap();
+      }, 140);
     });
   }
+  if (searchClear) {
+    searchClear.addEventListener('click', function() {
+      searchInput.value = '';
+      searchInput.classList.remove('has-value');
+      searchQuery = '';
+      renderHeatmap();
+      searchInput.focus();
+    });
+  }
+  // Ticker restore
+  var restoreBtn = document.getElementById('ticker-restore');
+  if (restoreBtn) restoreBtn.addEventListener('click', restoreTicker);
+  // Side panel
   document.getElementById('panel-close').addEventListener('click', closeSidePanel);
   document.addEventListener('keydown', function(ev) {
     if (ev.key === 'Escape') closeSidePanel();
@@ -2067,14 +1217,11 @@
   document.addEventListener('i18n:applied', function() {
     if (graphData && timeseriesData) render();
   });
-
-  // Re-render chronique on resize
+  // Resize
   var resizeTO;
   window.addEventListener('resize', function() {
     clearTimeout(resizeTO);
-    resizeTO = setTimeout(function() {
-      if (graphData && timeseriesData) renderChronique();
-    }, 120);
+    resizeTO = setTimeout(function() { if (graphData && timeseriesData) renderHeatmap(); }, 120);
   });
 
   loadData();

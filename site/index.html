@@ -341,18 +341,12 @@
     .hot20-row.rank-1:hover { background: rgba(80,60,10,0.22); }
 
     /* Alertes en cours — override visuel (priorité sur la médaille) */
-    .hot20-row.alert-emergence { border-left: 3px solid rgba(138,168,216,0.75); background: rgba(28,42,72,0.20); }
-    .hot20-row.alert-alerte    { border-left: 3px solid rgba(242,205,80,0.85); background: rgba(86,70,26,0.22); }
-    .hot20-row.alert-forte     { border-left: 3px solid rgba(255,160,80,0.85); background: rgba(86,42,24,0.22); }
-    .hot20-row.alert-tempete   { border-left: 3px solid rgba(255,110,110,0.92); background: rgba(92,24,28,0.26); box-shadow: inset 3px 0 12px rgba(255,90,90,0.10); }
-    .hot20-row.alert-eclipse   { border-left: 3px solid rgba(160,112,224,0.92); background: rgba(50,28,90,0.28); box-shadow: inset 3px 0 12px rgba(160,112,224,0.12); }
-    .hot20-row.alert-tsunami   { border-left: 3px solid rgba(208,160,255,0.96); background: rgba(72,30,118,0.30); box-shadow: inset 3px 0 14px rgba(208,160,255,0.18); }
-    .hot20-row.alert-emergence:hover { background: rgba(36,52,86,0.26); }
-    .hot20-row.alert-alerte:hover    { background: rgba(108,88,32,0.28); }
-    .hot20-row.alert-forte:hover     { background: rgba(112,52,30,0.30); }
-    .hot20-row.alert-tempete:hover   { background: rgba(120,32,36,0.34); }
-    .hot20-row.alert-eclipse:hover   { background: rgba(70,38,116,0.36); }
-    .hot20-row.alert-tsunami:hover   { background: rgba(96,46,150,0.40); }
+    .hot20-row.alert-eleve      { border-left: 3px solid rgba(242,205,80,0.85); background: rgba(86,70,26,0.22); }
+    .hot20-row.alert-tres-eleve { border-left: 3px solid rgba(255,160,80,0.85); background: rgba(86,42,24,0.22); }
+    .hot20-row.alert-extreme    { border-left: 3px solid rgba(255,90,90,0.95); background: rgba(92,24,28,0.28); box-shadow: inset 3px 0 14px rgba(255,90,90,0.16); }
+    .hot20-row.alert-eleve:hover      { background: rgba(108,88,32,0.28); }
+    .hot20-row.alert-tres-eleve:hover { background: rgba(112,52,30,0.30); }
+    .hot20-row.alert-extreme:hover    { background: rgba(120,32,36,0.36); }
 
     .hot20-alert-badge {
       display: inline-flex;
@@ -367,12 +361,9 @@
       text-transform: uppercase;
       flex-shrink: 0;
     }
-    .hot20-alert-badge.level-emergence { color: rgba(200,220,250,0.95); border: 1px solid rgba(138,168,216,0.5); background: rgba(42,69,112,0.55); }
-    .hot20-alert-badge.level-alerte    { color: rgba(250,225,140,0.98); border: 1px solid rgba(242,205,80,0.6); background: rgba(122,100,32,0.58); }
-    .hot20-alert-badge.level-forte     { color: rgba(255,200,150,0.98); border: 1px solid rgba(255,160,80,0.6); background: rgba(138,72,24,0.55); }
-    .hot20-alert-badge.level-tempete   { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.65); background: rgba(138,29,29,0.6); animation: hot20-alert-pulse 1.6s ease-in-out infinite; }
-    .hot20-alert-badge.level-eclipse   { color: rgba(230,200,255,0.98); border: 1px solid rgba(160,112,224,0.6); background: rgba(74,37,128,0.62); }
-    .hot20-alert-badge.level-tsunami   { color: rgba(245,220,255,1); border: 1px solid rgba(208,160,255,0.7); background: rgba(110,43,176,0.66); animation: hot20-alert-pulse 1.4s ease-in-out infinite; }
+    .hot20-alert-badge.level-eleve      { color: rgba(250,225,140,0.98); border: 1px solid rgba(242,205,80,0.6); background: rgba(122,100,32,0.58); }
+    .hot20-alert-badge.level-tres-eleve { color: rgba(255,200,150,0.98); border: 1px solid rgba(255,160,80,0.6); background: rgba(138,72,24,0.55); }
+    .hot20-alert-badge.level-extreme    { color: rgba(255,200,200,0.98); border: 1px solid rgba(255,110,110,0.7); background: rgba(138,29,29,0.6); animation: hot20-alert-pulse 1.4s ease-in-out infinite; }
     @keyframes hot20-alert-pulse {
       0%, 100% { box-shadow: 0 0 0 rgba(255,90,90,0); }
       50%      { box-shadow: 0 0 10px rgba(255,90,90,0.45); }
@@ -1814,12 +1805,22 @@ function renderHot20() {
   var currentAlertByName = {};
   var ALERT_BADGE_LABELS = (function() {
     var out = {};
-    ['tsunami','eclipse','tempete','forte','alerte','emergence'].forEach(function(k) {
+    ['extreme','tres_eleve','eleve'].forEach(function(k) {
       var v = window.t ? window.t('alertes.level_short.' + k) : null;
       out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
     });
     return out;
   })();
+  function deriveAlertLevel(country, size) {
+    if (typeof size !== 'number' || !isFinite(size)) return null;
+    var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
+      ? graphData.meta.salience_tiers[country] : null;
+    if (!tiers) return null;
+    if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
+    if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
+    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    return null;
+  }
   try {
     var meta = (graphData && graphData.meta) || {};
     var periodsList = meta.periods || [];
@@ -1828,8 +1829,8 @@ function renderHot20() {
       ? graphData.graphs[currentCountry][latestKey] : null;
     var latestNodes = latestGd && latestGd.nodes ? latestGd.nodes : [];
     latestNodes.forEach(function(n) {
-      var lvl = n.alert_level;
-      if (!n.alert_active || !lvl || lvl === 'normal' || lvl === 'none') return;
+      var lvl = deriveAlertLevel(currentCountry, n.size);
+      if (!lvl) return;
       currentAlertByName[n.id] = lvl;
     });
   } catch (_) { /* noop */ }
@@ -1922,9 +1923,10 @@ function renderHot20() {
 
       /* Alerte en cours sur l'objet (lookup période la plus récente) */
       var alertLvl = currentAlertByName[node.id] || null;
-      var alertClass = alertLvl ? ' alert-' + alertLvl : '';
+      var alertCss = alertLvl ? alertLvl.replace(/_/g, '-') : null;
+      var alertClass = alertCss ? ' alert-' + alertCss : '';
       var alertBadgeHtml = alertLvl
-        ? '<span class="hot20-alert-badge level-' + alertLvl + '" data-tip="' + escapeHtml(T('object_panel.alert_in_progress_tip')) + '">' + escapeHtml(T('alertes.level_short.' + alertLvl) || alertLvl) + '</span>'
+        ? '<span class="hot20-alert-badge level-' + alertCss + '" data-tip="' + escapeHtml(T('object_panel.alert_in_progress_tip')) + '">' + escapeHtml(T('alertes.level_short.' + alertLvl) || alertLvl) + '</span>'
         : '';
 
       // Score cumulé depuis le début (toutes périodes 4h confondues) +
