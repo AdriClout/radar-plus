@@ -51,6 +51,14 @@ ALERT_CLUSTER_OVERLAP_FRAC      <- 0.5
 ALERT_CLUSTER_MIN_SHARED_URLS   <- 2
 ALERT_CLUSTER_CONTAINMENT       <- 0.15
 
+# Absorption du contexte sous-seuil : un objet qui ne pic pas au-dessus de
+# p80 peut quand même être membre "contextuel" d'un cluster si ses articles
+# pendant la fenêtre du cluster sont majoritairement aussi des articles du
+# pivot. Évite que des événements clairs (sabres de buffalo, iran) appa-
+# raissent solitaires alors qu'ils ont du contexte journalistique évident.
+ALERT_CLUSTER_CONTEXT_CONTAINMENT <- 0.5
+ALERT_CLUSTER_CONTEXT_MIN_URLS    <- 2
+
 # Objets génériques exclus par pays (même logique que radar-hot-20)
 EXCLUSION_BY_COUNTRY <- list(
   QC  = c("quebec", "montreal", "canada"),
@@ -448,10 +456,117 @@ if (nrow(active_eps) > 0) {
   n_eps <- nrow(active_eps)
   cat("  →", n_eps, "épisodes regroupés en", n_clusters, "événements distincts (compression",
       sprintf("%.1f", n_eps / n_clusters), "x)\n")
+
+  # ─── Étape 4c : absorption du contexte sous-seuil ──────────────────────
+  # Pour chaque cluster, identifier les objets non-cluster du même pays dont
+  # les articles pendant la fenêtre temporelle se concentrent fortement sur
+  # ceux du pivot. Ces objets deviennent membres "contextuels" du cluster :
+  # leur alert_level reste "none" mais ils héritent du cluster_id (avec un
+  # flag alert_cluster_context=TRUE) pour apparaître dans la timeline.
+  cat("Absorption du contexte sous-seuil (objets liés au pivot)...\n")
+
+  clusters_window <- active_eps |>
+    dplyr::group_by(cluster_id, country_id) |>
+    dplyr::summarise(
+      cluster_start = min(ep_first_day),
+      cluster_end   = max(ep_last_day),
+      .groups = "drop"
+    )
+
+  clusters_pivot <- active_eps |>
+    dplyr::filter(cluster_pivot) |>
+    dplyr::select(cluster_id, pivot_object = extracted_objects)
+
+  clusters_meta <- clusters_window |>
+    dplyr::left_join(clusters_pivot, by = "cluster_id")
+
+  # Set des (pays, objet) qui ont déjà au moins un épisode actif : on évite
+  # d'absorber un objet qui est lui-même actif (il fera son propre cluster
+  # ou est déjà membre de celui-ci).
+  active_set <- new.env(hash = TRUE, parent = emptyenv())
+  for (k in seq_len(nrow(active_eps))) {
+    assign(paste0(active_eps$country_id[k], "|", active_eps$extracted_objects[k]),
+           TRUE, envir = active_set)
+  }
+
+  # Index rapide : pour chaque (country, date), liste des objets disponibles
+  obj_by_country_date <- urls_by_obj_day |>
+    dplyr::select(country_id, extracted_objects, date_utc)
+
+  ctx_rows <- list()
+
+  for (cmi in seq_len(nrow(clusters_meta))) {
+    cid <- clusters_meta$cluster_id[cmi]
+    c_country <- clusters_meta$country_id[cmi]
+    pivot_obj <- clusters_meta$pivot_object[cmi]
+    if (is.na(pivot_obj) || is.null(pivot_obj)) next
+    cs <- clusters_meta$cluster_start[cmi]
+    ce <- clusters_meta$cluster_end[cmi]
+
+    pivot_urls <- get_urls_range(c_country, pivot_obj, cs, ce)
+    if (length(pivot_urls) < ALERT_CLUSTER_CONTEXT_MIN_URLS) next
+
+    cand_objs <- obj_by_country_date |>
+      dplyr::filter(country_id == c_country,
+                    date_utc >= cs, date_utc <= ce) |>
+      dplyr::pull(extracted_objects) |>
+      unique()
+
+    for (obj in cand_objs) {
+      if (obj == pivot_obj) next
+      if (exists(paste0(c_country, "|", obj), envir = active_set, inherits = FALSE)) next
+
+      obj_urls <- get_urls_range(c_country, obj, cs, ce)
+      if (length(obj_urls) < ALERT_CLUSTER_CONTEXT_MIN_URLS) next
+      shared <- length(intersect(obj_urls, pivot_urls))
+      if (shared < ALERT_CLUSTER_CONTEXT_MIN_URLS) next
+      containment <- shared / length(obj_urls)
+      if (containment < ALERT_CLUSTER_CONTEXT_CONTAINMENT) next
+
+      ctx_rows[[length(ctx_rows) + 1]] <- data.frame(
+        country_id            = c_country,
+        extracted_objects     = obj,
+        alert_cluster_id_ctx  = cid,
+        ctx_start             = cs,
+        ctx_end               = ce,
+        ctx_containment       = containment,
+        stringsAsFactors      = FALSE
+      )
+    }
+  }
+
+  if (length(ctx_rows)) {
+    df_context <- do.call(rbind, ctx_rows)
+    # Un objet peut être candidat contexte pour plusieurs clusters
+    # (épisodes simultanés). On garde le meilleur containment par
+    # (country, object) puis on désambiguïse par date d'apparition.
+    df_context <- df_context |>
+      dplyr::group_by(country_id, extracted_objects) |>
+      dplyr::slice_max(ctx_containment, n = 1, with_ties = FALSE) |>
+      dplyr::ungroup()
+    cat("  →", nrow(df_context), "membres contextuels absorbés sur",
+        length(unique(df_context$alert_cluster_id_ctx)), "clusters\n")
+  } else {
+    df_context <- data.frame(
+      country_id = character(0), extracted_objects = character(0),
+      alert_cluster_id_ctx = character(0),
+      ctx_start = as.Date(character(0)), ctx_end = as.Date(character(0)),
+      ctx_containment = numeric(0),
+      stringsAsFactors = FALSE
+    )
+    cat("  → 0 membre contextuel\n")
+  }
 } else {
   df_episodes$cluster_id    <- NA_character_
   df_episodes$cluster_pivot <- NA
   df_episodes$cluster_size  <- NA_integer_
+  df_context <- data.frame(
+    country_id = character(0), extracted_objects = character(0),
+    alert_cluster_id_ctx = character(0),
+    ctx_start = as.Date(character(0)), ctx_end = as.Date(character(0)),
+    ctx_containment = numeric(0),
+    stringsAsFactors = FALSE
+  )
 }
 
 # ─── Étape 5 : propagation tier + métadonnées épisode vers chaque bloc ───────
@@ -463,6 +578,9 @@ df_index <- df_index_with_ep |>
                                  cluster_id, cluster_pivot, cluster_size),
     by = c("country_id", "extracted_objects", ".episode_idx")
   ) |>
+  dplyr::left_join(
+    df_context, by = c("country_id", "extracted_objects")
+  ) |>
   dplyr::mutate(
     alert_level             = ifelse(is.na(ep_tier), "none", ep_tier),
     alert_active            = alert_level %in% c("extreme", "tres_eleve", "eleve"),
@@ -472,14 +590,34 @@ df_index <- df_index_with_ep |>
     alert_episode_n_days    = ep_n_days,
     alert_episode_peak      = ep_peak,
     alert_episode_status    = ep_status,
-    alert_cluster_id        = cluster_id,
+    .ctx_in_window          = !is.na(alert_cluster_id_ctx) &
+                              date_utc >= ctx_start & date_utc <= ctx_end,
+    alert_cluster_context   = is.na(cluster_id) & .ctx_in_window,
+    alert_cluster_id        = dplyr::coalesce(cluster_id,
+                                              ifelse(.ctx_in_window, alert_cluster_id_ctx, NA_character_)),
     alert_cluster_pivot     = ifelse(is.na(cluster_pivot), FALSE, cluster_pivot),
     alert_cluster_size      = cluster_size
   ) |>
   dplyr::select(-ep_tier, -ep_episode_id, -ep_first_day, -ep_last_day,
                 -ep_n_days, -ep_peak, -ep_status,
                 -cluster_id, -cluster_pivot, -cluster_size,
+                -alert_cluster_id_ctx, -ctx_start, -ctx_end, -ctx_containment,
+                -.ctx_in_window,
                 -.in_event_day, -.episode_idx)
+
+# Propage cluster_size sur les lignes contextuelles (qui n'avaient pas
+# d'épisode actif pour porter cette info) via un join cluster_id → size.
+if (exists("active_eps") && nrow(active_eps) > 0) {
+  .cluster_sizes <- active_eps |>
+    dplyr::distinct(cluster_id, cluster_size)
+  df_index <- df_index |>
+    dplyr::left_join(.cluster_sizes, by = c("alert_cluster_id" = "cluster_id"),
+                     suffix = c("", ".ctx")) |>
+    dplyr::mutate(
+      alert_cluster_size = dplyr::coalesce(alert_cluster_size, cluster_size)
+    ) |>
+    dplyr::select(-cluster_size)
+}
 
 cat("  →", sum(df_index$alert_active, na.rm = TRUE), "blocs d'alerte sur", nrow(df_index), "lignes\n")
 cat("  → Distribution par niveau (blocs):\n")
@@ -812,6 +950,7 @@ graphs_graph <- purrr::map(countries, function(country) {
         alert_cluster_id        = if (is.na(nodes_i$alert_cluster_id[j]))    NULL else nodes_i$alert_cluster_id[j],
         alert_cluster_pivot     = isTRUE(nodes_i$alert_cluster_pivot[j]),
         alert_cluster_size      = if (is.na(nodes_i$alert_cluster_size[j])) NULL else as.integer(nodes_i$alert_cluster_size[j]),
+        alert_cluster_context   = isTRUE(nodes_i$alert_cluster_context[j]),
         articles  = build_articles(nodes_i$urls[j], nodes_i$titles[j]),
         media_ids = {
           mm <- node_med_i |> dplyr::filter(extracted_objects == nodes_i$extracted_objects[j])
@@ -967,7 +1106,8 @@ for (country in countries) {
           alert_episode_status    = if (is.na(nodes_i$alert_episode_status[j]))    NULL else nodes_i$alert_episode_status[j],
           alert_cluster_id        = if (is.na(nodes_i$alert_cluster_id[j]))    NULL else nodes_i$alert_cluster_id[j],
           alert_cluster_pivot     = isTRUE(nodes_i$alert_cluster_pivot[j]),
-          alert_cluster_size      = if (is.na(nodes_i$alert_cluster_size[j])) NULL else as.integer(nodes_i$alert_cluster_size[j])
+          alert_cluster_size      = if (is.na(nodes_i$alert_cluster_size[j])) NULL else as.integer(nodes_i$alert_cluster_size[j]),
+          alert_cluster_context   = isTRUE(nodes_i$alert_cluster_context[j])
         )
         arts <- build_articles(nodes_i$urls[j], nodes_i$titles[j])
         if (length(arts) > 0) period_articles[[nid]] <- arts

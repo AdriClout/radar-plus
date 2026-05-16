@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <!-- deployed: 2026-05-16T14:30:00Z -->
+  <!-- deployed: 2026-05-16T17:00:00Z -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RADAR+ · Alertes médiatiques</title>
@@ -331,6 +331,12 @@
     .heatmap-event-meta {
       fill: rgba(140,170,220,0.72);
       font-size: 9px;
+    }
+    .heatmap-event-context {
+      font-family: var(--mono);
+      font-size: 9px;
+      fill: rgba(170,195,235,0.62);
+      letter-spacing: 0.2px;
     }
     .heatmap-event-line {
       stroke: rgba(120,170,255,0.28);
@@ -1024,7 +1030,8 @@
 
   function buildHeatmapObjectRows(range) {
     var byObj = {};
-    if (!timeseriesData || !timeseriesData.graphs) return [];
+    var contextByCluster = {};
+    if (!timeseriesData || !timeseriesData.graphs) return { rows: [], contextByCluster: contextByCluster };
 
     Object.keys(timeseriesData.graphs).forEach(function(country) {
       if (filterCountry !== 'all' && country !== filterCountry) return;
@@ -1037,6 +1044,14 @@
         if (dd < range.start || dd > range.end) return;
         gd.nodes.forEach(function(n) {
           if (searchQuery && n.id.toLowerCase().indexOf(searchQuery) === -1) return;
+          // Membres contextuels : alert_cluster_id défini mais aucun tier
+          // (objet sous-seuil absorbé par le pivot). On les collecte par
+          // cluster pour les afficher en métadonnées sous l'événement.
+          if (n.alert_cluster_context === true && n.alert_cluster_id) {
+            var ckey = n.alert_cluster_id;
+            if (!contextByCluster[ckey]) contextByCluster[ckey] = {};
+            if (!contextByCluster[ckey][n.id]) contextByCluster[ckey][n.id] = true;
+          }
           var size = typeof n.size === 'number' ? n.size : 0;
           var lvl = deriveLevel(country, size);
           if (lvl === 'none' || kpiTiersHidden.has(lvl)) return;
@@ -1086,7 +1101,10 @@
       });
     });
 
-    return Object.keys(byObj).map(function(key) { return byObj[key]; });
+    return {
+      rows: Object.keys(byObj).map(function(key) { return byObj[key]; }),
+      contextByCluster: contextByCluster
+    };
   }
 
   function buildHeatmapClusterGrouping(rowByKey) {
@@ -1149,7 +1167,9 @@
   }
 
   function buildHeatmapRows(range) {
-    var objectRows = buildHeatmapObjectRows(range);
+    var built = buildHeatmapObjectRows(range);
+    var objectRows = built.rows;
+    var contextByCluster = built.contextByCluster || {};
     objectRows.sort(compareHeatmapRows);
     var MAX_ROWS = 80;
     if (objectRows.length > MAX_ROWS) objectRows = objectRows.slice(0, MAX_ROWS);
@@ -1172,6 +1192,9 @@
 
       groupedClusters[group.clusterId] = true;
       var pivotRow = group.pivotKey && rowByKey[group.pivotKey] ? rowByKey[group.pivotKey] : members[0];
+      var ctxIds = contextByCluster[group.clusterId]
+        ? Object.keys(contextByCluster[group.clusterId])
+        : [];
       entries.push({
         kind: 'event',
         eventId: group.clusterId,
@@ -1185,7 +1208,8 @@
         maxPeak: members.reduce(function(acc, member) {
           return Math.max(acc, member.maxPeak || 0);
         }, 0),
-        members: members
+        members: members,
+        contextIds: ctxIds
       });
     });
 
@@ -1206,6 +1230,13 @@
       } else {
         soloCount++;
       }
+      // Solo cluster_id pour récupérer le contexte (un événement « solo »
+      // peut quand même avoir des objets contextuels absorbés autour du
+      // pivot — ex: iran solo + nabatiyé).
+      var soloCid = assignment ? assignment.clusterId : null;
+      var soloCtx = soloCid && contextByCluster[soloCid]
+        ? Object.keys(contextByCluster[soloCid])
+        : [];
       entries.push({
         kind: 'object',
         country: row.country,
@@ -1213,7 +1244,8 @@
         lastDate: row.lastDate,
         topRank: row.topRank,
         maxPeak: row.maxPeak,
-        row: row
+        row: row,
+        contextIds: soloCtx
       });
     });
 
@@ -1229,6 +1261,15 @@
     entries.sort(compareHeatmapEntries);
 
     var rows = [];
+    function pushContext(entry, parentId) {
+      if (!entry.contextIds || !entry.contextIds.length) return;
+      rows.push({
+        kind: 'context',
+        country: entry.country || (entry.row && entry.row.country),
+        parentEventId: parentId,
+        contextIds: entry.contextIds.slice()
+      });
+    }
     entries.forEach(function(entry) {
       if (entry.kind === 'event') {
         rows.push(entry);
@@ -1238,6 +1279,7 @@
           member.parentEventId = entry.eventId;
           rows.push(member);
         });
+        pushContext(entry, entry.eventId);
         return;
       }
 
@@ -1245,7 +1287,9 @@
       entry.row.isMember = false;
       entry.row.isSolo = true;
       entry.row.parentEventId = null;
+      entry.row.contextIds = entry.contextIds || [];
       rows.push(entry.row);
+      pushContext(entry, null);
     });
 
     return rows;
@@ -1303,6 +1347,19 @@
         parts.push('<line class="heatmap-event-line" x1="8" y1="' + (y + rowH - 2) + '" x2="' + (width - rightPad) + '" y2="' + (y + rowH - 2) + '" />');
         parts.push('<text class="heatmap-event-label" x="8" y="' + (y + rowH/2 + 4) + '">' + esc(truncate(r.label, 22))
           + ' <tspan class="heatmap-event-meta">' + esc(r.country) + ' · ' + esc(String(r.objectCount)) + ' ' + esc(T('alertes.event_objects_count', 'objets')) + '</tspan></text>');
+        return;
+      }
+
+      if (r.kind === 'context') {
+        // Ligne thin contenant la liste d'objets sous-seuil associés au cluster
+        var maxNames = 8;
+        var names = r.contextIds.slice(0, maxNames);
+        var more = r.contextIds.length - names.length;
+        var prefix = T('alertes.also_mentioned', 'aussi') + ' · ';
+        var label = prefix + names.join(', ');
+        if (more > 0) label += ' (+' + more + ')';
+        var maxLen = Math.max(40, Math.floor((width - 16) / 5.5));
+        parts.push('<text class="heatmap-event-context" x="20" y="' + (y + rowH/2 + 3) + '">' + esc(truncate(label, maxLen)) + '</text>');
         return;
       }
 
