@@ -245,6 +245,43 @@
       border-radius: 6px;
     }
 
+    /* ── Period nav ──────────────────────────────────────── */
+    .period-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+    .period-nav.is-hidden { display: none; }
+    .period-nav-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: rgba(180,210,255,0.85);
+      border-radius: 6px;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .period-nav-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: #fff;
+      background: rgba(20,32,72,0.85);
+    }
+    .period-nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .period-nav-label {
+      font-family: var(--orbitron);
+      font-size: 13px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #e8f0ff;
+      min-width: 220px;
+      text-align: center;
+    }
+
     /* ── Heatmap ──────────────────────────────────────────── */
     .heatmap-wrap {
       position: relative;
@@ -542,10 +579,10 @@
 
       <div class="filter-group" role="radiogroup" aria-label="Période">
         <span class="filter-label-txt" data-i18n="alertes.filter_period">Période</span>
-        <button class="pill-btn" data-period="1"   role="radio" aria-checked="false" data-i18n="period.day">Jour</button>
-        <button class="pill-btn" data-period="7"   role="radio" aria-checked="false" data-i18n="period.week">Semaine</button>
-        <button class="pill-btn is-active" data-period="30"  role="radio" aria-checked="true" data-i18n="period.month">Mois</button>
-        <button class="pill-btn" data-period="130" role="radio" aria-checked="false" data-i18n="period.total">Total</button>
+        <button class="pill-btn" data-gran="day"   role="radio" aria-checked="false" data-i18n="period.day">Jour</button>
+        <button class="pill-btn" data-gran="week"  role="radio" aria-checked="false" data-i18n="period.week">Semaine</button>
+        <button class="pill-btn is-active" data-gran="month" role="radio" aria-checked="true" data-i18n="period.month">Mois</button>
+        <button class="pill-btn" data-gran="total" role="radio" aria-checked="false" data-i18n="period.total">Total</button>
       </div>
 
       <div class="search-wrap">
@@ -568,6 +605,11 @@
     <div class="section-head">
       <span class="section-title" data-i18n="alertes.section_heatmap">Calendrier des alertes</span>
       <span class="section-sub" data-i18n="alertes.heatmap_sub_v2">jour × objet · clic = articles du jour · clic objet = détail</span>
+    </div>
+    <div class="period-nav" id="period-nav">
+      <button class="period-nav-btn" id="period-prev" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Période précédente">‹</button>
+      <span class="period-nav-label" id="period-nav-label"></span>
+      <button class="period-nav-btn" id="period-next" data-i18n-aria-label="evolution.next_period_aria" aria-label="Période suivante">›</button>
     </div>
     <div class="heatmap-wrap" id="heatmap-wrap">
       <svg id="heatmap-svg" role="img" aria-label="Heatmap"></svg>
@@ -627,7 +669,9 @@
   let articlesData = null;
   let articlesLoadPromise = null;
   let filterCountry = 'QC';
-  let filterDays = 30;
+  let granularity = 'month';
+  let periodOffset = 0;
+  const DATA_DAYS = 130;
   let searchQuery = '';
   let kpiTiersHidden = new Set();
   let selectedCell = null;  // { country, id, date }
@@ -726,12 +770,57 @@
     return articlesLoadPromise;
   }
 
+  // ─── Calcul de la période courante ─────────────────────────────
+  function getPeriodRange() {
+    var today = new Date(); today.setUTCHours(0,0,0,0);
+    var dataMin = new Date(today.getTime() - (DATA_DAYS - 1) * 86400000);
+    var start, end;
+    if (granularity === 'day') {
+      end = new Date(today.getTime() + periodOffset * 86400000);
+      start = new Date(end);
+    } else if (granularity === 'week') {
+      end = new Date(today.getTime() + periodOffset * 7 * 86400000);
+      start = new Date(end.getTime() - 6 * 86400000);
+    } else if (granularity === 'month') {
+      var anchor = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + periodOffset, 1));
+      start = anchor;
+      end = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
+    } else { // total
+      start = dataMin;
+      end = today;
+    }
+    var days = Math.round((end - start) / 86400000) + 1;
+    var canNext = periodOffset < 0;
+    var canPrev = granularity !== 'total' && start > dataMin;
+    return { start: start, end: end, days: days, canPrev: canPrev, canNext: canNext, dataMin: dataMin, today: today };
+  }
+
+  function formatPeriodLabel(range) {
+    var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
+    if (granularity === 'day') {
+      var d = range.start;
+      return d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+    }
+    if (granularity === 'week') {
+      var s = range.start, e = range.end;
+      if (s.getUTCMonth() === e.getUTCMonth()) {
+        return s.getUTCDate() + '–' + e.getUTCDate() + ' ' + months[s.getUTCMonth()] + ' ' + s.getUTCFullYear();
+      }
+      return s.getUTCDate() + ' ' + months[s.getUTCMonth()] + ' – ' + e.getUTCDate() + ' ' + months[e.getUTCMonth()] + ' ' + e.getUTCFullYear();
+    }
+    if (granularity === 'month') {
+      return months[range.start.getUTCMonth()] + ' ' + range.start.getUTCFullYear();
+    }
+    return T('period.total', 'Total');
+  }
+
   // ─── Construction des épisodes (pour KPI compte) ──────────────
   function buildEpisodesFromTimeseries() {
     var out = [];
     if (!timeseriesData || !timeseriesData.graphs) return out;
-    var today = new Date(); today.setUTCHours(0,0,0,0);
-    var windowStart = new Date(today.getTime() - (filterDays - 1) * 86400000);
+    var range = getPeriodRange();
+    var windowStart = range.start;
+    var windowEnd = range.end;
     var byEp = {};
     Object.keys(timeseriesData.graphs).forEach(function(country) {
       if (filterCountry !== 'all' && country !== filterCountry) return;
@@ -745,8 +834,11 @@
           if (peak == null) return;
           var derived = deriveLevel(country, peak);
           if (derived === 'none') return;
-          // Filtre période : on garde l'épisode si son dernier jour est dans la fenêtre
-          if (n.alert_episode_last_day && new Date(n.alert_episode_last_day) < windowStart) return;
+          // Filtre période : on garde l'épisode si sa plage chevauche la fenêtre
+          var epEnd = n.alert_episode_last_day ? new Date(n.alert_episode_last_day) : null;
+          var epStart = n.alert_episode_first_day ? new Date(n.alert_episode_first_day) : null;
+          if (epEnd && epEnd < windowStart) return;
+          if (epStart && epStart > windowEnd) return;
           var key = n.alert_episode_id;
           if (byEp[key]) return;
           byEp[key] = {
@@ -769,7 +861,7 @@
     var eps = buildEpisodesFromTimeseries();
     var counts = { extreme: 0, tres_eleve: 0, eleve: 0 };
     eps.forEach(function(e) { counts[e.tier] = (counts[e.tier] || 0) + 1; });
-    var subLbl = filterDays + ' j';
+    var subLbl = formatPeriodLabel(getPeriodRange());
     var html = '';
     TIERS.forEach(function(tier) {
       var hidden = kpiTiersHidden.has(tier);
@@ -831,8 +923,10 @@
     var wrap = document.getElementById('heatmap-wrap');
     if (!svg || !wrap) return;
 
-    var today = new Date(); today.setUTCHours(0,0,0,0);
-    var windowStart = new Date(today.getTime() - (filterDays - 1) * 86400000);
+    var range = getPeriodRange();
+    var today = range.today;
+    var windowStart = range.start;
+    var windowEnd = range.end;
 
     // Reconstruire par (country, objectId) → map date → {tier, peak}
     var byObj = {};
@@ -845,7 +939,7 @@
           if (!gd || !gd.nodes) return;
           var date = pk.split('_')[0];
           var dd = new Date(date);
-          if (dd < windowStart) return;
+          if (dd < windowStart || dd > windowEnd) return;
           gd.nodes.forEach(function(n) {
             if (searchQuery && n.id.toLowerCase().indexOf(searchQuery) === -1) return;
             var size = typeof n.size === 'number' ? n.size : 0;
@@ -891,7 +985,7 @@
       wrap.querySelectorAll('.no-data-msg').forEach(function(n) { n.remove(); });
     }
 
-    var DAYS = filterDays;
+    var DAYS = range.days;
     var labelW = 200;
     var topPad = 22;
     var bottomPad = 8;
@@ -914,7 +1008,7 @@
       parts.push('<text class="heatmap-row-label" x="8" y="' + (y + rowH/2 + 4) + '" data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '">'
         + esc(truncate(r.id, 22)) + ' <tspan fill="rgba(140,170,220,0.55)" font-size="9">' + esc(r.country) + '</tspan></text>');
       for (var i = 0; i < DAYS; i++) {
-        var date = new Date(today.getTime() - (DAYS - 1 - i) * 86400000);
+        var date = new Date(windowStart.getTime() + i * 86400000);
         var dateStr = date.toISOString().slice(0, 10);
         var info = r.days[dateStr];
         if (!info) continue;
@@ -926,7 +1020,7 @@
     });
 
     // Month ticks
-    var months = computeMonthTicks(windowStart, today);
+    var months = computeMonthTicks(windowStart, windowEnd);
     months.forEach(function(m) {
       var d = new Date(m.date);
       var dayIdx = Math.round((d - windowStart) / 86400000);
@@ -936,10 +1030,13 @@
       parts.push('<text class="month-label" x="' + (x + 3).toFixed(1) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
     });
 
-    // Now line — vertical marker at today's column
-    var nowX = labelW + DAYS * cellW;
-    parts.push('<line class="now-line" x1="' + nowX.toFixed(1) + '" y1="' + topPad + '" x2="' + nowX.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
-    parts.push('<text class="now-label" x="' + (nowX - 3).toFixed(1) + '" y="' + (topPad - 6) + '" text-anchor="end">' + esc(T('common.now', 'Maintenant')) + '</text>');
+    // Now line — vertical marker at today's column (only when today falls in window)
+    if (today >= windowStart && today <= windowEnd) {
+      var todayIdx = Math.round((today - windowStart) / 86400000);
+      var nowX = labelW + (todayIdx + 1) * cellW;
+      parts.push('<line class="now-line" x1="' + nowX.toFixed(1) + '" y1="' + topPad + '" x2="' + nowX.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
+      parts.push('<text class="now-label" x="' + (nowX - 3).toFixed(1) + '" y="' + (topPad - 6) + '" text-anchor="end">' + esc(T('common.now', 'Maintenant')) + '</text>');
+    }
 
     svg.innerHTML = parts.join('');
 
@@ -1155,9 +1252,28 @@
     panel.setAttribute('aria-hidden', 'true');
   }
 
+  // ─── Render période nav (flèches + label) ─────────────────────
+  function renderPeriodNav() {
+    var nav = document.getElementById('period-nav');
+    var label = document.getElementById('period-nav-label');
+    var prev = document.getElementById('period-prev');
+    var next = document.getElementById('period-next');
+    if (!nav || !label || !prev || !next) return;
+    if (granularity === 'total') {
+      nav.classList.add('is-hidden');
+      return;
+    }
+    nav.classList.remove('is-hidden');
+    var range = getPeriodRange();
+    label.textContent = formatPeriodLabel(range);
+    prev.disabled = !range.canPrev;
+    next.disabled = !range.canNext;
+  }
+
   // ─── Render global ───────────────────────────────────────────
   function render() {
     if (!graphData || !timeseriesData) return;
+    renderPeriodNav();
     renderKPIs();
     renderHeatmap();
   }
@@ -1176,16 +1292,30 @@
     });
   });
   // Filtres période (pills)
-  document.querySelectorAll('[data-period]').forEach(function(btn) {
+  document.querySelectorAll('[data-gran]').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      filterDays = parseInt(btn.getAttribute('data-period'), 10) || 30;
-      document.querySelectorAll('[data-period]').forEach(function(b) {
+      granularity = btn.getAttribute('data-gran') || 'month';
+      periodOffset = 0;
+      document.querySelectorAll('[data-gran]').forEach(function(b) {
         var active = b === btn;
         b.classList.toggle('is-active', active);
         b.setAttribute('aria-checked', active ? 'true' : 'false');
       });
       render();
     });
+  });
+  // Navigation période (flèches)
+  var prevBtn = document.getElementById('period-prev');
+  var nextBtn = document.getElementById('period-next');
+  if (prevBtn) prevBtn.addEventListener('click', function() {
+    if (prevBtn.disabled) return;
+    periodOffset -= 1;
+    render();
+  });
+  if (nextBtn) nextBtn.addEventListener('click', function() {
+    if (nextBtn.disabled) return;
+    periodOffset += 1;
+    render();
   });
   // Recherche
   var searchInput = document.getElementById('search-input');
