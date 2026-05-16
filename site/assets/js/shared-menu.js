@@ -244,6 +244,8 @@
       '  <h2 id="rp-issue-title" data-i18n="report.modal_title">Signaler un problème</h2>',
       '  <p class="rp-issue-dek" data-i18n="report.modal_dek">Décris brièvement ce qui ne va pas, avec le plus de contexte possible.</p>',
       '  <p class="rp-issue-context" id="rp-issue-context"></p>',
+      '  <label class="rp-issue-field-label" for="rp-issue-name">Nom (optionnel)</label>',
+      '  <input type="text" id="rp-issue-name" maxlength="120" placeholder="Ex: Camille" autocomplete="name" />',
       '  <textarea id="rp-issue-text" maxlength="2000" data-i18n-placeholder="report.placeholder" placeholder="Ex: le score affiché semble incohérent avec les articles listés."></textarea>',
       '  <p class="rp-issue-note" id="rp-issue-note"></p>',
       '  <div class="rp-issue-actions">',
@@ -255,6 +257,7 @@
     document.body.appendChild(modal);
 
     var menuBtn = document.getElementById('rp-issue-menu-btn');
+    var nameInput = document.getElementById('rp-issue-name');
     var textarea = document.getElementById('rp-issue-text');
     var note = document.getElementById('rp-issue-note');
     var contextLine = document.getElementById('rp-issue-context');
@@ -276,6 +279,7 @@
 
     function closeModal() {
       modal.classList.remove('open');
+      if (nameInput) nameInput.value = '';
       if (textarea) textarea.value = '';
       if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l\'envoi.');
       uiState = 'idle';
@@ -292,7 +296,13 @@
       applyReportTexts();
       modal.classList.add('open');
       uiState = 'modal';
-      setTimeout(function() { if (textarea) textarea.focus(); }, 10);
+      setTimeout(function() {
+        if (nameInput) {
+          nameInput.focus();
+          return;
+        }
+        if (textarea) textarea.focus();
+      }, 10);
     }
 
     function showSubmitResult(ok) {
@@ -316,6 +326,7 @@
 
     async function submitReport() {
       if (!textarea || !submitBtn) return;
+      var reporterName = nameInput ? (nameInput.value || '').trim() : '';
       var description = (textarea.value || '').trim();
       if (!description) return;
       if (!REPORT_ENABLED) {
@@ -335,6 +346,7 @@
           event_type: REPORT_EVENT_TYPE,
           client_payload: {
             description: description,
+            reporter_name: reporterName,
             section: reportCtx.section,
             element_context: reportCtx.elementContext,
             page: reportCtx.page,

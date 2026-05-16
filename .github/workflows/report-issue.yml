@@ -42,6 +42,7 @@ jobs:
 
             const p = context.payload.client_payload || {};
             const description = safeText(p.description, 4000);
+            const reporterName = safeText(p.reporter_name, 120);
             const section = safeText(p.section, 140) || "Section inconnue";
             const elementContext = safeText(p.element_context, 240);
             const page = safeText(p.page, 240);
@@ -56,6 +57,7 @@ jobs:
             const body = [
               "## Signalement utilisateur",
               "",
+              `- Nom: ${reporterName || "(non renseigné)"}`,
               `- Section: ${section}`,
               `- Page: ${page || "(non fournie)"}`,
               `- URL: ${url || "(non fournie)"}`,
