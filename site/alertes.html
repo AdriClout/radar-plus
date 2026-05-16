@@ -84,6 +84,10 @@
       gap: 6px;
       flex-wrap: wrap;
     }
+    .filter-bar > .filter-group:nth-child(2) {
+      flex-basis: 100%;
+      margin-top: 4px;
+    }
     .filter-label-txt {
       font-size: 9px;
       letter-spacing: 1.2px;
@@ -175,12 +179,7 @@
       padding: 14px 18px;
       background: var(--card-bg);
       border: 1px solid var(--border);
-          /* existing styles */
       cursor: pointer;
-        .filter-bar > .filter-group:nth-child(2) {
-          flex-basis: 100%;
-          margin-top: 4px;
-        }
       transition: background 0.15s, border-color 0.15s, transform 0.1s;
       user-select: none;
     }
