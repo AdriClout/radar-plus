@@ -1250,7 +1250,7 @@
     });
 
     groupedCount = Object.keys(groupedClusters).length;
-    console.log('CLUSTERING STATS [' + (filterPeriod || 'all') + ']:', {
+    console.log('CLUSTERING STATS [' + (granularity || 'all') + ']:', {
       totalObjects: objectRows.length,
       grouped: {count: groupedCount, members: groupedMembers},
       solo: soloCount,
