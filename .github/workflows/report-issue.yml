@@ -15,10 +15,12 @@ jobs:
     steps:
       - name: Validate payload
         id: validate
+        env:
+          REPORT_DESCRIPTION: ${{ github.event.client_payload.description }}
         shell: bash
         run: |
           set -euo pipefail
-          desc='${{ github.event.client_payload.description }}'
+          desc="${REPORT_DESCRIPTION:-}"
           if [[ -z "$desc" ]]; then
             echo "Missing description" >&2
             exit 1
