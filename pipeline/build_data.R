@@ -35,11 +35,21 @@ ALERT_MIN_ABS_SCORE    <- 1.0  # Plancher absolu de saillance — sous ce seuil,
 # /convergence dans la classification — uniquement le pic vs seuils calibrés.
 
 # Clustering historique 130j : 2 épisodes du même pays sont considérés comme
-# faisant partie du MÊME événement si leur intervalle temporel se chevauche
-# ≥ N% de la durée du plus court. Permet de regrouper Iran+Israel (même date,
-# même pays) ou les multiples objets d'une élection (Liberal Party +
-# circonscriptions le même jour).
-ALERT_CLUSTER_OVERLAP_FRAC <- 0.5
+# faisant partie du MÊME événement si (1) leur intervalle temporel se chevauche
+# ≥ ALERT_CLUSTER_OVERLAP_FRAC de la durée du plus court ET (2) leurs articles
+# pendant le chevauchement temporel se recoupent suffisamment.
+# La passe co-occurrence évite que deux histoires distinctes (ex: élection
+# fédérale + mission spatiale) soient fusionnées juste parce qu'elles
+# pic le même jour. Permet de garder Iran+Israel (même date, articles
+# partagés) tout en séparant Carney+Artemis II.
+#
+# Seuils co-occurrence (vérifiés pendant le chevauchement temporel seulement) :
+#   - au moins ALERT_CLUSTER_MIN_SHARED_URLS articles partagés (plancher absolu)
+#   - ET containment = shared / min(|A|, |B|) >= ALERT_CLUSTER_CONTAINMENT
+#     (sinon 1-2 articles partagés entre 2 gros épisodes ne suffisent pas)
+ALERT_CLUSTER_OVERLAP_FRAC      <- 0.5
+ALERT_CLUSTER_MIN_SHARED_URLS   <- 2
+ALERT_CLUSTER_CONTAINMENT       <- 0.15
 
 # Objets génériques exclus par pays (même logique que radar-hot-20)
 EXCLUSION_BY_COUNTRY <- list(
@@ -91,6 +101,20 @@ df_objects <- readr::read_csv(file.path(OUT_DIR, "salient_objects.csv"),
 cat("  →", nrow(df_objects), "lignes médias chargées\n")
 
 cat("Préparation des données d'alerte (3 niveaux dérivés du pic)...\n")
+
+# Exclure les objets génériques par pays (quebec en QC, canada en CAN, etc.).
+# Ils sont filtrés du graph (constellation) et doivent l'être aussi du
+# clustering historique pour ne pas polluer les pivots (ex: « quebec » qui
+# dominait toujours le cluster Drainville et finissait pivot invisible).
+.excl_pairs <- do.call(rbind, lapply(names(EXCLUSION_BY_COUNTRY), function(c_name) {
+  data.frame(country_id = c_name,
+             extracted_objects = tolower(EXCLUSION_BY_COUNTRY[[c_name]]),
+             stringsAsFactors = FALSE)
+}))
+.before_n <- nrow(df_index)
+df_index <- df_index |>
+  dplyr::anti_join(.excl_pairs, by = c("country_id", "extracted_objects"))
+cat("  →", .before_n - nrow(df_index), "lignes filtrées (objets génériques par pays)\n")
 
 df_index <- df_index |>
   dplyr::arrange(country_id, extracted_objects, date_utc, time_interval_utc)
@@ -282,6 +306,114 @@ if (nrow(active_eps) > 0) {
     }
   }
 
+  # ─── Étape 4b·bis : raffinement co-occurrence ────────────────────────────
+  # Le clustering temporel regroupe tout ce qui pic le même jour, ce qui
+  # fusionne des histoires distinctes (ex: Carney/élection + Artemis II).
+  # On vérifie maintenant que les membres d'un cluster partagent réellement
+  # des articles. Sinon, on scinde le cluster en composantes connexes.
+  cat("Raffinement co-occurrence (split clusters non-cohérents)...\n")
+
+  # URLs par (pays, objet, jour) à partir des articles individuels
+  urls_by_obj_day <- df_objects |>
+    dplyr::filter(!is.na(url) & url != "") |>
+    tidyr::separate_rows(extracted_objects, sep = ",") |>
+    dplyr::mutate(
+      extracted_objects = tolower(trimws(extracted_objects)),
+      extracted_objects = stringr::str_remove_all(extracted_objects, "[[:punct:]]")
+    ) |>
+    dplyr::filter(!is.na(extracted_objects) & extracted_objects != "") |>
+    dplyr::group_by(country_id, extracted_objects, date_utc) |>
+    dplyr::summarise(urls = list(unique(url)), .groups = "drop")
+
+  urls_env <- new.env(hash = TRUE, parent = emptyenv())
+  for (k in seq_len(nrow(urls_by_obj_day))) {
+    key <- paste0(urls_by_obj_day$country_id[k], "|",
+                  urls_by_obj_day$extracted_objects[k], "|",
+                  as.character(urls_by_obj_day$date_utc[k]))
+    assign(key, urls_by_obj_day$urls[[k]], envir = urls_env)
+  }
+
+  get_urls_range <- function(country, object, start_day, end_day) {
+    days <- seq(as.Date(start_day), as.Date(end_day), by = "day")
+    keys <- paste0(country, "|", object, "|", as.character(days))
+    out <- character(0)
+    for (kk in keys) {
+      if (exists(kk, envir = urls_env, inherits = FALSE)) {
+        out <- c(out, get(kk, envir = urls_env, inherits = FALSE))
+      }
+    }
+    unique(out)
+  }
+
+  n_splits <- 0L
+  n_eps_split_out <- 0L
+  cluster_split_counter <- 0L
+  for (cid_old in unique(active_eps$cluster_id)) {
+    idx <- which(active_eps$cluster_id == cid_old)
+    if (length(idx) < 2) next
+
+    n <- length(idx)
+    starts <- as.Date(active_eps$ep_first_day[idx])
+    ends   <- as.Date(active_eps$ep_last_day[idx])
+    countries_v <- active_eps$country_id[idx]
+    objects_v   <- active_eps$extracted_objects[idx]
+
+    # Construit le graphe pondéré : poids d'arête = containment dans
+    # le chevauchement temporel. Sous le seuil → pas d'arête.
+    edge_i <- integer(0); edge_j <- integer(0); edge_w <- numeric(0)
+    for (i in seq_len(n - 1L)) {
+      for (j in (i + 1L):n) {
+        ov_start <- max(starts[i], starts[j])
+        ov_end   <- min(ends[i], ends[j])
+        if (ov_end < ov_start) next  # pas de chevauchement direct
+        ui <- get_urls_range(countries_v[i], objects_v[i], ov_start, ov_end)
+        uj <- get_urls_range(countries_v[j], objects_v[j], ov_start, ov_end)
+        if (!length(ui) || !length(uj)) {
+          # Données manquantes : connexion temporelle faible mais on lie quand
+          # même pour éviter de scinder un cluster valide à cause d'un trou.
+          edge_i <- c(edge_i, i); edge_j <- c(edge_j, j); edge_w <- c(edge_w, 0.001)
+          next
+        }
+        shared <- length(intersect(ui, uj))
+        if (shared < ALERT_CLUSTER_MIN_SHARED_URLS) next
+        containment <- shared / min(length(ui), length(uj))
+        if (containment < ALERT_CLUSTER_CONTAINMENT) next
+        edge_i <- c(edge_i, i); edge_j <- c(edge_j, j); edge_w <- c(edge_w, containment)
+      }
+    }
+
+    if (!length(edge_i)) {
+      # Aucune arête : tous les épisodes sont déconnectés → chacun seul
+      roots <- seq_len(n)
+    } else {
+      # Communautés par Louvain (modularité) sur le graphe pondéré
+      g <- igraph::make_empty_graph(n = n, directed = FALSE)
+      g <- igraph::add_edges(g, rbind(edge_i, edge_j), attr = list(weight = edge_w))
+      comm <- igraph::cluster_louvain(g, weights = igraph::E(g)$weight)
+      roots <- as.integer(igraph::membership(comm))
+    }
+    uroots <- unique(roots)
+    if (length(uroots) == 1L) next
+
+    n_splits <- n_splits + 1L
+    n_eps_split_out <- n_eps_split_out + (length(uroots) - 1L)
+    comp_sizes <- vapply(uroots, function(r) sum(roots == r), integer(1))
+    ord <- order(-comp_sizes)
+    uroots_ord <- uroots[ord]
+    for (k in seq_along(uroots_ord)) {
+      r <- uroots_ord[k]
+      comp_idx <- idx[roots == r]
+      if (k == 1L) next  # plus grosse composante garde cid_old
+      cluster_split_counter <- cluster_split_counter + 1L
+      new_cid <- sprintf("%s-s%02d", cid_old, k - 1L)
+      active_eps$cluster_id[comp_idx] <- new_cid
+    }
+  }
+
+  cat("  →", n_splits, "clusters scindés (", n_eps_split_out,
+      "nouveaux sous-clusters créés)\n", sep = " ")
+  cat("  →", length(unique(active_eps$cluster_id)), "clusters finaux\n")
+
   # Pour chaque cluster, élire le "pivot" : le tier le plus élevé (rang le plus
   # bas dans la priorité), à égalité le pic le plus haut.
   TIER_RANK_R <- c(extreme=1L, tres_eleve=2L, eleve=3L, none=99L)
@@ -297,9 +429,9 @@ if (nrow(active_eps) > 0) {
       cluster_size  = dplyr::n()
     ) |>
     # En cas d'égalité parfaite (deux objets pic identique), on garde le
-    # premier (déterministe par ordre row_number()).
+    # premier (déterministe par ordre d'apparition dans le groupe).
     dplyr::mutate(
-      cluster_pivot = cluster_pivot & (dplyr::row_number(dplyr::if_else(cluster_pivot, 1L, 0L)) == 1L)
+      cluster_pivot = cluster_pivot & (cumsum(cluster_pivot) == 1L)
     ) |>
     dplyr::ungroup() |>
     dplyr::select(-.tier_rank, -.min_rank, -.max_peak_in_min_rank)
