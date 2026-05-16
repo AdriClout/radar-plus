@@ -542,10 +542,10 @@
 
       <div class="filter-group" role="radiogroup" aria-label="Période">
         <span class="filter-label-txt" data-i18n="alertes.filter_period">Période</span>
-        <button class="pill-btn" data-period="14"  role="radio" aria-checked="false">14 j</button>
-        <button class="pill-btn" data-period="30"  role="radio" aria-checked="false">30 j</button>
-        <button class="pill-btn" data-period="90"  role="radio" aria-checked="false">90 j</button>
-        <button class="pill-btn is-active" data-period="130" role="radio" aria-checked="true">130 j</button>
+        <button class="pill-btn" data-period="1"   role="radio" aria-checked="false" data-i18n="period.day">Jour</button>
+        <button class="pill-btn" data-period="7"   role="radio" aria-checked="false" data-i18n="period.week">Semaine</button>
+        <button class="pill-btn is-active" data-period="30"  role="radio" aria-checked="true" data-i18n="period.month">Mois</button>
+        <button class="pill-btn" data-period="130" role="radio" aria-checked="false" data-i18n="period.total">Total</button>
       </div>
 
       <div class="search-wrap">
@@ -627,7 +627,7 @@
   let articlesData = null;
   let articlesLoadPromise = null;
   let filterCountry = 'all';
-  let filterDays = 130;
+  let filterDays = 30;
   let searchQuery = '';
   let kpiTiersHidden = new Set();
   let selectedCell = null;  // { country, id, date }
@@ -1173,7 +1173,7 @@
   // Filtres période (pills)
   document.querySelectorAll('[data-period]').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      filterDays = parseInt(btn.getAttribute('data-period'), 10) || 130;
+      filterDays = parseInt(btn.getAttribute('data-period'), 10) || 30;
       document.querySelectorAll('[data-period]').forEach(function(b) {
         var active = b === btn;
         b.classList.toggle('is-active', active);
