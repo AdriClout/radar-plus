@@ -360,6 +360,19 @@
     .ttip .tt-meta { color: var(--muted); font-size: 9px; }
 
     /* ── Side panel ──────────────────────────────────────── */
+    #panel-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,10,0.55);
+      z-index: 190;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #panel-overlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
     #side-panel {
       position: fixed;
       top: 0; right: 0;
@@ -657,6 +670,7 @@
 </div>
 
 <!-- ── Side panel ───────────────────────────────────────────────── -->
+<div id="panel-overlay" aria-hidden="true"></div>
 <aside id="side-panel" aria-hidden="true">
   <div class="panel-head">
     <span id="panel-tier-badge" class="panel-tier-badge"></span>
@@ -1207,8 +1221,7 @@
       +   '<div class="panel-empty">' + esc(T('common.loading', 'Chargement…')) + '</div>'
       + '</div>';
 
-    panel.classList.add('is-open');
-    panel.setAttribute('aria-hidden', 'false');
+    showSidePanel();
 
     loadArticles().then(function(data) {
       var arts = [];
@@ -1351,15 +1364,37 @@
       +   '</div>'
       + '</div>';
 
-    panel.classList.add('is-open');
-    panel.setAttribute('aria-hidden', 'false');
+    showSidePanel();
   }
 
   function closeSidePanel() {
     var panel = document.getElementById('side-panel');
-    if (!panel) return;
-    panel.classList.remove('is-open');
-    panel.setAttribute('aria-hidden', 'true');
+    var overlay = document.getElementById('panel-overlay');
+    if (panel) {
+      panel.classList.remove('is-open');
+      panel.setAttribute('aria-hidden', 'true');
+    }
+    if (overlay) {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+    if (selectedCell) {
+      selectedCell = null;
+      renderHeatmap();
+    }
+  }
+
+  function showSidePanel() {
+    var panel = document.getElementById('side-panel');
+    var overlay = document.getElementById('panel-overlay');
+    if (panel) {
+      panel.classList.add('is-open');
+      panel.setAttribute('aria-hidden', 'false');
+    }
+    if (overlay) {
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden', 'false');
+    }
   }
 
   // ─── Render période nav (flèches + label) ─────────────────────
@@ -1456,6 +1491,7 @@
   if (restoreBtn) restoreBtn.addEventListener('click', restoreTicker);
   // Side panel
   document.getElementById('panel-close').addEventListener('click', closeSidePanel);
+  document.getElementById('panel-overlay').addEventListener('click', closeSidePanel);
   document.addEventListener('keydown', function(ev) {
     if (ev.key === 'Escape') closeSidePanel();
   });
