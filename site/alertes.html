@@ -1028,7 +1028,8 @@
               lastDate: '',
               topRank: 99,
               topTier: 'none',
-              maxPeak: 0
+              maxPeak: 0,
+              clusterStats: {}
             };
           }
           var prev = byObj[key].days[date];
@@ -1041,6 +1042,25 @@
             byObj[key].topTier = lvl;
           }
           if (size > byObj[key].maxPeak) byObj[key].maxPeak = size;
+
+          if (n.alert_cluster_id) {
+            if (!byObj[key].clusterStats[n.alert_cluster_id]) {
+              byObj[key].clusterStats[n.alert_cluster_id] = {
+                clusterId: n.alert_cluster_id,
+                lastDate: date,
+                count: 0,
+                isPivot: false,
+                clusterSize: 0,
+                topRank: 99
+              };
+            }
+            var cs = byObj[key].clusterStats[n.alert_cluster_id];
+            cs.count += 1;
+            if (date > cs.lastDate) cs.lastDate = date;
+            if (n.alert_cluster_pivot) cs.isPivot = true;
+            if (typeof n.alert_cluster_size === 'number' && n.alert_cluster_size > cs.clusterSize) cs.clusterSize = n.alert_cluster_size;
+            if (tierRank(lvl) < cs.topRank) cs.topRank = tierRank(lvl);
+          }
         });
       });
     });
@@ -1048,81 +1068,56 @@
     return Object.keys(byObj).map(function(key) { return byObj[key]; });
   }
 
-  function buildHeatmapEventGrouping(range, rowByKey) {
+  function buildHeatmapClusterGrouping(rowByKey) {
     var assignments = {};
-    var groups = [];
-    if (!graphData || !graphData.graphs) return { groups: groups, assignments: assignments };
+    var groupsById = {};
 
-    var eventsById = {};
-    Object.keys(graphData.graphs).forEach(function(country) {
-      if (filterCountry !== 'all' && country !== filterCountry) return;
-      var periods = graphData.graphs[country];
-      Object.keys(periods).forEach(function(pk) {
-        var gd = periods[pk];
-        if (!gd || !Array.isArray(gd.events) || !gd.events.length) return;
-        var date = pk.split('_')[0];
-        var dd = new Date(date);
-        if (dd < range.start || dd > range.end) return;
-
-        gd.events.forEach(function(ev) {
-          if (!ev || !ev.pivot || !ev.pivot.id) return;
-          var eventId = ev.event_id || [country, pk, ev.pivot.id].join('|');
-          if (!eventsById[eventId]) {
-            eventsById[eventId] = {
-              eventId: eventId,
-              country: country,
-              pivotId: ev.pivot.id,
-              lastDate: date,
-              topTier: ev.pivot.alert_level || 'none',
-              topRank: tierRank(ev.pivot.alert_level || 'none'),
-              objectKeys: {},
-              objectCount: 0
-            };
-          }
-          var record = eventsById[eventId];
-          if (date > record.lastDate) record.lastDate = date;
-
-          var memberIds = [ev.pivot.id];
-          if (Array.isArray(ev.members)) {
-            ev.members.forEach(function(member) {
-              if (!member || !member.id) return;
-              memberIds.push(member.id);
-              var level = member.alert_level || 'none';
-              if (tierRank(level) < record.topRank) {
-                record.topRank = tierRank(level);
-                record.topTier = level;
-              }
-            });
-          }
-
-          memberIds.forEach(function(objectId) {
-            var objectKey = country + '|' + objectId;
-            if (!rowByKey[objectKey] || record.objectKeys[objectKey]) return;
-            record.objectKeys[objectKey] = true;
-            record.objectCount += 1;
-          });
-        });
+    Object.keys(rowByKey).forEach(function(objectKey) {
+      var row = rowByKey[objectKey];
+      var statsList = Object.keys(row.clusterStats || {}).map(function(clusterId) {
+        return row.clusterStats[clusterId];
       });
+      if (!statsList.length) return;
+
+      statsList.sort(function(a, b) {
+        var d = b.lastDate.localeCompare(a.lastDate);
+        if (d !== 0) return d;
+        if (a.topRank !== b.topRank) return a.topRank - b.topRank;
+        return b.count - a.count;
+      });
+
+      var best = statsList[0];
+      assignments[objectKey] = {
+        clusterId: best.clusterId,
+        lastDate: best.lastDate,
+        topRank: best.topRank
+      };
+
+      if (!groupsById[best.clusterId]) {
+        groupsById[best.clusterId] = {
+          clusterId: best.clusterId,
+          country: row.country,
+          lastDate: best.lastDate,
+          topRank: best.topRank,
+          objectKeys: [],
+          pivotKey: null,
+          declaredSize: best.clusterSize || 0
+        };
+      }
+      var group = groupsById[best.clusterId];
+      group.objectKeys.push(objectKey);
+      if (best.lastDate > group.lastDate) group.lastDate = best.lastDate;
+      if (best.topRank < group.topRank) group.topRank = best.topRank;
+      if ((best.clusterSize || 0) > group.declaredSize) group.declaredSize = best.clusterSize || 0;
+      if (best.isPivot) group.pivotKey = objectKey;
     });
 
-    Object.keys(eventsById).forEach(function(eventId) {
-      var record = eventsById[eventId];
-      var objectKeys = Object.keys(record.objectKeys);
-      if (!objectKeys.length) return;
-      groups.push(record);
-      objectKeys.forEach(function(objectKey) {
-        var current = assignments[objectKey];
-        if (!current || record.lastDate > current.lastDate || (record.lastDate === current.lastDate && record.topRank < current.topRank)) {
-          assignments[objectKey] = { eventId: eventId, lastDate: record.lastDate, topRank: record.topRank };
-        }
-      });
+    var groups = Object.keys(groupsById).map(function(clusterId) {
+      return groupsById[clusterId];
+    }).filter(function(group) {
+      return group.objectKeys.length > 0;
     });
 
-    groups = groups.filter(function(record) {
-      return Object.keys(record.objectKeys).some(function(objectKey) {
-        return assignments[objectKey] && assignments[objectKey].eventId === record.eventId;
-      });
-    });
     groups.sort(function(a, b) {
       var d = b.lastDate.localeCompare(a.lastDate);
       if (d !== 0) return d;
@@ -1143,44 +1138,42 @@
       rowByKey[row.country + '|' + row.id] = row;
     });
 
-    var grouping = buildHeatmapEventGrouping(range, rowByKey);
-    var groupedEvents = {};
+    var grouping = buildHeatmapClusterGrouping(rowByKey);
+    var groupedClusters = {};
     var rows = [];
 
     grouping.groups.forEach(function(group) {
-      var members = Object.keys(group.objectKeys)
-        .filter(function(objectKey) {
-          return grouping.assignments[objectKey] && grouping.assignments[objectKey].eventId === group.eventId;
-        })
+      var members = group.objectKeys
         .map(function(objectKey) { return rowByKey[objectKey]; })
         .filter(Boolean)
         .sort(compareHeatmapRows);
       if (members.length < 2) return;
 
-      groupedEvents[group.eventId] = true;
+      groupedClusters[group.clusterId] = true;
+      var pivotRow = group.pivotKey && rowByKey[group.pivotKey] ? rowByKey[group.pivotKey] : members[0];
       rows.push({
         kind: 'event',
-        eventId: group.eventId,
+        eventId: group.clusterId,
         country: group.country,
-        id: group.pivotId,
-        label: group.pivotId,
+        id: pivotRow ? pivotRow.id : members[0].id,
+        label: pivotRow ? pivotRow.id : members[0].id,
         lastDate: group.lastDate,
         topRank: group.topRank,
-        topTier: group.topTier,
+        topTier: pivotRow ? pivotRow.topTier : members[0].topTier,
         objectCount: members.length
       });
 
       members.forEach(function(member) {
         member.kind = 'object';
         member.isMember = true;
-        member.parentEventId = group.eventId;
+        member.parentEventId = group.clusterId;
         rows.push(member);
       });
     });
 
     objectRows.forEach(function(row) {
       var assignment = grouping.assignments[row.country + '|' + row.id];
-      if (assignment && groupedEvents[assignment.eventId]) return;
+      if (assignment && groupedClusters[assignment.clusterId]) return;
       row.kind = 'object';
       row.isMember = false;
       row.parentEventId = null;
