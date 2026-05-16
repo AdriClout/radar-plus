@@ -479,6 +479,39 @@
       min-width: 0;
     }
     .panel-member-meta { font-size: 9px; color: var(--muted); }
+    .panel-article {
+      display: block;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: rgba(10,18,50,0.5);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .panel-article:hover { border-color: var(--accent); background: rgba(20,32,72,0.85); }
+    .panel-article-media {
+      display: inline-block;
+      font-family: var(--orbitron);
+      font-size: 9px;
+      letter-spacing: 0.8px;
+      color: rgba(110,176,255,0.95);
+      margin-right: 8px;
+      text-transform: uppercase;
+    }
+    .panel-article-title {
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: rgba(230,240,255,0.92);
+    }
+    .panel-empty {
+      padding: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+    }
     .panel-tier-mini {
       font-size: 8px;
       letter-spacing: 0.6px;
@@ -1046,8 +1079,11 @@
         var country = cell.getAttribute('data-country');
         var id = cell.getAttribute('data-id');
         var date = cell.getAttribute('data-date');
+        var tier = cell.getAttribute('data-tier');
+        var size = parseFloat(cell.getAttribute('data-size')) || 0;
         selectedCell = { country: country, id: id, date: date };
         renderHeatmap();  // refresh selection state
+        openDayPanel(country, id, date, tier, size);
         showDayArticlesInTicker(country, id, date);
       });
       cell.addEventListener('mouseenter', function(ev) {
@@ -1148,6 +1184,80 @@
           }
         });
     }
+  }
+
+  // ─── Side panel — version "jour" (articles d'une cellule) ──────
+  function openDayPanel(country, id, date, tier, size) {
+    var panel = document.getElementById('side-panel');
+    var badge = document.getElementById('panel-tier-badge');
+    var countryEl = document.getElementById('panel-country');
+    var body = document.getElementById('panel-body');
+    if (!panel || !body) return;
+
+    badge.className = 'panel-tier-badge lvl-' + tierCss(tier);
+    badge.textContent = tier === 'none' ? '—' : tierLabel(tier);
+    countryEl.textContent = countryLabel(country);
+
+    var headHTML = '<div class="panel-title">' + esc(id) + '</div>'
+      + '<div class="panel-period">' + esc(fmtDay(date)) + ' · ' + esc(T('alertes.panel_peak', 'pic')) + ' ' + size.toFixed(1) + '</div>';
+
+    body.innerHTML = headHTML
+      + '<div class="panel-section">'
+      +   '<div class="panel-section-title">' + esc(T('alertes.panel_articles_section', 'Articles du jour')) + '</div>'
+      +   '<div class="panel-empty">' + esc(T('common.loading', 'Chargement…')) + '</div>'
+      + '</div>';
+
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+
+    loadArticles().then(function(data) {
+      var arts = [];
+      if (data && data.articles && data.articles[country]) {
+        var seen = {};
+        Object.keys(data.articles[country]).forEach(function(pk) {
+          if (pk.split('_')[0] !== date) return;
+          var byObj = data.articles[country][pk];
+          if (byObj && byObj[id] && Array.isArray(byObj[id])) {
+            byObj[id].forEach(function(a) {
+              if (!a || !a.url || seen[a.url]) return;
+              seen[a.url] = true;
+              arts.push(a);
+            });
+          }
+        });
+      }
+      var qC = encodeURIComponent(country);
+      var qN = encodeURIComponent(id);
+      var evoUrl = './evolution.html?country=' + qC + '&node=' + qN + '&mode=tracking&gran=week';
+      var cstUrl = './constellation.html?country=' + qC + '&node=' + qN;
+      var statsUrl = './statistiques.html?pays=' + qC + '&objet=' + qN;
+
+      var articlesHTML;
+      if (!arts.length) {
+        articlesHTML = '<div class="panel-empty">' + esc(T('alertes.panel_no_articles', 'Aucun article disponible pour cette journée.')) + '</div>';
+      } else {
+        articlesHTML = arts.map(function(a) {
+          return '<a class="panel-article" href="' + esc(a.url) + '" target="_blank" rel="noopener">'
+            +   '<span class="panel-article-media">' + esc(a.media_id || '') + '</span>'
+            +   '<span class="panel-article-title">' + esc(a.title || 'Article') + '</span>'
+            + '</a>';
+        }).join('');
+      }
+
+      body.innerHTML = headHTML
+        + '<div class="panel-section">'
+        +   '<div class="panel-section-title">' + esc(T('alertes.panel_articles_section', 'Articles du jour')) + ' (' + arts.length + ')</div>'
+        +   articlesHTML
+        + '</div>'
+        + '<div class="panel-section">'
+        +   '<div class="panel-section-title">' + esc(T('alertes.detail_see_in', 'Voir ailleurs')) + '</div>'
+        +   '<div class="panel-links">'
+        +     '<a class="panel-link-btn" href="' + esc(evoUrl) + '">' + esc(T('alertes.detail_nav_evolution', 'Évolution')) + ' →</a>'
+        +     '<a class="panel-link-btn" href="' + esc(cstUrl) + '">' + esc(T('alertes.detail_nav_constellation', 'Constellation')) + ' →</a>'
+        +     '<a class="panel-link-btn" href="' + esc(statsUrl) + '">' + esc(T('alertes.detail_nav_stats', 'Statistiques')) + ' →</a>'
+        +   '</div>'
+        + '</div>';
+    });
   }
 
   // ─── Side panel — version "objet" ─────────────────────────────
