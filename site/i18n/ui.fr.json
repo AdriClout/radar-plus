@@ -87,6 +87,7 @@
     "block_4h": "bloc 4h",
     "blocks_4h": "blocs 4h",
     "since_start": "Depuis le début",
+    "now": "Maintenant",
     "see_alerts": "Voir les alertes",
     "view_in_evolution": "Voir dans Évolution",
     "view_evolution_long": "Voir l’évolution dans le temps",
@@ -262,7 +263,7 @@
     "filter_period": "Période",
     "search_placeholder": "Rechercher un objet…",
 
-    "section_heatmap": "Heatmap calendaire",
+    "section_heatmap": "Calendrier des alertes",
     "heatmap_sub_v2": "jour × objet · clic = articles du jour · clic objet = détail",
 
     "kpi_hint_3lvl": "Clique un niveau pour le masquer / afficher.",

@@ -534,8 +534,8 @@
     <div class="filter-bar">
       <div class="filter-group" role="radiogroup" aria-label="Pays">
         <span class="filter-label-txt" data-i18n="alertes.filter_country">Pays</span>
-        <button class="pill-btn is-active" data-country="all" role="radio" aria-checked="true" data-i18n="common.all_countries">Tous</button>
-        <button class="pill-btn" data-country="QC"  role="radio" aria-checked="false" data-i18n="country.QC">Québec</button>
+        <button class="pill-btn" data-country="all" role="radio" aria-checked="false" data-i18n="common.all_countries">Tous</button>
+        <button class="pill-btn is-active" data-country="QC"  role="radio" aria-checked="true" data-i18n="country.QC">Québec</button>
         <button class="pill-btn" data-country="CAN" role="radio" aria-checked="false" data-i18n="country.CAN">Canada</button>
         <button class="pill-btn" data-country="USA" role="radio" aria-checked="false" data-i18n="country.USA">États-Unis</button>
       </div>
@@ -566,7 +566,7 @@
   <!-- ── Heatmap ──────────────────────────────────────────────── -->
   <section class="section">
     <div class="section-head">
-      <span class="section-title" data-i18n="alertes.section_heatmap">Heatmap calendaire</span>
+      <span class="section-title" data-i18n="alertes.section_heatmap">Calendrier des alertes</span>
       <span class="section-sub" data-i18n="alertes.heatmap_sub_v2">jour × objet · clic = articles du jour · clic objet = détail</span>
     </div>
     <div class="heatmap-wrap" id="heatmap-wrap">
@@ -626,7 +626,7 @@
   let timeseriesData = null;
   let articlesData = null;
   let articlesLoadPromise = null;
-  let filterCountry = 'all';
+  let filterCountry = 'QC';
   let filterDays = 30;
   let searchQuery = '';
   let kpiTiersHidden = new Set();
@@ -935,6 +935,11 @@
       parts.push('<line class="month-tick" x1="' + x.toFixed(1) + '" y1="' + topPad + '" x2="' + x.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
       parts.push('<text class="month-label" x="' + (x + 3).toFixed(1) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
     });
+
+    // Now line — vertical marker at today's column
+    var nowX = labelW + DAYS * cellW;
+    parts.push('<line class="now-line" x1="' + nowX.toFixed(1) + '" y1="' + topPad + '" x2="' + nowX.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
+    parts.push('<text class="now-label" x="' + (nowX - 3).toFixed(1) + '" y="' + (topPad - 6) + '" text-anchor="end">' + esc(T('common.now', 'Maintenant')) + '</text>');
 
     svg.innerHTML = parts.join('');
 

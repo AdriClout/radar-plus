@@ -87,6 +87,7 @@
     "block_4h": "4h block",
     "blocks_4h": "4h blocks",
     "since_start": "Since the beginning",
+    "now": "Now",
     "see_alerts": "See alerts",
     "view_in_evolution": "View in Evolution",
     "view_evolution_long": "View evolution over time",
@@ -262,7 +263,7 @@
     "filter_period": "Period",
     "search_placeholder": "Search an object…",
 
-    "section_heatmap": "Calendar heatmap",
+    "section_heatmap": "Alerts calendar",
     "heatmap_sub_v2": "day × object · click = day's articles · click object = detail",
 
     "kpi_hint_3lvl": "Click a level to hide / show it.",
