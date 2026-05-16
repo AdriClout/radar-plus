@@ -336,6 +336,18 @@
       stroke: rgba(120,170,255,0.28);
       stroke-width: 1;
     }
+    .heatmap-solo-line {
+      stroke: rgba(100,150,255,0.18);
+      stroke-width: 1;
+      stroke-dasharray: 2,3;
+    }
+    .heatmap-solo-label {
+      font-family: var(--orbitron);
+      font-size: 10px;
+      fill: rgba(200,220,255,0.85);
+      letter-spacing: 0.3px;
+      cursor: pointer;
+    }
     .month-tick { stroke: rgba(90,140,255,0.18); stroke-width: 1; stroke-dasharray: 2,3; }
     .month-label {
       font-family: var(--mono);
@@ -1001,6 +1013,14 @@
     return b.maxPeak - a.maxPeak;
   }
 
+  function compareHeatmapEntries(a, b) {
+    var d = b.lastDate.localeCompare(a.lastDate);
+    if (d !== 0) return d;
+    var r = a.topRank - b.topRank;
+    if (r !== 0) return r;
+    return (b.maxPeak || 0) - (a.maxPeak || 0);
+  }
+
   function buildHeatmapObjectRows(range) {
     var byObj = {};
     if (!timeseriesData || !timeseriesData.graphs) return [];
@@ -1140,7 +1160,7 @@
 
     var grouping = buildHeatmapClusterGrouping(rowByKey);
     var groupedClusters = {};
-    var rows = [];
+    var entries = [];
 
     grouping.groups.forEach(function(group) {
       var members = group.objectKeys
@@ -1151,7 +1171,7 @@
 
       groupedClusters[group.clusterId] = true;
       var pivotRow = group.pivotKey && rowByKey[group.pivotKey] ? rowByKey[group.pivotKey] : members[0];
-      rows.push({
+      entries.push({
         kind: 'event',
         eventId: group.clusterId,
         country: group.country,
@@ -1160,24 +1180,48 @@
         lastDate: group.lastDate,
         topRank: group.topRank,
         topTier: pivotRow ? pivotRow.topTier : members[0].topTier,
-        objectCount: members.length
-      });
-
-      members.forEach(function(member) {
-        member.kind = 'object';
-        member.isMember = true;
-        member.parentEventId = group.clusterId;
-        rows.push(member);
+        objectCount: members.length,
+        maxPeak: members.reduce(function(acc, member) {
+          return Math.max(acc, member.maxPeak || 0);
+        }, 0),
+        members: members
       });
     });
 
     objectRows.forEach(function(row) {
       var assignment = grouping.assignments[row.country + '|' + row.id];
       if (assignment && groupedClusters[assignment.clusterId]) return;
-      row.kind = 'object';
-      row.isMember = false;
-      row.parentEventId = null;
-      rows.push(row);
+      entries.push({
+        kind: 'object',
+        country: row.country,
+        id: row.id,
+        lastDate: row.lastDate,
+        topRank: row.topRank,
+        maxPeak: row.maxPeak,
+        row: row
+      });
+    });
+
+    entries.sort(compareHeatmapEntries);
+
+    var rows = [];
+    entries.forEach(function(entry) {
+      if (entry.kind === 'event') {
+        rows.push(entry);
+        entry.members.forEach(function(member) {
+          member.kind = 'object';
+          member.isMember = true;
+          member.parentEventId = entry.eventId;
+          rows.push(member);
+        });
+        return;
+      }
+
+      entry.row.kind = 'object';
+      entry.row.isMember = false;
+      entry.row.isSolo = true;
+      entry.row.parentEventId = null;
+      rows.push(entry.row);
     });
 
     return rows;
@@ -1238,12 +1282,18 @@
         return;
       }
 
-      var labelCls = 'heatmap-row-label' + (r.isMember ? ' is-member' : '');
-      var labelX = r.isMember ? 28 : 8;
-      parts.push('<text class="' + labelCls + '" x="' + labelX + '" y="' + (y + rowH/2 + 4) + '" data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '">'
-        + esc(truncate(r.id, r.isMember ? 22 : 22))
-        + (r.isMember ? '' : ' <tspan fill="rgba(140,170,220,0.55)" font-size="9">' + esc(r.country) + '</tspan>')
-        + '</text>');
+      if (r.isSolo) {
+        parts.push('<line class="heatmap-solo-line" x1="8" y1="' + (y + rowH - 2) + '" x2="' + (width - rightPad) + '" y2="' + (y + rowH - 2) + '" />');
+        parts.push('<text class="heatmap-solo-label" x="8" y="' + (y + rowH/2 + 4) + '" data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '">'
+          + esc(truncate(r.id, 22)) + ' <tspan fill="rgba(140,170,220,0.7)" font-size="9">' + esc(r.country) + '</tspan></text>');
+      } else {
+        var labelCls = 'heatmap-row-label' + (r.isMember ? ' is-member' : '');
+        var labelX = r.isMember ? 28 : 8;
+        parts.push('<text class="' + labelCls + '" x="' + labelX + '" y="' + (y + rowH/2 + 4) + '" data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '">'
+          + esc(truncate(r.id, r.isMember ? 22 : 22))
+          + (r.isMember ? '' : ' <tspan fill="rgba(140,170,220,0.55)" font-size="9">' + esc(r.country) + '</tspan>')
+          + '</text>');
+      }
       for (var i = 0; i < DAYS; i++) {
         var date = new Date(windowStart.getTime() + i * 86400000);
         var dateStr = date.toISOString().slice(0, 10);
@@ -1605,10 +1655,6 @@
     var prev = document.getElementById('period-prev');
     var next = document.getElementById('period-next');
     if (!nav || !label || !prev || !next) return;
-    if (granularity === 'total') {
-      nav.classList.add('is-hidden');
-      return;
-    }
     nav.classList.remove('is-hidden');
     var range = getPeriodRange();
     label.textContent = formatPeriodLabel(range);
