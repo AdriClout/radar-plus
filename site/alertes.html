@@ -640,6 +640,22 @@
       Trois niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours
     </p>
 
+    <div class="methodo-link-wrap">
+      <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
+    </div>
+  </header>
+
+  <!-- ── KPI bar : clic = toggle tier ─────────────────────────── -->
+  <div class="kpi-row" id="kpi-row"></div>
+  <div class="kpi-hint" id="kpi-hint" data-i18n="alertes.kpi_hint_3lvl">Clique un niveau pour le masquer/afficher.</div>
+
+  <!-- ── Heatmap ──────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-head">
+      <span class="section-title" data-i18n="alertes.section_heatmap">Calendrier des alertes</span>
+      <span class="section-sub" data-i18n="alertes.heatmap_sub_v2">jour × objet · clic = articles du jour · clic objet = détail</span>
+    </div>
+
     <div class="filter-bar">
       <div class="filter-group" role="radiogroup" aria-label="Pays">
         <span class="filter-label-txt" data-i18n="alertes.filter_country">Pays</span>
@@ -661,23 +677,8 @@
         <input type="text" id="search-input" class="search-input" placeholder="Rechercher un objet…" data-i18n-placeholder="alertes.search_placeholder" />
         <button type="button" id="search-clear" class="search-clear" aria-label="Effacer">×</button>
       </div>
-
-      <div class="methodo-link-wrap">
-        <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
-      </div>
     </div>
-  </header>
 
-  <!-- ── KPI bar : clic = toggle tier ─────────────────────────── -->
-  <div class="kpi-row" id="kpi-row"></div>
-  <div class="kpi-hint" id="kpi-hint" data-i18n="alertes.kpi_hint_3lvl">Clique un niveau pour le masquer/afficher.</div>
-
-  <!-- ── Heatmap ──────────────────────────────────────────────── -->
-  <section class="section">
-    <div class="section-head">
-      <span class="section-title" data-i18n="alertes.section_heatmap">Calendrier des alertes</span>
-      <span class="section-sub" data-i18n="alertes.heatmap_sub_v2">jour × objet · clic = articles du jour · clic objet = détail</span>
-    </div>
     <div class="period-nav" id="period-nav">
       <button class="period-nav-btn" id="period-prev" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Période précédente">‹</button>
       <span class="period-nav-label" id="period-nav-label"></span>
