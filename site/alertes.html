@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <!-- deployed: 2026-05-16T17:00:00Z -->
+  <!-- deployed: 2026-05-16T19:30:00Z -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RADAR+ · Alertes médiatiques</title>
@@ -331,12 +331,6 @@
     .heatmap-event-meta {
       fill: rgba(140,170,220,0.72);
       font-size: 9px;
-    }
-    .heatmap-event-context {
-      font-family: var(--mono);
-      font-size: 9px;
-      fill: rgba(170,195,235,0.62);
-      letter-spacing: 0.2px;
     }
     .heatmap-event-line {
       stroke: rgba(120,170,255,0.28);
@@ -1261,15 +1255,6 @@
     entries.sort(compareHeatmapEntries);
 
     var rows = [];
-    function pushContext(entry, parentId) {
-      if (!entry.contextIds || !entry.contextIds.length) return;
-      rows.push({
-        kind: 'context',
-        country: entry.country || (entry.row && entry.row.country),
-        parentEventId: parentId,
-        contextIds: entry.contextIds.slice()
-      });
-    }
     entries.forEach(function(entry) {
       if (entry.kind === 'event') {
         rows.push(entry);
@@ -1279,7 +1264,6 @@
           member.parentEventId = entry.eventId;
           rows.push(member);
         });
-        pushContext(entry, entry.eventId);
         return;
       }
 
@@ -1289,7 +1273,6 @@
       entry.row.parentEventId = null;
       entry.row.contextIds = entry.contextIds || [];
       rows.push(entry.row);
-      pushContext(entry, null);
     });
 
     return rows;
@@ -1347,19 +1330,6 @@
         parts.push('<line class="heatmap-event-line" x1="8" y1="' + (y + rowH - 2) + '" x2="' + (width - rightPad) + '" y2="' + (y + rowH - 2) + '" />');
         parts.push('<text class="heatmap-event-label" x="8" y="' + (y + rowH/2 + 4) + '">' + esc(truncate(r.label, 22))
           + ' <tspan class="heatmap-event-meta">' + esc(r.country) + ' · ' + esc(String(r.objectCount)) + ' ' + esc(T('alertes.event_objects_count', 'objets')) + '</tspan></text>');
-        return;
-      }
-
-      if (r.kind === 'context') {
-        // Ligne thin contenant la liste d'objets sous-seuil associés au cluster
-        var maxNames = 8;
-        var names = r.contextIds.slice(0, maxNames);
-        var more = r.contextIds.length - names.length;
-        var prefix = T('alertes.also_mentioned', 'aussi') + ' · ';
-        var label = prefix + names.join(', ');
-        if (more > 0) label += ' (+' + more + ')';
-        var maxLen = Math.max(40, Math.floor((width - 16) / 5.5));
-        parts.push('<text class="heatmap-event-context" x="20" y="' + (y + rowH/2 + 3) + '">' + esc(truncate(label, maxLen)) + '</text>');
         return;
       }
 
