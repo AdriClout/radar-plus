@@ -59,7 +59,7 @@ jobs:
       - name: Install R packages
         run: |
           install.packages(
-            c("jsonlite", "dplyr", "purrr", "tidyr", "stringr", "readr"),
+            c("jsonlite", "dplyr", "purrr", "tidyr", "stringr", "readr", "igraph"),
             repos = "https://cloud.r-project.org",
             INSTALL_opts = c("--no-help", "--no-html", "--no-docs")
           )
