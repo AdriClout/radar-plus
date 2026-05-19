@@ -763,8 +763,13 @@ build_articles <- function(urls_json, titles_json, max_articles = 15) {
 # Une alerte signale un OBJET. Mais plusieurs objets peuvent monter ensemble
 # parce qu'ils couvrent le même événement (ex: WHO + Alberta + hantavirus →
 # un seul événement: la situation hantavirus). On regroupe les alertes par
-# pivot d'événement = objet (alerte ou non) qui CONTIENT les articles des
-# membres du cluster. Métrique: containment(membre → pivot) ≥ seuil.
+# pivot d'événement = objet ALERTÉ qui CONTIENT les articles des membres du
+# cluster. Métrique: containment(membre → pivot) ≥ seuil.
+#
+# Contrainte sémantique: le pivot doit lui-même être en alerte. Sinon on
+# afficherait un objet "calme" comme tête d'événement (ex: tage thompson
+# pivote rasmus dahlin parce qu'il a plus d'articles, alors qu'il n'est
+# pas alerté lui-même) — confusion pédagogique.
 ALERT_EVENT_CONTAINMENT <- 0.5
 
 parse_urls_set <- function(urls_json) {
@@ -783,9 +788,12 @@ build_alert_events <- function(nodes_i) {
 
   urls_sets <- lapply(nodes_i$urls, parse_urls_set)
 
-  # Pour chaque candidat-pivot, lister les alertes dont containment ≥ seuil
+  # Pour chaque candidat-pivot ALERTÉ, lister les alertes (autres) dont
+  # containment ≥ seuil. Pivot et membres sont tous des objets en alerte
+  # active sur cette période; un objet non-alerté ne peut pas piloter un
+  # événement même s'il agrège plus d'articles.
   candidates <- list()
-  for (p in seq_len(nrow(nodes_i))) {
+  for (p in alert_idx) {
     pivot_urls <- urls_sets[[p]]
     if (length(pivot_urls) < 2) next  # pivot doit avoir au moins 2 articles
     members <- integer(0)

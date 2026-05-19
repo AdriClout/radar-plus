@@ -1476,8 +1476,8 @@ function escapeHtml(str) {
 async function loadData() {
   try {
     var results = await Promise.all([
-      fetch('./graph.json').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
-      fetch('./timeseries.json').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+      fetch('./graph.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+      fetch('./timeseries.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
     ]);
     graphData = results[0];
     timeseriesData = results[1];
@@ -1829,6 +1829,14 @@ function renderHot20() {
       ? graphData.graphs[currentCountry][latestKey] : null;
     var latestNodes = latestGd && latestGd.nodes ? latestGd.nodes : [];
     latestNodes.forEach(function(n) {
+      // Source de vérité = pipeline: si un épisode est actif, on garde
+      // le niveau du pipeline même quand la taille du snapshot a baissé.
+      // Sinon, fallback sur le calcul size-tier pour highlighter les
+      // pics qui n'ont pas (encore) déclenché d'épisode.
+      if (n.alert_active && n.alert_level && n.alert_level !== 'none') {
+        currentAlertByName[n.id] = n.alert_level;
+        return;
+      }
       var lvl = deriveAlertLevel(currentCountry, n.size);
       if (!lvl) return;
       currentAlertByName[n.id] = lvl;

@@ -1889,7 +1889,13 @@
         (isTracked ? ' tracked' : '');
       item.dataset.nodeId = r.id;
       const curAlertNode = nodeAlertMap.get(r.id);
-      const curAlertLevel = curAlertNode ? deriveLevel(currentCountry, Number(curAlertNode.size)) : 'none';
+      // Source de vérité = pipeline (alert_active/alert_level): un épisode
+      // actif garde son badge même si la taille du bloc courant a baissé.
+      // Fallback: tier de saillance dérivé de la taille snapshot.
+      const pipelineLvl = curAlertNode && curAlertNode.alert_active && curAlertNode.alert_level && curAlertNode.alert_level !== 'none'
+        ? curAlertNode.alert_level
+        : null;
+      const curAlertLevel = pipelineLvl || (curAlertNode ? deriveLevel(currentCountry, Number(curAlertNode.size)) : 'none');
       const showAlertBadge = curAlertLevel && curAlertLevel !== 'none';
       const curAlertCss = showAlertBadge ? curAlertLevel.replace(/_/g, '-') : '';
       const alertBadgeHtml = showAlertBadge

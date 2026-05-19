@@ -479,13 +479,19 @@
 
   /* ================================================================
      BANDEAU D'ALERTE GLOBAL
-     Barre fixe en haut de toutes les pages, affiche les alertes
-     fortes et alertes de la période la plus récente.
+     Barre fixe en haut de toutes les pages, affiche les objets
+     actuellement en alerte (élevé / très élevé / extrême) sur la
+     période la plus récente.
   ================================================================ */
 
   // Niveaux montrés dans le bandeau global. Ordre = priorité décroissante.
-  // Les 5 tiers majeurs (veille/émergence restent discrets, pas dans le bandeau).
-  var ALERT_BAR_LEVELS = ['tsunami', 'eclipse', 'tempete', 'forte', 'alerte'];
+  // Taxonomie pipeline (build_data.R): 3 tiers d'alerte basés sur la grille
+  // de saillance par pays (high/very_high/extreme).
+  var ALERT_BAR_LEVELS = ['extreme', 'tres_eleve', 'eleve'];
+
+  // Convertit un niveau (avec underscore) en classe CSS (avec hyphen)
+  // pour aligner avec la convention des autres pages.
+  function levelCss(lvl) { return String(lvl == null ? '' : lvl).replace(/_/g, '-'); }
 
   function alertBarLabel(level) {
     if (window.t) {
@@ -528,11 +534,12 @@
                  '&node=' + encodeURIComponent(a.id) +
                  '&mode=tracking&gran=week';
 
+      var lvlCss = levelCss(a.level);
       if (a.isEvent && a.memberNames && a.memberNames.length) {
         var membersList = a.memberNames.map(function(n) {
           return '<span class="alert-bar-event-member">' + escHtml(n) + '</span>';
         }).join('<span class="alert-bar-event-sep" aria-hidden="true"> \u00b7 </span>');
-        return '<a class="alert-bar-item is-event level-' + escHtml(a.level) + '" href="' + escHtml(href) + '">' +
+        return '<a class="alert-bar-item is-event level-' + escHtml(lvlCss) + '" href="' + escHtml(href) + '">' +
           '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
           '<span class="alert-bar-event-tag" aria-hidden="true">\u25c6</span>' +
           '<span class="alert-bar-event-pivot">' + escHtml(a.id) + '</span>' +
@@ -544,7 +551,7 @@
           '<span class="alert-bar-sep" aria-hidden="true">\u2022</span>';
       }
 
-      return '<a class="alert-bar-item level-' + escHtml(a.level) + '" href="' + escHtml(href) + '">' +
+      return '<a class="alert-bar-item level-' + escHtml(lvlCss) + '" href="' + escHtml(href) + '">' +
         '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
         '<span class="alert-bar-item-name">'  + escHtml(a.id)  + '</span>' +
         (sc ? '<span class="alert-bar-item-score">' + escHtml(sc) + '</span>' : '') +
@@ -574,11 +581,16 @@
       if (!gd) continue;
 
       // 1) Indexer les events: les membres seront masqués au profit du pivot.
+      // Le pivot lui-même est aussi indexé — sinon il serait émis 2× (une
+      // fois comme tête d'event, une fois comme alerte individuelle) depuis
+      // qu'on force le pivot à être lui-même alerté.
       var events = Array.isArray(gd.events) ? gd.events : [];
       var memberIds = {};
       for (var ei = 0; ei < events.length; ei++) {
         var ev = events[ei];
-        if (!ev || !Array.isArray(ev.members)) continue;
+        if (!ev) continue;
+        if (ev.pivot && ev.pivot.id) memberIds[ev.pivot.id] = true;
+        if (!Array.isArray(ev.members)) continue;
         for (var mi = 0; mi < ev.members.length; mi++) memberIds[ev.members[mi].id] = true;
       }
 
@@ -603,7 +615,7 @@
         });
         // Trier les noms de membres par niveau d'alerte pour afficher
         // les plus saillants en premier dans le défilement.
-        var levelRank = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4, veille: 5, emergence: 6 };
+        var levelRank = { extreme: 0, tres_eleve: 1, eleve: 2 };
         var sortedMembers = ev2.members.slice().sort(function(a, b) {
           var la = levelRank[a.alert_level] !== undefined ? levelRank[a.alert_level] : 9;
           var lb = levelRank[b.alert_level] !== undefined ? levelRank[b.alert_level] : 9;
@@ -636,8 +648,8 @@
       }
     }
 
-    // Trier: tsunami > eclipse > tempete > forte > alerte, puis score desc
-    var BAR_LEVEL_RANK = { tsunami: 0, eclipse: 1, tempete: 2, forte: 3, alerte: 4 };
+    // Trier: extreme > tres_eleve > eleve, puis score desc
+    var BAR_LEVEL_RANK = { extreme: 0, tres_eleve: 1, eleve: 2 };
     alerts.sort(function(a, b) {
       var la = BAR_LEVEL_RANK[a.level] !== undefined ? BAR_LEVEL_RANK[a.level] : 9;
       var lb = BAR_LEVEL_RANK[b.level] !== undefined ? BAR_LEVEL_RANK[b.level] : 9;
@@ -657,8 +669,8 @@
       return;
     }
 
-    bar.classList.remove('bar-tsunami', 'bar-eclipse', 'bar-tempete', 'bar-forte', 'bar-alerte');
-    bar.classList.add('bar-' + alerts[0].level);
+    bar.classList.remove('bar-extreme', 'bar-tres-eleve', 'bar-eleve');
+    bar.classList.add('bar-' + levelCss(alerts[0].level));
 
     // Toujours partir d'une seule copie de itemsHtml comme référence
     // de mesure. La logique du multiplicateur ci-dessous calcule
