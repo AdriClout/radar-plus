@@ -949,7 +949,7 @@
     <div class="cst-tooltip-desc">Radar+ traduit cette visibilit&eacute; en chiffres. Chaque sujet &mdash; un enjeu, une personne, un lieu &mdash; re&ccedil;oit un indice qui combine sa position, sa taille et sa dur&eacute;e. Un indice &eacute;lev&eacute; signale un sujet qui domine la couverture; un indice faible, un sujet qui passe presque inaper&ccedil;u.</div>
   </div>
 </div>
-<div class="cst-zone" id="cst-zone-3" style="right:8%;top:56%;width:24%;height:25%">
+<div class="cst-zone" id="cst-zone-3" style="left:77%;top:57%;width:17%;height:21%">
   <div class="cst-tooltip" style="right:2%;bottom:calc(100% + 8px)">
     <div class="cst-tooltip-name">Recherche scientifique</div>
     <div class="cst-tooltip-desc">Les m&eacute;dias fa&ccedil;onnent les priorit&eacute;s du public&nbsp;: ce qu'ils r&eacute;p&egrave;tent finit par compter aux yeux des citoyens. Pourtant, ces choix &eacute;ditoriaux sont rarement mesur&eacute;s &agrave; grande &eacute;chelle. Radar+ comble ce vide en fournissant des donn&eacute;es ouvertes, comparables et continues &mdash; utiles autant &agrave; la recherche qu'au journalisme et au regard citoyen.</div>
@@ -1282,8 +1282,15 @@
   const cstZones = constellationDefs.map((_, i) => document.getElementById('cst-zone-' + i));
   cstZones.forEach((zone, i) => {
     if (!zone) return;
-    zone.addEventListener('mouseenter', () => { cstZones[i]._hovered = true; });
-    zone.addEventListener('mouseleave', () => { cstZones[i]._hovered = false; });
+    let hoverTimer = null;
+    zone.addEventListener('mouseenter', () => {
+      hoverTimer = setTimeout(() => { cstZones[i]._hovered = true; }, 600);
+    });
+    zone.addEventListener('mouseleave', () => {
+      clearTimeout(hoverTimer);
+      hoverTimer = null;
+      cstZones[i]._hovered = false;
+    });
   });
 
   function drawConstellations(time, dt) {
