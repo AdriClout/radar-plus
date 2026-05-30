@@ -1,6 +1,12 @@
 (function(window, document) {
   'use strict';
 
+  // Mode « embarqué » (iframe) : ex. la vue Évolution dans tendances.html.
+  // On supprime tout le chrome de navigation (menu latéral, logo, barre
+  // d'alerte) pour ne garder que le contenu.
+  var IS_EMBED = /[?&]embed=1(?:&|$)/.test(window.location.search);
+  if (IS_EMBED) { document.documentElement.classList.add('is-embed'); }
+
   /* ================================================================
      GOOGLE ANALYTICS 4 (gtag.js)
      Property "Radar+" sur le compte personnel Adrien Cloutier.
@@ -94,11 +100,11 @@
       '<h3 data-i18n="nav.section_navigation">Navigation</h3>',
       '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>',
       '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
-      '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
+      '<a href="./tendances.html?view=evolution" data-page="tendances.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
       '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_monitoring">MONITORING</span></a>',
-      '<a href="./index.html#hot20" data-i18n="nav.hot20">Hot 20</a>',
+      '<a href="./tendances.html" data-page="tendances.html" data-i18n="nav.hot20">Hot 20</a>',
       '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>',
       '<a href="https://www.clessn.com/radar/index.html" target="_blank" rel="noopener" data-i18n="nav.analyses">Analyses</a>',
       '<h3 style="margin-top: 30px;" data-i18n="nav.section_about">À propos</h3>',
@@ -186,10 +192,12 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupSharedMenu, { once: true });
-  } else {
-    setupSharedMenu();
+  if (!IS_EMBED) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupSharedMenu, { once: true });
+    } else {
+      setupSharedMenu();
+    }
   }
 
   function reportText(key, fallback) {
@@ -743,10 +751,12 @@
     });
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAlertBar, { once: true });
-  } else {
-    initAlertBar();
+  if (!IS_EMBED) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAlertBar, { once: true });
+    } else {
+      initAlertBar();
+    }
   }
 
 })(window, document);

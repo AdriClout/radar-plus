@@ -76,6 +76,7 @@ __pycache__/
 !site/alertes.html
 !site/cycles.html
 !site/statistiques.html
+!site/tendances.html
 *.py.bak
 *.pyc
 .venv/

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RADAR+ • Analyse de Saillance Médiatique</title>
+  <title>Tendances • RADAR+ — Palmarès Hot 20 et évolution</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -925,7 +925,67 @@
     }
   </style>
 </head>
-<body>
+<body class="tendances-page">
+
+<style>
+  /* ===== Page Tendances : on réutilise la home mais on masque tout
+     sauf le palmarès Hot 20, auquel on ajoute une vue Évolution. ===== */
+  .tendances-page .hero,
+  .tendances-page .dotted-bridge,
+  .tendances-page #modules,
+  .tendances-page #ticker-section,
+  .tendances-page .cst-zone { display: none !important; }
+  /* le starfield reste en fond, mais on coupe l'auto-scroll inutile */
+
+  .tendances-page .hot20-section { margin-top: 96px; }
+
+  /* Bascule de vue Palmarès | Évolution */
+  .view-toggle {
+    display: inline-flex;
+    gap: 0;
+    border: 1px solid rgba(120,150,220,0.35);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 0 0 4px;
+  }
+  .view-toggle button {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: rgba(220,230,255,0.7);
+    font: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    padding: 7px 18px;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .view-toggle button + button { border-left: 1px solid rgba(120,150,220,0.25); }
+  .view-toggle button.active {
+    background: rgba(90,130,255,0.9);
+    color: #fff;
+  }
+
+  /* Conteneur vue Évolution (iframe plein cadre) */
+  #view-evolution { display: none; }
+  .tendances-page.show-evolution #view-palmares { display: none; }
+  .tendances-page.show-evolution #view-evolution { display: block; }
+  /* En vue Évolution on masque les contrôles propres au palmarès
+     (recherche, navigation de période) — l'iframe a les siens. */
+  .tendances-page.show-evolution .hot20-search,
+  .tendances-page.show-evolution .hot20-search-result,
+  .tendances-page.show-evolution .week-nav,
+  .tendances-page.show-evolution .hot20-controls,
+  .tendances-page.show-evolution .hot20-subtitle { display: none; }
+  #evolution-frame {
+    width: 100%;
+    height: calc(100vh - 220px);
+    min-height: 540px;
+    border: 1px solid rgba(120,150,220,0.25);
+    border-radius: 10px;
+    background: #070b16;
+  }
+</style>
 
 <!-- Starfield -->
 <canvas id="stars-canvas"></canvas>
@@ -1009,11 +1069,11 @@
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
     <div class="hot20-title-row">
-      <h2 class="hot20-title"><span data-i18n="hot20.title">HOT</span> <span class="accent">10</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
-      <a class="hot20-evolution-cta" id="hot20-evolution-cta" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta" aria-label="Voir l'évolution dans le temps">
-        <span data-i18n="alertes.evo_cta">Voir l&rsquo;évolution dans le temps</span>
-        <span class="cta-arrow" aria-hidden="true">↗</span>
-      </a>
+      <h2 class="hot20-title"><span data-i18n="hot20.title">HOT</span> <span class="accent" data-i18n="hot20.title_number">20</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
+      <div class="view-toggle" id="view-toggle" role="tablist" aria-label="Type de visualisation">
+        <button type="button" id="tab-palmares" class="active" role="tab" aria-selected="true" data-view="palmares" data-i18n="tendances.view_ranking">Palmar&egrave;s</button>
+        <button type="button" id="tab-evolution" role="tab" aria-selected="false" data-view="evolution" data-i18n="tendances.view_evolution">&Eacute;volution</button>
+      </div>
     </div>
     <div class="hot20-controls">
       <div class="controls-left">
@@ -1042,18 +1102,19 @@
       </div>
     </div>
   </div>
-  <div class="hot20-search">
-    <span class="hot20-search-icon">&#128269;</span>
-    <input type="text" id="hot20-search-input" data-i18n-placeholder="common.search_radar_placeholder" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
+  <div id="view-palmares">
+    <div class="hot20-search">
+      <span class="hot20-search-icon">&#128269;</span>
+      <input type="text" id="hot20-search-input" data-i18n-placeholder="common.search_radar_placeholder" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
+    </div>
+    <div class="hot20-search-result" id="search-result"></div>
+    <div class="hot20-list" id="hot20-grid">
+      <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
+    </div>
   </div>
-  <div class="hot20-search-result" id="search-result"></div>
-  <div class="hot20-list" id="hot20-grid">
-    <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
+  <div id="view-evolution">
+    <iframe id="evolution-frame" title="Évolution dans le temps" loading="lazy" src="about:blank"></iframe>
   </div>
-  <a class="hot20-voirplus-cta" id="hot20-voirplus-cta" href="./tendances.html">
-    <span data-i18n="hot20.see_full_ranking">Voir le palmar&egrave;s complet (Hot 20) et son &eacute;volution</span>
-    <span class="cta-arrow" aria-hidden="true">&rarr;</span>
-  </a>
 </section>
 
 <!-- ========== MODULES ========== -->
@@ -1740,7 +1801,7 @@ function renderHot20() {
     }
   }
 
-  var nodes = allNodes.slice(0, (window.HOT20_LIMIT || 10));
+  var nodes = allNodes.slice(0, 20);
   var totalSize = allNodes.reduce(function(acc, n) { return acc + (n.size || 0); }, 0) || 1;
 
   /* Trend: compare with previous slot */
@@ -2046,9 +2107,6 @@ function renderHot20() {
 function updateEvolutionCtaLink() {
   var cta = document.getElementById('hot20-evolution-cta');
   if (cta) cta.href = './evolution.html?country=' + encodeURIComponent(currentCountry);
-  var vp = document.getElementById('hot20-voirplus-cta');
-  if (vp) vp.href = './tendances.html?country=' + encodeURIComponent(currentCountry) +
-                    '&gran=' + encodeURIComponent(currentGranularity);
 }
 updateEvolutionCtaLink();
 
@@ -2108,7 +2166,6 @@ document.getElementById('granularity-tabs').addEventListener('click', function(e
   document.querySelectorAll('.granularity-tab').forEach(function(t) { t.classList.remove('active'); });
   tab.classList.add('active');
   currentGranularity = tab.dataset.gran;
-  updateEvolutionCtaLink();
   buildSlots();
   currentSlotIdx = aggregatedSlots.length - 1;
   renderHot20();
@@ -2574,6 +2631,79 @@ setInterval(tickCountdown, 1000);
 
 loadData();
 loadTicker();
+</script>
+<script>
+/* ===== Page Tendances : bascule Palmarès / Évolution ===== */
+(function() {
+  'use strict';
+  var body = document.body;
+  var frame = document.getElementById('evolution-frame');
+  var tabPalmares = document.getElementById('tab-palmares');
+  var tabEvolution = document.getElementById('tab-evolution');
+  if (!frame || !tabPalmares || !tabEvolution) return;
+
+  var params = new URLSearchParams(window.location.search);
+
+  // Mappe la granularité du palmarès vers celle de la page Évolution.
+  function mapGran(g) {
+    if (g === '4h') return 'day';
+    if (g === 'quarter') return 'year';
+    return g || 'day';
+  }
+  function currentCountry() { return window.currentCountry || params.get('country') || 'QC'; }
+  function currentGran() { return window.currentGranularity || params.get('gran') || 'day'; }
+
+  function evolutionUrl() {
+    return './evolution.html?embed=1&country=' + encodeURIComponent(currentCountry()) +
+           '&gran=' + encodeURIComponent(mapGran(currentGran()));
+  }
+
+  var frameLoaded = false;
+  function syncFrame() {
+    if (body.classList.contains('show-evolution')) {
+      frame.src = evolutionUrl();
+      frameLoaded = true;
+    }
+  }
+
+  function showView(view) {
+    var evo = view === 'evolution';
+    body.classList.toggle('show-evolution', evo);
+    tabEvolution.classList.toggle('active', evo);
+    tabPalmares.classList.toggle('active', !evo);
+    tabEvolution.setAttribute('aria-selected', evo ? 'true' : 'false');
+    tabPalmares.setAttribute('aria-selected', evo ? 'false' : 'true');
+    if (evo && (!frameLoaded || frame.src === 'about:blank' || frame.src === '')) syncFrame();
+    if (window.radarTrack) window.radarTrack('tendances_view', { view: view });
+  }
+
+  tabPalmares.addEventListener('click', function() { showView('palmares'); });
+  tabEvolution.addEventListener('click', function() { showView('evolution'); });
+
+  // Quand l'utilisateur change pays/granularité en vue Évolution, on
+  // recharge l'iframe pour refléter le même filtre (filtres « partagés »
+  // version Phase 1 — la vraie fusion d'état viendra en Phase 2).
+  ['country-tabs', 'granularity-tabs'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', function() {
+      // laisse le handler du palmarès mettre à jour l'état global d'abord
+      setTimeout(syncFrame, 0);
+    });
+  });
+
+  // État initial depuis l'URL : ?country, ?gran, ?view
+  var qCountry = params.get('country');
+  if (qCountry) {
+    var ct = document.querySelector('.country-tab[data-country="' + qCountry + '"]');
+    if (ct) ct.click();
+  }
+  var qGran = params.get('gran');
+  if (qGran) {
+    var gt = document.querySelector('.granularity-tab[data-gran="' + qGran + '"]');
+    if (gt) gt.click();
+  }
+  showView(params.get('view') === 'evolution' ? 'evolution' : 'palmares');
+})();
 </script>
 <script src="./assets/js/i18n.js"></script>
   <script src="./assets/js/shared-menu.js"></script>
