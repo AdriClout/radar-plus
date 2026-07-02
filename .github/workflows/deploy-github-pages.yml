@@ -24,7 +24,7 @@ jobs:
       RADAR_REPORT_DISPATCH_TOKEN: ${{ secrets.RADAR_REPORT_DISPATCH_TOKEN }}
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry1.outputs.page_url || steps.deployment_retry2.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -63,6 +63,39 @@ jobs:
         with:
           path: site
 
+      # L'API Pages retourne parfois « Deployment failed, try again later » de
+      # façon transitoire (observé le 2026-07-02 : ~50 % des deploys, échec
+      # serveur en ~15 s). On tente jusqu'à 3 fois avant de déclarer l'échec.
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Pause avant 2e tentative
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 45
+
+      - name: Deploy to GitHub Pages (2e tentative)
+        id: deployment_retry1
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Pause avant 3e tentative
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry1.outcome == 'failure'
+        run: sleep 90
+
+      - name: Deploy to GitHub Pages (3e tentative)
+        id: deployment_retry2
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry1.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+
+      - name: Vérifier qu'une tentative de deploy a réussi
+        if: always()
+        run: |
+          if [ "${{ steps.deployment.outcome }}" != "success" ] \
+             && [ "${{ steps.deployment_retry1.outcome }}" != "success" ] \
+             && [ "${{ steps.deployment_retry2.outcome }}" != "success" ]; then
+            echo "::error::Aucune tentative de déploiement Pages n'a réussi."
+            exit 1
+          fi
