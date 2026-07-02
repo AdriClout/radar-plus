@@ -106,6 +106,9 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Collation bytewise déterministe pour la comparaison lexicale ISO 8601 (revue Copilot)
+          export LC_ALL=C
+
           expected_graph="$(jq -r '.meta.generated_at' site/graph.json)"
           expected_timeseries="$(jq -r '.meta.generated_at' site/timeseries.json)"
 
@@ -113,8 +116,8 @@ jobs:
           echo "Expected timeseries.json meta.generated_at: ${expected_timeseries}"
 
           for attempt in $(seq 1 30); do
-            live_graph="$(curl -fsS https://radarplus.org/graph.json | jq -r '.meta.generated_at // empty' || true)"
-            live_timeseries="$(curl -fsS https://radarplus.org/timeseries.json | jq -r '.meta.generated_at // empty' || true)"
+            live_graph="$(curl -fsS --connect-timeout 5 --max-time 15 https://radarplus.org/graph.json | jq -r '.meta.generated_at // empty' || true)"
+            live_timeseries="$(curl -fsS --connect-timeout 5 --max-time 15 https://radarplus.org/timeseries.json | jq -r '.meta.generated_at // empty' || true)"
 
             echo "Attempt ${attempt}/30 -> graph: ${live_graph:-<indisponible>} | timeseries: ${live_timeseries:-<indisponible>}"
 
