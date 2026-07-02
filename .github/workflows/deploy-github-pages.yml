@@ -89,3 +89,13 @@ jobs:
         id: deployment_retry2
         if: steps.deployment.outcome == 'failure' && steps.deployment_retry1.outcome == 'failure'
         uses: actions/deploy-pages@v4
+
+      - name: Vérifier qu'une tentative de deploy a réussi
+        if: always()
+        run: |
+          if [ "${{ steps.deployment.outcome }}" != "success" ] \
+             && [ "${{ steps.deployment_retry1.outcome }}" != "success" ] \
+             && [ "${{ steps.deployment_retry2.outcome }}" != "success" ]; then
+            echo "::error::Aucune tentative de déploiement Pages n'a réussi."
+            exit 1
+          fi
