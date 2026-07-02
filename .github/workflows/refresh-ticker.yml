@@ -93,14 +93,18 @@ jobs:
         if: steps.commit_data.outputs.updated == 'true'
         run: |
           set -euo pipefail
+          # Collation bytewise déterministe pour la comparaison lexicale ISO 8601 (revue Copilot)
+          export LC_ALL=C
           expected_ticker="$(jq -r '.meta.generated_at' site/ticker.json)"
           echo "Expected ticker.json meta.generated_at: ${expected_ticker}"
 
           for attempt in $(seq 1 30); do
-            live_ticker="$(curl -fsS https://radarplus.org/ticker.json | jq -r '.meta.generated_at')"
-            echo "Attempt ${attempt}/30 -> ticker: ${live_ticker}"
-            if [ "${live_ticker}" = "${expected_ticker}" ]; then
-              echo "Live ticker is in sync."
+            live_ticker="$(curl -fsS --connect-timeout 5 --max-time 15 https://radarplus.org/ticker.json | jq -r '.meta.generated_at // empty' || true)"
+            echo "Attempt ${attempt}/30 -> ticker: ${live_ticker:-<indisponible>}"
+            # Un déploiement Pages concurrent (cancel-in-progress) peut servir une version
+            # PLUS RÉCENTE que la nôtre : live >= attendu suffit (comparaison lexicale ISO 8601).
+            if [ -n "${live_ticker}" ] && [ ! "${live_ticker}" \< "${expected_ticker}" ]; then
+              echo "Live ticker is in sync (>= expected)."
               exit 0
             fi
             sleep 10
