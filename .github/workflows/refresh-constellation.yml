@@ -102,6 +102,7 @@ jobs:
         run: gh workflow run deploy-github-pages.yml --ref main
 
       - name: Validate live site is updated
+        if: steps.commit_data.outputs.updated == 'true'
         run: |
           set -euo pipefail
 
@@ -112,13 +113,16 @@ jobs:
           echo "Expected timeseries.json meta.generated_at: ${expected_timeseries}"
 
           for attempt in $(seq 1 30); do
-            live_graph="$(curl -fsS https://radarplus.org/graph.json | jq -r '.meta.generated_at')"
-            live_timeseries="$(curl -fsS https://radarplus.org/timeseries.json | jq -r '.meta.generated_at')"
+            live_graph="$(curl -fsS https://radarplus.org/graph.json | jq -r '.meta.generated_at // empty' || true)"
+            live_timeseries="$(curl -fsS https://radarplus.org/timeseries.json | jq -r '.meta.generated_at // empty' || true)"
 
-            echo "Attempt ${attempt}/30 -> graph: ${live_graph} | timeseries: ${live_timeseries}"
+            echo "Attempt ${attempt}/30 -> graph: ${live_graph:-<indisponible>} | timeseries: ${live_timeseries:-<indisponible>}"
 
-            if [ "${live_graph}" = "${expected_graph}" ] && [ "${live_timeseries}" = "${expected_timeseries}" ]; then
-              echo "Live site data is in sync with refreshed JSON files."
+            # Un déploiement Pages concurrent (cancel-in-progress) peut servir une version
+            # PLUS RÉCENTE que la nôtre : live >= attendu suffit (comparaison lexicale ISO 8601).
+            if [ -n "${live_graph}" ] && [ ! "${live_graph}" \< "${expected_graph}" ] \
+               && [ -n "${live_timeseries}" ] && [ ! "${live_timeseries}" \< "${expected_timeseries}" ]; then
+              echo "Live site data is in sync (>= expected)."
               exit 0
             fi
 
