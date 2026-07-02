@@ -83,11 +83,12 @@ jobs:
             echo "updated=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Trigger GitHub Pages deploy
-        if: steps.commit_data.outputs.updated == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: gh workflow run deploy-github-pages.yml --ref main
+      # NOTE : pas de déclenchement explicite du deploy ici. Le push (fait avec GH_PAT,
+      # donc déclencheur de workflows) active déjà deploy-github-pages.yml via son
+      # trigger `on: push` (paths site/**). Un dispatch explicite créerait un run
+      # jumeau qui se fait canceller (concurrency github-pages) et provoque des
+      # échecs « Deployment failed, try again later ». Si un jour le push repasse
+      # sur GITHUB_TOKEN (qui ne déclenche pas de workflows), rétablir le dispatch.
 
       - name: Validate live ticker is updated
         if: steps.commit_data.outputs.updated == 'true'
