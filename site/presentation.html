@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Radar+ · Présentation — Saillance médiatique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #020010;
+      --text: #d0e0ff;
+      --muted: rgba(140,170,220,0.6);
+      --accent: #5588ff;
+      --accent-glow: rgba(80,130,255,0.45);
+      --card-bg: rgba(10,18,50,0.7);
+      --border: rgba(90,140,255,0.22);
+      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+      --eleve: #f2cd50;
+      --eleve-d: #7a6420;
+      --tres-eleve: #ffa050;
+      --tres-eleve-d: #8a4818;
+      --extreme: #ff5050;
+      --extreme-d: #8a1d1d;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--mono); overflow: hidden;
+    }
+    a { color: inherit; }
+
+    /* ========== STARFIELD ========== */
+    #stars-canvas {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ========== PROGRESS + CHROME ========== */
+    .progress {
+      position: fixed; top: 0; left: 0; right: 0; height: 3px;
+      background: rgba(90,140,255,0.12); z-index: 40;
+    }
+    .progress b {
+      display: block; height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), #9a6bff);
+      box-shadow: 0 0 12px var(--accent-glow);
+      transition: width 0.4s cubic-bezier(0.22, 0.9, 0.35, 1);
+    }
+    .wordmark {
+      position: fixed; top: 22px; left: 28px; z-index: 40;
+      font-family: var(--orbitron); font-size: 14px; letter-spacing: 3px;
+      color: #e0ecff; user-select: none;
+    }
+    .wordmark .plus { color: var(--accent); }
+    .wordmark small {
+      display: block; margin-top: 4px; font-family: var(--mono);
+      font-size: 9px; letter-spacing: 2.5px; color: var(--muted);
+      text-transform: uppercase; font-weight: 700;
+    }
+    .hud {
+      position: fixed; bottom: 20px; right: 28px; z-index: 40;
+      font-family: var(--orbitron); font-size: 11px; letter-spacing: 2px;
+      color: var(--muted);
+    }
+    .hint {
+      position: fixed; bottom: 20px; left: 28px; z-index: 40;
+      font-size: 10px; letter-spacing: 1.5px; color: var(--muted);
+      text-transform: uppercase;
+    }
+    .dots {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 40; display: flex; gap: 10px;
+    }
+    .dots button {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1px solid rgba(120,170,255,0.5); background: transparent;
+      cursor: pointer; padding: 0; transition: all 0.25s ease;
+    }
+    .dots button.on {
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      transform: scale(1.25);
+    }
+
+    /* ========== SLIDES ========== */
+    .slide {
+      position: fixed; inset: 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 9vh 7vw 12vh;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.45s ease, visibility 0.45s;
+      overflow-y: auto;
+    }
+    .slide.active { opacity: 1; visibility: visible; z-index: 2; }
+    .wrap { max-width: 1080px; width: 100%; }
+
+    /* Reveal animation (staggered via --d) */
+    .rv { opacity: 0; }
+    .slide.active .rv {
+      animation: rise 0.65s cubic-bezier(0.22, 0.9, 0.35, 1) both;
+      animation-delay: var(--d, 0s);
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ========== TYPO ========== */
+    .kicker {
+      font-family: var(--orbitron); font-size: 12px; letter-spacing: 5px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 22px;
+    }
+    h2 {
+      font-family: var(--orbitron); font-weight: 600;
+      font-size: clamp(28px, 4.4vw, 52px); line-height: 1.12;
+      letter-spacing: 1.5px; color: #e0ecff; margin-bottom: 30px;
+    }
+    .lede { font-size: clamp(15px, 1.5vw, 18px); line-height: 1.75; color: var(--text); }
+    .punch {
+      margin-top: 34px; padding: 18px 24px;
+      border-left: 3px solid var(--accent);
+      background: linear-gradient(90deg, rgba(80,130,255,0.12), transparent 70%);
+      font-family: var(--orbitron); font-size: clamp(15px, 1.8vw, 21px);
+      letter-spacing: 1px; line-height: 1.55; color: #fff;
+    }
+    .punch .accent { color: var(--accent); }
+
+    /* ========== SLIDE 1 : TITRE ========== */
+    .s-title { text-align: center; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); opacity: 1; }
+      50% { box-shadow: 0 0 0 7px rgba(80,130,255,0); opacity: 0.6; }
+    }
+    .hero-robot {
+      width: min(620px, 80vw); margin: 0 auto;
+    }
+    .hero-robot img {
+      width: 100%; height: auto; max-height: 52vh; display: block; margin: 0 auto;
+      filter: drop-shadow(0 0 40px rgba(60,100,255,0.25));
+    }
+    .s-title .tagline {
+      margin-top: 10px; font-family: var(--orbitron);
+      font-size: clamp(13px, 1.9vw, 20px); letter-spacing: 4px;
+      text-transform: uppercase; color: var(--text);
+    }
+    .s-title .territoires {
+      margin-top: 12px; font-size: clamp(11px, 1.3vw, 14px);
+      letter-spacing: 3px; color: var(--muted); text-transform: uppercase;
+    }
+    .s-title .byline {
+      margin-top: 26px; font-size: clamp(12px, 1.4vw, 15px);
+      line-height: 1.9; color: var(--text);
+    }
+    .s-title .byline b { color: #fff; font-weight: 700; }
+    .s-title .byline span { color: var(--muted); }
+
+    /* ========== SLIDE 2 : LISTE NUMÉROTÉE ========== */
+    .numlist { list-style: none; display: grid; gap: 22px; }
+    .numlist li {
+      display: grid; grid-template-columns: 52px 1fr; gap: 18px;
+      align-items: start;
+    }
+    .numlist .n {
+      font-family: var(--orbitron); font-size: 22px; color: var(--accent);
+      opacity: 0.9; padding-top: 2px;
+    }
+    .numlist p { font-size: clamp(15px, 1.6vw, 19px); line-height: 1.7; }
+    .numlist p strong { color: #fff; }
+
+    /* ========== SLIDE 3 : PIPELINE ========== */
+    .infra { display: flex; justify-content: center; margin: 6px 0 26px; }
+    .infra img {
+      max-width: 100%; max-height: 52vh; height: auto;
+      background: #fff; border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 40px rgba(60,100,255,0.18);
+    }
+    .stats { display: flex; flex-wrap: wrap; gap: 14px; }
+    .stat {
+      flex: 1 1 170px; border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 18px; background: rgba(10,18,50,0.45);
+    }
+    .stat b {
+      display: block; font-family: var(--orbitron);
+      font-size: clamp(17px, 2vw, 23px); color: var(--accent);
+      margin-bottom: 5px; letter-spacing: 1px;
+    }
+    .stat span { font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+
+    /* ========== SLIDE 4 : INDICE ========== */
+    .split { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 48px; align-items: center; }
+    @media (max-width: 860px) { .split { grid-template-columns: 1fr; } .mockcol { display: none; } }
+    .dims { display: grid; gap: 16px; margin-bottom: 26px; }
+    .dim {
+      display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 15px 18px;
+    }
+    .dim .dn { font-family: var(--orbitron); font-size: 15px; color: var(--accent); padding-top: 2px; }
+    .dim h3 {
+      font-family: var(--orbitron); font-size: 13px; letter-spacing: 2px;
+      text-transform: uppercase; color: #e0ecff; margin-bottom: 5px;
+    }
+    .dim p { font-size: 13px; line-height: 1.6; color: var(--muted); }
+    .alert-row { font-size: 12px; color: var(--muted); }
+    .alert-cap { margin-bottom: 12px; line-height: 1.6; }
+    .lvls { display: flex; flex-wrap: wrap; gap: 10px; }
+    .lvl em { font-style: normal; font-size: 9px; opacity: 0.7; margin-left: 7px; }
+    .lvl {
+      font-family: var(--orbitron); font-size: 10.5px; letter-spacing: 1.5px;
+      text-transform: uppercase; border-radius: 4px; padding: 6px 12px;
+      border: 1px solid;
+    }
+    .lvl-0 { color: #7fa8ff; border-color: rgba(85,136,255,0.45); background: rgba(80,130,255,0.12); }
+    .lvl-1 { color: var(--eleve); border-color: var(--eleve-d); background: rgba(122,100,32,0.22); }
+    .lvl-2 { color: var(--tres-eleve); border-color: var(--tres-eleve-d); background: rgba(138,72,24,0.22); }
+    .lvl-3 { color: var(--extreme); border-color: var(--extreme-d); background: rgba(138,29,29,0.25); box-shadow: 0 0 14px rgba(255,80,80,0.25); }
+
+    /* Mock page d'accueil */
+    .mock {
+      background: rgba(6,12,36,0.85); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; max-width: 360px; margin: 0 auto;
+      box-shadow: 0 0 40px rgba(60,100,255,0.15);
+    }
+    .mock-bar { display: flex; gap: 5px; margin-bottom: 12px; }
+    .mock-bar i { width: 8px; height: 8px; border-radius: 50%; background: rgba(120,170,255,0.3); }
+    .mock-hero {
+      position: relative; height: 110px; border-radius: 6px;
+      border: 1.5px solid var(--accent);
+      background: linear-gradient(135deg, rgba(80,130,255,0.28), rgba(120,80,255,0.14));
+      box-shadow: 0 0 22px var(--accent-glow);
+      margin-bottom: 10px;
+    }
+    .mock-chip {
+      position: absolute; font-family: var(--orbitron); font-size: 8.5px;
+      letter-spacing: 1.5px; text-transform: uppercase; color: #fff;
+      background: var(--accent); border-radius: 3px; padding: 3px 7px;
+    }
+    .chip-pos { top: -9px; left: 10px; }
+    .chip-surf { bottom: -9px; right: 10px; }
+    .mock-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .mock-mid {
+      flex: 1; height: 56px; border-radius: 5px;
+      background: rgba(80,130,255,0.10); border: 1px solid rgba(90,140,255,0.18);
+    }
+    .mock-line { height: 9px; border-radius: 3px; background: rgba(120,160,230,0.12); margin-bottom: 7px; }
+    .mock-line.w2 { width: 78%; }
+    .mock-line.w3 { width: 60%; }
+    .mock-time { margin-top: 14px; }
+    .mock-time .tlabel {
+      display: flex; justify-content: space-between;
+      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px; font-family: var(--orbitron);
+    }
+    .mock-track { height: 8px; border-radius: 4px; background: rgba(90,140,255,0.12); overflow: hidden; }
+    .mock-fill {
+      height: 100%; width: 0; border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), #9a6bff);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .slide.active .mock-fill { animation: fill 2.2s 0.9s cubic-bezier(0.22,0.9,0.35,1) both; }
+    @keyframes fill { from { width: 0; } to { width: 72%; } }
+
+    /* ========== SLIDE 5 : MODULES ========== */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px 22px;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+      backdrop-filter: blur(4px);
+    }
+    .card:hover {
+      border-color: rgba(140,180,255,0.7);
+      box-shadow: 0 0 18px rgba(80,130,255,0.22);
+      transform: translateY(-3px);
+    }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .card h3 { font-family: var(--orbitron); font-size: 14px; letter-spacing: 2px; color: #e0ecff; text-transform: uppercase; }
+    .badge {
+      font-family: var(--orbitron); font-size: 8.5px; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--accent);
+      border: 1px solid rgba(120,170,255,0.45); border-radius: 3px;
+      padding: 3px 8px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge.live i {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    .card p { font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+
+    /* ========== SLIDE 7 : DEMO ========== */
+    .s-demo { text-align: center; }
+    .radar-ring {
+      position: relative; width: 130px; height: 130px; margin: 0 auto 40px;
+      border: 1px solid var(--border); border-radius: 50%;
+    }
+    .radar-ring::before {
+      content: ''; position: absolute; inset: 24px;
+      border: 1px solid var(--border); border-radius: 50%;
+    }
+    .radar-ring::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: conic-gradient(from 0deg, rgba(85,136,255,0.55), transparent 70deg, transparent);
+      animation: sweep 3.2s linear infinite;
+    }
+    .radar-ring b {
+      position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+      transform: translate(-50%,-50%); border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 12px var(--accent-glow);
+    }
+    @keyframes sweep { to { transform: rotate(360deg); } }
+    .s-demo .url {
+      font-family: var(--orbitron); font-weight: 600;
+      font-size: clamp(34px, 6.5vw, 72px); letter-spacing: 3px;
+      color: #fff; text-decoration: none;
+      text-shadow: 0 0 45px var(--accent-glow);
+    }
+    .s-demo .url .accent { color: var(--accent); }
+    .s-demo .sub { margin-top: 30px; font-size: clamp(13px, 1.5vw, 17px); color: var(--text); line-height: 1.8; }
+    .s-demo .who { margin-top: 44px; font-size: 13px; color: var(--muted); letter-spacing: 1px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div class="progress"><b id="progress-fill"></b></div>
+<div class="wordmark">RADAR<span class="plus">+</span><small>Présentation</small></div>
+
+<!-- ========== SLIDE 1 — TITRE ========== -->
+<section class="slide" id="s1">
+  <div class="wrap s-title">
+    <div class="hero-robot rv" style="--d:.15s">
+      <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
+    </div>
+    <div class="tagline rv" style="--d:.35s">Suivi de la saillance médiatique</div>
+    <div class="territoires rv" style="--d:.45s">Québec · Canada · États-Unis</div>
+    <div class="byline rv" style="--d:.6s">
+      <b>Adrien Cloutier</b><br>
+      <span>Doctorat en communication politique · Université Laval — Juillet 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 2 — LE PROBLÈME ========== -->
+<section class="slide" id="s2">
+  <div class="wrap">
+    <div class="kicker rv">Le point de départ</div>
+    <h2 class="rv" style="--d:.1s">L'attention médiatique est<br>une ressource rare</h2>
+    <ul class="numlist">
+      <li class="rv" style="--d:.25s"><span class="n">01</span>
+        <p>Chaque jour, chaque média tranche : quoi mettre <strong>à la Une</strong>, quoi reléguer plus bas… et quoi laisser de côté.</p>
+      </li>
+      <li class="rv" style="--d:.4s"><span class="n">02</span>
+        <p>Cette hiérarchie, c'est la <strong>saillance</strong> — utilisée en recherche comme proxy de l'opinion publique et de la sphère politique.</p>
+      </li>
+      <li class="rv" style="--d:.55s"><span class="n">03</span>
+        <p>On la commente beaucoup. On la <strong>mesure</strong> rarement en continu.</p>
+      </li>
+    </ul>
+    <div class="punch rv" style="--d:.75s">Radar+ la mesure. <span class="accent">Toutes les 10 minutes.</span> Sans interruption depuis 2019.</div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 3 — PIPELINE ========== -->
+<section class="slide" id="s3">
+  <div class="wrap">
+    <div class="kicker rv">Sous le capot</div>
+    <h2 class="rv" style="--d:.1s">Une capture toutes les 10 minutes</h2>
+    <div class="infra rv" style="--d:.2s">
+      <img src="./assets/img/infrastructure-radarplus.png" alt="Infrastructure Radar+ — lac, entrepôt et comptoirs de données (CAPP / Infoscope)" />
+    </div>
+    <div class="stats">
+      <div class="stat rv" style="--d:.45s"><b>Sept. 2019</b><span>Archive continue</span></div>
+      <div class="stat rv" style="--d:.55s"><b>+5 M</b><span>Captures cumulées</span></div>
+      <div class="stat rv" style="--d:.65s"><b>&gt; 95 %</b><span>Taux de fiabilité</span></div>
+      <div class="stat rv" style="--d:.75s"><b>15 médias</b><span>Suivis en direct</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 4 — L'INDICE ========== -->
+<section class="slide" id="s4">
+  <div class="wrap">
+    <div class="kicker rv">La mesure</div>
+    <h2 class="rv" style="--d:.1s">L'indice de saillance</h2>
+    <div class="split">
+      <div>
+        <div class="dims">
+          <div class="dim rv" style="--d:.25s"><span class="dn">01</span>
+            <div><h3>Position</h3><p>Où l'objet se trouve sur la page d'accueil — la Une pèse plus lourd que ce qui suit.</p></div>
+          </div>
+          <div class="dim rv" style="--d:.4s"><span class="dn">02</span>
+            <div><h3>Surface</h3><p>L'espace que le média lui consacre : longueur du texte, photo, mise en valeur.</p></div>
+          </div>
+          <div class="dim rv" style="--d:.55s"><span class="dn">03</span>
+            <div><h3>Durée</h3><p>Combien de temps il reste affiché — quelques minutes ou plusieurs jours.</p></div>
+          </div>
+        </div>
+        <div class="alert-row rv" style="--d:.75s">
+          <p class="alert-cap">Un score comparable entre médias, découpé en quatre paliers de saillance absolue&nbsp;:</p>
+          <div class="lvls">
+            <span class="lvl lvl-0">Modéré<em>p50</em></span>
+            <span class="lvl lvl-1">Élevé<em>p80</em></span>
+            <span class="lvl lvl-2">Très élevé<em>p95</em></span>
+            <span class="lvl lvl-3">Extrême<em>p99</em></span>
+          </div>
+        </div>
+      </div>
+      <div class="mockcol rv" style="--d:.5s">
+        <div class="mock">
+          <div class="mock-bar"><i></i><i></i><i></i></div>
+          <div class="mock-hero">
+            <span class="mock-chip chip-pos">Position · Une</span>
+            <span class="mock-chip chip-surf">Surface</span>
+          </div>
+          <div class="mock-row"><div class="mock-mid"></div><div class="mock-mid"></div></div>
+          <div class="mock-line"></div>
+          <div class="mock-line w2"></div>
+          <div class="mock-line w3"></div>
+          <div class="mock-time">
+            <div class="tlabel"><span>Durée</span><span>capture / 10 min</span></div>
+            <div class="mock-track"><div class="mock-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 5 — LES VUES ========== -->
+<section class="slide" id="s5">
+  <div class="wrap">
+    <div class="kicker rv">Le plan de match</div>
+    <h2 class="rv" style="--d:.1s">Ce qu'on va voir dans la démo</h2>
+    <div class="cards">
+      <div class="card rv" style="--d:.2s">
+        <div class="card-head"><h3>Dans le radar</h3><span class="badge live"><i></i>Live</span></div>
+        <p>Les unes des médias suivis, reconstituées en direct.</p>
+      </div>
+      <div class="card rv" style="--d:.3s">
+        <div class="card-head"><h3>Hot 20</h3><span class="badge live"><i></i>Live</span></div>
+        <p>Le palmarès des objets les plus saillants en ce moment.</p>
+      </div>
+      <div class="card rv" style="--d:.4s">
+        <div class="card-head"><h3>Évolution</h3><span class="badge">Timeline</span></div>
+        <p>Les trajectoires d'attention dans le temps, objet par objet.</p>
+      </div>
+      <div class="card rv" style="--d:.5s">
+        <div class="card-head"><h3>Constellation</h3><span class="badge">Objet</span></div>
+        <p>La carte des objets médiatiques et des liens entre eux.</p>
+      </div>
+      <div class="card rv" style="--d:.6s">
+        <div class="card-head"><h3>Sonar</h3><span class="badge">Monitoring</span></div>
+        <p>Le suivi ciblé d'enjeux, d'entités ou d'organisations.</p>
+      </div>
+      <div class="card rv" style="--d:.7s">
+        <div class="card-head"><h3>Alertes</h3><span class="badge">Signal</span></div>
+        <p>Les épisodes de saillance élevée à extrême, documentés.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 6 — PERTINENCE ========== -->
+<section class="slide" id="s6">
+  <div class="wrap">
+    <div class="kicker rv">Au-delà de l'académique</div>
+    <h2 class="rv" style="--d:.1s">Et pour vos travaux&nbsp;?</h2>
+    <ul class="numlist">
+      <li class="rv" style="--d:.25s"><span class="n">→</span>
+        <p><strong>Détecter</strong> les montées d'attention sur vos enjeux, en temps quasi réel.</p>
+      </li>
+      <li class="rv" style="--d:.38s"><span class="n">→</span>
+        <p><strong>Documenter</strong> les angles morts — ce qui n'est <em>pas</em> mis de l'avant.</p>
+      </li>
+      <li class="rv" style="--d:.51s"><span class="n">→</span>
+        <p><strong>Comparer</strong> la couverture entre médias et entre territoires.</p>
+      </li>
+      <li class="rv" style="--d:.64s"><span class="n">→</span>
+        <p><strong>Adapter</strong> indices, alertes et flux de données à des besoins opérationnels.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== SLIDE 7 — DÉMO ========== -->
+<section class="slide" id="s7">
+  <div class="wrap s-demo">
+    <div class="radar-ring rv" style="--d:.05s"><b></b></div>
+    <a class="url rv" style="--d:.25s" href="https://radarplus.org/" target="_blank" rel="noopener">radarplus<span class="accent">.org</span></a>
+    <p class="who rv" style="--d:.6s">Adrien Cloutier · Université Laval</p>
+  </div>
+</section>
+
+<div class="dots" id="dots" aria-label="Navigation des diapositives"></div>
+<div class="hint">← → naviguer&nbsp;&nbsp;·&nbsp;&nbsp;F plein écran</div>
+<div class="hud" id="counter">1 / 7</div>
+
+<script>
+/* ===== STARFIELD (repris de l'accueil, version compacte) ===== */
+(function () {
+  const c = document.getElementById('stars-canvas');
+  const ctx = c.getContext('2d');
+  let stars = [], meteors = [], nextMeteorAt = 0;
+  const rand = (a, b) => Math.random() * (b - a) + a;
+
+  function resize() {
+    c.width = innerWidth; c.height = innerHeight;
+    const n = Math.min(240, Math.round(c.width * c.height / 8500));
+    stars = Array.from({ length: n }, () => ({
+      x: Math.random() * c.width, y: Math.random() * c.height,
+      r: rand(0.3, 1.4), p: Math.random() * Math.PI * 2, s: rand(0.4, 1.4)
+    }));
+  }
+  addEventListener('resize', resize); resize();
+
+  function frame(t) {
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (const s of stars) {
+      ctx.globalAlpha = 0.25 + 0.55 * Math.abs(Math.sin(s.p + t * 0.0006 * s.s));
+      ctx.fillStyle = '#cfe0ff';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill();
+    }
+    if (!nextMeteorAt) nextMeteorAt = t + rand(6000, 15000);
+    if (t > nextMeteorAt) {
+      meteors.push({
+        x: rand(0, c.width * 0.85), y: rand(0, c.height * 0.35),
+        ang: rand(Math.PI * 0.18, Math.PI * 0.34), sp: rand(1.2, 2.0),
+        len: rand(90, 170), life: rand(550, 900), born: t, a: rand(0.45, 0.85)
+      });
+      nextMeteorAt = t + rand(12000, 36000);
+    }
+    meteors = meteors.filter(m => t - m.born < m.life);
+    for (const m of meteors) {
+      const age = t - m.born, fade = 1 - age / m.life;
+      const px = m.x + Math.cos(m.ang) * m.sp * age;
+      const py = m.y + Math.sin(m.ang) * m.sp * age;
+      const g = ctx.createLinearGradient(px, py, px - Math.cos(m.ang) * m.len, py - Math.sin(m.ang) * m.len);
+      g.addColorStop(0, 'rgba(200,220,255,' + (m.a * fade) + ')');
+      g.addColorStop(1, 'rgba(200,220,255,0)');
+      ctx.globalAlpha = 1; ctx.strokeStyle = g; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(px, py);
+      ctx.lineTo(px - Math.cos(m.ang) * m.len, py - Math.sin(m.ang) * m.len);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ===== DECK ===== */
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dots = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const bar = document.getElementById('progress-fill');
+  let cur = -1;
+
+  slides.forEach((_, k) => {
+    const b = document.createElement('button');
+    b.setAttribute('aria-label', 'Diapositive ' + (k + 1));
+    b.addEventListener('click', e => { e.stopPropagation(); go(k); });
+    dots.appendChild(b);
+  });
+  const dotEls = Array.from(dots.children);
+
+  function go(n) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (n === cur) return;
+    if (cur >= 0) slides[cur].classList.remove('active');
+    cur = n;
+    const s = slides[cur];
+    s.classList.remove('active');
+    void s.offsetWidth; /* relance les animations .rv */
+    s.classList.add('active');
+    dotEls.forEach((d, k) => d.classList.toggle('on', k === cur));
+    counter.textContent = (cur + 1) + ' / ' + slides.length;
+    bar.style.width = ((cur + 1) / slides.length * 100) + '%';
+    history.replaceState(null, '', '#' + (cur + 1));
+  }
+
+  addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(slides.length - 1);
+    else if (e.key.toLowerCase() === 'f') {
+      document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    }
+  });
+
+  /* Clic : tiers gauche = reculer, reste = avancer (liens exclus) */
+  addEventListener('click', e => {
+    if (e.target.closest('a, button')) return;
+    (e.clientX < innerWidth / 5) ? go(cur - 1) : go(cur + 1);
+  });
+
+  /* Swipe tactile */
+  let tx = null;
+  addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', e => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 45) (dx < 0) ? go(cur + 1) : go(cur - 1);
+  }, { passive: true });
+
+  const h = parseInt((location.hash || '').replace('#', ''), 10);
+  go(isNaN(h) ? 0 : h - 1);
+})();
+</script>
+
+</body>
+</html>
