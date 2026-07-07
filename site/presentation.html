@@ -63,10 +63,19 @@
       text-transform: uppercase; font-weight: 700;
     }
     .hud {
-      position: fixed; bottom: 20px; right: 28px; z-index: 40;
+      position: fixed; bottom: 20px; right: 138px; z-index: 40;
       font-family: var(--orbitron); font-size: 11px; letter-spacing: 2px;
       color: var(--muted);
     }
+    .capp-badge {
+      position: fixed; bottom: 13px; right: 24px; z-index: 40;
+      background: rgba(255,255,255,0.92); border: 1px solid var(--border);
+      border-radius: 7px; padding: 7px 14px;
+      display: flex; align-items: center;
+      opacity: 0.62; transition: opacity 0.25s ease, box-shadow 0.25s ease;
+    }
+    .capp-badge img { height: 38px; width: auto; display: block; }
+    .capp-badge:hover { opacity: 1; box-shadow: 0 0 14px rgba(80,130,255,0.35); }
     .hint {
       position: fixed; bottom: 20px; left: 28px; z-index: 40;
       font-size: 10px; letter-spacing: 1.5px; color: var(--muted);
@@ -542,6 +551,7 @@
 <canvas id="stars-canvas"></canvas>
 <div class="progress"><b id="progress-fill"></b></div>
 <div class="wordmark">RADAR<span class="plus">+</span><small>Présentation</small></div>
+<a class="capp-badge" href="https://capp-ulaval.ca/" target="_blank" rel="noopener" title="Centre d'analyse des politiques publiques"><img src="./assets/img/logo_capp.jpg" alt="CAPP ULaval"></a>
 
 <!-- ========== SLIDE 1 — TITRE ========== -->
 <section class="slide" id="s1">
@@ -555,7 +565,7 @@
     </div>
     <div class="byline rv" style="--d:.6s">
       <b>Adrien Cloutier</b><br>
-      <span>Doctorat en communication politique · Université Laval · Juillet 2026</span>
+      <span>Doctorat en communication politique · Université Laval<br>Centre d'analyse des politiques publiques (CAPP) · Juillet 2026</span>
     </div>
   </div>
 </section>
@@ -870,7 +880,7 @@
   <div class="wrap s-demo">
     <div class="radar-ring rv" style="--d:.05s"><b></b></div>
     <a class="url rv" style="--d:.25s" href="https://radarplus.org/" target="_blank" rel="noopener">radarplus<span class="accent">.org</span></a>
-    <p class="who rv" style="--d:.6s">Adrien Cloutier · Université Laval</p>
+    <p class="who rv" style="--d:.6s">Adrien Cloutier · Université Laval<br>Centre d'analyse des politiques publiques (CAPP)</p>
     <div class="partners rv" style="--d:.75s">
       <p class="partners-label">Partenaires &amp; contributeurs</p>
       <div class="plogos">
