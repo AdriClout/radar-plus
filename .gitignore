@@ -15,8 +15,10 @@
 !site/methodologie.html
 !site/acces-donnees.html
 !site/partenaires.html
+!site/presentation.html
 *.png
 !site/assets/img/GRCP-Logo.png
+!site/assets/img/infrastructure-radarplus.png
 *.pdf
 *.xlsx
 

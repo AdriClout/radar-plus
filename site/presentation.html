@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Radar+ · Présentation · Saillance médiatique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #020010;
+      --text: #d0e0ff;
+      --muted: rgba(140,170,220,0.6);
+      --accent: #5588ff;
+      --accent-glow: rgba(80,130,255,0.45);
+      --card-bg: rgba(10,18,50,0.7);
+      --border: rgba(90,140,255,0.22);
+      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
+      --eleve: #f2cd50;
+      --eleve-d: #7a6420;
+      --tres-eleve: #ffa050;
+      --tres-eleve-d: #8a4818;
+      --extreme: #ff5050;
+      --extreme-d: #8a1d1d;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--mono); overflow: hidden;
+    }
+    a { color: inherit; }
+
+    /* ========== STARFIELD ========== */
+    #stars-canvas {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+
+    /* ========== PROGRESS + CHROME ========== */
+    .progress {
+      position: fixed; top: 0; left: 0; right: 0; height: 3px;
+      background: rgba(90,140,255,0.12); z-index: 40;
+    }
+    .progress b {
+      display: block; height: 100%; width: 0;
+      background: linear-gradient(90deg, var(--accent), #9a6bff);
+      box-shadow: 0 0 12px var(--accent-glow);
+      transition: width 0.4s cubic-bezier(0.22, 0.9, 0.35, 1);
+    }
+    .wordmark {
+      position: fixed; top: 22px; left: 28px; z-index: 40;
+      font-family: var(--orbitron); font-size: 14px; letter-spacing: 3px;
+      color: #e0ecff; user-select: none;
+    }
+    .wordmark .plus { color: var(--accent); }
+    .wordmark small {
+      display: block; margin-top: 4px; font-family: var(--mono);
+      font-size: 9px; letter-spacing: 2.5px; color: var(--muted);
+      text-transform: uppercase; font-weight: 700;
+    }
+    .hud {
+      position: fixed; bottom: 20px; right: 138px; z-index: 40;
+      font-family: var(--orbitron); font-size: 11px; letter-spacing: 2px;
+      color: var(--muted);
+    }
+    .capp-badge {
+      position: fixed; bottom: 13px; right: 24px; z-index: 40;
+      background: rgba(255,255,255,0.92); border: 1px solid var(--border);
+      border-radius: 7px; padding: 7px 14px;
+      display: flex; align-items: center;
+      opacity: 0.62; transition: opacity 0.25s ease, box-shadow 0.25s ease;
+    }
+    .capp-badge img { height: 38px; width: auto; display: block; }
+    .capp-badge:hover { opacity: 1; box-shadow: 0 0 14px rgba(80,130,255,0.35); }
+    .hint {
+      position: fixed; bottom: 20px; left: 28px; z-index: 40;
+      font-size: 10px; letter-spacing: 1.5px; color: var(--muted);
+      text-transform: uppercase;
+    }
+    .dots {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      z-index: 40; display: flex; gap: 10px;
+    }
+    .dots button {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1px solid rgba(120,170,255,0.5); background: transparent;
+      cursor: pointer; padding: 0; transition: all 0.25s ease;
+    }
+    .dots button.on {
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      transform: scale(1.25);
+    }
+
+    /* ========== SLIDES ========== */
+    .slide {
+      position: fixed; inset: 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 9vh 7vw 12vh;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.45s ease, visibility 0.45s;
+      overflow-y: auto;
+    }
+    .slide.active { opacity: 1; visibility: visible; z-index: 2; }
+    .wrap { max-width: 1080px; width: 100%; }
+
+    /* Reveal animation (staggered via --d) */
+    .rv { opacity: 0; }
+    .slide.active .rv {
+      animation: rise 0.65s cubic-bezier(0.22, 0.9, 0.35, 1) both;
+      animation-delay: var(--d, 0s);
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ========== TYPO ========== */
+    .kicker {
+      font-family: var(--orbitron); font-size: 12px; letter-spacing: 5px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 22px;
+    }
+    h2 {
+      font-family: var(--orbitron); font-weight: 600;
+      font-size: clamp(28px, 4.4vw, 52px); line-height: 1.12;
+      letter-spacing: 1.5px; color: #e0ecff; margin-bottom: 30px;
+    }
+    .lede { font-size: clamp(15px, 1.5vw, 18px); line-height: 1.75; color: var(--text); }
+    .punch {
+      margin-top: 34px; padding: 18px 24px;
+      border-left: 3px solid var(--accent);
+      background: linear-gradient(90deg, rgba(80,130,255,0.12), transparent 70%);
+      font-family: var(--orbitron); font-size: clamp(15px, 1.8vw, 21px);
+      letter-spacing: 1px; line-height: 1.55; color: #fff;
+    }
+    .punch .accent { color: var(--accent); }
+
+    /* ========== SLIDE 1 : TITRE ========== */
+    .s-title {
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: space-between; min-height: 78vh;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); opacity: 1; }
+      50% { box-shadow: 0 0 0 7px rgba(80,130,255,0); opacity: 0.6; }
+    }
+    .hero-robot {
+      width: min(620px, 80vw); margin: 0 auto;
+    }
+    .hero-robot img {
+      width: 100%; height: auto; max-height: 52vh; display: block; margin: 0 auto;
+      filter: drop-shadow(0 0 40px rgba(60,100,255,0.25));
+    }
+    .s-title .tagline {
+      font-family: var(--orbitron); font-weight: 600;
+      font-size: clamp(17px, 2.5vw, 27px); letter-spacing: 5px;
+      text-transform: uppercase; color: #e0ecff;
+      text-shadow: 0 0 30px var(--accent-glow);
+    }
+    .s-title .territoires {
+      margin: 12px 0 6px; font-size: clamp(11px, 1.3vw, 14px);
+      letter-spacing: 3px; color: var(--muted); text-transform: uppercase;
+    }
+    .s-title .byline {
+      margin-top: 0; font-size: clamp(12px, 1.4vw, 15px);
+      line-height: 1.9; color: var(--text);
+    }
+    .hero-robot img { max-height: 48vh; }
+    .s-title .byline b { color: #fff; font-weight: 700; }
+    .s-title .byline span { color: var(--muted); }
+
+    /* ========== SLIDE 2 : LISTE NUMÉROTÉE ========== */
+    .numlist { list-style: none; display: grid; gap: 22px; }
+    .numlist li {
+      display: grid; grid-template-columns: 52px 1fr; gap: 18px;
+      align-items: start;
+    }
+    .numlist .n {
+      font-family: var(--orbitron); font-size: 22px; color: var(--accent);
+      opacity: 0.9; padding-top: 2px;
+    }
+    .numlist p { font-size: clamp(15px, 1.6vw, 19px); line-height: 1.7; }
+    .numlist p strong { color: #fff; }
+
+    /* ========== SLIDE 2c : DÉFINITION ========== */
+    .statline { font-size: clamp(13px, 1.4vw, 16px); color: var(--muted); margin-bottom: 22px; }
+    .statline .accent-b {
+      font-family: var(--orbitron); color: var(--accent);
+      font-size: clamp(16px, 1.9vw, 22px); letter-spacing: 1px; margin-right: 4px;
+    }
+    .defbox {
+      border-left: 3px solid var(--accent);
+      background: linear-gradient(90deg, rgba(80,130,255,0.10), transparent 80%);
+      padding: 22px 28px; margin-bottom: 24px;
+      font-size: clamp(15px, 1.7vw, 20px); line-height: 1.75; color: var(--text);
+    }
+    .defbox strong { color: #fff; }
+    .dimchips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+    .dimchip {
+      font-family: var(--orbitron); font-size: 10.5px; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #cfe1ff;
+      border: 1px solid rgba(120,170,255,0.45); border-radius: 4px;
+      padding: 7px 13px;
+      background: linear-gradient(135deg, rgba(80,130,255,0.16), rgba(120,80,255,0.10));
+    }
+    .distinct { font-size: clamp(12px, 1.3vw, 14px); line-height: 1.7; color: var(--muted); }
+    .distinct strong { color: var(--text); }
+
+    /* ========== SLIDE 3 : PIPELINE ========== */
+    .infra { display: flex; justify-content: center; margin: 6px 0 26px; }
+    .infra img {
+      max-width: 100%; max-height: 52vh; height: auto;
+      background: #fff; border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 40px rgba(60,100,255,0.18);
+    }
+    .stats { display: flex; flex-wrap: wrap; gap: 14px; }
+    .stat {
+      flex: 1 1 170px; border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 18px; background: rgba(10,18,50,0.45);
+    }
+    .stat b {
+      display: block; font-family: var(--orbitron);
+      font-size: clamp(17px, 2vw, 23px); color: var(--accent);
+      margin-bottom: 5px; letter-spacing: 1px;
+    }
+    .stat span { font-size: 11px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+
+    /* ========== SLIDE 4 : INDICE ========== */
+    .split { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 48px; align-items: center; }
+    @media (max-width: 860px) { .split { grid-template-columns: 1fr; } .mockcol { display: none; } }
+    .dims { display: grid; gap: 10px; margin-bottom: 22px; }
+    .dim {
+      display: grid; grid-template-columns: 38px 1fr; gap: 14px; align-items: start;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 11px 16px;
+    }
+    .dim .dn { font-family: var(--orbitron); font-size: 14px; color: var(--accent); padding-top: 2px; }
+    .dim-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .dim h3 {
+      font-family: var(--orbitron); font-size: 12px; letter-spacing: 1.8px;
+      text-transform: uppercase; color: #e0ecff;
+    }
+    .pct { font-size: 10px; letter-spacing: 1px; color: var(--muted); }
+    .rchip {
+      margin-left: auto; font-family: var(--orbitron); font-size: 8px;
+      letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent);
+      border: 1px solid rgba(120,170,255,0.5); border-radius: 3px; padding: 2px 7px;
+      background: rgba(80,130,255,0.10); white-space: nowrap;
+    }
+    .dim p { font-size: 11.5px; line-height: 1.55; color: var(--muted); }
+    .punch-s { margin-top: 0; font-size: clamp(13px, 1.4vw, 16px); padding: 14px 18px; }
+    .mockcol .alert-row { margin-top: 20px; }
+    .alert-row { font-size: 12px; color: var(--muted); }
+    .alert-cap { margin-bottom: 12px; line-height: 1.6; }
+    .lvls { display: flex; flex-wrap: wrap; gap: 10px; }
+    .lvl em { font-style: normal; font-size: 9px; opacity: 0.7; margin-left: 7px; }
+    .lvl {
+      font-family: var(--orbitron); font-size: 10.5px; letter-spacing: 1.5px;
+      text-transform: uppercase; border-radius: 4px; padding: 6px 12px;
+      border: 1px solid;
+    }
+    .lvl-0 { color: #7fa8ff; border-color: rgba(85,136,255,0.45); background: rgba(80,130,255,0.12); }
+    .lvl-1 { color: var(--eleve); border-color: var(--eleve-d); background: rgba(122,100,32,0.22); }
+    .lvl-2 { color: var(--tres-eleve); border-color: var(--tres-eleve-d); background: rgba(138,72,24,0.22); }
+    .lvl-3 { color: var(--extreme); border-color: var(--extreme-d); background: rgba(138,29,29,0.25); box-shadow: 0 0 14px rgba(255,80,80,0.25); }
+
+    /* Mock page d'accueil */
+    .mock {
+      background: rgba(6,12,36,0.85); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; max-width: 360px; margin: 0 auto;
+      box-shadow: 0 0 40px rgba(60,100,255,0.15);
+    }
+    .mock-bar { display: flex; gap: 5px; margin-bottom: 12px; }
+    .mock-bar i { width: 8px; height: 8px; border-radius: 50%; background: rgba(120,170,255,0.3); }
+    .mock-hero {
+      position: relative; height: 110px; border-radius: 6px;
+      border: 1.5px solid var(--accent);
+      background: linear-gradient(135deg, rgba(80,130,255,0.28), rgba(120,80,255,0.14));
+      box-shadow: 0 0 22px var(--accent-glow);
+      margin-bottom: 10px;
+    }
+    .mock-chip {
+      position: absolute; font-family: var(--orbitron); font-size: 8.5px;
+      letter-spacing: 1.5px; text-transform: uppercase; color: #fff;
+      background: var(--accent); border-radius: 3px; padding: 3px 7px;
+    }
+    .chip-pos { top: -9px; left: 10px; }
+    .chip-surf { bottom: -9px; right: 10px; }
+    .mock-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .mock-mid {
+      flex: 1; height: 56px; border-radius: 5px;
+      background: rgba(80,130,255,0.10); border: 1px solid rgba(90,140,255,0.18);
+    }
+    .mock-line { height: 9px; border-radius: 3px; background: rgba(120,160,230,0.12); margin-bottom: 7px; }
+    .mock-line.w2 { width: 78%; }
+    .mock-line.w3 { width: 60%; }
+    .mock-time { margin-top: 14px; }
+    .mock-time .tlabel {
+      display: flex; justify-content: space-between;
+      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px; font-family: var(--orbitron);
+    }
+    .mock-track { height: 8px; border-radius: 4px; background: rgba(90,140,255,0.12); overflow: hidden; }
+    .mock-fill {
+      height: 100%; width: 0; border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), #9a6bff);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .slide.active .mock-fill { animation: fill 2.2s 0.9s cubic-bezier(0.22,0.9,0.35,1) both; }
+    @keyframes fill { from { width: 0; } to { width: 72%; } }
+
+    /* ========== SLIDE 4b : PALIERS & ALERTES ========== */
+    .split2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+    .panel {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px 22px;
+    }
+    .panel-t {
+      font-family: var(--orbitron); font-size: 12.5px; letter-spacing: 2px;
+      text-transform: uppercase; color: #e0ecff; margin-bottom: 16px;
+    }
+    .panel p { font-size: 12.5px; line-height: 1.65; color: var(--muted); margin-top: 12px; }
+    .panel p strong { color: var(--text); }
+    .panel .note { font-size: 11.5px; }
+    .scale { display: flex; gap: 4px; }
+    .seg {
+      flex: 1; padding: 16px 10px; border-radius: 5px; border: 1px solid;
+      font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.2px;
+      text-transform: uppercase; opacity: 0; transform-origin: left;
+    }
+    .seg b { display: block; font-size: 8px; opacity: 0.65; margin-bottom: 3px; font-weight: 400; }
+    .seg-0 { color: #7fa8ff; border-color: rgba(85,136,255,0.45); background: rgba(80,130,255,0.12); }
+    .seg-1 { color: var(--eleve); border-color: var(--eleve-d); background: rgba(122,100,32,0.22); }
+    .seg-2 { color: var(--tres-eleve); border-color: var(--tres-eleve-d); background: rgba(138,72,24,0.22); }
+    .seg-3 { color: var(--extreme); border-color: var(--extreme-d); background: rgba(138,29,29,0.25); box-shadow: 0 0 14px rgba(255,80,80,0.2); }
+    .slide.active .seg { animation: segin 0.45s cubic-bezier(0.22,0.9,0.35,1) both; }
+    .slide.active .seg-0 { animation-delay: 0.55s; }
+    .slide.active .seg-1 { animation-delay: 0.7s; }
+    .slide.active .seg-2 { animation-delay: 0.85s; }
+    .slide.active .seg-3 { animation-delay: 1s; }
+    @keyframes segin { from { opacity: 0; transform: scaleX(0.4); } to { opacity: 1; transform: none; } }
+    .spark { position: relative; }
+    .spark svg { width: 100%; height: auto; display: block; }
+    .spark .line { stroke-dasharray: 600; stroke-dashoffset: 600; }
+    .slide.active .spark .line { animation: draw 1.5s 0.75s ease-out forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .spark circle { opacity: 0; }
+    .slide.active .spark circle { animation: fadein 0.3s 2.15s forwards, blink 1.6s 2.5s infinite; }
+    @keyframes fadein { to { opacity: 1; } }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .alert-chip {
+      position: absolute; top: 0; right: 12%;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--tres-eleve);
+      border: 1px solid var(--tres-eleve-d); border-radius: 4px;
+      padding: 4px 9px; background: rgba(138,72,24,0.3); opacity: 0;
+    }
+    .slide.active .alert-chip { animation: fadein 0.35s 2.25s forwards; }
+    .alert-chip i {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--tres-eleve); animation: blink 1.6s infinite;
+    }
+    .stchip {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--orbitron); font-size: 8.5px; letter-spacing: 1.5px;
+      text-transform: uppercase; border: 1px solid var(--border);
+      border-radius: 3px; padding: 3px 8px; color: var(--muted); margin-right: 8px;
+    }
+    .stchip.live { color: var(--accent); border-color: rgba(120,170,255,0.5); }
+    .stchip.live i {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    /* ========== SLIDE 4c : LLM LOCAUX ========== */
+    .demo {
+      background: rgba(6,12,36,0.85); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 24px; margin-bottom: 20px;
+      box-shadow: 0 0 40px rgba(60,100,255,0.12);
+    }
+    .demo-label {
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .demo-label i {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    .demo-txt { font-size: clamp(14px, 1.6vw, 19px); line-height: 1.9; color: var(--text); }
+    .hl {
+      --hlc: rgba(85,136,255,0.30);
+      background-image: linear-gradient(var(--hlc), var(--hlc));
+      background-repeat: no-repeat; background-size: 0% 100%;
+      border-radius: 3px; padding: 2px 4px; margin: 0 -1px;
+    }
+    .slide.active .hl { animation: hlin 0.45s ease-out forwards; animation-delay: var(--hd, 0.8s); }
+    @keyframes hlin { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+    .hl-lieu { --hlc: rgba(154,107,255,0.30); }
+    .hl-enjeu { --hlc: rgba(242,205,80,0.24); }
+    .demo-out { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .ochip {
+      font-family: var(--orbitron); font-size: 8.5px; letter-spacing: 1.2px;
+      text-transform: uppercase; border: 1px solid; border-radius: 3px;
+      padding: 4px 9px; opacity: 0;
+    }
+    .slide.active .ochip { animation: fadein 0.35s forwards; animation-delay: var(--hd, 1.8s); }
+    .ochip b { font-weight: 400; opacity: 0.6; margin-right: 6px; }
+    .oc-p { color: #9dbcff; border-color: rgba(85,136,255,0.5); background: rgba(80,130,255,0.12); }
+    .oc-l { color: #c4a8ff; border-color: rgba(154,107,255,0.5); background: rgba(154,107,255,0.12); }
+    .oc-e { color: var(--eleve); border-color: var(--eleve-d); background: rgba(122,100,32,0.2); }
+    .oc-t { color: var(--tres-eleve); border-color: var(--tres-eleve-d); background: rgba(138,72,24,0.2); }
+    .models { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .models { grid-template-columns: 1fr; } }
+    .model {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 18px;
+    }
+    .model-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+    .model-head h3 {
+      font-family: var(--orbitron); font-size: 13px; letter-spacing: 1.5px;
+      color: #e0ecff; text-transform: uppercase;
+    }
+    .model-head span { font-size: 9.5px; letter-spacing: 1px; color: var(--accent); text-transform: uppercase; }
+    .model p { font-size: 11.5px; line-height: 1.6; color: var(--muted); }
+    .model p strong { color: var(--text); }
+    .ia-strip { display: flex; flex-wrap: wrap; gap: 14px; }
+
+    /* ========== SLIDE 5 : MODULES ========== */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+    .card {
+      display: block; text-decoration: none; color: inherit; cursor: pointer;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px 22px;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+      backdrop-filter: blur(4px);
+    }
+    .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .card:hover {
+      border-color: rgba(140,180,255,0.7);
+      box-shadow: 0 0 18px rgba(80,130,255,0.22);
+      transform: translateY(-3px);
+    }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .card h3 { font-family: var(--orbitron); font-size: 14px; letter-spacing: 2px; color: #e0ecff; text-transform: uppercase; }
+    .badge {
+      font-family: var(--orbitron); font-size: 8.5px; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--accent);
+      border: 1px solid rgba(120,170,255,0.45); border-radius: 3px;
+      padding: 3px 8px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge.live i {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    .card p { font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+
+    /* ========== SLIDE 6b : ÉVOLUTION CAUFIELD VS TRUMP ========== */
+    .evo {
+      background: rgba(6,12,36,0.85); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 20px 10px; margin-bottom: 20px;
+      box-shadow: 0 0 40px rgba(60,100,255,0.12);
+    }
+    .evo-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    .evo-legend { display: flex; gap: 10px; flex-wrap: wrap; }
+    .lchip {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--orbitron); font-size: 9.5px; letter-spacing: 1.5px;
+      text-transform: uppercase; border: 1px solid var(--border);
+      border-radius: 4px; padding: 5px 10px; color: var(--text);
+    }
+    .lchip i { width: 9px; height: 9px; border-radius: 50%; }
+    .lchip-cc i { background: #3ce6c8; box-shadow: 0 0 8px rgba(60,230,200,0.7); }
+    .lchip-dt i { background: #ff6ea9; box-shadow: 0 0 8px rgba(255,110,169,0.7); }
+    .evo-period { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+    .evo svg { width: 100%; height: auto; max-height: 46vh; display: block; }
+    .evo-line { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+    .evo-cc { stroke: #3ce6c8; filter: drop-shadow(0 0 5px rgba(60,230,200,0.55)); }
+    .evo-dt { stroke: #ff6ea9; filter: drop-shadow(0 0 5px rgba(255,110,169,0.5)); }
+    .slide.active .evo-cc { animation: draw 2.5s 0.8s cubic-bezier(0.3,0.6,0.4,1) forwards; }
+    .slide.active .evo-dt { animation: draw 2.5s 6.3s cubic-bezier(0.3,0.6,0.4,1) forwards; }
+    .late { opacity: 0; }
+    .slide.active .late { animation: fadein 0.5s forwards; animation-delay: var(--hd, 0.8s); }
+    .slide.active .evo-peak { animation: fadein 0.35s forwards, blink 1.7s 0.5s infinite; animation-delay: var(--hd, 3.4s); }
+    .evo-peak { opacity: 0; }
+
+    /* ========== SLIDE 7 : DEMO ========== */
+    .s-demo { text-align: center; }
+    .radar-ring {
+      position: relative; width: 130px; height: 130px; margin: 0 auto 40px;
+      border: 1px solid var(--border); border-radius: 50%;
+    }
+    .radar-ring::before {
+      content: ''; position: absolute; inset: 24px;
+      border: 1px solid var(--border); border-radius: 50%;
+    }
+    .radar-ring::after {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: conic-gradient(from 0deg, rgba(85,136,255,0.55), transparent 70deg, transparent);
+      animation: sweep 3.2s linear infinite;
+    }
+    .radar-ring b {
+      position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+      transform: translate(-50%,-50%); border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 12px var(--accent-glow);
+    }
+    @keyframes sweep { to { transform: rotate(360deg); } }
+    .s-demo .url {
+      font-family: var(--orbitron); font-weight: 600;
+      font-size: clamp(34px, 6.5vw, 72px); letter-spacing: 3px;
+      color: #fff; text-decoration: none;
+      text-shadow: 0 0 45px var(--accent-glow);
+    }
+    .s-demo .url .accent { color: var(--accent); }
+    .s-demo .sub { margin-top: 30px; font-size: clamp(13px, 1.5vw, 17px); color: var(--text); line-height: 1.8; }
+    .s-demo .who { margin-top: 44px; font-size: 13px; color: var(--muted); letter-spacing: 1px; }
+    .partners { margin-top: 46px; }
+    .partners-label {
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+    }
+    .plogos { display: flex; justify-content: center; align-items: stretch; gap: 16px; flex-wrap: wrap; }
+    .plogo {
+      background: rgba(255,255,255,0.97); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 22px; min-height: 86px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .plogo:hover {
+      border-color: rgba(140,180,255,0.7);
+      box-shadow: 0 0 18px rgba(80,130,255,0.3);
+      transform: translateY(-3px);
+    }
+    .plogo img { max-height: 58px; max-width: 190px; width: auto; object-fit: contain; display: block; }
+    .plogo-dark { background: linear-gradient(180deg, rgba(15,34,92,0.96), rgba(10,24,68,0.96)); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div class="progress"><b id="progress-fill"></b></div>
+<div class="wordmark">RADAR<span class="plus">+</span><small>Présentation</small></div>
+<a class="capp-badge" href="https://capp-ulaval.ca/" target="_blank" rel="noopener" title="Centre d'analyse des politiques publiques"><img src="./assets/img/logo_capp.jpg" alt="CAPP ULaval"></a>
+
+<!-- ========== SLIDE 1 — TITRE ========== -->
+<section class="slide" id="s1">
+  <div class="wrap s-title">
+    <div class="s-head">
+      <div class="tagline rv" style="--d:.05s">Suivi de la saillance médiatique</div>
+      <div class="territoires rv" style="--d:.15s">Québec · Canada · États-Unis</div>
+    </div>
+    <div class="hero-robot rv" style="--d:.3s">
+      <img src="./assets/img/animation-radar.svg" alt="RADAR+, robot moissonneur des médias" />
+    </div>
+    <div class="byline rv" style="--d:.6s">
+      <b>Adrien Cloutier</b><br>
+      <span>Doctorat en communication politique · Université Laval<br>Centre d'analyse des politiques publiques (CAPP) · Juillet 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 2 — LE PROBLÈME ========== -->
+<section class="slide" id="s2">
+  <div class="wrap">
+    <div class="kicker rv">Le point de départ</div>
+    <h2 class="rv" style="--d:.1s">L'attention médiatique est<br>une ressource rare</h2>
+    <ul class="numlist">
+      <li class="rv" style="--d:.25s"><span class="n">01</span>
+        <p>Chaque jour, chaque média tranche : quoi mettre <strong>à la Une</strong>, quoi reléguer plus bas… et quoi laisser de côté.</p>
+      </li>
+      <li class="rv" style="--d:.4s"><span class="n">02</span>
+        <p>Cette hiérarchie, c'est la <strong>saillance</strong>, utilisée en recherche comme proxy de l'opinion publique et de la sphère politique.</p>
+      </li>
+      <li class="rv" style="--d:.55s"><span class="n">03</span>
+        <p>On la commente beaucoup. On la <strong>mesure</strong> rarement en continu.</p>
+      </li>
+    </ul>
+    <div class="punch rv" style="--d:.75s">Radar+ la mesure. <span class="accent">Toutes les 10 minutes.</span></div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 2b — À L'ÈRE DU NUMÉRIQUE ========== -->
+<section class="slide" id="s2b">
+  <div class="wrap">
+    <div class="kicker rv">À l'ère du numérique</div>
+    <h2 class="rv" style="--d:.1s">La définition de la Une<br>se dissout</h2>
+    <ul class="numlist">
+      <li class="rv" style="--d:.25s"><span class="n">01</span>
+        <p><strong>Éclatement</strong> : l'écosystème se fragmente en murs de péage, réseaux socionumériques, hybridité médiatique, micro-publics.</p>
+      </li>
+      <li class="rv" style="--d:.4s"><span class="n">02</span>
+        <p><strong>Algorithmes &amp; personnalisation</strong> : les fils sont classés par algorithmes; bulles de filtres et chambres d'écho isolent les publics.</p>
+      </li>
+      <li class="rv" style="--d:.55s"><span class="n">03</span>
+        <p><strong>La Une en mouvement</strong> : les pages d'accueil se recomposent au fil de la journée, et l'IA générative façonne ce que chacun voit.</p>
+      </li>
+    </ul>
+    <div class="punch rv" style="--d:.75s">Qu'est-ce qu'être saillant quand <span class="accent">deux lecteurs n'ont plus la même Une</span>&nbsp;?</div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 2c — NOTRE DÉFINITION ========== -->
+<section class="slide" id="s2c">
+  <div class="wrap">
+    <div class="kicker rv">Scoping review · 153 études</div>
+    <h2 class="rv" style="--d:.1s">La saillance médiatique, définie</h2>
+    <p class="statline rv" style="--d:.22s"><span class="accent-b">62 %</span> des études mesurent la saillance sans la définir. Notre définition&nbsp;:</p>
+    <blockquote class="defbox rv" style="--d:.38s">
+      La saillance médiatique est l'<strong>importance relative</strong> qu'un <strong>objet</strong> (enjeu, acteur ou événement) acquiert dans le <strong>contenu des médias d'information</strong> à un moment donné, telle qu'elle émerge de l'ensemble de la couverture. Attribut <strong>relationnel, construit et multidimensionnel</strong>&nbsp;: un objet n'est saillant que par contraste avec les autres.
+    </blockquote>
+    <div class="dimchips rv" style="--d:.6s">
+      <span class="dimchip">Volume</span>
+      <span class="dimchip">Proéminence &amp; position</span>
+      <span class="dimchip">Visibilité &amp; portée</span>
+      <span class="dimchip">Ton</span>
+      <span class="dimchip">Persistance</span>
+    </div>
+    <p class="distinct rv" style="--d:.75s">Distincte de la saillance <strong>publique</strong> (perçue par les publics) et <strong>individuelle</strong> (accessibilité cognitive), dont elle est l'antécédent médiatique.</p>
+  </div>
+</section>
+
+<!-- ========== SLIDE 3 — PIPELINE ========== -->
+<section class="slide" id="s3">
+  <div class="wrap">
+    <div class="kicker rv">Sous le capot</div>
+    <h2 class="rv" style="--d:.1s">Une capture toutes les 10 minutes</h2>
+    <div class="infra rv" style="--d:.2s">
+      <img src="./assets/img/infrastructure-radarplus.png" alt="Infrastructure Radar+ : lac, entrepôt et comptoirs de données (CAPP / Infoscope)" />
+    </div>
+    <div class="stats">
+      <div class="stat rv" style="--d:.45s"><b>Sept. 2019</b><span>Archive continue</span></div>
+      <div class="stat rv" style="--d:.55s"><b>+5 M</b><span>Captures cumulées</span></div>
+      <div class="stat rv" style="--d:.65s"><b>&gt; 95 %</b><span>Taux de fiabilité</span></div>
+      <div class="stat rv" style="--d:.75s"><b>15 médias</b><span>Suivis en direct</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 4 — L'INDICE ========== -->
+<section class="slide" id="s4">
+  <div class="wrap">
+    <div class="kicker rv">La mesure · 5 dimensions · 15 indicateurs</div>
+    <h2 class="rv" style="--d:.1s">L'indice de saillance</h2>
+    <div class="split">
+      <div>
+        <div class="dims">
+          <div class="dim rv" style="--d:.2s"><span class="dn">01</span>
+            <div>
+              <div class="dim-head"><h3>Volume &amp; fréquence</h3></div>
+              <p>Nombre d'articles, part de la couverture, espace éditorial.</p>
+            </div>
+          </div>
+          <div class="dim rv" style="--d:.3s"><span class="dn">02</span>
+            <div>
+              <div class="dim-head"><h3>Proéminence &amp; position</h3><span class="rchip">Radar+</span></div>
+              <p>Placement (la Une), taille et visuel de l'item, notoriété du média.</p>
+            </div>
+          </div>
+          <div class="dim rv" style="--d:.4s"><span class="dn">03</span>
+            <div>
+              <div class="dim-head"><h3>Visibilité &amp; portée</h3><span class="rchip">Radar+</span></div>
+              <p>Diffusion et convergence entre médias, centralité dans l'agenda.</p>
+            </div>
+          </div>
+          <div class="dim rv" style="--d:.5s"><span class="dn">04</span>
+            <div>
+              <div class="dim-head"><h3>Durée &amp; persistance</h3><span class="rchip">Radar+</span></div>
+              <p>Survie dans la couverture, tempêtes médiatiques, rythme de mise à jour.</p>
+            </div>
+          </div>
+          <div class="dim rv" style="--d:.6s"><span class="dn">05</span>
+            <div>
+              <div class="dim-head"><h3>Ton &amp; valence</h3></div>
+              <p>Direction favorable, neutre ou hostile de la couverture.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mockcol">
+        <div class="mock rv" style="--d:.45s">
+          <div class="mock-bar"><i></i><i></i><i></i></div>
+          <div class="mock-hero">
+            <span class="mock-chip chip-pos">Placement · Une</span>
+            <span class="mock-chip chip-surf">Taille &amp; visuel</span>
+          </div>
+          <div class="mock-row"><div class="mock-mid"></div><div class="mock-mid"></div></div>
+          <div class="mock-line"></div>
+          <div class="mock-line w2"></div>
+          <div class="mock-line w3"></div>
+          <div class="mock-time">
+            <div class="tlabel"><span>Persistance</span><span>capture / 10 min</span></div>
+            <div class="mock-track"><div class="mock-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 4b — PALIERS & ALERTES ========== -->
+<section class="slide" id="s4b">
+  <div class="wrap">
+    <div class="kicker rv">Seuils &amp; signaux</div>
+    <h2 class="rv" style="--d:.1s">Paliers et alertes</h2>
+    <div class="split2">
+      <div class="panel rv" style="--d:.25s">
+        <h3 class="panel-t">Les paliers · la magnitude</h3>
+        <div class="scale">
+          <div class="seg seg-0"><b>p50</b>Modéré</div>
+          <div class="seg seg-1"><b>p80</b>Élevé</div>
+          <div class="seg seg-2"><b>p95</b>Très élevé</div>
+          <div class="seg seg-3"><b>p99</b>Extrême</div>
+        </div>
+        <p>Quatre paliers calibrés <strong>par pays</strong> : la distribution des pics de saillance (blocs 4 h, 130 derniers jours), découpée aux percentiles.</p>
+        <p><strong>Élevé</strong> : le tier de la veille quotidienne<br><strong>Très élevé</strong> : top 5 % des pics<br><strong>Extrême</strong> : top 1 %, l'événement rare à l'échelle du pays.</p>
+        <p class="note">Un « extrême » au Québec n'est pas un « extrême » aux États-Unis.</p>
+      </div>
+      <div class="panel rv" style="--d:.45s">
+        <h3 class="panel-t">Les alertes · le déclencheur</h3>
+        <div class="spark">
+          <svg viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <line x1="6" y1="52" x2="314" y2="52" stroke="var(--eleve)" stroke-dasharray="5 5" stroke-width="1" opacity="0.65"/>
+            <text x="8" y="45" fill="var(--eleve)" font-size="8" letter-spacing="1.5" opacity="0.85" font-family="Orbitron, monospace">SEUIL ÉLEVÉ · P80</text>
+            <path class="line" d="M6,92 C30,88 45,90 60,86 S95,90 115,84 S150,88 165,80 C180,72 192,58 205,34 C210,25 216,22 221,30 C230,46 242,70 258,80 S300,88 314,86" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="213" cy="26" r="4" fill="var(--tres-eleve)"/>
+          </svg>
+          <span class="alert-chip"><i></i>Alerte</span>
+        </div>
+        <p>Un <strong>épisode</strong> s'ouvre quand le pic d'un objet franchit le seuil Élevé (p80), et dure tant qu'il reste au-dessus. Son niveau est celui de son pic.</p>
+        <p class="note"><span class="stchip live"><i></i>En cours</span><span class="stchip">Terminé</span> · Les épisodes d'un même événement sont regroupés automatiquement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 4c — LLM LOCAUX ========== -->
+<section class="slide" id="s4c">
+  <div class="wrap">
+    <div class="kicker rv">Intelligence artificielle</div>
+    <h2 class="rv" style="--d:.1s">Des LLM locaux, ouverts, validés</h2>
+    <div class="demo rv" style="--d:.25s">
+      <div class="demo-label"><i></i>Chaque manchette, chaque phrase, traitée par nos modèles</div>
+      <p class="demo-txt">« <span class="hl" style="--hd:.7s">Mark Carney</span> annonce une réplique d'<span class="hl hl-lieu" style="--hd:.95s">Ottawa</span> aux <span class="hl hl-enjeu" style="--hd:1.2s">tarifs</span> de <span class="hl" style="--hd:1.45s">Donald Trump</span> sur l'<span class="hl hl-enjeu" style="--hd:1.7s">aluminium</span> »</p>
+      <div class="demo-out">
+        <span class="ochip oc-p" style="--hd:2s"><b>Personne</b>Mark Carney</span>
+        <span class="ochip oc-p" style="--hd:2.15s"><b>Personne</b>Donald Trump</span>
+        <span class="ochip oc-l" style="--hd:2.3s"><b>Lieu</b>Ottawa</span>
+        <span class="ochip oc-e" style="--hd:2.45s"><b>Thème CAP</b>Commerce extérieur</span>
+        <span class="ochip oc-t" style="--hd:2.6s"><b>Ton</b>Négatif</span>
+      </div>
+    </div>
+    <div class="models">
+      <div class="model rv" style="--d:.4s">
+        <div class="model-head"><h3>GLiNER</h3><span>Extraction</span></div>
+        <p>NER <strong>zero-shot</strong> et ouvert : repère personnes, enjeux, institutions et lieux, y compris les objets <strong>émergents</strong>, sans dictionnaire fermé.</p>
+      </div>
+      <div class="model rv" style="--d:.5s">
+        <div class="model-head"><h3>Gemma 3</h3><span>Normalisation</span></div>
+        <p>LLM open-weight exécuté localement : fusionne les variantes (« D. Trump », « le président américain ») et apparie <strong>français ↔ anglais</strong>.</p>
+      </div>
+      <div class="model rv" style="--d:.6s">
+        <div class="model-head"><h3>Classifieurs</h3><span>Analyse par phrase</span></div>
+        <p>Après découpage (wtpsplit) : <strong>thèmes</strong> (nomenclature CAP), <strong>partis politiques</strong> canadiens et <strong>ton</strong> de chaque phrase.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 5 — LES VUES ========== -->
+<section class="slide" id="s5">
+  <div class="wrap">
+    <div class="kicker rv">Analyse en continu</div>
+    <h2 class="rv" style="--d:.1s">Les modules de Radar+</h2>
+    <div class="cards">
+      <a class="card rv" style="--d:.2s" href="./unes.html" target="_blank" rel="noopener">
+        <div class="card-head"><h3>Dans le radar</h3><span class="badge live"><i></i>Live</span></div>
+        <p>Les unes des médias suivis, reconstituées en direct.</p>
+      </a>
+      <a class="card rv" style="--d:.3s" href="./index.html#hot20" target="_blank" rel="noopener">
+        <div class="card-head"><h3>Hot 20</h3><span class="badge live"><i></i>Live</span></div>
+        <p>Le palmarès des objets les plus saillants en ce moment.</p>
+      </a>
+      <a class="card rv" style="--d:.4s" href="./evolution.html" target="_blank" rel="noopener">
+        <div class="card-head"><h3>Évolution</h3><span class="badge">Timeline</span></div>
+        <p>Les trajectoires d'attention dans le temps, objet par objet.</p>
+      </a>
+      <a class="card rv" style="--d:.5s" href="./constellation.html" target="_blank" rel="noopener">
+        <div class="card-head"><h3>Constellation</h3><span class="badge">Objet</span></div>
+        <p>La carte des objets médiatiques et des liens entre eux.</p>
+      </a>
+      <a class="card rv" style="--d:.6s" href="./sonar.html" target="_blank" rel="noopener">
+        <div class="card-head"><h3>Sonar</h3><span class="badge">Monitoring</span></div>
+        <p>L'outil de validation des données, en temps réel.</p>
+      </a>
+      <a class="card rv" style="--d:.7s" href="./alertes.html" target="_blank" rel="noopener">
+        <div class="card-head"><h3>Alertes</h3><span class="badge">Signal</span></div>
+        <p>Les épisodes de saillance élevée à extrême, documentés.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 6 — PERTINENCE ========== -->
+<section class="slide" id="s6">
+  <div class="wrap">
+    <div class="kicker rv">Au-delà de l'académique</div>
+    <h2 class="rv" style="--d:.1s">Quelques exemples d'applications</h2>
+    <ul class="numlist">
+      <li class="rv" style="--d:.25s"><span class="n">→</span>
+        <p><strong>Détecter</strong> les montées d'attention sur vos enjeux, en temps quasi réel.</p>
+      </li>
+      <li class="rv" style="--d:.38s"><span class="n">→</span>
+        <p><strong>Documenter</strong> les angles morts : ce qui n'est <em>pas</em> mis de l'avant.</p>
+      </li>
+      <li class="rv" style="--d:.51s"><span class="n">→</span>
+        <p><strong>Comparer</strong> la couverture entre médias et entre territoires.</p>
+      </li>
+      <li class="rv" style="--d:.64s"><span class="n">→</span>
+        <p><strong>Adapter</strong> indices, alertes et flux de données à des besoins opérationnels.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== SLIDE 6b — ÉVOLUTION : CAUFIELD VS TRUMP ========== -->
+<section class="slide" id="s6b">
+  <div class="wrap">
+    <div class="kicker rv">Étude de cas</div>
+    <h2 class="rv" style="--d:.1s">Caufield vs Trump</h2>
+    <div class="evo rv" style="--d:.25s">
+      <div class="evo-head">
+        <div class="evo-legend">
+          <span class="lchip lchip-cc late" style="--hd:.8s"><i></i>Cole Caufield</span>
+          <span class="lchip lchip-dt late" style="--hd:6.3s"><i></i>Donald Trump</span>
+        </div>
+        <span class="evo-period">Québec · 11 janv. → 20 mai 2026 · pic quotidien</span>
+      </div>
+      <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" aria-label="Évolution de la saillance : Cole Caufield vs Donald Trump">
+        <line x1="10" y1="288.8" x2="990" y2="288.8" stroke="#7fa8ff" stroke-width="1" stroke-dasharray="4 6" opacity="0.35"/>
+        <text x="990" y="284" text-anchor="end" fill="#7fa8ff" font-size="9" letter-spacing="1.5" opacity="0.7" font-family="Orbitron, monospace">MODÉRÉ</text>
+        <line x1="10" y1="237" x2="990" y2="237" stroke="var(--eleve)" stroke-width="1" stroke-dasharray="4 6" opacity="0.35"/>
+        <text x="990" y="232.2" text-anchor="end" fill="var(--eleve)" font-size="9" letter-spacing="1.5" opacity="0.7" font-family="Orbitron, monospace">ÉLEVÉ</text>
+        <line x1="10" y1="119.3" x2="990" y2="119.3" stroke="var(--tres-eleve)" stroke-width="1" stroke-dasharray="4 6" opacity="0.35"/>
+        <text x="990" y="114.5" text-anchor="end" fill="var(--tres-eleve)" font-size="9" letter-spacing="1.5" opacity="0.7" font-family="Orbitron, monospace">TRÈS ÉLEVÉ</text>
+        <line x1="10" y1="34.8" x2="990" y2="34.8" stroke="var(--extreme)" stroke-width="1" stroke-dasharray="4 6" opacity="0.35"/>
+        <text x="990" y="30" text-anchor="end" fill="var(--extreme)" font-size="9" letter-spacing="1.5" opacity="0.7" font-family="Orbitron, monospace">EXTRÊME</text>
+        <text x="173.3" y="354" text-anchor="middle" fill="rgba(140,170,220,0.6)" font-size="10" font-family="Space Mono, monospace">févr.</text>
+        <text x="367.8" y="354" text-anchor="middle" fill="rgba(140,170,220,0.6)" font-size="10" font-family="Space Mono, monospace">mars</text>
+        <text x="608.9" y="354" text-anchor="middle" fill="rgba(140,170,220,0.6)" font-size="10" font-family="Space Mono, monospace">avr.</text>
+        <text x="842.2" y="354" text-anchor="middle" fill="rgba(140,170,220,0.6)" font-size="10" font-family="Space Mono, monospace">mai</text>
+        <polyline class="evo-line evo-cc" pathLength="1000" points="10.0,326.6 17.8,334.0 25.6,330.1 33.3,334.0 41.1,334.0 48.9,326.6 56.7,334.0 64.4,326.6 72.2,334.0 80.0,326.9 87.8,328.5 95.6,334.0 103.3,328.2 111.1,327.2 118.9,326.6 126.7,334.0 134.4,334.0 142.2,293.3 150.0,334.0 157.8,326.2 165.6,334.0 173.3,305.0 181.1,334.0 188.9,334.0 196.7,334.0 204.4,328.5 212.2,334.0 220.0,334.0 227.8,334.0 235.6,334.0 243.3,334.0 251.1,334.0 258.9,334.0 266.7,334.0 274.4,334.0 282.2,334.0 290.0,334.0 297.8,334.0 305.6,334.0 313.3,334.0 321.1,334.0 328.9,334.0 336.7,334.0 344.4,334.0 352.2,320.4 360.0,334.0 367.8,328.8 375.6,334.0 383.3,334.0 391.1,324.3 398.9,334.0 406.7,334.0 414.4,334.0 422.2,326.6 430.0,334.0 437.8,334.0 445.6,306.9 453.3,307.5 461.1,327.5 468.9,305.0 476.7,309.8 484.4,334.0 492.2,334.0 500.0,301.7 507.8,334.0 515.6,326.6 523.3,334.0 531.1,312.7 538.9,334.0 546.7,334.0 554.4,305.6 562.2,334.0 570.0,324.9 577.8,334.0 585.6,334.0 593.3,323.0 601.1,334.0 608.9,330.1 616.7,334.0 624.4,294.3 632.2,334.0 640.0,290.4 647.8,274.6 655.6,334.0 663.3,321.0 671.1,334.0 678.9,82.1 686.7,334.0 694.4,326.6 702.2,326.6 710.0,334.0 717.8,312.7 725.6,334.0 733.3,334.0 741.1,326.6 748.9,321.7 756.7,295.2 764.4,334.0 772.2,308.2 780.0,334.0 787.8,334.0 795.6,326.6 803.3,326.6 811.1,323.6 818.9,334.0 826.7,334.0 834.4,255.2 842.2,275.9 850.0,256.5 857.8,334.0 865.6,326.6 873.3,329.8 881.1,328.8 888.9,312.1 896.7,334.0 904.4,304.0 912.2,326.6 920.0,225.8 927.8,334.0 935.6,274.6 943.3,334.0 951.1,253.9 958.9,334.0 966.7,283.6 974.4,329.5 982.2,315.3 990.0,334.0"/>
+        <polyline class="evo-line evo-dt" pathLength="1000" points="10.0,263.0 17.8,275.9 25.6,288.8 33.3,277.2 41.1,325.3 48.9,277.2 56.7,277.2 64.4,305.0 72.2,304.3 80.0,256.5 87.8,232.3 95.6,215.8 103.3,265.5 111.1,312.7 118.9,327.2 126.7,297.2 134.4,305.0 142.2,312.1 150.0,305.9 157.8,155.7 165.6,213.8 173.3,310.8 181.1,241.0 188.9,272.7 196.7,323.0 204.4,328.5 212.2,319.8 220.0,253.9 227.8,317.8 235.6,297.8 243.3,211.9 251.1,290.4 258.9,279.8 266.7,328.8 274.4,294.3 282.2,299.1 290.0,315.6 297.8,128.3 305.6,254.5 313.3,292.6 321.1,300.4 328.9,258.4 336.7,98.9 344.4,205.2 352.2,200.3 360.0,263.0 367.8,227.7 375.6,105.7 383.3,184.8 391.1,248.7 398.9,258.4 406.7,269.4 414.4,250.0 422.2,224.2 430.0,171.3 437.8,286.2 445.6,334.0 453.3,310.8 461.1,308.8 468.9,259.1 476.7,302.0 484.4,298.1 492.2,318.5 500.0,322.3 507.8,268.1 515.6,273.3 523.3,251.6 531.1,286.5 538.9,305.9 546.7,323.6 554.4,318.5 562.2,319.1 570.0,301.7 577.8,312.7 585.6,285.5 593.3,309.8 601.1,321.0 608.9,314.6 616.7,124.7 624.4,279.1 632.2,224.2 640.0,137.4 647.8,302.0 655.6,39.1 663.3,198.4 671.1,275.9 678.9,318.5 686.7,263.0 694.4,217.7 702.2,319.8 710.0,308.8 717.8,328.5 725.6,329.5 733.3,240.4 741.1,303.0 748.9,283.6 756.7,334.0 764.4,321.7 772.2,316.6 780.0,322.3 787.8,302.0 795.6,251.6 803.3,138.3 811.1,245.2 818.9,295.2 826.7,328.5 834.4,324.9 842.2,326.9 850.0,273.3 857.8,206.5 865.6,334.0 873.3,334.0 881.1,274.3 888.9,326.9 896.7,312.1 904.4,334.0 912.2,314.6 920.0,334.0 927.8,327.2 935.6,308.2 943.3,326.6 951.1,314.6 958.9,314.0 966.7,318.5 974.4,318.5 982.2,334.0 990.0,299.1"/>
+        <g class="evo-peak" style="--hd:3.4s">
+          <circle cx="678.9" cy="82.1" r="4.5" fill="#3ce6c8"/>
+          <text x="690" y="78" fill="#3ce6c8" font-size="11" font-family="Space Mono, monospace">10 avril · 33,1</text>
+        </g>
+        <g class="evo-peak" style="--hd:8.9s">
+          <circle cx="655.6" cy="39.1" r="4.5" fill="#ff6ea9"/>
+          <text x="644" y="35" text-anchor="end" fill="#ff6ea9" font-size="11" font-family="Space Mono, monospace">7 avril · 38,7</text>
+        </g>
+      </svg>
+    </div>
+    <div class="punch late" style="--hd:9.3s; margin-top: 0;">Parfois, <span class="accent">le hockey rivalise avec la politique</span>.</div>
+  </div>
+</section>
+
+<!-- ========== SLIDE 7 — DÉMO ========== -->
+<section class="slide" id="s7">
+  <div class="wrap s-demo">
+    <div class="radar-ring rv" style="--d:.05s"><b></b></div>
+    <a class="url rv" style="--d:.25s" href="https://radarplus.org/" target="_blank" rel="noopener">radarplus<span class="accent">.org</span></a>
+    <p class="who rv" style="--d:.6s">Adrien Cloutier · Université Laval<br>Centre d'analyse des politiques publiques (CAPP)</p>
+    <div class="partners rv" style="--d:.75s">
+      <p class="partners-label">Partenaires &amp; contributeurs</p>
+      <div class="plogos">
+        <a class="plogo" href="https://capp-ulaval.ca/" target="_blank" rel="noopener"><img src="./assets/img/logo_capp.jpg" alt="CAPP ULaval"></a>
+        <a class="plogo plogo-dark" href="https://www.clessn.com/" target="_blank" rel="noopener"><img src="./assets/img/clessn.svg" alt="CLESSN"></a>
+        <a class="plogo" href="https://grcp.info/" target="_blank" rel="noopener"><img src="./assets/img/GRCP-Logo.png" alt="GRCP"></a>
+        <a class="plogo" href="https://csdc-cecd.ca/" target="_blank" rel="noopener"><img src="./assets/img/CSDC_logo.jpg" alt="CSDC-CECD"></a>
+        <a class="plogo" href="https://www.infoscope.ca/" target="_blank" rel="noopener"><img src="./assets/img/logo_infoscope.jpg" alt="Infoscope"></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="dots" id="dots" aria-label="Navigation des diapositives"></div>
+<div class="hint">← → naviguer&nbsp;&nbsp;·&nbsp;&nbsp;F plein écran</div>
+<div class="hud" id="counter">1 / 7</div>
+
+<script>
+/* ===== STARFIELD (repris de l'accueil, version compacte) ===== */
+(function () {
+  const c = document.getElementById('stars-canvas');
+  const ctx = c.getContext('2d');
+  let stars = [], meteors = [], nextMeteorAt = 0;
+  const rand = (a, b) => Math.random() * (b - a) + a;
+
+  function resize() {
+    c.width = innerWidth; c.height = innerHeight;
+    const n = Math.min(240, Math.round(c.width * c.height / 8500));
+    stars = Array.from({ length: n }, () => ({
+      x: Math.random() * c.width, y: Math.random() * c.height,
+      r: rand(0.3, 1.4), p: Math.random() * Math.PI * 2, s: rand(0.4, 1.4)
+    }));
+  }
+  addEventListener('resize', resize); resize();
+
+  function frame(t) {
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (const s of stars) {
+      ctx.globalAlpha = 0.25 + 0.55 * Math.abs(Math.sin(s.p + t * 0.0006 * s.s));
+      ctx.fillStyle = '#cfe0ff';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill();
+    }
+    if (!nextMeteorAt) nextMeteorAt = t + rand(6000, 15000);
+    if (t > nextMeteorAt) {
+      meteors.push({
+        x: rand(0, c.width * 0.85), y: rand(0, c.height * 0.35),
+        ang: rand(Math.PI * 0.18, Math.PI * 0.34), sp: rand(1.2, 2.0),
+        len: rand(90, 170), life: rand(550, 900), born: t, a: rand(0.45, 0.85)
+      });
+      nextMeteorAt = t + rand(12000, 36000);
+    }
+    meteors = meteors.filter(m => t - m.born < m.life);
+    for (const m of meteors) {
+      const age = t - m.born, fade = 1 - age / m.life;
+      const px = m.x + Math.cos(m.ang) * m.sp * age;
+      const py = m.y + Math.sin(m.ang) * m.sp * age;
+      const g = ctx.createLinearGradient(px, py, px - Math.cos(m.ang) * m.len, py - Math.sin(m.ang) * m.len);
+      g.addColorStop(0, 'rgba(200,220,255,' + (m.a * fade) + ')');
+      g.addColorStop(1, 'rgba(200,220,255,0)');
+      ctx.globalAlpha = 1; ctx.strokeStyle = g; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(px, py);
+      ctx.lineTo(px - Math.cos(m.ang) * m.len, py - Math.sin(m.ang) * m.len);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ===== DECK ===== */
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dots = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const bar = document.getElementById('progress-fill');
+  let cur = -1;
+
+  slides.forEach((_, k) => {
+    const b = document.createElement('button');
+    b.setAttribute('aria-label', 'Diapositive ' + (k + 1));
+    b.addEventListener('click', e => { e.stopPropagation(); go(k); });
+    dots.appendChild(b);
+  });
+  const dotEls = Array.from(dots.children);
+
+  function go(n) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    if (n === cur) return;
+    if (cur >= 0) slides[cur].classList.remove('active');
+    cur = n;
+    const s = slides[cur];
+    s.classList.remove('active');
+    void s.offsetWidth; /* relance les animations .rv */
+    s.classList.add('active');
+    dotEls.forEach((d, k) => d.classList.toggle('on', k === cur));
+    counter.textContent = (cur + 1) + ' / ' + slides.length;
+    bar.style.width = ((cur + 1) / slides.length * 100) + '%';
+    history.replaceState(null, '', '#' + (cur + 1));
+  }
+
+  addEventListener('keydown', e => {
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(slides.length - 1);
+    else if (e.key.toLowerCase() === 'f') {
+      document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    }
+  });
+
+  /* Clic : tiers gauche = reculer, reste = avancer (liens exclus) */
+  addEventListener('click', e => {
+    if (e.target.closest('a, button')) return;
+    (e.clientX < innerWidth / 5) ? go(cur - 1) : go(cur + 1);
+  });
+
+  /* Swipe tactile */
+  let tx = null;
+  addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', e => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 45) (dx < 0) ? go(cur + 1) : go(cur - 1);
+  }, { passive: true });
+
+  const h = parseInt((location.hash || '').replace('#', ''), 10);
+  go(isNaN(h) ? 0 : h - 1);
+})();
+</script>
+
+</body>
+</html>
