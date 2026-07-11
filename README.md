@@ -45,7 +45,9 @@ Puis ouvrir http://localhost:8000/site/
 
 - site/: pages web de production et JSON publiés
 - pipeline/: scripts ETL temporaires de rafraîchissement
-- analyses/: scripts d'analyse et résultats d'études
+- radarplus_textes/: textes éditoriaux du site
+- docs/: documentation
+- _archives/: versions archivées
 - .github/workflows/: workflows CI, refresh et déploiement
 
 ### Gouvernance et protection des données
@@ -107,7 +109,9 @@ Then open http://localhost:8000/site/
 
 - site/: production web pages and published JSON
 - pipeline/: temporary ETL refresh scripts
-- analyses/: analysis scripts and outputs
+- radarplus_textes/: site editorial texts
+- docs/: documentation
+- _archives/: archived versions
 - .github/workflows/: CI, refresh, and deploy workflows
 
 ### Governance and data protection
