@@ -6,7 +6,6 @@
     "switch_to_fr": "FR",
     "tooltip": "Switch language"
   },
-
   "nav": {
     "home_logo_aria": "Back to Radar+ home",
     "menu_open_aria": "Open menu",
@@ -36,7 +35,6 @@
     "badge_archive": "ARCHIVE",
     "alert_marker": "!"
   },
-
   "alertbar": {
     "label": "ALERT",
     "view_alerts_aria": "View alerts",
@@ -49,7 +47,6 @@
       "eleve": "High"
     }
   },
-
   "report": {
     "menu_item": "Report an issue",
     "modal_title": "Report an issue",
@@ -64,7 +61,6 @@
     "default_section": "Radar+ navigation",
     "token_missing": "Offline reporting: configure RADAR_REPORT_DISPATCH_TOKEN to enable submissions."
   },
-
   "common": {
     "loading": "Loading…",
     "loading_constellation": "initializing · constellation",
@@ -105,7 +101,6 @@
     "all_countries": "All",
     "back_home": "Back to home"
   },
-
   "page_title": {
     "unes": "On the radar",
     "partenaires": "Partners and contributors",
@@ -115,13 +110,11 @@
     "methodologie": "Methodology",
     "radarplus": "Radar+"
   },
-
   "country": {
     "QC": "Quebec",
     "CAN": "Canada",
     "USA": "United States"
   },
-
   "period": {
     "label": "Period",
     "4h": "4 h",
@@ -133,7 +126,6 @@
     "total": "Total",
     "week_short": "Wk."
   },
-
   "subtitle": {
     "4h": "Edition (4h)",
     "day": "Today",
@@ -142,7 +134,6 @@
     "quarter": "This year",
     "total": "Since the beginning"
   },
-
   "vs": {
     "yesterday": "vs yesterday",
     "yesterday_avg": "vs yesterday (avg/block)",
@@ -151,7 +142,6 @@
     "last_year": "vs last year",
     "previous": "vs {label}"
   },
-
   "increase_tip": {
     "4h": "Saliency gained during this 4h block",
     "day": "Saliency gained since the start of the day",
@@ -160,14 +150,12 @@
     "quarter": "Saliency gained since the start of the year",
     "total": "Total cumulated saliency (equals the score)"
   },
-
   "hero": {
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explore",
     "scroll_aria": "Go to HOT 20"
   },
-
   "hot20": {
     "title": "HOT",
     "title_number": "20",
@@ -198,9 +186,9 @@
     "no_data": "No data available",
     "media_tip": "Media involved: {list}",
     "media_tip_none": "No identified media outlet.",
-    "articles_tip": "{count} associated article(s)"
+    "articles_tip": "{count} associated article(s)",
+    "see_full_ranking": "See the full ranking (Hot 20) and its evolution"
   },
-
   "constellation": {
     "title": "Constellation",
     "view_label": "View",
@@ -215,7 +203,6 @@
     "tooltip_mentions": "mentions",
     "tooltip_articles": "articles"
   },
-
   "evolution": {
     "title": "Evolution",
     "salience_moderate": "moderate",
@@ -240,14 +227,12 @@
     "object_unavailable": "Object unavailable",
     "no_articles_found": "No article found for this object."
   },
-
   "alertes": {
     "title": "Media",
     "title_accent": "alerts",
     "subtitle_3lvl": "Three levels derived from the salience peak — calibrated per country over 130 days",
     "filter_country": "Country",
     "methodo_link": "Methodology →",
-
     "level_extreme": "Extreme",
     "level_tres_eleve": "Very high",
     "level_eleve": "High",
@@ -259,29 +244,22 @@
     "level_tip_extreme": "Peak above the extreme threshold (p99 of the country).",
     "level_tip_tres_eleve": "Peak between p95 and p99 country thresholds.",
     "level_tip_eleve": "Peak between p80 and p95 country thresholds — trigger level.",
-
     "filter_period": "Period",
     "search_placeholder": "Search an object…",
-
     "section_heatmap": "Alerts calendar",
     "heatmap_sub_v2": "day × object · click = day's articles · click object = detail",
-
     "kpi_hint_3lvl": "Click a level to hide / show it.",
     "kpi_episodes_lbl": "episodes",
-
     "click_for_articles": "Click = day's articles",
     "ticker_loading": "Loading…",
     "ticker_restore": "Today's headlines",
     "ticker_no_articles": "No article available for this day.",
     "no_heatmap_search": "No object matches the search.",
-
     "status_active_label": "Active",
     "status_ended_label": "Ended",
-
     "card_peak_size": "peak",
     "event_entities": "related entities",
     "salience_tip": "Absolute salience tier reached on the country-calibrated scale.",
-
     "detail_metrics": "Metrics",
     "detail_peak_salience": "Peak salience",
     "detail_episodes": "Episodes",
@@ -294,7 +272,6 @@
     "detail_nav_evolution": "Evolution",
     "detail_nav_constellation": "Constellation",
     "detail_nav_stats": "Statistics",
-
     "no_active": "Quiet agenda — no active alert.",
     "no_clusters": "No episode for these filters.",
     "no_heatmap": "No data for these filters.",
@@ -302,11 +279,9 @@
     "total_days": "total days",
     "day": "day",
     "days": "days",
-
     "methodology_intro": "An alert flags a topic whose salience peak crosses the <em>high</em> threshold (p80) calibrated for that country. Three levels are derived from the peak reached during the episode: <strong>High</strong> (peak in [p80, p95[), <strong>Very high</strong> (peak in [p95, p99[), <strong>Extreme</strong> (peak ≥ p99). An episode is a continuous period above the threshold; episodes overlapping in time are grouped into clusters.",
     "methodology_link": "View full methodology"
   },
-
   "alertes_pill": {
     "none_active": "No active alert",
     "none_ended": "No ended alert",
@@ -315,7 +290,6 @@
     "ended_count": "{n} ended alerts · latest: {last}",
     "signals_count": "{n} signals · most recent period: {last}"
   },
-
   "ticker": {
     "label": "On the radar",
     "label_arrow": "On the radar ↗",
@@ -325,7 +299,6 @@
     "error": "Ticker loading error.",
     "no_articles": "No recent headline."
   },
-
   "doc_pages": {
     "explore_section": "Explore",
     "radarplus_lead": "Understanding what the media (really) puts forward.",
@@ -341,7 +314,6 @@
     "link_analyses": "Analyses",
     "links_aria": "Radar+ links"
   },
-
   "object_panel": {
     "saliency_score": "{score} pts · {mentions} mentions · {articles} article(s)",
     "view_in_evolution": "View in Evolution →",
@@ -349,11 +321,9 @@
     "previous_section": "Previously",
     "alert_in_progress_tip": "Active saliency alert on this object."
   },
-
   "footer": {
     "copyright": "© CLESSN · Université Laval · 24/7 media transparency"
   },
-
   "modules": {
     "title": "Analysis tools",
     "explore": "Explore →",
@@ -372,7 +342,6 @@
       "desc": "Detailed per-object analysis: saliency peaks, media distribution, full history and associated articles."
     }
   },
-
   "homepage": {
     "loading_hot20": "Loading…",
     "loading_articles": "Loading articles…",
@@ -393,7 +362,6 @@
     "wl_label_month": "Month",
     "wl_label_quarter": "Year"
   },
-
   "gran_singular": {
     "4h": "4h block",
     "day": "day",
@@ -402,7 +370,6 @@
     "quarter": "year",
     "total": "full period"
   },
-
   "gran_plural": {
     "4h": "4h blocks",
     "day": "days",
@@ -411,7 +378,6 @@
     "quarter": "years",
     "total": "full period"
   },
-
   "ranked_granularity": {
     "day_label": "Day",
     "week_label": "Week",
@@ -419,14 +385,45 @@
     "year_label": "Year",
     "total_label": "Since the beginning"
   },
-
   "fr_months": [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
   ],
   "fr_months_short": [
-    "Jan","Feb","Mar","Apr","May","Jun",
-    "Jul","Aug","Sep","Oct","Nov","Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
   ],
-  "fr_weekdays_short": ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+  "fr_weekdays_short": [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat"
+  ],
+  "tendances": {
+    "view_ranking": "Ranking",
+    "view_evolution": "Evolution"
+  }
 }

@@ -52,6 +52,9 @@
       line-height: 1.1;
       white-space: nowrap;
     }
+    /* Mode embarqué (iframe dans tendances.html) : on retire le bandeau
+       logo/titre redondant, le panneau récupère la place. */
+    html.is-embed #evo-titlebar { display: none; }
     .lpanel-section {
       display: flex; flex-direction: column; gap: 6px;
       margin-bottom: 14px;
