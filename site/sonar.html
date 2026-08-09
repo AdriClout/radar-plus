@@ -90,12 +90,25 @@
     }
     .note { color: var(--muted); font-size: 12.5px; line-height: 1.6; max-width: 70ch; }
 
+    .entetes {
+      display: grid;
+      grid-template-columns: 160px 1fr 62px;
+      gap: 8px;
+      align-items: end;
+      margin: 18px 0 6px;
+    }
     .axe {
       display: flex;
       justify-content: space-between;
       font-size: 11px;
       color: var(--muted);
-      margin: 18px 0 6px 168px;
+    }
+    .entete-taux {
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      text-align: right;
+      text-transform: uppercase;
     }
 
     .region-titre {
@@ -108,12 +121,20 @@
 
     .ligne {
       display: grid;
-      grid-template-columns: 160px 1fr;
+      grid-template-columns: 160px 1fr 62px;
       gap: 8px;
       align-items: center;
       margin-bottom: 7px;
     }
     .ligne .nom { font-size: 12.5px; color: var(--text); }
+    .taux {
+      font-size: 11.5px;
+      color: var(--muted);
+      text-align: right;
+      cursor: help;
+      font-variant-numeric: tabular-nums;
+    }
+    .taux.haut { color: var(--valide); }
     .barre {
       position: relative;
       height: 18px;
@@ -182,7 +203,13 @@
 
     @media (max-width: 720px) {
       header.page { margin-top: 74px; }
-      .ligne { grid-template-columns: 1fr; gap: 3px; margin-bottom: 12px; }
+      /* le nom et son taux tiennent sur une ligne, la barre passe dessous */
+      .ligne { grid-template-columns: 1fr auto; gap: 3px 8px; margin-bottom: 12px; }
+      .ligne .nom { grid-row: 1; grid-column: 1; }
+      .ligne .taux { grid-row: 1; grid-column: 2; }
+      .ligne .barre { grid-row: 2; grid-column: 1 / -1; }
+      .entetes { grid-template-columns: 1fr auto; }
+      .entetes .axe { grid-column: 1 / -1; order: 2; }
       .ligne .nom { font-size: 11.5px; color: var(--muted); }
       .axe { margin-left: 0; }
       section.bloc { padding: 16px 14px; }
@@ -205,7 +232,11 @@
     <section class="bloc">
       <h2 data-i18n="sonarq.timeline_title">FIABILITÉ PAR MÉDIA</h2>
       <p class="note" data-i18n="sonarq.timeline_note">Survolez un segment pour lire sa vérification. Les entailles sombres sont des trous de collecte documentés.</p>
-      <div class="axe" id="axe"></div>
+      <div class="entetes">
+        <span></span>
+        <div class="axe" id="axe"></div>
+        <span class="entete-taux" data-i18n="sonarq.col_taux">Concordance</span>
+      </div>
       <div id="frise"></div>
       <div class="legende" id="legende"></div>
     </section>
@@ -256,6 +287,7 @@
         exclu: { classe: 'exclu', libelle: function () { return t('sonarq.st_exclu', 'Exclu (documenté)'); } }
       };
       var REGIONS = { QC: 'Québec', CAN: 'Canada', US: 'États-Unis' };
+      var donneesGlobales = {};
 
       var DEBUT = new Date('2023-04-17T00:00:00Z');
       var FIN = new Date();
@@ -385,6 +417,27 @@
 
             ligne.appendChild(nom);
             ligne.appendChild(barre);
+
+            // taux de concordance — mesuré, donc affiché ; absent, donc muet
+            var taux = document.createElement('div');
+            taux.className = 'taux';
+            if (m.concordance) {
+              var p = m.concordance.taux_pct;
+              taux.textContent = String(p).replace('.', ',') + ' %';
+              if (p >= 97) taux.className = 'taux haut';
+              taux.addEventListener('mousemove', function (ev) {
+                montreBulle(ev, '<strong>' + m.nom + '</strong> — ' +
+                  t('sonarq.concordance', 'Taux de concordance') + ' ' +
+                  String(p).replace('.', ',') + ' %' +
+                  '<div class="quand">' + m.concordance.pages + ' ' +
+                  t('sonarq.pages_rejouees', 'pages rejouées, 12 derniers mois') +
+                  '</div><div>' + (donneesGlobales.note_concordance || '') + '</div>');
+              });
+              taux.addEventListener('mouseleave', cacheBulle);
+            } else {
+              taux.textContent = '—';
+            }
+            ligne.appendChild(taux);
             frise.appendChild(ligne);
           });
         });
@@ -424,6 +477,7 @@
       fetch('./qualite.json', { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (donnees) {
+          donneesGlobales = donnees;
           construireAxe();
           construireFrise(donnees);
           construireLegende();

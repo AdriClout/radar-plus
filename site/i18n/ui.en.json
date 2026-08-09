@@ -447,6 +447,9 @@
     "overlap": "overlap",
     "correlation": "correlation",
     "today": "today",
-    "load_error": "Could not load qualite.json."
+    "load_error": "Could not load qualite.json.",
+    "concordance": "Concordance rate",
+    "pages_rejouees": "pages replayed, last 12 months",
+    "col_taux": "Concordance"
   }
 }

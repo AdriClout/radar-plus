@@ -447,6 +447,9 @@
     "overlap": "recouvrement",
     "correlation": "corrélation",
     "today": "aujourd'hui",
-    "load_error": "Impossible de charger qualite.json."
+    "load_error": "Impossible de charger qualite.json.",
+    "concordance": "Taux de concordance",
+    "pages_rejouees": "pages rejouées, 12 derniers mois",
+    "col_taux": "Concordance"
   }
 }

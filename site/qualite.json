@@ -1,7 +1,8 @@
 {
- "genere_le": "2026-08-09T01:57:51+00:00",
- "version": 1,
+ "genere_le": "2026-08-09T04:05:49+00:00",
+ "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
+ "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
  "statuts": {
   "valide": "Validé contre la production",
   "reconstruit": "Reconstruit depuis les pages archivées, puis validé",
@@ -48,7 +49,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 93.2,
+    "pages": 44
+   }
   },
   {
    "id": "JDM",
@@ -75,7 +80,18 @@
      }
     }
    ],
-   "trous": []
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    }
+   ],
+   "concordance": {
+    "taux_pct": 96.6,
+    "pages": 29
+   }
   },
   {
    "id": "TVA",
@@ -102,7 +118,24 @@
      }
     }
    ],
-   "trous": []
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ],
+   "concordance": {
+    "taux_pct": 97.5,
+    "pages": 40
+   }
   },
   {
    "id": "LED",
@@ -129,7 +162,24 @@
      }
     }
    ],
-   "trous": []
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ],
+   "concordance": {
+    "taux_pct": 100.0,
+    "pages": 45
+   }
   },
   {
    "id": "RCI",
@@ -156,7 +206,24 @@
      }
     }
    ],
-   "trous": []
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ],
+   "concordance": {
+    "taux_pct": 95.7,
+    "pages": 46
+   }
   },
   {
    "id": "CBC",
@@ -190,7 +257,11 @@
      "jours": 20,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 95.3,
+    "pages": 43
+   }
   },
   {
    "id": "CTV",
@@ -230,7 +301,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 97.8,
+    "pages": 46
+   }
   },
   {
    "id": "GN",
@@ -270,7 +345,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 100.0,
+    "pages": 47
+   }
   },
   {
    "id": "MG",
@@ -310,7 +389,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 100.0,
+    "pages": 43
+   }
   },
   {
    "id": "TTS",
@@ -356,7 +439,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 97.8,
+    "pages": 45
+   }
   },
   {
    "id": "VS",
@@ -396,7 +483,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 93.6,
+    "pages": 47
+   }
   },
   {
    "id": "GAM",
@@ -460,7 +551,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 89.4,
+    "pages": 47
+   }
   },
   {
    "id": "NP",
@@ -500,7 +595,11 @@
      "jours": 12,
      "cause": "panne du hub d'archivage"
     }
-   ]
+   ],
+   "concordance": {
+    "taux_pct": 93.2,
+    "pages": 44
+   }
   },
   {
    "id": "CNN",
@@ -514,7 +613,11 @@
      "resume": "Collecte de production"
     }
    ],
-   "trous": []
+   "trous": [],
+   "concordance": {
+    "taux_pct": 100.0,
+    "pages": 15
+   }
   },
   {
    "id": "FXN",
@@ -540,7 +643,11 @@
      }
     }
    ],
-   "trous": []
+   "trous": [],
+   "concordance": {
+    "taux_pct": 95.7,
+    "pages": 47
+   }
   }
  ]
 }
