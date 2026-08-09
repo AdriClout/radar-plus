@@ -1,0 +1,546 @@
+{
+ "genere_le": "2026-08-09T01:57:51+00:00",
+ "version": 1,
+ "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
+ "statuts": {
+  "valide": "Validé contre la production",
+  "reconstruit": "Reconstruit depuis les pages archivées, puis validé",
+  "surveillance": "Sous surveillance ou en réparation",
+  "exclu": "Exclu (documenté)",
+  "trou": "Trou de collecte"
+ },
+ "medias": [
+  {
+   "id": "LAP",
+   "nom": "La Presse",
+   "region": "QC",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "reconstruit",
+     "resume": "Série reconstruite depuis 4 373 pages d'accueil archivées",
+     "preuve": {
+      "precision_pct": 97.8,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "JDM",
+   "nom": "Le Journal de Montréal",
+   "region": "QC",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "correlation": 0.996,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": []
+  },
+  {
+   "id": "TVA",
+   "nom": "TVA Nouvelles",
+   "region": "QC",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "correlation": 0.996,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": []
+  },
+  {
+   "id": "LED",
+   "nom": "Le Devoir",
+   "region": "QC",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "correlation": 0.996,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": []
+  },
+  {
+   "id": "RCI",
+   "nom": "Radio-Canada",
+   "region": "QC",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "correlation": 0.996,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": []
+  },
+  {
+   "id": "CBC",
+   "nom": "CBC News",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "recouvrement_pct": 98.1,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "CTV",
+   "nom": "CTV News",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "recouvrement_pct": 97.3,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "GN",
+   "nom": "Global News",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "recouvrement_pct": 100.0,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "MG",
+   "nom": "Montreal Gazette",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "recouvrement_pct": 98.2,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "TTS",
+   "nom": "Toronto Star",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "recouvrement_pct": 99.4,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2023-07-20",
+     "fin": "2023-10-23",
+     "jours": 96,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "VS",
+   "nom": "Vancouver Sun",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "valide",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "preuve": {
+      "recouvrement_pct": 98.6,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "GAM",
+   "nom": "The Globe and Mail",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "reconstruit",
+     "resume": "Série reconstruite depuis 2 369 pages archivées, avec la chaîne d'extraction corrigée d'octobre 2025",
+     "preuve": {
+      "precision_pct": 87.9,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": "2025-09-17",
+     "statut": "valide",
+     "resume": "Collecte de production auditée : part arts/style 0,34 %, aucune anomalie de sélection",
+     "preuve": {
+      "reference": "aws-refiners#207 (audit du vivant)"
+     }
+    },
+    {
+     "debut": "2025-09-17",
+     "fin": "2025-10-20",
+     "statut": "surveillance",
+     "resume": "Unes fausses (le sélecteur accrochait la carte des marchés) — réparation par rejeu des pages archivées planifiée",
+     "preuve": {
+      "reference": "aws-refiners#207 (audit du vivant)"
+     }
+    },
+    {
+     "debut": "2025-10-20",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante (sélecteur corrigé) — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2023-09-20",
+     "fin": "2023-10-23",
+     "jours": 34,
+     "cause": "panne du hub d'archivage (propre à ce média)"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "NP",
+   "nom": "National Post",
+   "region": "CAN",
+   "segments": [
+    {
+     "debut": "2023-04-17",
+     "fin": "2024-05-28",
+     "statut": "reconstruit",
+     "resume": "Série reconstruite depuis 2 500 pages archivées avec le sélecteur exact de production",
+     "preuve": {
+      "precision_pct": 97.3,
+      "reference": "aws-refiners#207"
+     }
+    },
+    {
+     "debut": "2024-05-28",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "preuve": {
+      "reference": "aws-refiners#293"
+     }
+    }
+   ],
+   "trous": [
+    {
+     "debut": "2023-06-07",
+     "fin": "2023-06-26",
+     "jours": 20,
+     "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-03-28",
+     "fin": "2024-04-08",
+     "jours": 12,
+     "cause": "panne du hub d'archivage"
+    }
+   ]
+  },
+  {
+   "id": "CNN",
+   "nom": "CNN",
+   "region": "US",
+   "segments": [
+    {
+     "debut": "2024-09-01",
+     "fin": null,
+     "statut": "valide",
+     "resume": "Collecte de production"
+    }
+   ],
+   "trous": []
+  },
+  {
+   "id": "FXN",
+   "nom": "Fox News",
+   "region": "US",
+   "segments": [
+    {
+     "debut": "2024-09-01",
+     "fin": "2026-08-07",
+     "statut": "surveillance",
+     "resume": "La page permanente du flux vidéo était captée au lieu de la Une — réparation en cours (restauration des archives lancée)",
+     "preuve": {
+      "reference": "aws-infra#436"
+     }
+    },
+    {
+     "debut": "2026-08-07",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Filet des pages permanentes en place ; validation à venir",
+     "preuve": {
+      "reference": "aws-refiners#292"
+     }
+    }
+   ],
+   "trous": []
+  }
+ ]
+}

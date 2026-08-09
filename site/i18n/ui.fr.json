@@ -6,7 +6,6 @@
     "switch_to_fr": "FR",
     "tooltip": "Changer de langue"
   },
-
   "nav": {
     "home_logo_aria": "Retour à l’accueil Radar+",
     "menu_open_aria": "Ouvrir le menu",
@@ -32,11 +31,10 @@
     "badge_live": "LIVE",
     "badge_timeline": "TIMELINE",
     "badge_object": "OBJET",
-    "badge_monitoring": "MONITORING",
+    "badge_monitoring": "QUALITÉ",
     "badge_archive": "ARCHIVE",
     "alert_marker": "!"
   },
-
   "alertbar": {
     "label": "ALERTE",
     "view_alerts_aria": "Voir les alertes",
@@ -49,7 +47,6 @@
       "eleve": "Élevé"
     }
   },
-
   "report": {
     "menu_item": "Signaler un problème",
     "modal_title": "Signaler un problème",
@@ -64,7 +61,6 @@
     "default_section": "Navigation Radar+",
     "token_missing": "Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l'envoi."
   },
-
   "common": {
     "loading": "Chargement…",
     "loading_constellation": "initialisation · constellation",
@@ -105,7 +101,6 @@
     "all_countries": "Tous",
     "back_home": "Retour accueil"
   },
-
   "page_title": {
     "unes": "Dans le radar",
     "partenaires": "Partenaires et contributeurs",
@@ -115,13 +110,11 @@
     "methodologie": "Méthodologie",
     "radarplus": "Radar+"
   },
-
   "country": {
     "QC": "Québec",
     "CAN": "Canada",
     "USA": "États-Unis"
   },
-
   "period": {
     "label": "Période",
     "4h": "4 h",
@@ -133,7 +126,6 @@
     "total": "Total",
     "week_short": "Sem."
   },
-
   "subtitle": {
     "4h": "Édition (4h)",
     "day": "Aujourd’hui",
@@ -142,7 +134,6 @@
     "quarter": "Cette année",
     "total": "Depuis le début"
   },
-
   "vs": {
     "yesterday": "vs hier",
     "yesterday_avg": "vs hier (moy./bloc)",
@@ -151,7 +142,6 @@
     "last_year": "vs an passé",
     "previous": "vs {label}"
   },
-
   "increase_tip": {
     "4h": "Saillance gagnée pendant ce bloc 4h",
     "day": "Saillance gagnée depuis le début de la journée",
@@ -160,14 +150,12 @@
     "quarter": "Saillance gagnée depuis le début de l’année",
     "total": "Saillance cumulée totale (égale au score)"
   },
-
   "hero": {
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explorer",
     "scroll_aria": "Aller au HOT 20"
   },
-
   "hot20": {
     "title": "HOT",
     "title_number": "20",
@@ -200,7 +188,6 @@
     "media_tip_none": "Aucun média identifié.",
     "articles_tip": "{count} article(s) associé(s)"
   },
-
   "constellation": {
     "title": "Constellation",
     "view_label": "Vue",
@@ -215,7 +202,6 @@
     "tooltip_mentions": "mentions",
     "tooltip_articles": "articles"
   },
-
   "evolution": {
     "title": "Évolution",
     "salience_moderate": "modéré",
@@ -240,14 +226,12 @@
     "object_unavailable": "Objet indisponible",
     "no_articles_found": "Aucun article trouvé pour cet objet."
   },
-
   "alertes": {
     "title": "Alertes",
     "title_accent": "médiatiques",
     "subtitle_3lvl": "Trois niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours",
     "filter_country": "Pays",
     "methodo_link": "Méthodologie →",
-
     "level_extreme": "Extrême",
     "level_tres_eleve": "Très élevé",
     "level_eleve": "Élevé",
@@ -259,29 +243,22 @@
     "level_tip_extreme": "Pic au-dessus du seuil extrême (p99 du pays).",
     "level_tip_tres_eleve": "Pic entre les seuils p95 et p99 du pays.",
     "level_tip_eleve": "Pic entre les seuils p80 et p95 du pays — seuil de déclenchement.",
-
     "filter_period": "Période",
     "search_placeholder": "Rechercher un objet…",
-
     "section_heatmap": "Calendrier des alertes",
     "heatmap_sub_v2": "jour × objet · clic = articles du jour · clic objet = détail",
-
     "kpi_hint_3lvl": "Clique un niveau pour le masquer / afficher.",
     "kpi_episodes_lbl": "épisodes",
-
     "click_for_articles": "Clic = articles du jour",
     "ticker_loading": "Chargement…",
     "ticker_restore": "Unes du jour",
     "ticker_no_articles": "Aucun article disponible pour ce jour.",
     "no_heatmap_search": "Aucun objet ne correspond à la recherche.",
-
     "status_active_label": "En cours",
     "status_ended_label": "Terminé",
-
     "card_peak_size": "pic",
     "event_entities": "entités liées",
     "salience_tip": "Palier de saillance absolue atteint, calibré pour ce pays.",
-
     "detail_metrics": "Métriques",
     "detail_peak_salience": "Pic saillance",
     "detail_episodes": "Épisodes",
@@ -294,7 +271,6 @@
     "detail_nav_evolution": "Évolution",
     "detail_nav_constellation": "Constellation",
     "detail_nav_stats": "Statistiques",
-
     "no_active": "Agenda calme — aucune alerte active.",
     "no_clusters": "Aucun épisode pour les filtres.",
     "no_heatmap": "Aucune donnée pour les filtres.",
@@ -302,11 +278,9 @@
     "total_days": "jours cumulés",
     "day": "jour",
     "days": "jours",
-
     "methodology_intro": "Une alerte signale un sujet dont le pic de saillance dépasse le seuil <em>élevé</em> (p80) calibré pour ce pays. Trois niveaux sont dérivés du pic atteint au cours de l’épisode : <strong>Élevé</strong> (pic dans [p80, p95[), <strong>Très élevé</strong> (pic dans [p95, p99[), <strong>Extrême</strong> (pic ≥ p99). Un épisode est une période continue au-dessus du seuil ; les épisodes qui se chevauchent dans le temps sont regroupés en clusters.",
     "methodology_link": "Voir la méthodologie complète"
   },
-
   "alertes_pill": {
     "none_active": "Aucune alerte en cours",
     "none_ended": "Aucune alerte terminée",
@@ -315,7 +289,6 @@
     "ended_count": "{n} alertes terminées · dernière: {last}",
     "signals_count": "{n} signaux · période la plus récente: {last}"
   },
-
   "ticker": {
     "label": "Dans le radar",
     "label_arrow": "Dans le radar ↗",
@@ -325,7 +298,6 @@
     "error": "Erreur de chargement du ticker.",
     "no_articles": "Aucune manchette récente."
   },
-
   "doc_pages": {
     "explore_section": "Explorer",
     "radarplus_lead": "Comprendre ce que les médias mettent (vraiment) de l’avant.",
@@ -341,7 +313,6 @@
     "link_analyses": "Analyses",
     "links_aria": "Liens Radar+"
   },
-
   "object_panel": {
     "saliency_score": "{score} pts · {mentions} mentions · {articles} article(s)",
     "view_in_evolution": "Voir dans Évolution →",
@@ -349,11 +320,9 @@
     "previous_section": "Précédemment",
     "alert_in_progress_tip": "Alerte de saillance en cours sur cet objet."
   },
-
   "footer": {
     "copyright": "© CLESSN · Université Laval · Transparence médiatique 24/7"
   },
-
   "modules": {
     "title": "Outils d’analyse",
     "explore": "Explorer →",
@@ -372,7 +341,6 @@
       "desc": "Analyse détaillée par objet : pics de saillance, distribution médiatique, historique complet et articles associés."
     }
   },
-
   "homepage": {
     "loading_hot20": "Chargement…",
     "loading_articles": "Chargement des articles…",
@@ -393,7 +361,6 @@
     "wl_label_month": "Mois",
     "wl_label_quarter": "Année"
   },
-
   "gran_singular": {
     "4h": "bloc horaire (4 h)",
     "day": "journée",
@@ -402,7 +369,6 @@
     "quarter": "année",
     "total": "période totale"
   },
-
   "gran_plural": {
     "4h": "blocs horaires",
     "day": "jours",
@@ -411,7 +377,6 @@
     "quarter": "années",
     "total": "période totale"
   },
-
   "ranked_granularity": {
     "day_label": "Journée",
     "week_label": "Semaine",
@@ -419,14 +384,69 @@
     "year_label": "Année",
     "total_label": "Depuis le début"
   },
-
   "fr_months": [
-    "janvier","février","mars","avril","mai","juin",
-    "juillet","août","septembre","octobre","novembre","décembre"
+    "janvier",
+    "février",
+    "mars",
+    "avril",
+    "mai",
+    "juin",
+    "juillet",
+    "août",
+    "septembre",
+    "octobre",
+    "novembre",
+    "décembre"
   ],
   "fr_months_short": [
-    "janv.","févr.","mars","avr.","mai","juin",
-    "juil.","août","sept.","oct.","nov.","déc."
+    "janv.",
+    "févr.",
+    "mars",
+    "avr.",
+    "mai",
+    "juin",
+    "juil.",
+    "août",
+    "sept.",
+    "oct.",
+    "nov.",
+    "déc."
   ],
-  "fr_weekdays_short": ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."]
+  "fr_weekdays_short": [
+    "dim.",
+    "lun.",
+    "mar.",
+    "mer.",
+    "jeu.",
+    "ven.",
+    "sam."
+  ],
+  "sonarq": {
+    "title": "Sonar — la qualité de nos données",
+    "subtitle": "Ce que contient le corpus Radar+, média par média, et jusqu'où on peut s'y fier. Chaque segment de la frise est traçable à une vérification chiffrée et publique — y compris les trous et les limites.",
+    "freshness_loading": "Vérification de la fraîcheur…",
+    "fresh_ok": "Données fraîches",
+    "fresh_late": "Mise à jour en retard",
+    "fresh_stale": "Données périmées — incident en cours",
+    "fresh_unknown": "Fraîcheur indisponible",
+    "timeline_title": "FIABILITÉ PAR MÉDIA",
+    "timeline_note": "Survolez un segment pour lire sa vérification. Les entailles sombres sont des trous de collecte documentés.",
+    "method_title": "LA MÉTHODE, EN TROIS PHRASES",
+    "method_p1": "Un segment n'entre dans le corpus que s'il est de très bonne qualité, validé contre une référence indépendante, et re-calculable depuis la source brute.",
+    "method_p2": "Les données historiques sont confrontées Une par Une à la collecte de production sur leur fenêtre commune ; sous la barre de 85 % de précision, on reconstruit depuis les pages d'accueil archivées plutôt que d'admettre le segment.",
+    "method_p3": "Un segment non audité est affiché « sous surveillance », jamais « validé » — et la collecte courante est veillée chaque jour par un garde automatique.",
+    "link_methodo": "Méthodologie complète",
+    "link_audit": "Journal d'audit (GitHub)",
+    "link_monitoring": "Vue technique du pipeline",
+    "st_valide": "Validé contre la production",
+    "st_reconstruit": "Reconstruit des archives, puis validé",
+    "st_surveillance": "Sous surveillance / en réparation",
+    "st_exclu": "Exclu (documenté)",
+    "st_trou": "Trou de collecte",
+    "precision": "précision",
+    "overlap": "recouvrement",
+    "correlation": "corrélation",
+    "today": "aujourd'hui",
+    "load_error": "Impossible de charger qualite.json."
+  }
 }
