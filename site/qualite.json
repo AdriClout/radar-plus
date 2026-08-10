@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-08-09T04:05:49+00:00",
+ "genere_le": "2026-08-10T04:15:43+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -51,8 +51,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 93.2,
-    "pages": 44
+    "taux_pct": 96.9,
+    "pages": 97
    }
   },
   {
@@ -89,8 +89,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 96.6,
-    "pages": 29
+    "taux_pct": 98.8,
+    "pages": 82
    }
   },
   {
@@ -133,8 +133,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 97.5,
-    "pages": 40
+    "taux_pct": 97.9,
+    "pages": 94
    }
   },
   {
@@ -178,7 +178,7 @@
    ],
    "concordance": {
     "taux_pct": 100.0,
-    "pages": 45
+    "pages": 97
    }
   },
   {
@@ -221,8 +221,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 95.7,
-    "pages": 46
+    "taux_pct": 95.9,
+    "pages": 98
    }
   },
   {
@@ -259,8 +259,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 95.3,
-    "pages": 43
+    "taux_pct": 96.8,
+    "pages": 95
    }
   },
   {
@@ -303,8 +303,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 97.8,
-    "pages": 46
+    "taux_pct": 97.0,
+    "pages": 99
    }
   },
   {
@@ -348,7 +348,7 @@
    ],
    "concordance": {
     "taux_pct": 100.0,
-    "pages": 47
+    "pages": 100
    }
   },
   {
@@ -392,7 +392,7 @@
    ],
    "concordance": {
     "taux_pct": 100.0,
-    "pages": 43
+    "pages": 87
    }
   },
   {
@@ -441,8 +441,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 97.8,
-    "pages": 45
+    "taux_pct": 98.0,
+    "pages": 99
    }
   },
   {
@@ -485,8 +485,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 93.6,
-    "pages": 47
+    "taux_pct": 97.1,
+    "pages": 102
    }
   },
   {
@@ -516,10 +516,11 @@
     {
      "debut": "2025-09-17",
      "fin": "2025-10-20",
-     "statut": "surveillance",
-     "resume": "Unes fausses (le sélecteur accrochait la carte des marchés) — réparation par rejeu des pages archivées planifiée",
+     "statut": "reconstruit",
+     "resume": "Unes fausses (sélecteur accroché à la carte des marchés), réparées par rejeu des 4 890 pages archivées et rescrape des vrais articles (86/89) — Unes distinctes 27 → 92",
      "preuve": {
-      "reference": "aws-refiners#207 (audit du vivant)"
+      "precision_pct": 96.6,
+      "reference": "aws-refiners#301"
      }
     },
     {
@@ -553,8 +554,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 89.4,
-    "pages": 47
+    "taux_pct": 95.1,
+    "pages": 103
    }
   },
   {
@@ -597,8 +598,8 @@
     }
    ],
    "concordance": {
-    "taux_pct": 93.2,
-    "pages": 44
+    "taux_pct": 95.9,
+    "pages": 97
    }
   },
   {
@@ -615,8 +616,8 @@
    ],
    "trous": [],
    "concordance": {
-    "taux_pct": 100.0,
-    "pages": 15
+    "taux_pct": 92.9,
+    "pages": 56
    }
   },
   {
@@ -645,8 +646,8 @@
    ],
    "trous": [],
    "concordance": {
-    "taux_pct": 95.7,
-    "pages": 47
+    "taux_pct": 97.8,
+    "pages": 89
    }
   }
  ]
