@@ -35,8 +35,10 @@
 .Renviron
 .env
 
-# Claude settings (may contain tokens)
-.claude/
+# Claude : settings locaux seulement (peuvent contenir des tokens).
+# Le reste de .claude/ (settings.json, hooks/, skills/) est versionné.
+.claude/settings.local.json
+.claude/*.local.json
 
 # macOS
 .DS_Store
