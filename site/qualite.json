@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-08-10T04:15:43+00:00",
+ "genere_le": "2026-08-15T21:00:46+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -627,20 +627,21 @@
    "segments": [
     {
      "debut": "2024-09-01",
-     "fin": "2026-08-07",
-     "statut": "surveillance",
-     "resume": "La page permanente du flux vidéo était captée au lieu de la Une — réparation en cours (restauration des archives lancée)",
+     "fin": "2026-08-14",
+     "statut": "valide",
+     "resume": "Collecte auditée (concordance 97,8 % sur deux ans). Les captures du flux vidéo prises pendant les bannières de direct (0 à 5 % des captures par jour) sont exclues du calcul et documentées — leur rejeu est différé, pas abandonné",
      "preuve": {
-      "reference": "aws-infra#436"
+      "precision_pct": 97.8,
+      "reference": "aws-refiners#207 · exclusion : aws-refiners#292/#327 · rejeu différé : aws-refiners#333"
      }
     },
     {
-     "debut": "2026-08-07",
+     "debut": "2026-08-14",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Filet des pages permanentes en place ; validation à venir",
+     "resume": "Collecte courante avec le sélecteur corrigé ; l'exclusion des pages permanentes couvre la préparation des données, son portage au calcul de la Une des Unes est en revue",
      "preuve": {
-      "reference": "aws-refiners#292"
+      "reference": "aws-infra#477 · aws-refiners#327"
      }
     }
    ],
