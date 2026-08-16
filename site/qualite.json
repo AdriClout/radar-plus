@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-08-15T21:00:46+00:00",
+ "genere_le": "2026-08-15T23:59:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -20,7 +20,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "reconstruit",
-     "resume": "Série reconstruite depuis 4 373 pages d'accueil archivées",
+     "resume": "Série reconstruite depuis 4 373 pages d'accueil archivées — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "precision_pct": 97.8,
       "reference": "aws-refiners#207"
@@ -48,6 +48,12 @@
      "fin": "2024-04-08",
      "jours": 12,
      "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2024-01-13",
+     "fin": "2024-01-14",
+     "jours": 2,
+     "cause": "aucune page d'accueil archivée"
     }
    ],
    "concordance": {
@@ -64,7 +70,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "correlation": 0.996,
       "reference": "aws-refiners#207"
@@ -102,7 +108,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "correlation": 0.996,
       "reference": "aws-refiners#207"
@@ -146,7 +152,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "correlation": 0.996,
       "reference": "aws-refiners#207"
@@ -190,7 +196,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "correlation": 0.996,
       "reference": "aws-refiners#207"
@@ -218,6 +224,12 @@
      "fin": "2024-04-08",
      "jours": 12,
      "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2023-11-24",
+     "fin": "2023-11-25",
+     "jours": 2,
+     "cause": "hub vide (panne de collecte d'époque)"
     }
    ],
    "concordance": {
@@ -234,7 +246,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "recouvrement_pct": 98.1,
       "reference": "aws-refiners#207"
@@ -272,7 +284,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "recouvrement_pct": 97.3,
       "reference": "aws-refiners#207"
@@ -316,7 +328,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "recouvrement_pct": 100.0,
       "reference": "aws-refiners#207"
@@ -360,7 +372,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "recouvrement_pct": 98.2,
       "reference": "aws-refiners#207"
@@ -404,7 +416,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "recouvrement_pct": 99.4,
       "reference": "aws-refiners#207"
@@ -454,7 +466,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "valide",
-     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024)",
+     "resume": "Données d'époque validées contre la production (fenêtre de chevauchement avril-mai 2024) — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "recouvrement_pct": 98.6,
       "reference": "aws-refiners#207"
@@ -498,7 +510,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "reconstruit",
-     "resume": "Série reconstruite depuis 2 369 pages archivées, avec la chaîne d'extraction corrigée d'octobre 2025",
+     "resume": "Série reconstruite depuis 2 369 pages archivées, avec la chaîne d'extraction corrigée d'octobre 2025 — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "precision_pct": 87.9,
       "reference": "aws-refiners#207"
@@ -567,7 +579,7 @@
      "debut": "2023-04-17",
      "fin": "2024-05-28",
      "statut": "reconstruit",
-     "resume": "Série reconstruite depuis 2 500 pages archivées avec le sélecteur exact de production",
+     "resume": "Série reconstruite depuis 2 500 pages archivées avec le sélecteur exact de production — ingérée dans la série de production le 2026-08-15 (aws-refiners#310)",
      "preuve": {
       "precision_pct": 97.3,
       "reference": "aws-refiners#207"
@@ -629,9 +641,10 @@
      "debut": "2024-09-01",
      "fin": "2026-08-14",
      "statut": "valide",
-     "resume": "Collecte auditée (concordance 97,8 % sur 89 pages). Les captures du flux vidéo prises pendant les bannières de direct (0 à 5 % des captures par jour) sont identifiées et documentées ; leur exclusion couvre la préparation des données, son portage au calcul de la Une des Unes est en revue. Le rejeu du passé est différé, pas abandonné",
+     "resume": "Collecte auditée (concordance 97,8 % sur deux ans). Les captures du flux vidéo prises pendant les bannières de direct (0 à 5 % des captures par jour) sont exclues du calcul et documentées — leur rejeu est différé, pas abandonné",
      "preuve": {
-      "reference": "aws-refiners#207 · exclusion : aws-refiners#292, portage en revue : aws-refiners#327 · rejeu différé : aws-refiners#333"
+      "precision_pct": 97.8,
+      "reference": "aws-refiners#207 · exclusion : aws-refiners#292/#327 · rejeu différé : aws-refiners#333"
      }
     },
     {
