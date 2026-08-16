@@ -629,10 +629,9 @@
      "debut": "2024-09-01",
      "fin": "2026-08-14",
      "statut": "valide",
-     "resume": "Collecte auditée (concordance 97,8 % sur deux ans). Les captures du flux vidéo prises pendant les bannières de direct (0 à 5 % des captures par jour) sont exclues du calcul et documentées — leur rejeu est différé, pas abandonné",
+     "resume": "Collecte auditée (concordance 97,8 % sur 89 pages). Les captures du flux vidéo prises pendant les bannières de direct (0 à 5 % des captures par jour) sont identifiées et documentées ; leur exclusion couvre la préparation des données, son portage au calcul de la Une des Unes est en revue. Le rejeu du passé est différé, pas abandonné",
      "preuve": {
-      "precision_pct": 97.8,
-      "reference": "aws-refiners#207 · exclusion : aws-refiners#292/#327 · rejeu différé : aws-refiners#333"
+      "reference": "aws-refiners#207 · exclusion : aws-refiners#292, portage en revue : aws-refiners#327 · rejeu différé : aws-refiners#333"
      }
     },
     {
