@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-08-16T02:30:00+00:00",
+ "genere_le": "2026-08-16T06:30:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -104,11 +104,21 @@
     },
     {
      "debut": "2025-11-07",
+     "fin": "2026-08-14",
+     "statut": "reconstruit",
+     "resume": "14 758 captures reconstituées depuis les pages d'accueil archivées, par appariement créneau par créneau avec l'existant (sélecteur validé à 97,9 % sur jour sain et 100 % sur jour dégradé). Corps d'articles récupérés pour 39 % des lignes (blocage Akamai et articles disparus — échecs déclarés, jamais comblés)",
+     "preuve": {
+      "precision_pct": 97.9,
+      "reference": "aws-refiners#337"
+     }
+    },
+    {
+     "debut": "2026-08-14",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte dégradée et NON RÉSOLUE : environ la moitié des captures quotidiennes manquent (mesuré le 2026-08-15). La Une extraite reste la bonne, mais sa durée de présence est sous-estimée",
+     "resume": "Collecte encore dégradée (~50 % des captures) — réparation de la collecte en cours, rejeu final prévu après correctif",
      "preuve": {
-      "reference": "aws-infra#484 (collecte) · aws-refiners#335 (inventaire et rejeu)"
+      "reference": "aws-infra#484 · aws-refiners#337"
      }
     }
    ],
@@ -120,10 +130,16 @@
      "cause": "panne du hub d'archivage"
     },
     {
-     "debut": "2025-11-07",
-     "fin": "2025-11-30",
-     "jours": 72,
-     "cause": "collecte instable — 11 interruptions dans le mois"
+     "debut": "2025-12-31",
+     "fin": "2026-01-26",
+     "jours": 27,
+     "cause": "aucune page d'accueil archivée (panne du scraper de pages) — perte définitive"
+    },
+    {
+     "debut": "2026-06-01",
+     "fin": "2026-06-30",
+     "jours": 21,
+     "cause": "pages « salle d'attente » Quebecor sur une partie des créneaux — Unes non archivées, perte partielle définitive"
     }
    ],
    "concordance": {
