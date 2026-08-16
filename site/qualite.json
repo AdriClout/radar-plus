@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-08-15T23:59:00+00:00",
+ "genere_le": "2026-08-16T01:45:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -28,11 +28,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 96.9,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -78,11 +88,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-06-06",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10 ; audit possible jusqu'au 2026-06-06 seulement — la collecte a basculé sur un extracteur Playwright, le rejeu ne lit plus le HTML statique au-delà",
+     "preuve": {
+      "precision_pct": 98.8,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-06-06",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -116,11 +136,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-06-06",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10 ; audit possible jusqu'au 2026-06-06 seulement — la collecte a basculé sur un extracteur Playwright, le rejeu ne lit plus le HTML statique au-delà",
+     "preuve": {
+      "precision_pct": 97.9,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-06-06",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -160,11 +190,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 100.0,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -204,11 +244,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 95.9,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -254,11 +304,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 96.8,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -292,11 +352,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 97.0,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -336,11 +406,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 100.0,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -380,11 +460,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 100.0,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -424,11 +514,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 98.0,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -474,11 +574,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 97.1,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -537,11 +647,21 @@
     },
     {
      "debut": "2025-10-20",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 95.1,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante (sélecteur corrigé) — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -587,11 +707,21 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-08-10",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 95.9,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte de production courante — garde-Une quotidien en déploiement",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-refiners#293"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -621,9 +751,18 @@
    "segments": [
     {
      "debut": "2024-09-01",
-     "fin": null,
+     "fin": "2026-08-10",
      "statut": "valide",
      "resume": "Collecte de production"
+    },
+    {
+     "debut": "2026-08-10",
+     "fin": null,
+     "statut": "surveillance",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
+     "preuve": {
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
+     }
     }
    ],
    "trous": [],
