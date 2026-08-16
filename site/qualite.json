@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-08-16T10:30:00+00:00",
+ "genere_le": "2026-08-16T04:15:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -28,6 +28,26 @@
     },
     {
      "debut": "2024-05-28",
+     "fin": "2026-01-09",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "preuve": {
+      "precision_pct": 96.9,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-01-09",
+     "fin": "2026-01-27",
+     "statut": "reconstruit",
+     "resume": "Unes reconstruites depuis les 2 708 pages d'accueil archivées (l'extraction était en panne, l'archivage jamais) — sélecteur validé à 97,1 % sur jour témoin, corps d'articles récupérés à 87 %, échecs déclarés. La fenêtre couvrait la démission de François Legault",
+     "preuve": {
+      "precision_pct": 97.1,
+      "reference": "aws-refiners#336"
+     }
+    },
+    {
+     "debut": "2026-01-27",
      "fin": "2026-08-10",
      "statut": "valide",
      "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
@@ -64,12 +84,6 @@
      "fin": "2024-01-14",
      "jours": 2,
      "cause": "aucune page d'accueil archivée"
-    },
-    {
-     "debut": "2026-01-09",
-     "fin": "2026-01-26",
-     "jours": 18,
-     "cause": "collecte interrompue — cause à déterminer"
     }
    ],
    "concordance": {
