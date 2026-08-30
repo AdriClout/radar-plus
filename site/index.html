@@ -1050,8 +1050,8 @@
     <div class="hot20-controls">
       <div class="controls-left">
         <div class="mode-tabs" id="mode-tabs">
-          <button class="mode-tab active" data-mode="objets" data-i18n="hot20.mode_objets">Objets</button>
-          <button class="mode-tab" data-mode="evenements" data-i18n="hot20.mode_evenements">Événements</button>
+          <button class="mode-tab active" data-mode="evenements" data-i18n="hot20.mode_evenements">Événements</button>
+          <button class="mode-tab" data-mode="objets" data-i18n="hot20.mode_objets">Objets</button>
         </div>
         <div class="country-tabs" id="country-tabs">
           <button class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
@@ -1506,7 +1506,7 @@ var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
 var currentSlotIdx = 0;
-var currentMode = 'objets';    // 'objets' | 'evenements' — onglets du Classement
+var currentMode = 'evenements'; // 'evenements' | 'objets' — Événements par défaut partout
 var eventsData = null;         // events.json — événements saillants
 
 function escapeHtml(str) {
