@@ -23,23 +23,13 @@
   <link rel="apple-touch-icon" href="./assets/favicon/apple-touch-icon.png">
   <link rel="manifest" href="./assets/favicon/site.webmanifest">
   <meta name="theme-color" content="#020010">
+  <link rel="stylesheet" href="./assets/css/tokens.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared-menu.css" />
   <style>
-    :root {
-      --bg: #020010;
-      --text: #d0e0ff;
-      --muted: rgba(140,170,220,0.6);
-      --accent: #5588ff;
-      --accent-glow: rgba(80,130,255,0.45);
-      --card-bg: rgba(10,18,50,0.7);
-      --border: rgba(90,140,255,0.22);
-      --ticker-height: 44px;
-      --orbitron: 'Orbitron', 'Space Mono', monospace;
-      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
-    }
+    /* Tokens : assets/css/tokens.css (design_language.md) */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; }
@@ -1009,6 +999,7 @@
 
 <!-- ========== HERO ========== -->
 <section class="hero" id="hero">
+  <h1 class="sr-only">RADAR+ — La saillance médiatique, mesurée en direct</h1>
   <div class="hero-robot">
     <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
     <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->

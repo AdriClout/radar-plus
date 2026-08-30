@@ -65,6 +65,9 @@ jobs:
       - name: Build ticker.json
         run: Rscript pipeline/build_ticker.R
 
+      - name: Contrôle de schéma du ticker
+        run: python3 pipeline/check_schema.py site/ticker.json
+
       - name: Commit and push ticker
         id: commit_data
         env:

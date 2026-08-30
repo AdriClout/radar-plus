@@ -66,6 +66,8 @@
     // applications plein écran (Évolution, Constellation) sont exclues.
     if (document.querySelector('footer')) return;
     if (document.getElementById('evo-logo') || document.getElementById('cst-logo')) return;
+    // Pages plein écran sans flux de document (deck de présentation)
+    if (document.querySelector('.slide')) return;
     var f = document.createElement('footer');
     f.className = 'shared-footer';
     f.innerHTML =

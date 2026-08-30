@@ -80,6 +80,9 @@ jobs:
       - name: Build events data (R)
         run: Rscript pipeline/build_events.R
 
+      - name: Contrôle de schéma des JSON générés
+        run: python3 pipeline/check_schema.py site/graph.json site/timeseries.json site/articles.json site/monitor_input.json site/events.json
+
       - name: Commit & push updated data
         id: commit_data
         env:
