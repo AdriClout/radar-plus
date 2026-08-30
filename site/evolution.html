@@ -766,7 +766,11 @@
           band: ev.band,
           convergence: ev.convergence,
           media_ids: ev.media_ids || [],
-          articles: ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []
+          // Vraies manchettes du raffineur ; repli sur l'article représentatif
+          // pour les blocs antérieurs à leur conservation dans events.json.
+          articles: (Array.isArray(ev.articles) && ev.articles.length)
+            ? ev.articles
+            : (ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : [])
         })), links: [] };
       }
       eventsGraphs[region] = out;

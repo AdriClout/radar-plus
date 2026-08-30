@@ -2191,13 +2191,19 @@ function buildEventsGraphs() {
       out[pd.key] = { nodes: evs.map(function(ev) {
         var sid = ev.storyline || ev.id;
         tot[sid] = (tot[sid] || 0) + (ev.index || 0);
+        // Les VRAIES manchettes du raffineur (titre du média, pas le titre
+        // d'événement). Repli sur l'article représentatif pour les blocs
+        // antérieurs à leur conservation dans events.json.
+        var arts = Array.isArray(ev.articles) && ev.articles.length
+          ? ev.articles
+          : (ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []);
         return {
           id: sid,
           label: ev.title,
           size: ev.index || 0,
           band: ev.band,
           media_ids: ev.media_ids || [],
-          articles: ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []
+          articles: arts
         };
       }) };
     });

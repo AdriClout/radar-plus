@@ -115,6 +115,45 @@ reg_idx_v1 <- function(n_plaf, n_out, pond, panel) {
   exp((log(max(int, EV_EPS)) + log(max(vis, EV_EPS)) + log(max(dur, EV_EPS))) / 3)
 }
 
+# Les VRAIES manchettes de l'événement, restreintes au panel de la région.
+# La colonne `articles` servait jusqu'ici uniquement à recomposer l'indice ;
+# le site fabriquait un faux article portant le titre de l'ÉVÉNEMENT, ce qui
+# affichait un titre de raffineur en le faisant passer pour une manchette.
+# On ne retient que titre / URL / média : `body_preview` est un extrait de
+# texte intégral de média et n'a rien à faire dans le dépôt (règle dure #3).
+EV_MAX_ARTICLES <- 12L
+
+articles_of <- function(articles_json, region_ids) {
+  arts <- tryCatch(jsonlite::fromJSON(articles_json, simplifyDataFrame = TRUE),
+                   error = function(e) NULL)
+  if (is.null(arts) || !is.data.frame(arts) || nrow(arts) == 0) return(list())
+  if (!all(c("title", "url", "media_id") %in% names(arts))) return(list())
+  arts <- arts[!(arts$url %in% PAGES_PERMANENTES), , drop = FALSE]
+  arts <- arts[as.character(arts$media_id) %in% region_ids, , drop = FALSE]
+  arts <- arts[!is.na(arts$url) & nzchar(as.character(arts$url)), , drop = FALSE]
+  if (nrow(arts) == 0) return(list())
+  arts <- arts[!duplicated(as.character(arts$url)), , drop = FALSE]
+  # Un même média republie parfois la même manchette sous une autre URL :
+  # deux lignes identiques dans le panneau n'apprennent rien au lecteur.
+  arts <- arts[!duplicated(paste0(as.character(arts$media_id), "",
+                                  as.character(arts$title))), , drop = FALSE]
+  # Les plus longtemps en Une d'abord : c'est ce qui porte la saillance.
+  if ("headline_minutes" %in% names(arts)) {
+    mins <- suppressWarnings(as.numeric(arts$headline_minutes)); mins[is.na(mins)] <- 0
+    arts <- arts[order(-mins), , drop = FALSE]
+  }
+  arts <- utils::head(arts, EV_MAX_ARTICLES)
+  lapply(seq_len(nrow(arts)), function(i) {
+    m <- suppressWarnings(as.numeric(arts$headline_minutes[i]))
+    list(
+      title    = as.character(arts$title[i]),
+      url      = as.character(arts$url[i]),
+      media_id = as.character(arts$media_id[i]),
+      minutes  = if (length(m) && !is.na(m)) round(m) else NULL
+    )
+  })
+}
+
 recompose_row <- function(articles_json, region_ids, panel) {
   arts <- tryCatch(jsonlite::fromJSON(articles_json, simplifyDataFrame = TRUE),
                    error = function(e) NULL)
@@ -221,6 +260,8 @@ for (rk in c("QC", "ROC")) {
     dd <- d |> filter(period_key == pk) |> arrange(desc(index))
     blocks[[pk]] <- lapply(seq_len(nrow(dd)), function(i) {
       x <- dd[i, ]
+      ids  <- ids_of(if (rk == "QC") x$media_ids_qc else x$media_ids_roc)
+      arts <- articles_of(x$articles, ids)
       list(
         id          = x$event_id,
         storyline   = x$sid,
@@ -234,7 +275,8 @@ for (rk in c("QC", "ROC")) {
         rank        = i,
         rank_source = if (!is.na(x$rank_source)) x$rank_source else NULL,
         outlets     = x$outlets,
-        media_ids   = as.list(ids_of(if (rk == "QC") x$media_ids_qc else x$media_ids_roc)),
+        media_ids   = as.list(ids),
+        articles    = if (length(arts)) arts else NULL,
         url         = if (!is.na(x$representative_url)) x$representative_url else NULL,
         media       = if (!is.na(x$representative_media_id)) x$representative_media_id else NULL,
         first_seen  = if (!is.na(x$first_seen_utc)) x$first_seen_utc else NULL,
