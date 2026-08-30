@@ -1510,9 +1510,10 @@ var currentMode = 'evenements'; // 'evenements' | 'objets' — Événements par 
 var eventsData = null;         // events.json — événements saillants
 
 function escapeHtml(str) {
+  // Échappe aussi les guillemets : la valeur sert dans des attributs href="…"
   var d = document.createElement('div');
   d.textContent = str;
-  return d.innerHTML;
+  return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 async function loadData() {
@@ -2374,9 +2375,9 @@ function openArticlePanel(node) {
   var enc = encodeURIComponent(node.id);
   var encCountry = encodeURIComponent(currentCountry);
   links.innerHTML =
-    '<a class="article-panel-link" href="./evolution.html?country=' + encCountry + '&node=' + enc + '" target="_blank">\u00c9volution ↗</a>' +
-    '<a class="article-panel-link" href="./statistiques.html?objet=' + enc + '&pays=' + encCountry + '" target="_blank">Statistiques ↗</a>' +
-    '<a class="article-panel-link" href="./constellation.html?country=' + encCountry + '&node=' + enc + '" target="_blank">Constellation ↗</a>';
+    '<a class="article-panel-link" href="./evolution.html?country=' + encCountry + '&node=' + enc + '" target="_blank" rel="noopener">\u00c9volution ↗</a>' +
+    '<a class="article-panel-link" href="./statistiques.html?objet=' + enc + '&pays=' + encCountry + '" target="_blank" rel="noopener">Statistiques ↗</a>' +
+    '<a class="article-panel-link" href="./constellation.html?country=' + encCountry + '&node=' + enc + '" target="_blank" rel="noopener">Constellation ↗</a>';
 
   /* Période courante */
   /* Skip period keys belonging to the current slot */

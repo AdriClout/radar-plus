@@ -8,11 +8,12 @@
      sont envoyés ailleurs dans le code via window.gtag('event', ...).
   ================================================================ */
   var GA_MEASUREMENT_ID = 'G-Y2X19DCWGZ';
-  var REPORT_REPO = 'AdriClout/radar-plus';
+  // Signalement via le Worker proxy (workers/report-issue/) : aucun secret
+  // côté client — l'ancien mécanisme injectait un token GitHub dans ce
+  // fichier public (faille corrigée le 2026-08-30). URL vide = hors ligne.
   var REPORT_EVENT_TYPE = 'radar-report-issue';
-  var REPORT_TOKEN = (window.RADAR_REPORT_DISPATCH_TOKEN || '__RADAR_REPORT_DISPATCH_TOKEN__').trim();
-  if (REPORT_TOKEN === '__RADAR_REPORT_DISPATCH_TOKEN__') REPORT_TOKEN = '';
-  var REPORT_ENABLED = REPORT_TOKEN.length > 0;
+  var REPORT_PROXY_URL = '';
+  var REPORT_ENABLED = REPORT_PROXY_URL.length > 0;
   (function loadGtag() {
     if (window.gtag || !GA_MEASUREMENT_ID) return;
     window.dataLayer = window.dataLayer || [];
@@ -281,7 +282,7 @@
       modal.classList.remove('open');
       if (nameInput) nameInput.value = '';
       if (textarea) textarea.value = '';
-      if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l\'envoi.');
+      if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Signalement temporairement hors ligne — écrivez-nous via la page Accès aux données.');
       uiState = 'idle';
     }
 
@@ -357,13 +358,9 @@
           }
         };
 
-        var res = await fetch('https://api.github.com/repos/' + REPORT_REPO + '/dispatches', {
+        var res = await fetch(REPORT_PROXY_URL, {
           method: 'POST',
-          headers: {
-            Accept: 'application/vnd.github+json',
-            Authorization: 'Bearer ' + REPORT_TOKEN,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 

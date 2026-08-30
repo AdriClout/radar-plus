@@ -20,11 +20,12 @@ for e in (t.get("edits") or []):
     content += "\n" + (e.get("new_string") or "")
 
 # Règle dure #1 — les JSON de données de site/ sont générés par le pipeline
-# (pipeline/build_data.R et build_ticker.R) et réécrits par les workflows de
-# refresh ; jamais édités à la main. Les JSON éditables (site/i18n/ui.*.json)
-# ne sont volontairement PAS dans cette liste.
+# (pipeline/build_data.R, build_events.R et build_ticker.R) et réécrits par
+# les workflows de refresh ; jamais édités à la main. Les JSON éditables
+# (site/i18n/ui.*.json, site/qualite.json) ne sont volontairement PAS dans
+# cette liste.
 DATA_JSON = {"graph.json", "timeseries.json", "articles.json",
-             "monitor_input.json", "ticker.json"}
+             "monitor_input.json", "ticker.json", "events.json"}
 base = os.path.basename(path)
 norm = path.replace("\\", "/")
 if base in DATA_JSON and ("/site/" in norm or norm.startswith("site/")):

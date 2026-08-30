@@ -1,0 +1,78 @@
+# Sentinelle de fraîcheur des données publiées (vague 1 de l'audit, 2026-08-30).
+#
+# Constat fondateur : aucun échec de refresh n'était notifié nulle part —
+# site/qualite.json est resté périmé 14 jours sans que rien ne le signale.
+# Cette sentinelle vérifie ce que radarplus.org SERT réellement (pas le repo),
+# échoue si une donnée dépasse son seuil, et l'étape d'alerte Slack prend le
+# relais. Elle poste aussi un signal de vie à Healthchecks.io si configuré
+# (HEALTHCHECKS_URL) — le silence de la sentinelle elle-même devient alors
+# détectable, comme à la Vitrine.
+#
+# Seuils (généreux exprès — on alerte sur la panne, pas sur le retard d'un run) :
+#   ticker.json        : 2 h   (refresh toutes les 10 min)
+#   graph.json         : 12 h  (6 refresh/jour)
+#   timeseries.json    : 12 h
+#   events.json        : 12 h
+#   qualite.json       : 21 jours (édition manuelle — on rappelle, sans paniquer)
+name: Sentinelle fraîcheur
+
+on:
+  schedule:
+    - cron: '30 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier la fraîcheur des JSON servis par radarplus.org
+        run: |
+          set -uo pipefail
+          now=$(date -u +%s)
+          fail=0
+
+          check() { # fichier, champ_jq, seuil_secondes
+            local f=$1 champ=$2 seuil=$3
+            local ts
+            ts=$(curl -fsS --max-time 20 "https://radarplus.org/$f" | jq -r "$champ // empty" 2>/dev/null)
+            if [ -z "$ts" ]; then
+              echo "::error::$f — inaccessible ou champ de date absent"
+              fail=1; return
+            fi
+            local age=$(( now - $(date -u -d "$ts" +%s 2>/dev/null || echo 0) ))
+            if [ "$age" -gt "$seuil" ]; then
+              echo "::error::$f périmé — $ts (âge $((age/3600)) h, seuil $((seuil/3600)) h)"
+              fail=1
+            else
+              echo "$f OK — $ts (âge $((age/60)) min)"
+            fi
+          }
+
+          check ticker.json     '.meta.generated_at' $((2*3600))
+          check graph.json      '.meta.generated_at' $((12*3600))
+          check timeseries.json '.meta.generated_at' $((12*3600))
+          check events.json     '.meta.generated_at' $((12*3600))
+          check qualite.json    '.genere_le'         $((21*24*3600))
+
+          exit $fail
+
+      - name: Signal de vie Healthchecks
+        if: success()
+        env:
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
+        run: |
+          [ -z "$HEALTHCHECKS_URL" ] && { echo "HEALTHCHECKS_URL absent — signal de vie désactivé"; exit 0; }
+          curl -fsS --max-time 10 "$HEALTHCHECKS_URL" > /dev/null
+
+      - name: Alerte Slack en cas d'échec
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL absent — échec non notifié (ajouter le secret pour activer les alertes)"
+            exit 0
+          fi
+          curl -sS -X POST -H 'Content-type: application/json' --data \
+            "{\"text\":\":hourglass_flowing_sand: radar-plus — données périmées ou inaccessibles détectées par la sentinelle : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"
