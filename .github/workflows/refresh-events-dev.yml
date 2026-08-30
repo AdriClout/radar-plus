@@ -1,0 +1,74 @@
+# ⚠️ TEMPORAIRE — à supprimer avant le merge dans main.
+#
+# Régénère site/events.json depuis Athena (fetch_data.py events +
+# build_events.R) et le committe sur la branche courante, pour valider le
+# pipeline événements et alimenter la Deploy Preview depuis une branche de
+# travail. Le CSV intermédiaire (données brutes) n'est jamais téléversé ni
+# commité — politique d'accès aux données (site/acces-donnees.html).
+name: '[DEV] Build events.json'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-events:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.4'
+
+      - name: Cache R packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-events-dev-v1-${{ hashFiles('pipeline/build_events.R') }}
+          restore-keys: r-events-dev-v1-
+
+      - name: Install R packages
+        run: |
+          install.packages(
+            c("jsonlite", "dplyr", "readr"),
+            repos = "https://cloud.r-project.org",
+            INSTALL_opts = c("--no-help", "--no-html", "--no-docs")
+          )
+        shell: Rscript {0}
+
+      - name: Fetch Athena events data (Python boto3)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_DEFAULT_REGION: ca-central-1
+        run: |
+          pip install boto3 --quiet
+          python3 pipeline/fetch_data.py events
+
+      - name: Build events data (R)
+        run: Rscript pipeline/build_events.R
+
+      - name: Commit & push events.json to current branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/events.json
+          if git diff --staged --quiet; then
+            echo "events.json inchangé — rien à committer."
+          else
+            git commit -m "chore: refresh events data (dev)"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
+      - name: Upload events.json artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: events-json
+          path: site/events.json
+          retention-days: 3
