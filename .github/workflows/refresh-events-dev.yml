@@ -7,7 +7,17 @@
 # commité — politique d'accès aux données (site/acces-donnees.html).
 name: '[DEV] Build events.json'
 
+# NB : workflow_dispatch ne fonctionne que pour les workflows présents sur la
+# branche par défaut — d'où le déclenchement sur push de la branche de travail
+# (filtré sur pipeline/** ; le commit d'events.json par le bot ne reboucle pas :
+# hors paths, et les pushes GITHUB_TOKEN ne déclenchent pas de workflows).
 on:
+  push:
+    branches:
+      - claude/radar-plus-coding-uc2w68
+    paths:
+      - 'pipeline/**'
+      - '.github/workflows/refresh-events-dev.yml'
   workflow_dispatch:
 
 jobs:
