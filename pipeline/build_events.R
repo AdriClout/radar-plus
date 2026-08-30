@@ -276,7 +276,12 @@ for (rk in c("QC", "ROC")) {
       title      = first(titre),
       issue_fr   = first(na.omit(c(main_issue_text_fr, NA_character_))),
       issue_en   = first(na.omit(c(main_issue_text_en, NA_character_))),
-      first_seen = min(first_seen_utc, na.rm = TRUE),
+      # min() lexicographique = chronologique sur de l'ISO 8601 ; le cas
+      # tout-NA est traité explicitement (min(na.rm) avertirait et rendrait NA).
+      first_seen = {
+        v <- first_seen_utc[!is.na(first_seen_utc)]
+        if (length(v)) min(v) else NA_character_
+      },
       .groups = "drop"
     )
   series_df <- by_bs |> arrange(block_ts)
@@ -290,7 +295,7 @@ for (rk in c("QC", "ROC")) {
       title      = meta_story$title[j],
       issue_fr   = if (!is.na(meta_story$issue_fr[j])) meta_story$issue_fr[j] else NULL,
       issue_en   = if (!is.na(meta_story$issue_en[j])) meta_story$issue_en[j] else NULL,
-      first_seen = meta_story$first_seen[j],
+      first_seen = if (!is.na(meta_story$first_seen[j])) meta_story$first_seen[j] else NULL,
       series     = as.list(setNames(round(ser$sumVal, 3), ser$period_key)),
       sum24h     = if (!is.null(cum)) cum else setNames(list(), character(0)),
       band24h    = if (!is.null(last_cum)) band_of(last_cum, th_s) else "aucune"
