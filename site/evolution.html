@@ -258,6 +258,31 @@
       color: rgba(140,170,220,0.65); font-size: 12px;
       padding: 20px 0; font-style: italic;
     }
+
+    /* Fil d'un événement : un chapitre par titre porté, dans l'ordre */
+    #object-panel .ev-chapitre {
+      margin: 22px 0 2px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(80,130,255,0.18);
+      font-size: 13.5px; line-height: 1.4; font-weight: 700;
+      color: #e8f0ff;
+    }
+    #object-panel .ev-chapitre:first-child { margin-top: 4px; border-top: 0; padding-top: 0; }
+    #object-panel .ev-bande {
+      font-family: 'Orbitron', sans-serif; font-size: 8.5px;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 1px 5px; border-radius: 3px;
+      color: #060d22; background: var(--band-moderee);
+    }
+    #object-panel .ev-bande.band-faible { background: var(--band-faible); }
+    #object-panel .ev-bande.band-moderee { background: var(--band-moderee); }
+    #object-panel .ev-bande.band-elevee { background: var(--band-elevee); }
+    #object-panel .ev-bande.band-tres_elevee { background: var(--band-tres-elevee); }
+    #object-panel .ev-bande.band-extreme { background: var(--band-extreme); color: #fff; }
+    #object-panel .ev-rien {
+      font-size: 11px; color: rgba(140,170,220,0.65);
+      padding: 5px 0 2px; font-style: italic;
+    }
     #loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #00000f; z-index: 100; }
     #loading-text { font-size: 11px; letter-spacing: 3px; color: rgba(80,120,255,0.5); text-transform: uppercase; animation: pulse 1.8s ease-in-out infinite; }
     @media (max-width: 1500px) {
@@ -1108,6 +1133,15 @@
     const panel = document.getElementById('object-panel');
     if (!nodeId) { closeObjectPanel(); return; }
 
+    // En mode Événements, « indisponible » n'a pas de sens : le fil d'une
+    // storyline ne dépend pas du bloc affiché. Absente d'ici, elle a très
+    // bien pu vivre ailleurs — on ouvre son fil au lieu d'un cul-de-sac.
+    if (currentSource === 'evenements') {
+      panelState.contextPeriod = contextPeriod;
+      renderArticlesPanel({ id: nodeId }, contextPeriod);
+      return;
+    }
+
     panelState.nodeId = nodeId;
     panelState.contextPeriod = contextPeriod;
     const periodLabel = panelPeriodLabel(contextPeriod);
@@ -1122,11 +1156,102 @@
     bindObjectPanelControls(nodeId);
   }
 
+  /* Fil complet d'une storyline — même logique que l'accueil : tous ses
+     blocs de 4 h, du plus récent au plus ancien, groupés par titre porté.
+     Un événement qui dure vit sous des titres successifs ; le panneau ne
+     montrait que le bloc affiché, ce qui masquait toute sa trajectoire. */
+  const EV_MAX_BLOCS_FIL = 60;
+
+  function evBlockLabel(key) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})$/.exec(key || '');
+    if (!m) return key || '';
+    const start = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], 0, 0));
+    const end = new Date(start.getTime() + 4 * 3600 * 1000);
+    const loc = (window.__i18n && window.__i18n.currentLang() === 'en') ? 'en-CA' : 'fr-CA';
+    const df = new Intl.DateTimeFormat(loc, { weekday: 'short', day: 'numeric', month: 'short' });
+    const hf = new Intl.DateTimeFormat(loc, { hour: 'numeric' });
+    return `${df.format(start)} · ${hf.format(start)} – ${hf.format(end)}`;
+  }
+
+  function renderEventStoryline(nodeId) {
+    const region = EVENTS_REGION[currentCountry];
+    const blocks = (eventsData && eventsData.blocks && region) ? eventsData.blocks[region] : null;
+    if (!blocks) return { html: '', meta: '' };
+
+    const bandLabels = {};
+    ((eventsData.meta && eventsData.meta.bands) || []).forEach(b => {
+      bandLabels[b.id] = (window.__i18n && window.__i18n.currentLang() === 'en') ? b.en : b.fr;
+    });
+
+    const seenUrl = new Set(), chapitres = [], jours = new Set();
+    let nArts = 0, nBlocs = 0;
+    const keys = Object.keys(blocks).sort().reverse();
+    for (const k of keys) {
+      if (nBlocs >= EV_MAX_BLOCS_FIL) break;
+      for (const ev of (blocks[k] || [])) {
+        if ((ev.storyline || ev.id) !== nodeId) continue;
+        nBlocs++; jours.add(k.slice(0, 10));
+        const arts = (Array.isArray(ev.articles) && ev.articles.length)
+          ? ev.articles
+          : (ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []);
+        const frais = arts.filter(a => a.url && !seenUrl.has(a.url));
+        frais.forEach(a => seenUrl.add(a.url));
+        nArts += frais.length;
+        let dernier = chapitres[chapitres.length - 1];
+        if (!dernier || dernier.titre !== ev.title) {
+          chapitres.push({ titre: ev.title, blocs: [] });
+          dernier = chapitres[chapitres.length - 1];
+        }
+        dernier.blocs.push({ key: k, index: ev.index, band: ev.band, articles: frais });
+      }
+    }
+
+    const nJours = jours.size;
+    const meta = `${nArts} article${nArts === 1 ? '' : 's'} · ${nBlocs} bloc${nBlocs === 1 ? '' : 's'}`
+      + ` de 4 h sur ${nJours} jour${nJours === 1 ? '' : 's'}`
+      + (chapitres.length > 1 ? ` · ${chapitres.length} titres successifs` : '');
+
+    if (!chapitres.length) return { html: '<div class="empty">Aucun article pour cet \u00e9v\u00e9nement.</div>', meta: '' };
+
+    let html = '';
+    chapitres.forEach(ch => {
+      html += `<div class="ev-chapitre">${escapeHtml(ch.titre || '')}</div>`;
+      ch.blocs.forEach(b => {
+        // « aucune » n'est pas une bande : sous le premier seuil, pas de pastille
+        const bande = bandLabels[b.band] || '';
+        html += `<div class="article-period-label">${escapeHtml(evBlockLabel(b.key))}`
+          + (typeof b.index === 'number' ? ` · ${b.index.toFixed(1)}` : '')
+          + (bande ? ` · <span class="ev-bande band-${escapeHtml(String(b.band))}">${escapeHtml(bande)}</span>` : '')
+          + '</div>';
+        html += b.articles.length
+          ? b.articles.map(articleItemHtml).join('')
+          : '<div class="ev-rien">Aucun nouvel article \u2014 la couverture se poursuit.</div>';
+      });
+    });
+    if (nBlocs >= EV_MAX_BLOCS_FIL) {
+      html += `<div class="ev-rien">Fil tronqu\u00e9 aux ${EV_MAX_BLOCS_FIL} blocs les plus r\u00e9cents.</div>`;
+    }
+    return { html, meta };
+  }
+
   function renderArticlesPanel(node, contextPeriod = null) {
     if (!node) { closeObjectPanel(); return; }
 
     panelState.nodeId = node.id;
     if (contextPeriod !== null) panelState.contextPeriod = contextPeriod;
+
+    // Mode Événements : le fil complet de la storyline, pas le bloc affiché.
+    if (currentSource === 'evenements') {
+      const fil = renderEventStoryline(node.id);
+      const panelEv = document.getElementById('object-panel');
+      panelEv.innerHTML = `
+      ${renderObjectPanelHeader(node.id, fil.meta)}
+      <div id="object-panel-body">${fil.html}</div>
+    `;
+      openObjectPanelDom();
+      bindObjectPanelControls(node.id);
+      return;
+    }
 
     const ctx = panelState.contextPeriod || periods[currentIdx];
     const periodLabel = panelPeriodLabel(ctx);
