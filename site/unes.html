@@ -162,33 +162,11 @@
       gap: 12px;
     }
 
-    /* Onglets de mode — même mécanique que le Classement de l'accueil */
-    .mode-tabs { display: flex; gap: 8px; }
-    .mode-tab {
-      font-family: var(--orbitron); font-size: 11px; letter-spacing: 1.6px;
-      text-transform: uppercase;
-      background: transparent; color: var(--muted);
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 8px 18px; cursor: pointer;
-      transition: color 0.2s, background 0.2s, border-color 0.2s;
-    }
-    .mode-tab:hover { color: var(--text); border-color: rgba(90,140,255,0.45); }
-    .mode-tab.active {
-      color: #fff; background: rgba(40,70,160,0.55);
-      border-color: var(--accent);
-      box-shadow: 0 0 12px rgba(80,130,255,0.25);
-    }
-
     .country-tabs {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
-    .country-tab.tab-disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-    .country-tab.tab-disabled:hover { border-color: var(--border); color: var(--muted); }
     .country-tab {
       border: 1px solid var(--border);
       background: rgba(12,22,58,0.7);
@@ -301,93 +279,6 @@
       color: #e9f2ff;
     }
 
-    /* ===== Mode Événements =====
-       L'unité n'est plus la manchette mais l'événement saillant : un même
-       fait couvert par plusieurs médias dans le même bloc de 4 h. On montre
-       davantage que la Vitrine — le résumé, l'enjeu, la convergence et les
-       médias qui l'ont porté — d'où la carte plutôt que la ligne. */
-    .event-item {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 12px;
-      background: rgba(6,12,34,0.92);
-      padding: 14px 14px;
-    }
-    .event-rank {
-      font-family: var(--orbitron);
-      font-size: 20px;
-      line-height: 1;
-      color: rgba(120,170,255,0.9);
-      min-width: 34px;
-      padding-top: 2px;
-    }
-    .event-body { min-width: 0; }
-    .event-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-    .event-band {
-      font-family: var(--orbitron);
-      font-size: 9.5px;
-      letter-spacing: 1.1px;
-      text-transform: uppercase;
-      border-radius: 4px;
-      padding: 3px 7px;
-      color: #060d22;
-      background: var(--band-moderee);
-    }
-    .event-band.band-faible { background: var(--band-faible); }
-    .event-band.band-moderee { background: var(--band-moderee); }
-    .event-band.band-elevee { background: var(--band-elevee); }
-    .event-band.band-tres_elevee { background: var(--band-tres-elevee); }
-    .event-band.band-extreme { background: var(--band-extreme); color: #fff; }
-    .event-index {
-      font-family: var(--orbitron);
-      font-size: 12px;
-      color: #dcebff;
-      letter-spacing: 0.6px;
-    }
-    .event-issue {
-      font-size: 10.5px;
-      color: var(--muted);
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-    }
-    .event-title {
-      display: block;
-      font-size: 14.5px;
-      line-height: 1.4;
-      color: #eaf3ff;
-      text-decoration: none;
-      margin-bottom: 5px;
-    }
-    .event-title:hover { color: var(--accent-soft); text-decoration: underline; }
-    .event-text {
-      font-size: 12.5px;
-      line-height: 1.55;
-      color: rgba(200,220,250,0.88);
-      margin-bottom: 7px;
-    }
-    .event-meta {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.3px;
-    }
-    .event-media {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      letter-spacing: 0.8px;
-      color: rgba(110,176,255,0.95);
-    }
-
-    @media (max-width: 740px) {
-      .event-item { grid-template-columns: 1fr; }
-      .event-rank { display: none; }
-    }
-
     .empty {
       border: 1px dashed rgba(120,160,235,0.35);
       border-radius: 10px;
@@ -424,16 +315,11 @@
       <a class="back-link" href="./index.html"><span data-i18n="common.back_home">← Retour Accueil</span></a>
       <div class="title-wrap">
         <h1 data-i18n="page_title.unes">Dans le radar</h1>
-        <p data-i18n="unes.subtitle">Les événements saillants et les Unes en direct, par région, avec navigation temporelle.</p>
+        <p>Les Unes en direct, triées par pays, avec navigation temporelle.</p>
       </div>
     </div>
 
     <section class="controls">
-      <div class="mode-tabs" id="mode-tabs">
-        <button class="mode-tab active" data-mode="evenements" data-i18n="hot20.mode_evenements">Événements</button>
-        <button class="mode-tab" data-mode="unes" data-i18n="unes.mode_unes">Unes</button>
-      </div>
-
       <div class="country-tabs" id="country-tabs">
         <button class="country-tab active" data-country="ALL" data-i18n="unes.all_countries">Tous</button>
         <button class="country-tab" data-country="QC" data-i18n="country.QC">Québec</button>
@@ -510,36 +396,6 @@
     let currentBucketIdx = 0;
     let meta = null;
 
-    /* ===== MODE ÉVÉNEMENTS =====
-       Même bascule que sur le Classement : « Événements » par défaut,
-       « Unes » pour le flux brut. Les événements sont découpés en blocs de
-       4 h (pas en heures) et ne couvrent que le Québec et le Canada —
-       le panel des États-Unis n'est pas suivi par le raffineur. */
-    const EVENTS_REGION = { QC: 'QC', CAN: 'ROC' };
-    let currentMode = 'evenements';
-    let eventsData = null;
-    let eventPeriods = [];   // du plus récent au plus ancien
-    let currentEventIdx = 0;
-
-    function eventsAvailable() {
-      return !!(eventsData && eventsData.blocks && eventPeriods.length);
-    }
-
-    /* Libellé français d'un bloc à partir de sa clé « 2026-08-30_15-19 » :
-       les bornes de la clé sont en UTC, on les rend en heure locale. */
-    function eventBlockLabel(key) {
-      const m = /^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})$/.exec(key || '');
-      if (!m) return key || '--';
-      const start = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], 0, 0));
-      const end = new Date(start.getTime() + 4 * 3600 * 1000);
-      const datePart = new Intl.DateTimeFormat(dtLocale(), {
-        weekday: 'short', day: '2-digit', month: 'short'
-      }).format(start);
-      // Un bloc couvre 4 h pleines : les minutes n'apprennent rien.
-      const hf = new Intl.DateTimeFormat(dtLocale(), { hour: 'numeric' });
-      return datePart + ' · ' + hf.format(start) + ' – ' + hf.format(end) + ' (' + localTzShort() + ')';
-    }
-
     /* Traduit via i18n.js, avec repli sur le texte français si les fichiers
        de langue ne sont pas encore chargés (t() renvoie la clé dans ce cas). */
     function tr(key, params, fallback) {
@@ -547,138 +403,13 @@
       return (v === key && fallback !== undefined) ? fallback : v;
     }
 
-    // Les dates et heures suivent aussi la langue de l'interface.
-    function dtLocale() { return uiLang() === 'en' ? 'en-CA' : 'fr-CA'; }
-
     function uiLang() {
       return ((window.__i18n && window.__i18n.currentLang()) ||
         document.documentElement.lang || 'fr').slice(0, 2);
     }
 
-    function bandLabel(bandId) {
-      const bands = (eventsData && eventsData.meta && eventsData.meta.bands) || [];
-      const b = bands.find((x) => x.id === bandId);
-      if (!b) return bandId || '';
-      return (uiLang() === 'en' ? b.en : b.fr) || b.fr || bandId;
-    }
-
-    // L'enjeu suit la langue de l'interface, comme la bande.
-    function issueLabel(ev) {
-      return (uiLang() === 'en' ? (ev.issue_en || ev.issue_fr) : (ev.issue_fr || ev.issue_en)) || '';
-    }
-
-    function eventsForCountry(country, periodKey) {
-      const region = EVENTS_REGION[country];
-      if (!region || !eventsData || !eventsData.blocks) return [];
-      const byPeriod = eventsData.blocks[region] || {};
-      return byPeriod[periodKey] || [];
-    }
-
-    // En mode Événements, « CAN » désigne le Canada hors Québec (ROC) :
-    // le panel exclut les médias québécois, le titre doit le dire.
-    function eventsCountryName(country) {
-      if (country === 'CAN') return tr('unes.canada_roc', null, 'Canada (hors Québec)');
-      return tr('country.' + country, null, countryName[country] || country);
-    }
-
-    function renderEventBlock(country, events) {
-      const rows = events.map((ev) => {
-        const band = String(ev.band || 'moderee');
-        const medias = Array.isArray(ev.media_ids) ? ev.media_ids : [];
-        const outlets = ev.outlets || medias.length;
-        const bits = [];
-        const issue = issueLabel(ev);
-        if (issue) bits.push('<span class="event-issue">' + escapeHtml(issue) + '</span>');
-        const metaBits = [];
-        const outletWord = ' ' + (outlets === 1
-          ? tr('unes.outlet', null, 'média') : tr('unes.outlets', null, 'médias'));
-        metaBits.push(outlets + outletWord +
-          (medias.length ? ' · <span class="event-media">' + escapeHtml(medias.join(' · ')) + '</span>' : ''));
-        if (typeof ev.convergence === 'number') {
-          metaBits.push(tr('unes.convergence', null, 'convergence') + ' ' + ev.convergence + '%');
-        }
-        return (
-          '<div class="event-item">' +
-            '<div class="event-rank">' + escapeHtml(String(ev.rank || '')) + '</div>' +
-            '<div class="event-body">' +
-              '<div class="event-head">' +
-                '<span class="event-band band-' + escapeHtml(band) + '">' + escapeHtml(bandLabel(band)) + '</span>' +
-                '<span class="event-index">' + (typeof ev.index === 'number' ? ev.index.toFixed(1) : '--') + '</span>' +
-                bits.join('') +
-              '</div>' +
-              '<a class="event-title" href="' + escapeHtml(ev.url || '#') + '" target="_blank" rel="noopener">' +
-                escapeHtml(ev.title || 'Événement') + '</a>' +
-              (ev.text ? '<div class="event-text">' + escapeHtml(ev.text) + '</div>' : '') +
-              '<div class="event-meta">' + metaBits.join(' · ') + '</div>' +
-            '</div>' +
-          '</div>'
-        );
-      }).join('');
-
-      return (
-        '<article class="country-block">' +
-          '<header class="country-head">' + escapeHtml(eventsCountryName(country)) + '</header>' +
-          '<div class="headline-list">' + rows + '</div>' +
-        '</article>'
-      );
-    }
-
-    function renderEvents() {
-      const board = document.getElementById('board');
-      const label = document.getElementById('time-label');
-      const olderBtn = document.getElementById('time-older');
-      const newerBtn = document.getElementById('time-newer');
-
-      if (!eventsAvailable()) {
-        board.innerHTML = '<div class="empty">' +
-          escapeHtml(tr('unes.events_unavailable', null, 'Données d\u2019événements indisponibles.')) + '</div>';
-        label.textContent = tr('unes.period_none', null, 'Période : --');
-        olderBtn.disabled = true;
-        newerBtn.disabled = true;
-        formatMetaLine();
-        return;
-      }
-
-      const periodKey = eventPeriods[currentEventIdx];
-      label.textContent = eventBlockLabel(periodKey);
-      olderBtn.disabled = currentEventIdx >= eventPeriods.length - 1;
-      newerBtn.disabled = currentEventIdx <= 0;
-
-      const countries = selectedCountry === 'ALL'
-        ? ['QC', 'CAN']
-        : (EVENTS_REGION[selectedCountry] ? [selectedCountry] : []);
-
-      const blocks = countries
-        .map((c) => ({ c: c, evs: eventsForCountry(c, periodKey) }))
-        .filter((x) => x.evs.length)
-        .map((x) => renderEventBlock(x.c, x.evs));
-
-      board.innerHTML = blocks.length
-        ? blocks.join('')
-        : '<div class="empty">' + escapeHtml(tr('unes.empty_events', null,
-            'Aucun événement saillant pour ce choix dans ce bloc de 4 h.')) + '</div>';
-      formatMetaLine();
-    }
-
-    /* Les États-Unis ne sont pas suivis côté événements : on grise l'onglet
-       et on bascule sur « Tous » plutôt que d'afficher une page vide. */
-    function syncCountryTabs() {
-      const evMode = currentMode === 'evenements';
-      document.querySelectorAll('.country-tab').forEach((b) => {
-        const disabled = evMode && b.dataset.country === 'USA';
-        b.classList.toggle('tab-disabled', disabled);
-        b.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-        if (disabled) b.title = tr('unes.usa_disabled_tip', null,
-          'Le suivi des événements couvre le Québec et le Canada.');
-        else b.removeAttribute('title');
-      });
-      if (evMode && selectedCountry === 'USA') {
-        selectedCountry = 'ALL';
-        document.querySelectorAll('.country-tab').forEach((b) => {
-          b.classList.toggle('active', b.dataset.country === 'ALL');
-        });
-      }
-    }
+    // Les dates et heures suivent aussi la langue de l'interface.
+    function dtLocale() { return uiLang() === 'en' ? 'en-CA' : 'fr-CA'; }
 
     function localTzShort() {
       try {
@@ -736,23 +467,6 @@
     function formatMetaLine() {
       const el = document.getElementById('meta-line');
       if (!el) return;
-
-      if (currentMode === 'evenements') {
-        if (!eventsAvailable()) {
-          el.textContent = tr('unes.events_unavailable', null, 'Données d\u2019événements indisponibles.');
-          return;
-        }
-        const em = eventsData.meta || {};
-        const top = em.top_per_region_block || 3;
-        const panel = em.panel || {};
-        const g2 = new Date(em.generated_at);
-        const hm2 = isNaN(g2.getTime()) ? '--:--'
-          : new Intl.DateTimeFormat(dtLocale(), { hour: '2-digit', minute: '2-digit' }).format(g2);
-        el.textContent = tr('unes.meta_events',
-          { hm: hm2, top: top, qc: panel.QC || '--', roc: panel.ROC || '--' });
-        return;
-      }
-
       if (!meta || !meta.generated_at) {
         el.textContent = 'Données indisponibles.';
         return;
@@ -766,11 +480,6 @@
     }
 
     function render() {
-      if (currentMode === 'evenements') {
-        renderEvents();
-        return;
-      }
-
       const board = document.getElementById('board');
       const label = document.getElementById('time-label');
       const olderBtn = document.getElementById('time-older');
@@ -778,7 +487,7 @@
 
       if (!buckets.length) {
         board.innerHTML = '<div class="empty">' +
-          escapeHtml(tr('unes.events_unavailable', null, 'Données indisponibles.')) + '</div>';
+          escapeHtml(tr('unes.no_data', null, 'Aucune donnée disponible.')) + '</div>';
         label.textContent = tr('unes.period_none', null, 'Période : --');
         olderBtn.disabled = true;
         newerBtn.disabled = true;
@@ -870,40 +579,16 @@
 
         buckets = Array.from(map.values()).sort((a, b) => b.date.getTime() - a.date.getTime());
         currentBucketIdx = 0;
+        render();
       } catch (e) {
-        buckets = [];
-        meta = null;
+        document.getElementById('board').innerHTML = '<div class="empty">Erreur de chargement des Unes.</div>';
+        document.getElementById('meta-line').textContent = 'Impossible de récupérer ticker.json.';
       }
     }
-
-    async function loadEvents() {
-      try {
-        const res = await fetch('./events.json', { cache: 'no-store' });
-        if (!res.ok) throw new Error('fetch failed');
-        eventsData = await res.json();
-        const periods = (eventsData.meta && eventsData.meta.periods) || [];
-        // du plus récent au plus ancien, comme les buckets des Unes
-        eventPeriods = periods.map((p) => p.key).sort().reverse();
-        currentEventIdx = 0;
-      } catch (e) {
-        eventsData = null;
-        eventPeriods = [];
-      }
-    }
-
-    document.getElementById('mode-tabs').addEventListener('click', (e) => {
-      const btn = e.target.closest('.mode-tab');
-      if (!btn || btn.classList.contains('active')) return;
-      document.querySelectorAll('.mode-tab').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentMode = btn.dataset.mode;
-      syncCountryTabs();
-      render();
-    });
 
     document.getElementById('country-tabs').addEventListener('click', (e) => {
       const btn = e.target.closest('.country-tab');
-      if (!btn || btn.classList.contains('tab-disabled')) return;
+      if (!btn) return;
       document.querySelectorAll('.country-tab').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       selectedCountry = btn.dataset.country;
@@ -911,10 +596,6 @@
     });
 
     document.getElementById('time-older').addEventListener('click', () => {
-      if (currentMode === 'evenements') {
-        if (currentEventIdx < eventPeriods.length - 1) { currentEventIdx += 1; render(); }
-        return;
-      }
       if (currentBucketIdx < buckets.length - 1) {
         currentBucketIdx += 1;
         render();
@@ -922,35 +603,18 @@
     });
 
     document.getElementById('time-newer').addEventListener('click', () => {
-      if (currentMode === 'evenements') {
-        if (currentEventIdx > 0) { currentEventIdx -= 1; render(); }
-        return;
-      }
       if (currentBucketIdx > 0) {
         currentBucketIdx -= 1;
         render();
       }
     });
 
-    // Les deux sources se chargent en parallèle : la bascule de mode doit
-    // être instantanée, sans nouvel aller-retour réseau.
-    Promise.all([loadEvents(), loadUnes()]).then(() => {
-      syncCountryTabs();
-      // Si les événements manquent, on retombe sur les Unes plutôt que
-      // d'accueillir le visiteur avec une page vide.
-      if (currentMode === 'evenements' && !eventsAvailable()) {
-        currentMode = 'unes';
-        document.querySelectorAll('.mode-tab').forEach((b) => {
-          b.classList.toggle('active', b.dataset.mode === 'unes');
-        });
-      }
-      render();
-    });
+    loadUnes();
 
-    // Les libellés de bandes et la ligne de méta sont construits en JS :
+    // La ligne de méta et les en-têtes de pays sont composés en JS :
     // un changement de langue doit les reconstruire.
     document.addEventListener('i18n:applied', function () {
-      if (eventsData || buckets.length) render();
+      if (buckets.length) render();
     });
   </script>
   <section class="ticker-section" id="ticker-section" aria-live="polite">

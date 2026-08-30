@@ -456,26 +456,20 @@
     "load_error": "Impossible de charger qualite.json.",
     "concordance": "Taux de concordance",
     "pages_rejouees": "pages rejouées, 12 derniers mois",
-    "col_taux": "Concordance"
+    "col_taux": "Concordance",
+    "fresh_feed_ticker": "Unes",
+    "fresh_feed_events": "événements",
+    "fresh_late_feed": "Mise à jour en retard ({feed})",
+    "fresh_stale_feed": "Données périmées ({feed}) — incident en cours"
   },
   "unes": {
-    "mode_unes": "Unes",
-    "subtitle": "Les événements saillants et les Unes en direct, par région, avec navigation temporelle.",
-    "block_note": "Un événement : un même fait rapporté par plusieurs médias dans le même bloc de 4 h.",
     "all_countries": "Tous",
     "older": "← Plus ancien",
     "newer": "Plus récent →",
     "period_none": "Période : --",
-    "canada_roc": "Canada (hors Québec)",
     "loading": "Chargement des Unes…",
+    "no_data": "Aucune donnée disponible.",
     "empty_country": "Aucune Une pour ce pays dans cette période.",
-    "empty_events": "Aucun événement saillant pour ce choix dans ce bloc de 4 h.",
-    "events_unavailable": "Données d’événements indisponibles.",
-    "usa_disabled_tip": "Le suivi des événements couvre le Québec et le Canada.",
-    "meta_events": "Événements de {hm} · jusqu’à {top} par région et par bloc de 4 h · panel de {qc} médias au Québec, {roc} au Canada hors Québec · même indice de saillance que le Classement",
-    "meta_unes": "Les Unes de {hm} · {total} manchettes visibles · fenêtre de {lookback} h · heures locales ({tz})",
-    "outlet": "média",
-    "outlets": "médias",
-    "convergence": "convergence"
+    "meta_unes": "Les Unes de {hm} · {total} manchettes visibles · fenêtre de {lookback} h · heures locales ({tz})"
   }
 }

@@ -456,26 +456,20 @@
     "load_error": "Could not load qualite.json.",
     "concordance": "Concordance rate",
     "pages_rejouees": "pages replayed, last 12 months",
-    "col_taux": "Concordance"
+    "col_taux": "Concordance",
+    "fresh_feed_ticker": "front pages",
+    "fresh_feed_events": "events",
+    "fresh_late_feed": "Update overdue ({feed})",
+    "fresh_stale_feed": "Stale data ({feed}) — incident in progress"
   },
   "unes": {
-    "mode_unes": "Front pages",
-    "subtitle": "Salient events and live front pages, by region, with time navigation.",
-    "block_note": "An event: the same fact reported by several outlets within the same 4-hour block.",
     "all_countries": "All",
     "older": "← Older",
     "newer": "Newer →",
     "period_none": "Period: --",
-    "canada_roc": "Canada (outside Quebec)",
     "loading": "Loading front pages…",
+    "no_data": "No data available.",
     "empty_country": "No front page for this country in this period.",
-    "empty_events": "No salient event for this selection in this 4-hour block.",
-    "events_unavailable": "Event data unavailable.",
-    "usa_disabled_tip": "Event tracking covers Quebec and Canada.",
-    "meta_events": "Events as of {hm} · up to {top} per region and per 4-hour block · panel of {qc} outlets in Quebec, {roc} in Canada outside Quebec · same salience index as the Ranking",
-    "meta_unes": "Front pages as of {hm} · {total} headlines shown · {lookback}h window · local time ({tz})",
-    "outlet": "outlet",
-    "outlets": "outlets",
-    "convergence": "convergence"
+    "meta_unes": "Front pages as of {hm} · {total} headlines shown · {lookback}h window · local time ({tz})"
   }
 }
