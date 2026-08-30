@@ -25,7 +25,8 @@ for e in (t.get("edits") or []):
 # (site/i18n/ui.*.json, site/qualite.json) ne sont volontairement PAS dans
 # cette liste.
 DATA_JSON = {"graph.json", "timeseries.json", "articles.json",
-             "monitor_input.json", "ticker.json", "events.json"}
+             "monitor_input.json", "ticker.json", "events.json",
+             "classement.json"}
 base = os.path.basename(path)
 norm = path.replace("\\", "/")
 if base in DATA_JSON and ("/site/" in norm or norm.startswith("site/")):

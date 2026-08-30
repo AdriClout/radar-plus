@@ -80,8 +80,11 @@ jobs:
       - name: Build events data (R)
         run: Rscript pipeline/build_events.R
 
+      - name: Build classement index (Python)
+        run: python3 pipeline/build_classement.py
+
       - name: Contrôle de schéma des JSON générés
-        run: python3 pipeline/check_schema.py site/graph.json site/timeseries.json site/articles.json site/monitor_input.json site/events.json
+        run: python3 pipeline/check_schema.py site/graph.json site/timeseries.json site/articles.json site/monitor_input.json site/events.json site/classement.json
 
       - name: Commit & push updated data
         id: commit_data
@@ -91,7 +94,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
-          git add site/graph.json site/timeseries.json site/articles.json site/monitor_input.json site/events.json
+          git add site/graph.json site/timeseries.json site/articles.json site/monitor_input.json site/events.json site/classement.json
           if git diff --staged --quiet; then
             echo "updated=false" >> "$GITHUB_OUTPUT"
           else

@@ -144,6 +144,54 @@ def check_articles(d, fichier):
         err(fichier, "articles est vide")
 
 
+def check_classement(d, fichier):
+    meta = need(d, "meta", dict, fichier, "racine")
+    if meta:
+        check_generated_at(meta, fichier)
+        periods = need(meta, "periods", list, fichier, "meta")
+        if periods is not None:
+            if not periods:
+                err(fichier, "meta.periods est vide")
+            else:
+                check_period_keys((p.get("key", "") for p in periods), fichier, "meta.periods")
+        for key in ("salience_tiers", "slots"):
+            need(meta, key, dict, fichier, "meta")
+        countries = need(meta, "countries", list, fichier, "meta") or []
+    else:
+        countries = []
+    if not isinstance(need(d, "alert_bar", list, fichier, "racine"), list):
+        pass  # erreur déjà signalée
+    top = need(d, "top", dict, fichier, "racine")
+    if top:
+        for gran in ("4h", "day", "week", "month", "quarter", "total"):
+            if gran not in top:
+                err(fichier, f"top.{gran} absent")
+                continue
+            for country in countries:
+                slots_c = top[gran].get(country)
+                if not isinstance(slots_c, dict) or not slots_c:
+                    err(fichier, f"top.{gran}.{country} vide ou invalide")
+                    continue
+                k, entries = next(iter(slots_c.items()))
+                if not isinstance(entries, list):
+                    err(fichier, f"top.{gran}.{country}.{k} n'est pas une liste")
+                    continue
+                for e in entries[:3]:
+                    for field in ("id", "size", "rank"):
+                        if field not in e:
+                            err(fichier, f"entrée sans champ {field!r} dans top.{gran}.{country}.{k}")
+                            break
+        if "4h" in top:
+            for country in countries:
+                check_period_keys((top["4h"].get(country) or {}).keys(), fichier, f"top.4h.{country}")
+    alltime = need(d, "alltime", dict, fichier, "racine")
+    if alltime is not None:
+        for country in countries:
+            if not alltime.get(country):
+                err(fichier, f"alltime.{country} absent ou vide")
+    need(d, "alerts_latest", dict, fichier, "racine")
+
+
 def check_monitor(d, fichier):
     need(d, "meta", dict, fichier, "racine")
     bc = need(d, "by_country", dict, fichier, "racine")
@@ -158,6 +206,7 @@ CHECKS = {
     "ticker.json": check_ticker,
     "articles.json": check_articles,
     "monitor_input.json": check_monitor,
+    "classement.json": check_classement,
 }
 
 

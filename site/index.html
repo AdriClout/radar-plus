@@ -1468,27 +1468,18 @@
 })();
 
 /* ===== HOT 20 ===== */
-var graphData = null;
-var timeseriesData = null;
-// Score cumulé depuis le début (somme de size sur toutes les périodes 4h
-// disponibles), précalculé après chargement de timeseriesData.
+var graphData = null;       // plus chargé à l'accueil (classement.json précalcule tout)
+var timeseriesData = null;  // idem — voir pipeline/build_classement.py
+var classementData = null;  // l'index léger du Classement (audit vague 3)
+// Score cumulé depuis le début, repris de classementData.alltime.
 // Forme: { CAN: { 'donald trump': 123.4, ... }, QC: {...}, USA: {...} }
 var allTimeScores = null;
 function buildAllTimeScores() {
-  var src = timeseriesData || graphData;
-  if (!src || !src.graphs) { allTimeScores = null; return; }
+  if (!classementData || !classementData.alltime) { allTimeScores = null; return; }
   var out = {};
-  for (var country in src.graphs) {
-    var cg = src.graphs[country] || {};
+  for (var country in classementData.alltime) {
     var sums = {};
-    for (var pk in cg) {
-      var nodes = cg[pk] && cg[pk].nodes;
-      if (!nodes) continue;
-      for (var i = 0; i < nodes.length; i++) {
-        var n = nodes[i];
-        sums[n.id] = (sums[n.id] || 0) + (Number(n.size) || 0);
-      }
-    }
+    classementData.alltime[country].forEach(function(pair) { sums[pair[0]] = pair[1]; });
     out[country] = sums;
   }
   allTimeScores = out;
@@ -1529,13 +1520,11 @@ function escapeHtml(str) {
 async function loadData() {
   try {
     var results = await Promise.all([
-      fetch('./graph.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
-      fetch('./timeseries.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+      fetch('./classement.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
       fetch('./events.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
     ]);
-    graphData = results[0];
-    timeseriesData = results[1];
-    eventsData = results[2];
+    classementData = results[0];
+    eventsData = results[1];
     buildAllTimeScores();
     buildEventsGraphs();
   } catch (e) { console.error('Data load error', e); }
@@ -1549,7 +1538,7 @@ async function loadData() {
 }
 
 function buildPeriods() {
-  var src = timeseriesData || graphData;
+  var src = classementData;
   if (!src || !src.meta || !src.meta.periods) return;
   allPeriods = src.meta.periods.slice().sort(function(a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
   currentPeriodIdx = allPeriods.length - 1;
@@ -1620,7 +1609,7 @@ function buildSlots() {
   // En mode Événements, les créneaux se construisent sur la grille de
   // périodes d'events.json (blocs 03-07/07-11/…, régime depuis 2026-07-23).
   var srcPeriods = currentMode === 'evenements' ? eventsPeriodsList() : allPeriods;
-  var src = currentMode === 'evenements' ? eventsData : (timeseriesData || graphData);
+  var src = currentMode === 'evenements' ? eventsData : classementData;
   if (!src || !srcPeriods.length) { aggregatedSlots = []; return; }
 
   if (currentGranularity === '4h') {
@@ -1784,26 +1773,38 @@ function renderHot20() {
 
   var countryGraphs = activeCountryGraphs();
 
-  if (!countryGraphs) {
-    grid.innerHTML = '<div class="hot20-empty">Aucune donnée disponible</div>';
-    return;
-  }
-
-  // Get nodes — either single period or aggregated
+  // Get nodes — mode objets : créneaux précalculés (classement.json) ;
+  // mode événements : agrégation locale sur events.json (léger).
   var allNodes;
-  if (currentGranularity === '4h') {
-    var periodData = countryGraphs[slot.periodKeys[0]];
-    if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
-      grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ce bloc horaire (4 h)</div>';
+  var emptyMsg = { day: 'cette journée', week: 'cette semaine', month: 'ce mois', quarter: 'cette année' };
+  if (currentMode !== 'evenements') {
+    var granTop = classementData && classementData.top && classementData.top[currentGranularity];
+    var slotKey = currentGranularity === '4h' ? slot.periodKeys[0] : slot.bucketKey;
+    allNodes = granTop && granTop[currentCountry] ? granTop[currentCountry][slotKey] : null;
+    if (!allNodes || !allNodes.length) {
+      grid.innerHTML = '<div class="hot20-empty">' + (currentGranularity === '4h'
+        ? 'Aucune donnée pour ce bloc horaire (4 h)'
+        : 'Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période')) + '</div>';
       return;
     }
-    allNodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
   } else {
-    allNodes = aggregateNodes(countryGraphs, slot.periodKeys);
-    if (!allNodes.length) {
-      var emptyMsg = { day: 'cette journée', week: 'cette semaine', month: 'ce mois', quarter: 'cette année' };
-      grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période') + '</div>';
+    if (!countryGraphs) {
+      grid.innerHTML = '<div class="hot20-empty">Aucune donnée disponible</div>';
       return;
+    }
+    if (currentGranularity === '4h') {
+      var periodData = countryGraphs[slot.periodKeys[0]];
+      if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
+        grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ce bloc horaire (4 h)</div>';
+        return;
+      }
+      allNodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
+    } else {
+      allNodes = aggregateNodes(countryGraphs, slot.periodKeys);
+      if (!allNodes.length) {
+        grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période') + '</div>';
+        return;
+      }
     }
   }
 
@@ -1813,7 +1814,16 @@ function renderHot20() {
   /* Trend: compare with previous slot */
   var prevRanks = {};
   var prevIds = {};
-  if (currentSlotIdx > 0) {
+  var streaks = {};
+  var comebacks = {};
+  if (currentMode !== 'evenements') {
+    // Précalculé par pipeline/build_classement.py (sémantiques identiques)
+    nodes.forEach(function(e) {
+      if (e.prev_rank) { prevRanks[e.id] = e.prev_rank; prevIds[e.id] = true; }
+      if (e.comeback) comebacks[e.id] = true;
+      streaks[e.id] = e.streak || 1;
+    });
+  } else if (currentSlotIdx > 0) {
     var prevSlot = aggregatedSlots[currentSlotIdx - 1];
     var prevNodes;
     if (currentGranularity === '4h') {
@@ -1826,8 +1836,7 @@ function renderHot20() {
   }
 
   /* Consecutive slots: count how many recent slots each entity appears in top 20 */
-  var streaks = {};
-  nodes.forEach(function(node) {
+  if (currentMode === 'evenements') nodes.forEach(function(node) {
     var count = 0;
     for (var si = currentSlotIdx; si >= 0; si--) {
       var s = aggregatedSlots[si];
@@ -1846,8 +1855,7 @@ function renderHot20() {
   });
 
   /* Comeback detection */
-  var comebacks = {};
-  nodes.forEach(function(node) {
+  if (currentMode === 'evenements') nodes.forEach(function(node) {
     if (prevIds[node.id]) return;
     for (var si = currentSlotIdx - 2; si >= Math.max(0, currentSlotIdx - 10); si--) {
       var s = aggregatedSlots[si];
@@ -1868,11 +1876,10 @@ function renderHot20() {
   /* Store nodes for click handler */
   window._hot20Nodes = nodes;
 
-  /* Alertes en cours: lookup sur la dernière période disponible de
-     graphData (la plus récente), indépendamment de la granularité
-     affichée. Permet de signaler "ALERTE / VEILLE / FORTE" pour les
-     objets actuellement en alerte, même quand on regarde une période
-     agrégée (semaine/mois/année). */
+  /* Alertes en cours: alerts_latest de classement.json (dernière période
+     de graph.json au refresh), indépendamment de la granularité affichée.
+     Permet de signaler les objets actuellement en alerte même quand on
+     regarde une période agrégée (semaine/mois/année). */
   var currentAlertByName = {};
   var ALERT_BADGE_LABELS = (function() {
     var out = {};
@@ -1884,8 +1891,8 @@ function renderHot20() {
   })();
   function deriveAlertLevel(country, size) {
     if (typeof size !== 'number' || !isFinite(size)) return null;
-    var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
-      ? graphData.meta.salience_tiers[country] : null;
+    var tiers = classementData && classementData.meta && classementData.meta.salience_tiers
+      ? classementData.meta.salience_tiers[country] : null;
     if (!tiers) return null;
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
@@ -1909,25 +1916,11 @@ function renderHot20() {
         break;
       }
     } else {
-    var meta = (graphData && graphData.meta) || {};
-    var periodsList = meta.periods || [];
-    var latestKey = periodsList.length ? periodsList[periodsList.length - 1].key : null;
-    var latestGd = latestKey && graphData.graphs && graphData.graphs[currentCountry]
-      ? graphData.graphs[currentCountry][latestKey] : null;
-    var latestNodes = latestGd && latestGd.nodes ? latestGd.nodes : [];
-    latestNodes.forEach(function(n) {
-      // Source de vérité = pipeline: si un épisode est actif, on garde
-      // le niveau du pipeline même quand la taille du snapshot a baissé.
-      // Sinon, fallback sur le calcul size-tier pour highlighter les
-      // pics qui n'ont pas (encore) déclenché d'épisode.
-      if (n.alert_active && n.alert_level && n.alert_level !== 'none') {
-        currentAlertByName[n.id] = n.alert_level;
-        return;
-      }
-      var lvl = deriveAlertLevel(currentCountry, n.size);
-      if (!lvl) return;
-      currentAlertByName[n.id] = lvl;
-    });
+      // Précalculé par build_classement.py depuis la dernière période de
+      // graph.json (niveau pipeline, sinon dérivé des paliers).
+      var latest = classementData && classementData.alerts_latest
+        ? classementData.alerts_latest[currentCountry] : null;
+      if (latest) for (var an in latest) currentAlertByName[an] = latest[an];
     }
   } catch (_) { /* noop */ }
 
@@ -1973,6 +1966,10 @@ function renderHot20() {
             }
           });
         });
+      } else if (currentMode !== 'evenements') {
+        // classement.json précompte les articles (dédupliqués par URL)
+        articleCount = node.n_articles || 0;
+        (node.media_ids || []).forEach(function(m) { mediaSeen[m] = true; });
       } else {
         var inline = Array.isArray(node.articles) ? node.articles : [];
         articleCount = inline.length;
@@ -2219,8 +2216,7 @@ function activeCountryGraphs() {
     var region = EVENTS_REGION[currentCountry];
     return region && eventsGraphsCache ? eventsGraphsCache[region] || null : null;
   }
-  var src = timeseriesData || graphData;
-  return src && src.graphs ? src.graphs[currentCountry] : null;
+  return null; // mode objets : servi par classement.json, plus par des graphes
 }
 
 /* Bandes d'événements (par bloc) → badge d'alerte du Classement */
@@ -2252,7 +2248,7 @@ document.getElementById('mode-tabs').addEventListener('click', function(e) {
 
 // Re-render le HOT 20 quand la langue change (textes dynamiques)
 document.addEventListener('i18n:applied', function () {
-  if (typeof renderHot20 === 'function' && (timeseriesData || graphData)) {
+  if (typeof renderHot20 === 'function' && (classementData || eventsData)) {
     renderHot20();
   }
 });
@@ -2503,14 +2499,14 @@ document.getElementById('hot20-search-input').addEventListener('input', function
   }
 
   searchTimeout = setTimeout(function() {
-    var src = timeseriesData || graphData;
-    if (!src || !src.graphs) {
+    var top4h = classementData && classementData.top ? classementData.top['4h'] : null;
+    if (!top4h) {
       resultDiv.classList.remove('radar-active', 'radar-inactive');
       resultDiv.classList.remove('visible');
       return;
     }
-    var countryGraphs = src.graphs[currentCountry];
-    if (!countryGraphs) {
+    var countryTop = top4h[currentCountry];
+    if (!countryTop) {
       resultDiv.classList.remove('radar-active', 'radar-inactive');
       resultDiv.classList.remove('visible');
       return;
@@ -2519,9 +2515,9 @@ document.getElementById('hot20-search-input').addEventListener('input', function
     var currentSlot = aggregatedSlots.length ? aggregatedSlots[currentSlotIdx] : null;
     var currentPeriodKey = currentSlot ? currentSlot.periodKeys[currentSlot.periodKeys.length - 1] : (allPeriods.length ? allPeriods[allPeriods.length - 1].key : null);
     function getSortedNodes(periodKey) {
-      var pd = countryGraphs[periodKey];
-      if (!pd || !pd.nodes) return [];
-      return pd.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
+      // Listes déjà triées et plafonnées au top 30 (même profondeur que
+      // l'ancien timeseries.json) — voir pipeline/build_classement.py.
+      return countryTop[periodKey] || [];
     }
 
     function findFirstQueryMatch(sortedNodes) {

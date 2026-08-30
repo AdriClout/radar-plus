@@ -583,101 +583,15 @@
     }).join('');
   }
 
-  function populateAlertBar(graphData) {
+  function populateAlertBar(data) {
     var strip    = document.getElementById('alert-bar-strip');
     var bar      = document.getElementById('global-alert-bar');
     var navBadge = document.getElementById('nav-alert-badge');
     if (!strip || !bar) return;
 
-    var periods   = (graphData.meta && graphData.meta.periods) ? graphData.meta.periods : [];
-    var countries = Object.keys(graphData.graphs || {});
-    var alerts    = [];
-    var seen      = {};
-
-    // Uniquement la période la plus récente: évite d'afficher des alertes déjà terminées.
-    var latestPeriod = periods.length ? periods[periods.length - 1] : null;
-    var pKey = latestPeriod && latestPeriod.key;
-    for (var ci = 0; ci < countries.length; ci++) {
-      var country = countries[ci];
-      var gd = graphData.graphs[country] && graphData.graphs[country][pKey];
-      if (!gd) continue;
-
-      // 1) Indexer les events: les membres seront masqués au profit du pivot.
-      // Le pivot lui-même est aussi indexé — sinon il serait émis 2× (une
-      // fois comme tête d'event, une fois comme alerte individuelle) depuis
-      // qu'on force le pivot à être lui-même alerté.
-      var events = Array.isArray(gd.events) ? gd.events : [];
-      var memberIds = {};
-      for (var ei = 0; ei < events.length; ei++) {
-        var ev = events[ei];
-        if (!ev) continue;
-        if (ev.pivot && ev.pivot.id) memberIds[ev.pivot.id] = true;
-        if (!Array.isArray(ev.members)) continue;
-        for (var mi = 0; mi < ev.members.length; mi++) memberIds[ev.members[mi].id] = true;
-      }
-
-      // 2) Émettre les pivots d'événements en premier (level effectif = max parmi membres+pivot)
-      for (var ei2 = 0; ei2 < events.length; ei2++) {
-        var ev2 = events[ei2];
-        if (!ev2 || !ev2.pivot || !Array.isArray(ev2.members) || !ev2.members.length) continue;
-        var lvls = ev2.members.map(function(m){ return m.alert_level; });
-        if (ev2.pivot.alert_active) lvls.push(ev2.pivot.alert_level);
-        var topLvl = null;
-        for (var li = 0; li < ALERT_BAR_LEVELS.length; li++) {
-          if (lvls.indexOf(ALERT_BAR_LEVELS[li]) !== -1) { topLvl = ALERT_BAR_LEVELS[li]; break; }
-        }
-        if (!topLvl) continue;  // bandeau ne montre que les 4 tiers principaux
-        var key2 = country + ':event:' + ev2.pivot.id;
-        if (seen[key2]) continue;
-        seen[key2] = true;
-        // Score représentatif = max alert_score parmi pivot+membres
-        var topScore = ev2.pivot.alert_active && typeof ev2.pivot.alert_score === 'number' ? ev2.pivot.alert_score : 0;
-        ev2.members.forEach(function(m){
-          if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
-        });
-        // Trier les noms de membres par niveau d'alerte pour afficher
-        // les plus saillants en premier dans le défilement.
-        var levelRank = { extreme: 0, tres_eleve: 1, eleve: 2 };
-        var sortedMembers = ev2.members.slice().sort(function(a, b) {
-          var la = levelRank[a.alert_level] !== undefined ? levelRank[a.alert_level] : 9;
-          var lb = levelRank[b.alert_level] !== undefined ? levelRank[b.alert_level] : 9;
-          if (la !== lb) return la - lb;
-          return (b.containment || 0) - (a.containment || 0);
-        });
-        alerts.push({
-          id: ev2.pivot.id,
-          level: topLvl,
-          score: isFinite(topScore) && topScore > 0 ? topScore : null,
-          country: country,
-          isEvent: true,
-          memberCount: ev2.members.length,
-          memberNames: sortedMembers.map(function(m){ return m.id; })
-        });
-      }
-
-      // 3) Émettre les alertes individuelles non couvertes par un event
-      var nodes = gd.nodes || [];
-      for (var ni = 0; ni < nodes.length; ni++) {
-        var node = nodes[ni];
-        if (ALERT_BAR_LEVELS.indexOf(node.alert_level) === -1) continue;
-        if (!node.alert_active) continue;
-        if (memberIds[node.id]) continue;  // masqué (membre d'un event)
-        var key = country + ':' + node.id;
-        if (seen[key]) continue;
-        seen[key] = true;
-        var score = Number(node.alert_score);
-        alerts.push({ id: node.id, level: node.alert_level, score: isFinite(score) ? score : null, country: country });
-      }
-    }
-
-    // Trier: extreme > tres_eleve > eleve, puis score desc
-    var BAR_LEVEL_RANK = { extreme: 0, tres_eleve: 1, eleve: 2 };
-    alerts.sort(function(a, b) {
-      var la = BAR_LEVEL_RANK[a.level] !== undefined ? BAR_LEVEL_RANK[a.level] : 9;
-      var lb = BAR_LEVEL_RANK[b.level] !== undefined ? BAR_LEVEL_RANK[b.level] : 9;
-      if (la !== lb) return la - lb;
-      return (b.score || 0) - (a.score || 0);
-    });
+    // Précalculé par pipeline/build_classement.py (port de l'ancienne
+    // extraction : pivots d'événements + alertes individuelles, triés).
+    var alerts = Array.isArray(data && data.alert_bar) ? data.alert_bar : [];
 
     // Badge compteur dans le menu
     if (navBadge) {
@@ -736,7 +650,9 @@
   var _lastAlertGraphData = null;
   function initAlertBar() {
     injectAlertBar();
-    fetch('./graph.json', { cache: 'no-store' })
+    // classement.json porte le bandeau précalculé (alert_bar) — fini le
+    // rechargement de graph.json (~10 Mo) sur chaque page (audit vague 3).
+    fetch('./classement.json', { cache: 'no-store' })
       .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
       .then(function(data) {
         _lastAlertGraphData = data;
