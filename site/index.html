@@ -708,6 +708,31 @@
       font-size: 10px; color: rgba(120,160,255,0.55);
       letter-spacing: 0.5px;
     }
+
+    /* Fil d'un événement : un chapitre par titre porté, dans l'ordre */
+    .ev-chapitre {
+      margin: 22px 0 2px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(80,130,255,0.18);
+      font-size: 14px; line-height: 1.4; font-weight: 700;
+      color: #e8f0ff;
+    }
+    .ev-chapitre:first-child { margin-top: 6px; border-top: 0; padding-top: 0; }
+    .ev-bande {
+      font-family: var(--orbitron); font-size: 8.5px;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 1px 5px; border-radius: 3px;
+      color: #060d22; background: var(--band-moderee);
+    }
+    .ev-bande.band-faible { background: var(--band-faible); }
+    .ev-bande.band-moderee { background: var(--band-moderee); }
+    .ev-bande.band-elevee { background: var(--band-elevee); }
+    .ev-bande.band-tres_elevee { background: var(--band-tres-elevee); }
+    .ev-bande.band-extreme { background: var(--band-extreme); color: #fff; }
+    .ev-rien {
+      font-size: 11px; color: var(--muted);
+      padding: 5px 0 2px; font-style: italic;
+    }
     .article-panel-links {
       display: flex; gap: 10px; margin-top: 12px;
     }
@@ -2357,6 +2382,92 @@ function articleItemHtml(art) {
   '</a>';
 }
 
+/* Libellé français d'un bloc de 4 h à partir de sa clé « 2026-08-30_15-19 » :
+   les bornes de la clé sont en UTC, on les rend en heure locale. */
+function eventBlockLabel(key) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})$/.exec(key || '');
+  if (!m) return key || '';
+  var start = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], 0, 0));
+  var end = new Date(start.getTime() + 4 * 3600 * 1000);
+  var loc = (window.__i18n && window.__i18n.currentLang() === 'en') ? 'en-CA' : 'fr-CA';
+  var df = new Intl.DateTimeFormat(loc, { weekday: 'short', day: 'numeric', month: 'short' });
+  var hf = new Intl.DateTimeFormat(loc, { hour: 'numeric' });
+  return df.format(start) + ' · ' + hf.format(start) + ' – ' + hf.format(end);
+}
+
+/* Toute la vie d'une storyline, du plus récent au plus ancien. Les articles
+   sont dédupliqués par URL sur l'ensemble du fil : un même papier repris
+   bloc après bloc n'apparaît qu'à sa première occurrence. */
+var EV_MAX_BLOCS_FIL = 60;
+
+function renderEventStoryline(node) {
+  var region = EVENTS_REGION[currentCountry];
+  var blocks = (eventsData && eventsData.blocks && region) ? eventsData.blocks[region] : null;
+  if (!blocks) { window._evStorylineMeta = ''; return ''; }
+
+  var bandLabels = {};
+  ((eventsData.meta && eventsData.meta.bands) || []).forEach(function(b) {
+    bandLabels[b.id] = (window.__i18n && window.__i18n.currentLang() === 'en') ? b.en : b.fr;
+  });
+
+  var seenUrl = {}, chapitres = [], nArts = 0, jours = {}, nBlocs = 0;
+  var keys = Object.keys(blocks).sort().reverse();
+  for (var i = 0; i < keys.length && nBlocs < EV_MAX_BLOCS_FIL; i++) {
+    var evs = blocks[keys[i]] || [];
+    for (var j = 0; j < evs.length; j++) {
+      var ev = evs[j];
+      if ((ev.storyline || ev.id) !== node.id) continue;
+      nBlocs++;
+      jours[keys[i].slice(0, 10)] = true;
+      var arts = (Array.isArray(ev.articles) && ev.articles.length)
+        ? ev.articles
+        : (ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []);
+      var frais = arts.filter(function(a) { return a.url && !seenUrl[a.url]; });
+      frais.forEach(function(a) { seenUrl[a.url] = true; });
+      nArts += frais.length;
+      // Blocs consécutifs de même titre = un seul chapitre
+      var dernier = chapitres[chapitres.length - 1];
+      if (!dernier || dernier.titre !== ev.title) {
+        chapitres.push({ titre: ev.title, blocs: [] });
+        dernier = chapitres[chapitres.length - 1];
+      }
+      dernier.blocs.push({ key: keys[i], index: ev.index, band: ev.band, articles: frais });
+    }
+  }
+
+  var nJours = Object.keys(jours).length;
+  window._evStorylineMeta = nArts + ' article' + (nArts === 1 ? '' : 's') + ' · ' +
+    nBlocs + ' bloc' + (nBlocs === 1 ? '' : 's') + ' de 4 h sur ' +
+    nJours + ' jour' + (nJours === 1 ? '' : 's') +
+    (chapitres.length > 1 ? ' · ' + chapitres.length + ' titres successifs' : '');
+
+  if (!chapitres.length) {
+    return '<p style="color:var(--muted);padding:20px 0;font-size:13px;">' +
+      escapeHtml(window.t ? window.t('common.no_articles_dataset') : 'Aucun article disponible.') + '</p>';
+  }
+
+  var html = '';
+  chapitres.forEach(function(ch) {
+    html += '<div class="ev-chapitre">' + escapeHtml(ch.titre || '') + '</div>';
+    ch.blocs.forEach(function(b) {
+      // « aucune » n'est pas une bande : sous le premier seuil, pas de pastille
+      var bande = bandLabels[b.band] || '';
+      html += '<div class="article-period-label">' + escapeHtml(eventBlockLabel(b.key)) +
+        (typeof b.index === 'number' ? ' · ' + b.index.toFixed(1) : '') +
+        (bande ? ' · <span class="ev-bande band-' + escapeHtml(String(b.band)) + '">' +
+          escapeHtml(bande) + '</span>' : '') +
+        '</div>';
+      html += b.articles.length
+        ? b.articles.map(articleItemHtml).join('')
+        : '<div class="ev-rien">Aucun nouvel article — la couverture se poursuit.</div>';
+    });
+  });
+  if (nBlocs >= EV_MAX_BLOCS_FIL) {
+    html += '<div class="ev-rien">Fil tronqué aux ' + EV_MAX_BLOCS_FIL + ' blocs les plus récents.</div>';
+  }
+  return html;
+}
+
 function openArticlePanel(node) {
   var overlay = document.getElementById('article-overlay');
   var panel = document.getElementById('article-panel');
@@ -2364,18 +2475,20 @@ function openArticlePanel(node) {
   var meta = document.getElementById('article-panel-meta');
   var body = document.getElementById('article-panel-body');
 
-  /* Mode événements : panneau simple — titre de la storyline + articles
-     représentatifs des blocs du créneau (pas d'historique objets). */
+  /* Mode événements : le FIL COMPLET de la storyline, pas seulement le
+     créneau affiché. Un événement à « 6 jours de suite » a vécu dans une
+     vingtaine de blocs de 4 h, sous des titres successifs — c'est cette
+     trajectoire qui a de la valeur. On remonte donc tous ses blocs, du
+     plus récent au plus ancien, en regroupant les blocs consécutifs qui
+     ont porté le même titre : on lit ainsi les titres qu'il a portés, dans
+     l'ordre, avec sous chacun les articles apparus à ce moment-là. */
   if (currentMode === 'evenements') {
     title.textContent = node.label || node.id;
-    var evArts = Array.isArray(node.articles) ? node.articles : [];
-    meta.textContent = evArts.length + ' article' + (evArts.length === 1 ? '' : 's') + ' · score ' + (node.size || 0).toFixed(2);
     document.getElementById('article-panel-links').innerHTML = '';
-    body.innerHTML = evArts.length
-      ? evArts.map(articleItemHtml).join('')
-      : '<p style="color:var(--muted);padding:20px 0;font-size:13px;">' + escapeHtml(window.t ? window.t('common.no_articles_dataset') : 'Aucun article disponible.') + '</p>';
+    body.innerHTML = renderEventStoryline(node);
     overlay.classList.add('open');
     panel.classList.add('open');
+    meta.textContent = window._evStorylineMeta || '';
     return;
   }
 
