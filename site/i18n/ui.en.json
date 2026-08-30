@@ -22,6 +22,7 @@
     "hot20": "Ranking",
     "unes": "On the radar",
     "analyses": "Analyses",
+    "presentation": "Overview",
     "radarplus": "Radar+",
     "methodologie": "Methodology",
     "partenaires": "Partners & contributors",
@@ -59,7 +60,7 @@
     "error": "Sending failed. Please try again in a moment.",
     "context_prefix": "Context: ",
     "default_section": "Radar+ navigation",
-    "token_missing": "Offline reporting: configure RADAR_REPORT_DISPATCH_TOKEN to enable submissions."
+    "token_missing": "Reporting is temporarily offline — reach us via the Data access page."
   },
   "common": {
     "loading": "Loading…",
@@ -154,7 +155,7 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explore",
-    "scroll_aria": "Go to HOT 20"
+    "scroll_aria": "Go to the Ranking"
   },
   "hot20": {
     "title": "The",

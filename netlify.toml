@@ -3,3 +3,14 @@
 # JSON en chemins relatifs identiques à la prod GitHub Pages).
 [build]
   publish = "site"
+
+# Les previews ne doivent jamais concurrencer radarplus.org dans les moteurs,
+# et servent de banc d'essai pour les en-têtes de sécurité (GitHub Pages ne
+# permet pas d'en poser ; la vague 4 de l'audit les portera en prod via
+# Cloudflare).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

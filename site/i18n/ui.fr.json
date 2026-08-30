@@ -22,6 +22,7 @@
     "hot20": "Classement",
     "unes": "Dans le radar",
     "analyses": "Analyses",
+    "presentation": "Présentation",
     "radarplus": "Radar+",
     "methodologie": "Méthodologie",
     "partenaires": "Partenaires & contributeurs",
@@ -59,7 +60,7 @@
     "error": "Échec de l'envoi. Réessaie dans quelques instants.",
     "context_prefix": "Contexte: ",
     "default_section": "Navigation Radar+",
-    "token_missing": "Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l'envoi."
+    "token_missing": "Signalement temporairement hors ligne — écrivez-nous via la page Accès aux données."
   },
   "common": {
     "loading": "Chargement…",
@@ -154,7 +155,7 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explorer",
-    "scroll_aria": "Aller au HOT 20"
+    "scroll_aria": "Aller au Classement"
   },
   "hot20": {
     "title": "Le",

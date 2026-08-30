@@ -61,6 +61,24 @@
     document.body.insertBefore(a, document.body.firstChild);
   }
 
+  function injectSharedFooter() {
+    // Un seul footer canonique pour les pages qui n'en ont pas. Les pages
+    // applications plein écran (Évolution, Constellation) sont exclues.
+    if (document.querySelector('footer')) return;
+    if (document.getElementById('evo-logo') || document.getElementById('cst-logo')) return;
+    var f = document.createElement('footer');
+    f.className = 'shared-footer';
+    f.innerHTML =
+      '<div class="shared-footer-links">' +
+        '<a href="./methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>' +
+        '<a href="./acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>' +
+        '<a href="./partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>' +
+        '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>' +
+      '</div>' +
+      '<div class="shared-footer-copy" data-i18n="footer.copyright">© CLESSN · Université Laval · Transparence médiatique 24/7</div>';
+    document.body.appendChild(f);
+  }
+
   function setupSharedMenu() {
     if (document.querySelector('.side-nav')) return;
 
@@ -99,10 +117,11 @@
       '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_qualite">QUALITÉ</span></a>',
-      '<a href="./index.html#hot20" data-i18n="nav.hot20">Hot 20</a>',
+      '<a href="./index.html#hot20" data-i18n="nav.hot20">Classement</a>',
       '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>',
       '<a href="https://www.clessn.com/radar/index.html" target="_blank" rel="noopener" data-i18n="nav.analyses">Analyses</a>',
       '<h3 style="margin-top: 30px;" data-i18n="nav.section_about">À propos</h3>',
+      '<a href="./presentation.html" data-page="presentation.html" data-i18n="nav.presentation">Présentation</a>',
       '<a href="./radarplus.html" data-page="radarplus.html" data-i18n="nav.radarplus">Radar+</a>',
       '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>',
       '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>',
@@ -187,10 +206,14 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupSharedMenu, { once: true });
-  } else {
+  function initSharedChrome() {
     setupSharedMenu();
+    injectSharedFooter();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSharedChrome, { once: true });
+  } else {
+    initSharedChrome();
   }
 
   function reportText(key, fallback) {

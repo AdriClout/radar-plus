@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Pages publiques de radarplus.org. monitoring.html (vue interne) est
+     volontairement absente et exclue par robots.txt. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://radarplus.org/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://radarplus.org/evolution.html</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://radarplus.org/constellation.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://radarplus.org/alertes.html</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://radarplus.org/unes.html</loc><changefreq>hourly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://radarplus.org/statistiques.html</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://radarplus.org/methodologie.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://radarplus.org/presentation.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://radarplus.org/radarplus.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://radarplus.org/sonar.html</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://radarplus.org/partenaires.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://radarplus.org/acces-donnees.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+</urlset>
