@@ -581,6 +581,11 @@
     body.mode-ranked #left-tracked-clear { display: none !important; }
     body.mode-ranked #ranked-search-wrap { display: none; }
     body.mode-ranked .rleg-check { display: none; }
+    /* Source événements : les libellés sont des titres (phrases) */
+    body.src-evenements #object-panel .h { text-transform: none; }
+    body.src-evenements .left-track-name,
+    body.src-evenements .evo-tt-name { white-space: normal; max-width: 200px; }
+    .tab.tab-disabled { opacity: 0.35; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -626,7 +631,8 @@
     </div>
     <div id="mode-tabs" class="lpanel-section">
       <div id="mode-tabs-row">
-        <button class="mode-tab" data-mode="ranked" type="button" data-i18n="evolution.mode_hot10">HOT 10</button>
+        <button class="mode-tab" data-mode="ranked" data-source="evenements" type="button" data-i18n="hot20.mode_evenements">Événements</button>
+        <button class="mode-tab" data-mode="ranked" data-source="objets" type="button" data-i18n="hot20.mode_objets">Objets</button>
         <button class="mode-tab" data-mode="tracking" type="button" data-i18n="evolution.mode_search">Recherche</button>
       </div>
     </div>
@@ -711,11 +717,58 @@
   }
   // Les deux modes (HOT 10 et Suivi personnalisé) utilisent tsData (130 jours).
   // graphData (graph.json) ne couvre que 14 jours et n'est plus utilisé pour le chart.
-  let graphs  = tsData.graphs;
-  let periods = tsData.meta.periods;
+
+  // ── Source Événements (events.json) ──────────────────────────────────────
+  // « Événements » est la source par défaut partout : les storylines du
+  // raffineur, projetées dans la même forme {periodKey: {nodes, links}} que
+  // timeseries — id = storyline (stable), label = titre le plus récent.
+  const EVENTS_REGION = { QC: 'QC', CAN: 'ROC' };  // pas de suivi événementiel USA
+  const EVENT_BAND_TO_ALERT = { elevee: 'eleve', tres_elevee: 'tres_eleve', extreme: 'extreme' };
+  let eventsData = null, eventsGraphs = null, eventsPeriods = [];
+  try {
+    const eRes = await fetch('./events.json');
+    if (eRes.ok) eventsData = await eRes.json();
+  } catch (_) { /* la page reste fonctionnelle en mode objets */ }
+  if (eventsData && eventsData.blocks && eventsData.meta) {
+    eventsPeriods = eventsData.meta.periods || [];
+    eventsGraphs = {};
+    for (const region of Object.keys(eventsData.blocks)) {
+      const blocks = eventsData.blocks[region];
+      const out = {};
+      // Itération chronologique : le titre le plus récent d'une storyline gagne
+      for (const pd of eventsPeriods) {
+        const evs = blocks[pd.key];
+        if (!evs) continue;
+        out[pd.key] = { nodes: evs.map(ev => ({
+          id: ev.storyline || ev.id,
+          label: ev.title,
+          size: ev.index || 0,
+          band: ev.band,
+          convergence: ev.convergence,
+          media_ids: ev.media_ids || [],
+          articles: ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []
+        })), links: [] };
+      }
+      eventsGraphs[region] = out;
+    }
+  }
+  let currentSource = eventsGraphs ? 'evenements' : 'objets';  // Événements par défaut
+  // graphs reste indexé par pays : pour la source événements on expose un
+  // objet {pays: graphes} équivalent (QC→QC, CAN→ROC, USA absent) afin que
+  // le code existant (graphs[currentCountry][key]) fonctionne sans changement.
+  const activeGraphsByCountry = () => {
+    if (currentSource !== 'evenements') return tsData.graphs;
+    const m = {};
+    for (const c of Object.keys(EVENTS_REGION)) m[c] = eventsGraphs?.[EVENTS_REGION[c]] || {};
+    return m;
+  };
+  const activePeriods = () => currentSource === 'evenements' ? eventsPeriods : tsData.meta.periods;
+
+  let graphs  = activeGraphsByCountry();
+  let periods = activePeriods();
   const countries   = tsData.meta.countries;
-  let graphIdx = tsData.meta.periods.length - 1;
-  let tsIdx    = tsData.meta.periods.length - 1;
+  let graphIdx = periods.length - 1;
+  let tsIdx    = periods.length - 1;
 
   const MAX_LINKS_NODE = 5;
 
@@ -736,7 +789,7 @@
     const g = graphs[country]?.[key];
     if (!g) return { nodes:[], links:[] };
     let nodes = g.nodes.map(n=>({...n}));
-    let links = g.links.map(l=>({...l}));
+    let links = (g.links || []).map(l=>({...l}));
 
 
     nodes.sort((a,b)=>b.size-a.size);
@@ -756,11 +809,13 @@
       const sizeMap = new Map();
       const articleMap = new Map();
       const seenUrls = new Map();
+      const labelMap = new Map();
       for (const pk of winPeriod.periodKeys) {
         const g = getGD(country, pk);
         for (const n of (g.nodes || [])) {
           const v = Number(n.size) || 0;
           sizeMap.set(n.id, Math.max(sizeMap.get(n.id) || 0, v));
+          if (n.label) labelMap.set(n.id, n.label);
           if (!articleMap.has(n.id)) { articleMap.set(n.id, []); seenUrls.set(n.id, new Set()); }
           for (const a of (n.articles || [])) {
             const key = a.url || a.title;
@@ -772,7 +827,7 @@
         }
       }
       const nodes = [...sizeMap.entries()]
-        .map(([id, size]) => ({ id, size, articles: articleMap.get(id) || [], n: (articleMap.get(id) || []).length }))
+        .map(([id, size]) => ({ id, size, label: labelMap.get(id), articles: articleMap.get(id) || [], n: (articleMap.get(id) || []).length }))
         .sort((a, b) => b.size - a.size);
       nodes.forEach((n, i) => { n._rank = i; });
       return { nodes, links: [] };
@@ -783,6 +838,10 @@
   function periodConvergenceScore(country, key) {
     const g = graphs[country]?.[key];
     if (!g || !Array.isArray(g.nodes) || !g.nodes.length) return 0;
+    if (currentSource === 'evenements') {
+      // Score de convergence déjà calculé par le raffineur, porté par bloc
+      return g.nodes.reduce((acc, n) => Math.max(acc, Number(n.convergence) || 0), 0);
+    }
 
     const sizes = g.nodes.map(n => Number(n.size) || 0).sort((a, b) => b - a);
     const ultra = sizes.slice(0, 3).reduce((a, b) => a + b, 0);
@@ -880,6 +939,25 @@
     return `${day} · ${block} EDT`;
   }
 
+  // Libellé d'affichage : titre de storyline en source événements, id sinon
+  function displayNameFor(id) {
+    if (currentSource !== 'evenements') return id;
+    for (let i = periods.length - 1; i >= 0; i--) {
+      const nd = graphs[currentCountry]?.[periods[i].key]?.nodes?.find(n => n.id === id);
+      if (nd && nd.label) return nd.label;
+    }
+    return id;
+  }
+
+  // Paliers de saillance de la source active (forme {moderate, high, very_high, extreme})
+  function activeTiers() {
+    if (currentSource === 'evenements') {
+      const th = eventsData?.meta?.thresholds?.[EVENTS_REGION[currentCountry]]?.block;
+      return th ? { moderate: th.moderee, high: th.elevee, very_high: th.tres_elevee, extreme: th.extreme } : null;
+    }
+    return tsData?.meta?.salience_tiers?.[currentCountry] || null;
+  }
+
   function panelLinksFor(nodeId) {
     return {
       constellationUrl: `./constellation.html?country=${encodeURIComponent(currentCountry)}&node=${encodeURIComponent(nodeId)}`,
@@ -945,16 +1023,18 @@
   function renderObjectPanelHeader(nodeId, metaLine) {
     const links = panelLinksFor(nodeId);
     const tracked = trackedObjects.has(nodeId);
-    const displayName = nodeId.replace(/(^|\s)\S/g, c => c.toUpperCase());
+    const displayName = currentSource === 'evenements'
+      ? displayNameFor(nodeId)
+      : nodeId.replace(/(^|\s)\S/g, c => c.toUpperCase());
     return `
       <div id="object-panel-header">
         <button id="object-panel-close" aria-label="Fermer">×</button>
         <div class="h">${escapeHtml(displayName)}</div>
         <div class="meta">${escapeHtml(metaLine)}</div>
-        <div class="panel-links">
+        ${currentSource === 'evenements' ? '' : `<div class="panel-links">
           <a class="panel-link" href="${links.statsUrl}" target="_blank" rel="noopener noreferrer">Statistiques ↗</a>
           <a class="panel-link" href="${links.constellationUrl}" target="_blank" rel="noopener noreferrer">Constellation ↗</a>
-        </div>
+        </div>`}
         <button class="panel-track-btn ${tracked ? 'tracked' : ''}" id="track-btn-panel">${(window.t||function(k){return k;})(tracked?'evolution.following':'evolution.follow')}</button>
       </div>
     `;
@@ -982,8 +1062,8 @@
     } else if (contextPeriod?.key) {
       skipKeys.add(contextPeriod.key);
     }
-    const allPeriods = tsData?.meta?.periods || periods || [];
-    const sourceGraphs = tsData?.graphs?.[currentCountry] || {};
+    const allPeriods = activePeriods() || [];
+    const sourceGraphs = graphs?.[currentCountry] || {};
     for (let i = allPeriods.length - 1; i >= 0 && groups.length < 8; i--) {
       const pk = allPeriods[i].key;
       if (skipKeys.has(pk)) continue;
@@ -1242,7 +1322,7 @@
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
-      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
+      const currentBlockStart = currentLocalBlockStart(now.getHours());
 
       const eligibleKeys = slot.periodKeys.filter(key => {
         if (!isToday) return true;
@@ -1276,6 +1356,20 @@
     return (utcStartRaw - LOCAL_UTC_OFFSET_HOURS + 24) % 24;
   }
 
+  // Débuts locaux (chronologiques) des 6 blocs d'une journée d'affichage.
+  // Objets : blocs UTC 00-04… → locaux 20,0,4,8,12,16 rangés [0,4,8,12,16,20].
+  // Événements : blocs UTC 03-07… → locaux 23,3,7,11,15,19 rangés [3,…,23]
+  // (le bloc 23h-3h clôt la journée, comme son libellé « · 23-3 »).
+  function dayBlockStarts() {
+    return currentSource === 'evenements' ? [3, 7, 11, 15, 19, 23] : [0, 4, 8, 12, 16, 20];
+  }
+  function currentLocalBlockStart(hour) {
+    const starts = dayBlockStarts();
+    let best = starts[starts.length - 1];  // avant le 1er bloc → bloc de fin de veille
+    for (const st of starts) if (st <= hour) best = st;
+    return best;
+  }
+
   function getRankedWindowPeriods() {
     const slot = rankedSlots[rankedSlotIdx];
     if (!slot || !slot.periods.length) {
@@ -1286,9 +1380,9 @@
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
-      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
-      // All 6 blocks of the day including Minuit-4h (UTC 04-08 = local 00-04)
-      const starts = [0, 4, 8, 12, 16, 20];
+      const currentBlockStart = currentLocalBlockStart(now.getHours());
+      // Les 6 blocs locaux de la journée, selon la grille de la source
+      const starts = dayBlockStarts();
       const byStart = new Map();
       slot.periods.forEach(p => {
         const localStart = localBlockStartFromPeriodKey(p.key);
@@ -1436,8 +1530,10 @@
     if (nextBtn) nextBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx >= rankedSlots.length - 1 : currentIdx >= periods.length - 1;
   }
 
-  const FR_BLOCK_LONG  = { 0: 'Minuit–4h', 4: '4h–8h', 8: '8h–Midi', 12: 'Midi–16h', 16: '16h–20h', 20: '20h–Minuit' };
-  const FR_BLOCK_SHORT = { 0: 'Minuit',    4: '4h',    8: '8h',     12: 'Midi',     16: '16h',     20: '20h'    };
+  const FR_BLOCK_LONG  = { 0: 'Minuit–4h', 4: '4h–8h', 8: '8h–Midi', 12: 'Midi–16h', 16: '16h–20h', 20: '20h–Minuit',
+                           3: '3h–7h', 7: '7h–11h', 11: '11h–15h', 15: '15h–19h', 19: '19h–23h', 23: '23h–3h' };
+  const FR_BLOCK_SHORT = { 0: 'Minuit',    4: '4h',    8: '8h',     12: 'Midi',     16: '16h',     20: '20h',
+                           3: '3h', 7: '7h', 11: '11h', 15: '15h', 19: '19h', 23: '23h' };
 
   function blockStartFromPeriod(period) {
     const ex = Number(period?.blockStart);
@@ -1596,7 +1692,7 @@
       item.innerHTML = `
         <div class="left-track-check">✓</div>
         <div class="left-tracked-body">
-          <div class="left-track-name" title="${escapeHtml(id)}">${escapeHtml(id)}</div>
+          <div class="left-track-name" title="${escapeHtml(displayNameFor(id))}">${escapeHtml(displayNameFor(id))}</div>
           <div class="left-track-meta">
             <span class="left-track-badge level-${escapeHtml(alertState.level)}">${escapeHtml(alertState.label)}</span>
             ${alertState.scoreText ? `<span class="left-track-score">${escapeHtml(alertState.scoreText)}</span>` : ''}
@@ -1656,8 +1752,7 @@
 
   function deriveLevel(country, size) {
     if (typeof size !== 'number' || !isFinite(size)) return 'none';
-    var tiers = (typeof tsData !== 'undefined' && tsData && tsData.meta && tsData.meta.salience_tiers)
-      ? tsData.meta.salience_tiers[country] : null;
+    var tiers = activeTiers();
     if (!tiers) return 'none';
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
@@ -1687,13 +1782,14 @@
     if (!q.trim()) return;
     const ql = q.toLowerCase();
     const matches = getRankedScopedObjectIds()
-      .filter(id => id.toLowerCase().includes(ql))
+      .filter(id => id.toLowerCase().includes(ql) ||
+        (currentSource === 'evenements' && displayNameFor(id).toLowerCase().includes(ql)))
       .filter(id => !trackedObjects.has(id))
       .slice(0, 7);
     matches.forEach(id => {
       const div = document.createElement('div');
       div.className = 'evo-result';
-      div.textContent = id;
+      div.textContent = displayNameFor(id);
       div.addEventListener('click', () => {
         const input = document.getElementById('ranked-search-input');
         if (input) input.value = '';
@@ -1781,6 +1877,7 @@
           const isNew = prevRank === null && safeIdx > 0;
           return {
             id: n.id,
+            label: n.label,
             color: getObjectColor(n.id),
             val,
             displayVal: val,
@@ -1820,7 +1917,7 @@
           return acc + (v ?? 0);
         }, 0);
         const isNew = prevRankMap !== null ? !prevRankMap.has(s.id) : rankedSlotIdx > 0;
-        return { id: s.id, color: s.color, displayVal: cum, isNew, isReturn: false, maxVal: s.maxVal ?? 0 };
+        return { id: s.id, label: s.label, color: s.color, displayVal: cum, isNew, isReturn: false, maxVal: s.maxVal ?? 0 };
       });
       rows = cumRows
         .sort((a, b) => b.displayVal - a.displayVal)
@@ -1904,7 +2001,7 @@
       item.innerHTML = `
         <div class="rleg-swatch" style="background:${r.color};box-shadow:0 0 5px ${r.color}88"></div>
         <span class="rleg-rank">${i + 1}.</span>
-        <span class="rleg-name" title="${escapeHtml(r.id)}">${escapeHtml(r.id)}</span>
+        <span class="rleg-name" title="${escapeHtml(r.label || r.id)}">${escapeHtml(r.label || r.id)}</span>
         ${alertBadgeHtml}
         <span class="rleg-check">${isTracked ? '✓' : ''}</span>
         <span class="rleg-val${r.displayVal === null ? ' null-val' : ''}">${r.displayVal !== null ? r.displayVal.toFixed(1) : '—'}</span>
@@ -1971,12 +2068,12 @@
   function getRankedSeriesCacheKey(limit, wp) {
     if (!wp.length) {
       const slotKey = rankedSlots[rankedSlotIdx]?.key || 'noslot';
-      return `${currentCountry}|${rankedGranularity}|${slotKey}|empty|${limit}`;
+      return `${currentSource}|${currentCountry}|${rankedGranularity}|${slotKey}|empty|${limit}`;
     }
     const first = wp[0].key;
     const last = wp[wp.length - 1].key;
     const slotKey = rankedSlots[rankedSlotIdx]?.key || 'noslot';
-    return `${currentCountry}|${rankedGranularity}|${slotKey}|${first}|${last}|${wp.length}|${limit}`;
+    return `${currentSource}|${currentCountry}|${rankedGranularity}|${slotKey}|${first}|${last}|${wp.length}|${limit}`;
   }
 
   function clearRankedSeriesCache() {
@@ -2063,6 +2160,10 @@
     }));
     series.forEach(s => {
       s.maxVal = s.data.reduce((mx, v) => (v !== null ? Math.max(mx, v) : mx), 0);
+      for (let i = periodInfo.length - 1; i >= 0 && !s.label; i--) {
+        const nd = periodInfo[i].nodeById?.get(s.id);
+        if (nd && nd.label) s.label = nd.label;
+      }
     });
     rankedSeriesCache.set(cacheKey, series);
     return series;
@@ -2145,9 +2246,11 @@
   function dayBlockHour(p) {
     if (!p || p.isVeille) return 0;
     const s = blockStartFromPeriod(p);
-    // End-of-block positioning: Minuit-4h→h=4, 4h-8h→h=8, etc.
-    // Veille stays at h=0; each block appears where its 4h window closes.
-    return Number.isFinite(s) ? s + 4 : 0;
+    if (!Number.isFinite(s)) return 0;
+    // End-of-block positioning: chaque bloc apparaît là où sa fenêtre de 4 h
+    // se ferme, la veille reste à h=0. Grille événements (3h..23h) : l'axe
+    // représente 3h → 3h le lendemain, d'où le décalage de 3 (23h-3h → 24).
+    return currentSource === 'evenements' ? (s + 4 - 3) : (s + 4);
   }
 
   function renderDayModeChart(gd, hoverIdx = null, skipLegend = false) {
@@ -2202,7 +2305,7 @@
 
     // Paliers de saillance absolue (calibrés par pays). Visibles aussi
     // dans le mode journée pour lecture cohérente.
-    const salienceTiersD = tsData?.meta?.salience_tiers?.[currentCountry];
+    const salienceTiersD = activeTiers();
     if (salienceTiersD) {
       const TIER_COLORS_D = {
         moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
@@ -2249,7 +2352,14 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
-    const DAY_LABELS = [
+    const DAY_LABELS = currentSource === 'evenements' ? [
+      { h: 0, label: 'Hier', align: 'left' },
+      { h: 4, label: '7h', align: 'center' },
+      { h: 8, label: '11h', align: 'center' },
+      { h: 12, label: '15h', align: 'center' },
+      { h: 16, label: '19h', align: 'center' },
+      { h: 20, label: '23h', align: 'center' },
+    ] : [
       { h: 0, label: 'Hier', align: 'left' },
       { h: 4, label: '4h', align: 'center' },
       { h: 8, label: '8h', align: 'center' },
@@ -2515,7 +2625,7 @@
     // toutes les granularités: getWinPeriodGD agrège désormais en MAX
     // (pic atteint dans la fenêtre) et non en somme, donc les valeurs Y
     // restent comparables aux paliers calibrés sur saillance instantanée.
-    const salienceTiersR = tsData?.meta?.salience_tiers?.[currentCountry];
+    const salienceTiersR = activeTiers();
     if (salienceTiersR) {
       const TIER_COLORS_R = {
         moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
@@ -2944,7 +3054,7 @@
     // Paliers de saillance absolue (calibrés sur la distribution empirique).
     // Permettent de SITUER une courbe d'objet sur une échelle commune:
     // est-ce que ce sujet atteint le palier "Élevé" ou "Extrême"?
-    const salienceTiers = tsData?.meta?.salience_tiers?.[currentCountry];
+    const salienceTiers = activeTiers();
     if (salienceTiers) {
       const TIER_COLORS = {
         moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
@@ -3094,7 +3204,7 @@
       return { id, color: getTrackColor(id), val: g?.nodes.find(nd => nd.id === id)?.size ?? null };
     });
     document.getElementById('evo-tooltip-items').innerHTML = series.map(s =>
-      `<div class="evo-tt-row"><div class="evo-tt-dot" style="background:${s.color}"></div><div class="evo-tt-name">${escapeHtml(s.id)}</div><div class="evo-tt-val">${s.val !== null ? s.val.toFixed(2) : '—'}</div></div>`
+      `<div class="evo-tt-row"><div class="evo-tt-dot" style="background:${s.color}"></div><div class="evo-tt-name">${escapeHtml(s.label || displayNameFor(s.id))}</div><div class="evo-tt-val">${s.val !== null ? s.val.toFixed(2) : '—'}</div></div>`
     ).join('');
     let tx = clientX + 16, ty = clientY - 10;
     const ttW = 220, ttH = tt.offsetHeight || 50;
@@ -3132,13 +3242,14 @@
     clearRankedSeriesCache();
     document.body.classList.toggle('mode-ranked', mode === 'ranked');
     document.body.classList.toggle('mode-tracking', mode === 'tracking');
-    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active',
+      t.dataset.mode === mode && (!t.dataset.source || t.dataset.source === currentSource)));
 
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
       rankedGranularity = 'year';
-      graphs  = tsData.graphs;
-      const trackingBasePeriods = (tsData?.meta?.periods || []);
+      graphs  = activeGraphsByCountry();
+      const trackingBasePeriods = activePeriods();
       buildRankedSlots(trackingBasePeriods);
       periods = trackingBasePeriods;
       currentIdx = Math.min(tsIdx, Math.max(0, periods.length - 1));
@@ -3150,8 +3261,8 @@
       trackedObjects.clear(); trackColorMap.clear(); trackColorSeq = 0;
       focusedNode = null;
       renderArticlesPanel(null);
-      graphs  = tsData.graphs;
-      periods = tsData.meta.periods;
+      graphs  = activeGraphsByCountry();
+      periods = activePeriods();
       currentIdx = Math.min(graphIdx, periods.length - 1);
       syncRankedNavigationState(periods);
     }
@@ -3174,8 +3285,38 @@
     updatePeriodNavLabel();
   }
 
-  // Mode tabs
-  document.querySelectorAll('.mode-tab').forEach(tab => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+  // ── Source Événements | Objets ──
+  function updateUsaTabAvailability() {
+    const usaBtn = document.querySelector('#country-tabs .tab[data-country="USA"]');
+    if (!usaBtn) return;
+    const off = currentSource === 'evenements';
+    usaBtn.disabled = off;
+    usaBtn.classList.toggle('tab-disabled', off);
+    usaBtn.title = off ? 'Pas de suivi événementiel pour les États-Unis' : '';
+  }
+  function setSource(source) {
+    if (source === currentSource) return false;
+    if (source === 'evenements' && !eventsGraphs) return false;
+    currentSource = source;
+    document.body.classList.toggle('src-evenements', source === 'evenements');
+    updateUsaTabAvailability();
+    if (source === 'evenements' && !EVENTS_REGION[currentCountry]) {
+      currentCountry = 'QC';
+      document.querySelectorAll('#country-tabs .tab').forEach(t =>
+        t.classList.toggle('active', t.dataset.country === 'QC'));
+    }
+    // Les deux grilles de périodes diffèrent : repartir de la fin
+    graphIdx = activePeriods().length - 1;
+    tsIdx    = activePeriods().length - 1;
+    currentIdx = activePeriods().length - 1;
+    return true;
+  }
+
+  // Mode tabs (Événements / Objets = ranked sur deux sources ; Recherche = tracking)
+  document.querySelectorAll('.mode-tab').forEach(tab => tab.addEventListener('click', () => {
+    if (tab.dataset.source) setSource(tab.dataset.source);
+    setMode(tab.dataset.mode);
+  }));
 
   // Boutons fenêtre temporelle (mode ranked et tracking)
   document.querySelectorAll('.win-btn').forEach(btn => btn.addEventListener('click', () => {
@@ -3185,7 +3326,7 @@
 
     clearRankedSeriesCache();
     if (currentMode === 'tracking') {
-      const trackingBasePeriods = (tsData?.meta?.periods || []);
+      const trackingBasePeriods = activePeriods();
       buildRankedSlots(trackingBasePeriods);
       periods = trackingBasePeriods;
       syncRankedSlotToCurrentPeriod();
@@ -3196,7 +3337,7 @@
       renderTrackedList();
       renderEvolutionChart();
     } else {
-      syncRankedNavigationState(tsData.meta.periods);
+      syncRankedNavigationState(activePeriods());
       applyTimelineHeat(currentCountry);
       updatePeriodSummary(currentCountry, currentIdx);
       const gd = getGD(currentCountry, periods[currentIdx]?.key);
@@ -3435,7 +3576,8 @@
       rankedSearchInput.blur();
     } else if (e.key === 'Enter') {
       const q = rankedSearchInput.value.trim().toLowerCase();
-      const id = getRankedScopedObjectIds().find(v => v.toLowerCase().includes(q));
+      const id = getRankedScopedObjectIds().find(v => v.toLowerCase().includes(q) ||
+        (currentSource === 'evenements' && displayNameFor(v).toLowerCase().includes(q)));
       if (id) {
         rankedSearchInput.value = '';
         renderRankedSearchResults('');
@@ -3470,9 +3612,9 @@
       clearRankedSeriesCache();
       applyTimelineHeat(currentCountry);
       if (currentMode === 'ranked') {
-        syncRankedNavigationState(tsData.meta.periods);
+        syncRankedNavigationState(activePeriods());
       } else {
-        const trackingBasePeriods = (tsData?.meta?.periods || []);
+        const trackingBasePeriods = activePeriods();
         buildRankedSlots(trackingBasePeriods);
         periods = trackingBasePeriods;
         syncRankedSlotToCurrentPeriod();
@@ -3507,6 +3649,15 @@
     }
   });
 
+  // Source par défaut : Événements (classe body + USA indisponible) ;
+  // un lien entrant ?node=/?nodes= porte des ids d'objets → source objets.
+  if ((urlParams.get('node') || urlParams.get('nodes')) && currentSource === 'evenements') {
+    setSource('objets');
+  }
+  if (currentSource === 'evenements' && !EVENTS_REGION[currentCountry]) currentCountry = 'QC';
+  document.body.classList.toggle('src-evenements', currentSource === 'evenements');
+  updateUsaTabAvailability();
+
   document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
     tab.setAttribute('aria-selected', String(tab.dataset.country === currentCountry));
@@ -3531,7 +3682,9 @@
 
   // ── Auto-reload à chaque frontière de bloc UTC (= début de bloc EDT) ─────
   (() => {
-    const utcBoundaries = [0, 4, 8, 12, 16, 20]; // heures UTC = fins de blocs EDT
+    const utcBoundaries = currentSource === 'evenements'
+      ? [3, 7, 11, 15, 19, 23]   // grille des blocs événements (UTC)
+      : [0, 4, 8, 12, 16, 20];   // heures UTC = fins de blocs EDT
     const now = new Date();
     const curSec = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
     let minDiff = Infinity;
@@ -3552,14 +3705,16 @@
     for (let i = periods.length - 1; i >= 0; i--) {
       const g = graphs[currentCountry]?.[periods[i].key];
       if (!g) continue;
-      const exact = (g.nodes || []).find(n => n.id.toLowerCase() === ql);
+      const exact = (g.nodes || []).find(n => n.id.toLowerCase() === ql ||
+        (n.label && n.label.toLowerCase() === ql));
       if (exact) return exact.id;
     }
     // Fallback "contient" si pas de match exact
     for (let i = periods.length - 1; i >= 0; i--) {
       const g = graphs[currentCountry]?.[periods[i].key];
       if (!g) continue;
-      const partial = (g.nodes || []).find(n => n.id.toLowerCase().includes(ql));
+      const partial = (g.nodes || []).find(n => n.id.toLowerCase().includes(ql) ||
+        (n.label && n.label.toLowerCase().includes(ql)));
       if (partial) return partial.id;
     }
     return null;
