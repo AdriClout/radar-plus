@@ -1,0 +1,5 @@
+# Deploy Previews Netlify (PRs) : publier le site lui-même, pas la racine du
+# repo — la preview reflète ainsi radarplus.org (les pages à la racine, les
+# JSON en chemins relatifs identiques à la prod GitHub Pages).
+[build]
+  publish = "site"
