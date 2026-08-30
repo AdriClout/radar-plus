@@ -721,6 +721,162 @@
 
     /* Scroll-in animation handled in .hot20-row / .hot20-row.visible */
 
+    /* ========== À LA UNE (événements saillants) ========== */
+    .alaune-section {
+      position: relative; z-index: 1;
+      padding: 0 40px 64px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .alaune-kicker-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+    .alaune-kicker {
+      font-family: var(--orbitron); font-size: 22px; font-weight: 700;
+      letter-spacing: 4px; text-transform: uppercase; color: var(--text);
+    }
+    .alaune-kicker .accent { color: var(--accent); }
+    .alaune-live {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.6px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .alaune-live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #ff5050; box-shadow: 0 0 6px rgba(255,80,80,0.8);
+      animation: alaune-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes alaune-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .alaune-subtitle { color: var(--muted); font-size: 13px; margin: 6px 0 22px; max-width: 640px; }
+
+    /* Bandes de saillance (vocabulaire événements : féminin, distinct des alertes objets) */
+    .alaune-band {
+      display: inline-flex; align-items: center;
+      padding: 2px 9px; border-radius: 999px;
+      font-family: var(--orbitron); font-size: 8.5px; letter-spacing: 1.1px;
+      text-transform: uppercase; border: 1px solid; white-space: nowrap;
+    }
+    .alaune-band.band-aucune      { color: var(--muted); border-color: rgba(140,170,220,0.35); }
+    .alaune-band.band-faible      { color: #9fb4dd; border-color: rgba(159,180,221,0.5); }
+    .alaune-band.band-moderee     { color: #7aa2ff; border-color: rgba(122,162,255,0.6); background: rgba(85,136,255,0.08); }
+    .alaune-band.band-elevee      { color: #f2cd50; border-color: rgba(242,205,80,0.55); background: rgba(242,205,80,0.07); }
+    .alaune-band.band-tres-elevee { color: #ffa050; border-color: rgba(255,160,80,0.55); background: rgba(255,160,80,0.08); }
+    .alaune-band.band-extreme     { color: #ff6060; border-color: rgba(255,80,80,0.6); background: rgba(255,80,80,0.09);
+                                    animation: alaune-pulse 2.2s ease-in-out infinite; }
+
+    /* Carte héros */
+    .alaune-hero {
+      position: relative; display: block;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px 26px 20px;
+      margin-bottom: 14px; overflow: hidden;
+    }
+    .alaune-hero.band-elevee      { border-left: 4px solid #f2cd50; }
+    .alaune-hero.band-tres-elevee { border-left: 4px solid #ffa050; }
+    .alaune-hero.band-extreme     { border-left: 4px solid #ff5050; box-shadow: inset 0 0 40px rgba(255,80,80,0.06); }
+    .alaune-hero-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .alaune-hero-issue {
+      font-family: var(--orbitron); font-size: 8.5px; letter-spacing: 1.4px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .alaune-hero-title {
+      font-size: 24px; line-height: 1.3; font-weight: 700; color: var(--text);
+      margin-bottom: 10px;
+    }
+    .alaune-hero-lead { color: rgba(208,224,255,0.82); font-size: 14px; line-height: 1.6; max-width: 720px; margin-bottom: 16px; }
+
+    /* Jauge du cumul 24 h avec seuils */
+    .alaune-meter { max-width: 720px; margin-bottom: 14px; }
+    .alaune-meter-labels {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 5px;
+    }
+    .alaune-meter-value { color: var(--text); font-size: 13px; font-weight: 700; }
+    .alaune-meter-track {
+      position: relative; height: 8px; border-radius: 4px;
+      background: rgba(90,140,255,0.12); overflow: visible;
+    }
+    .alaune-meter-fill {
+      position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px;
+      background: linear-gradient(90deg, #5588ff, #7aa2ff);
+      transition: width 0.6s ease;
+    }
+    .alaune-hero.band-elevee .alaune-meter-fill      { background: linear-gradient(90deg, #5588ff, #f2cd50); }
+    .alaune-hero.band-tres-elevee .alaune-meter-fill { background: linear-gradient(90deg, #f2cd50, #ffa050); }
+    .alaune-hero.band-extreme .alaune-meter-fill     { background: linear-gradient(90deg, #ffa050, #ff5050); }
+    .alaune-meter-tick {
+      position: absolute; top: -3px; bottom: -3px; width: 1px;
+      background: rgba(208,224,255,0.35);
+    }
+    .alaune-meter-tick span {
+      position: absolute; top: 14px; left: -2px; transform: translateX(-50%);
+      font-family: var(--orbitron); font-size: 7px; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--muted); white-space: nowrap;
+    }
+    .alaune-meter { padding-bottom: 18px; }
+
+    .alaune-hero-meta {
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+      font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    }
+    .alaune-media-chips { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+    .alaune-media-chip {
+      font-family: var(--orbitron); font-size: 8px; letter-spacing: 1px;
+      padding: 2px 6px; border-radius: 4px;
+      border: 1px solid rgba(90,140,255,0.35); color: #9fb4dd;
+    }
+    .alaune-source-link { color: var(--accent); text-decoration: none; }
+    .alaune-source-link:hover { text-decoration: underline; }
+    .alaune-spark { display: block; }
+    .alaune-spark polyline { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+    .alaune-spark .spark-area { fill: rgba(85,136,255,0.12); stroke: none; }
+
+    /* Liste des storylines secondaires */
+    .alaune-list { display: flex; flex-direction: column; gap: 6px; }
+    .alaune-row {
+      display: grid; grid-template-columns: 26px 1fr auto auto auto;
+      align-items: center; gap: 14px;
+      background: rgba(10,18,50,0.45); border: 1px solid rgba(90,140,255,0.14);
+      border-radius: 8px; padding: 10px 16px;
+      text-decoration: none; color: inherit;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .alaune-row:hover { border-color: rgba(90,140,255,0.4); background: rgba(14,24,64,0.6); }
+    .alaune-row.dim { opacity: 0.55; }
+    .alaune-row-rank {
+      font-family: var(--orbitron); font-size: 13px; font-weight: 700; color: var(--muted);
+      text-align: center;
+    }
+    .alaune-row-title { font-size: 13.5px; line-height: 1.4; color: var(--text); }
+    .alaune-row-cum { font-family: var(--mono); font-size: 12px; color: var(--text); text-align: right; min-width: 46px; }
+    .alaune-row-bar {
+      width: 90px; height: 5px; border-radius: 3px;
+      background: rgba(90,140,255,0.12); position: relative; overflow: hidden;
+    }
+    .alaune-row-bar i {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      background: var(--accent); border-radius: 3px;
+    }
+    .alaune-others { color: var(--muted); font-size: 11.5px; font-family: var(--mono); margin-top: 8px; }
+
+    /* États vide / USA */
+    .alaune-note {
+      background: rgba(10,18,50,0.45); border: 1px dashed rgba(90,140,255,0.25);
+      border-radius: 10px; padding: 22px 24px;
+      color: var(--muted); font-size: 13.5px; line-height: 1.6;
+    }
+    .alaune-note strong { color: var(--text); }
+
+    .alaune-sameindex {
+      margin-top: 16px; color: var(--muted); font-size: 11.5px; line-height: 1.6; max-width: 720px;
+    }
+    .alaune-sameindex a { color: var(--accent); text-decoration: none; }
+    .alaune-sameindex a:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .alaune-section { padding: 0 20px 48px; }
+      .alaune-hero-title { font-size: 19px; }
+      .alaune-row { grid-template-columns: 22px 1fr auto; }
+      .alaune-row-bar, .alaune-row-spark { display: none; }
+    }
+
     /* ========== TICKER ========== */
     .ticker-section {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
@@ -1004,6 +1160,22 @@
     </circle>
   </svg>
 </div>
+
+<!-- ========== À LA UNE (événements saillants) ========== -->
+<section class="alaune-section" id="alaune">
+  <div class="alaune-kicker-row">
+    <h2 class="alaune-kicker"><span data-i18n="alaune.kicker_a">À la</span> <span class="accent" data-i18n="alaune.kicker_b">Une</span></h2>
+    <span class="alaune-live" id="alaune-live" hidden>
+      <span class="alaune-live-dot"></span><span id="alaune-live-label"></span>
+    </span>
+  </div>
+  <p class="alaune-subtitle" data-i18n="alaune.subtitle">Les événements saillants des dernières 24 heures — ce que les Unes des grands médias imposent à l'attention, mesuré en continu.</p>
+  <div id="alaune-content"></div>
+  <p class="alaune-sameindex">
+    <span data-i18n="alaune.same_index">Événements et objets du Hot 20 sont classés par le même indice de saillance : les minutes passées en Une, article par article, média par média — visibilité (combien de médias), intensité (combien d'articles) et durée (combien de temps en Une).</span>
+    <a href="./methodologie.html" data-i18n="alaune.same_index_link">Méthodologie →</a>
+  </p>
+</section>
 
 <!-- ========== HOT 20 ========== -->
 <section class="hot20-section" id="hot20">
@@ -1466,6 +1638,7 @@ var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
 var currentSlotIdx = 0;
+var eventsData = null;         // events.json — événements saillants (À la Une)
 
 function escapeHtml(str) {
   var d = document.createElement('div');
@@ -1477,10 +1650,12 @@ async function loadData() {
   try {
     var results = await Promise.all([
       fetch('./graph.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
-      fetch('./timeseries.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+      fetch('./timeseries.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+      fetch('./events.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
     ]);
     graphData = results[0];
     timeseriesData = results[1];
+    eventsData = results[2];
     buildAllTimeScores();
   } catch (e) { console.error('Data load error', e); }
   // Prefetch articles non-bloquant → panel s'ouvre instant si déjà prêt, sinon "Chargement…"
@@ -1490,6 +1665,7 @@ async function loadData() {
   });
   buildPeriods();
   renderHot20();
+  renderALaUne();
 }
 
 function buildPeriods() {
@@ -2075,6 +2251,240 @@ function scrollToHot20() {
   }, 5000);
 })();
 
+/* ===== À LA UNE — événements saillants (events.json) =====
+   Régionalisation : QC → QC, CAN → ROC ; pas de suivi événementiel USA.
+   Règle d'affichage : le héros (1re storyline au cumul 24 h) est toujours
+   montré ; les suivantes sont listées, atténuées sous « Modérée ». */
+var ALAUNE_REGION = { QC: 'QC', CAN: 'ROC' };
+var ALAUNE_BANDS = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
+var ALAUNE_MAX_ROWS = 7;   // héros + 6 lignes au plus
+
+function alauneT(key, fallback, params) {
+  var v = window.t ? window.t(key, params) : null;
+  if (v && v !== key) return v;
+  if (params) {
+    Object.keys(params).forEach(function(k) { fallback = fallback.replace('{' + k + '}', params[k]); });
+  }
+  return fallback;
+}
+
+function alauneLang() {
+  try { return (window.__i18n && window.__i18n.currentLang()) || 'fr'; } catch (e) { return 'fr'; }
+}
+
+function alauneBandLabel(bandId) {
+  var bands = (eventsData && eventsData.meta && eventsData.meta.bands) || [];
+  for (var i = 0; i < bands.length; i++) {
+    if (bands[i].id === bandId) return alauneLang() === 'en' ? bands[i].en : bands[i].fr;
+  }
+  return bandId === 'aucune' ? alauneT('alaune.band_none', 'Sous les seuils') : bandId;
+}
+
+function alauneBandOf(v, thresholds) {
+  var band = 'aucune';
+  for (var i = 0; i < ALAUNE_BANDS.length; i++) {
+    if (v >= thresholds[ALAUNE_BANDS[i]]) band = ALAUNE_BANDS[i];
+  }
+  return band;
+}
+
+function alauneBandCss(bandId) { return 'band-' + String(bandId).replace(/_/g, '-'); }
+
+function alauneFmt(v) { return (Math.round(v * 10) / 10).toLocaleString(alauneLang() === 'en' ? 'en-CA' : 'fr-CA'); }
+
+/* "Aug 27 · 15-19 EDT" (libellé Montréal du meta.periods) → texte local court */
+function alauneBlockLabel(label) {
+  var m = (label || '').match(/^([A-Za-z]+)\s+(\d+)\s*·\s*(\d+)-(\d+)\s*(\S+)?/);
+  if (!m) return label || '';
+  var month = (typeof FR_MONTHS_SHORT !== 'undefined' && alauneLang() !== 'en' && FR_MONTHS_SHORT[m[1]]) || m[1];
+  return m[2] + ' ' + month + ' · ' + m[3] + ' h–' + m[4] + ' h';
+}
+
+/* Dernier événement publié d'une storyline dans la fenêtre de 6 blocs finissant à periodKey */
+function alauneLatestEvent(region, sid, periods, endIdx) {
+  var blocks = eventsData.blocks && eventsData.blocks[region];
+  if (!blocks) return null;
+  for (var i = endIdx; i > endIdx - 6 && i >= 0; i--) {
+    var evs = blocks[periods[i].key];
+    if (!evs) continue;
+    for (var j = 0; j < evs.length; j++) {
+      if (evs[j].storyline === sid) return evs[j];
+    }
+  }
+  return null;
+}
+
+function alauneSpark(series, periods, cls) {
+  var keys = periods.slice(-12);
+  var vals = keys.map(function(p) { return (series && series[p.key]) || 0; });
+  var max = Math.max.apply(null, vals);
+  if (!(max > 0)) return '';
+  var W = 120, H = 26, pad = 2;
+  var pts = vals.map(function(v, i) {
+    var x = pad + i * ((W - 2 * pad) / (vals.length - 1));
+    var y = H - pad - (v / max) * (H - 2 * pad);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  });
+  var area = 'M' + pad + ',' + (H - pad) + ' L' + pts.join(' L') + ' L' + (W - pad) + ',' + (H - pad) + ' Z';
+  return '<svg class="alaune-spark ' + (cls || '') + '" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' +
+         '<path class="spark-area" d="' + area + '"/><polyline points="' + pts.join(' ') + '"/></svg>';
+}
+
+function alauneNote(html) { return '<div class="alaune-note">' + html + '</div>'; }
+
+/* escapeHtml ne couvre pas les guillemets — nécessaire en valeur d'attribut */
+function alauneAttr(s) { return escapeHtml(String(s)).replace(/"/g, '&quot;'); }
+
+function renderALaUne() {
+  var root = document.getElementById('alaune-content');
+  if (!root) return;
+  var live = document.getElementById('alaune-live');
+
+  var region = ALAUNE_REGION[currentCountry];
+  if (!region) {
+    if (live) live.hidden = true;
+    root.innerHTML = alauneNote(escapeHtml(alauneT('alaune.usa_note',
+      'Le suivi des événements saillants couvre le Québec et le Canada. Choisissez QC ou CAN pour voir la Une du moment.')));
+    return;
+  }
+  if (!eventsData || !eventsData.storylines || !eventsData.storylines[region] || !eventsData.meta) {
+    if (live) live.hidden = true;
+    root.innerHTML = alauneNote(escapeHtml(alauneT('alaune.nodata',
+      'Les données d’événements ne sont pas disponibles pour le moment.')));
+    return;
+  }
+
+  var meta = eventsData.meta;
+  var periods = meta.periods || [];
+  var stories = eventsData.storylines[region];
+  var th = (meta.thresholds && meta.thresholds[region] && meta.thresholds[region].sum24h) || {};
+  var panel = (meta.panel && meta.panel[region]) || 6;
+
+  // Fenêtre 24 h la plus récente : la plus grande clé de sum24h toutes storylines
+  // (clés YYYY-MM-DD_HH-HH : ordre lexical = ordre chronologique).
+  var latestKey = null;
+  Object.keys(stories).forEach(function(sid) {
+    var cum = stories[sid].sum24h;
+    var keys = cum ? Object.keys(cum) : [];
+    if (keys.length) {
+      var last = keys[keys.length - 1];
+      if (!latestKey || last > latestKey) latestKey = last;
+    }
+  });
+  if (!latestKey) {
+    if (live) live.hidden = true;
+    root.innerHTML = alauneNote(escapeHtml(alauneT('alaune.empty',
+      'Accalmie médiatique : aucun événement ne se démarque en ce moment.')));
+    return;
+  }
+
+  var endIdx = -1;
+  for (var i = periods.length - 1; i >= 0; i--) {
+    if (periods[i].key === latestKey) { endIdx = i; break; }
+  }
+  if (live) {
+    live.hidden = false;
+    var lbl = endIdx >= 0 ? alauneBlockLabel(periods[endIdx].label) : latestKey;
+    document.getElementById('alaune-live-label').textContent =
+      alauneT('alaune.live', 'Cumul 24 h au bloc du {label}', { label: lbl });
+  }
+
+  // Classement des storylines sur la fenêtre la plus récente
+  var items = [];
+  Object.keys(stories).forEach(function(sid) {
+    var cum = stories[sid].sum24h && stories[sid].sum24h[latestKey];
+    if (typeof cum === 'number' && cum > 0) items.push({ sid: sid, story: stories[sid], cum: cum });
+  });
+  items.sort(function(a, b) { return b.cum - a.cum; });
+
+  if (!items.length) {
+    root.innerHTML = alauneNote(escapeHtml(alauneT('alaune.empty',
+      'Accalmie médiatique : aucun événement ne se démarque en ce moment.')));
+    return;
+  }
+
+  var html = '';
+
+  // ----- Héros -----
+  var hero = items[0];
+  var heroEv = alauneLatestEvent(region, hero.sid, periods, endIdx);
+  var heroBand = alauneBandOf(hero.cum, th);
+  var heroTitle = (heroEv && heroEv.title) || hero.story.title || hero.sid;
+  var heroLead = heroEv && heroEv.text ? heroEv.text : '';
+  var issue = alauneLang() === 'en'
+    ? ((heroEv && heroEv.issue_en) || hero.story.issue_en)
+    : ((heroEv && heroEv.issue_fr) || hero.story.issue_fr);
+  var scaleMax = Math.max((th.extreme || 1) * 1.15, hero.cum * 1.08);
+  var ticks = '';
+  var prevTickPos = -100;
+  ['moderee', 'elevee', 'tres_elevee', 'extreme'].forEach(function(b) {
+    if (!(th[b] > 0)) return;
+    var pos = Math.min(99, th[b] / scaleMax * 100);
+    // Étiquette omise (le trait reste) quand deux seuils sont trop proches
+    var withLabel = pos - prevTickPos >= 9;
+    ticks += '<div class="alaune-meter-tick" style="left:' + pos.toFixed(1) + '%">' +
+             (withLabel ? '<span>' + escapeHtml(alauneBandLabel(b)) + '</span>' : '') + '</div>';
+    if (withLabel) prevTickPos = pos;
+  });
+  var mediaChips = '';
+  if (heroEv && heroEv.media_ids && heroEv.media_ids.length) {
+    mediaChips = '<span class="alaune-media-chips">' + heroEv.media_ids.map(function(m) {
+      return '<span class="alaune-media-chip">' + escapeHtml(m) + '</span>';
+    }).join('') + '</span>';
+  }
+  html += '<article class="alaune-hero ' + alauneBandCss(heroBand) + '">' +
+    '<div class="alaune-hero-top">' +
+      '<span class="alaune-band ' + alauneBandCss(heroBand) + '">' + escapeHtml(alauneBandLabel(heroBand)) + '</span>' +
+      (issue ? '<span class="alaune-hero-issue">' + escapeHtml(issue) + '</span>' : '') +
+    '</div>' +
+    '<h3 class="alaune-hero-title">' + escapeHtml(heroTitle) + '</h3>' +
+    (heroLead ? '<p class="alaune-hero-lead">' + escapeHtml(heroLead) + '</p>' : '') +
+    '<div class="alaune-meter">' +
+      '<div class="alaune-meter-labels">' +
+        '<span>' + escapeHtml(alauneT('alaune.cumul_label', 'Saillance cumulée sur 24 h')) + '</span>' +
+        '<span class="alaune-meter-value">' + alauneFmt(hero.cum) + '<span style="color:var(--muted);font-weight:400;"> / 100</span></span>' +
+      '</div>' +
+      '<div class="alaune-meter-track">' +
+        '<div class="alaune-meter-fill" style="width:' + Math.min(100, hero.cum / scaleMax * 100).toFixed(1) + '%"></div>' + ticks +
+      '</div>' +
+    '</div>' +
+    '<div class="alaune-hero-meta">' +
+      (heroEv ? '<span>' + escapeHtml(alauneT('alaune.outlets', '{n} médias sur {p} en Une', { n: heroEv.outlets, p: panel })) + '</span>' : '') +
+      mediaChips +
+      (heroEv && heroEv.url ? '<a class="alaune-source-link" href="' + alauneAttr(heroEv.url) + '" target="_blank" rel="noopener">' +
+        escapeHtml(alauneT('alaune.source', 'Lire chez {media}', { media: heroEv.media || '' })) + ' ↗</a>' : '') +
+      alauneSpark(hero.story.series, periods, '') +
+    '</div>' +
+  '</article>';
+
+  // ----- Storylines suivantes -----
+  var rows = '';
+  var shown = 1, dimShown = 0, hidden = 0;
+  for (var r = 1; r < items.length; r++) {
+    var it = items[r];
+    var band = alauneBandOf(it.cum, th);
+    var isDim = !(it.cum >= th.moderee);
+    if (shown >= ALAUNE_MAX_ROWS || (isDim && dimShown >= 2)) { hidden++; continue; }
+    var ev = alauneLatestEvent(region, it.sid, periods, endIdx);
+    var title = (ev && ev.title) || it.story.title || it.sid;
+    rows += '<div class="alaune-row' + (isDim ? ' dim' : '') + '">' +
+      '<span class="alaune-row-rank">' + (r + 1) + '</span>' +
+      '<span class="alaune-row-title">' + escapeHtml(title) + '</span>' +
+      '<span class="alaune-band ' + alauneBandCss(band) + '">' + escapeHtml(alauneBandLabel(band)) + '</span>' +
+      '<span class="alaune-row-cum">' + alauneFmt(it.cum) + '</span>' +
+      '<span class="alaune-row-bar"><i style="width:' + Math.max(2, it.cum / hero.cum * 100).toFixed(1) + '%"></i></span>' +
+    '</div>';
+    shown++; if (isDim) dimShown++;
+  }
+  if (rows) html += '<div class="alaune-list">' + rows + '</div>';
+  if (hidden > 0) {
+    html += '<p class="alaune-others">' + escapeHtml(alauneT('alaune.others',
+      '+ {n} autres storylines sous « Modérée » dans les dernières 24 h', { n: hidden })) + '</p>';
+  }
+
+  root.innerHTML = html;
+}
+
 document.getElementById('country-tabs').addEventListener('click', function(e) {
   var tab = e.target.closest('.country-tab');
   if (!tab) return;
@@ -2085,6 +2495,7 @@ document.getElementById('country-tabs').addEventListener('click', function(e) {
   buildSlots();
   currentSlotIdx = aggregatedSlots.length - 1;
   renderHot20();
+  renderALaUne();
 });
 
 // Re-render le HOT 20 quand la langue change (textes dynamiques)
@@ -2092,6 +2503,7 @@ document.addEventListener('i18n:applied', function () {
   if (typeof renderHot20 === 'function' && (timeseriesData || graphData)) {
     renderHot20();
   }
+  if (eventsData) renderALaUne();
 });
 
 /* Granularity tabs */

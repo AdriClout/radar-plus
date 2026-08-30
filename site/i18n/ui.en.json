@@ -361,6 +361,22 @@
     "wl_label_month": "Month",
     "wl_label_quarter": "Year"
   },
+  "alaune": {
+    "kicker_a": "Top",
+    "kicker_b": "Story",
+    "subtitle": "The salient events of the last 24 hours — what major-media front pages are forcing onto the public's attention, measured continuously.",
+    "live": "24-hour rolling total as of the {label} block",
+    "cumul_label": "24-hour cumulative salience",
+    "outlets": "{n} of {p} outlets on their front page",
+    "source": "Read at {media}",
+    "band_none": "Below thresholds",
+    "others": "+ {n} more storylines below \u201cModerate\u201d in the last 24 hours",
+    "empty": "Media lull: no event stands out right now.",
+    "usa_note": "Salient-event tracking covers Quebec and Canada. Pick QC or CAN to see the current top story.",
+    "nodata": "Event data is unavailable at the moment.",
+    "same_index": "Events and Hot 20 objects are ranked by the same salience index: minutes spent on front pages, article by article, outlet by outlet \u2014 visibility (how many outlets), intensity (how many articles) and duration (how long on the front page).",
+    "same_index_link": "Methodology \u2192"
+  },
   "gran_singular": {
     "4h": "4h block",
     "day": "day",

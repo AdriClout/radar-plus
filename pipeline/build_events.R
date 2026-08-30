@@ -65,9 +65,13 @@ PANEL_QC_BASCULE <- as.Date("2026-07-19")  # panel QC : 5 médias avant, 6 aprè
 PANEL_ROC        <- 7L
 
 ## --- Seuils du frontend Vitrine ----------------------------------------------
+# Libellés en escapes Unicode : les littéraux accentués d'un source R lu sous
+# une locale non-UTF-8 (CI, conteneurs) seraient sérialisés en bytes bruts
+# (« Mod<c3><a9>r<c3><a9>e ») par jsonlite.
 BANDES <- data.frame(
   id = c("faible", "moderee", "elevee", "tres_elevee", "extreme"),
-  fr = c("Faible", "Modérée", "Élevée", "Très élevée", "Extrême"),
+  fr = c("Faible", "Mod\u00e9r\u00e9e", "\u00c9lev\u00e9e",
+         "Tr\u00e8s \u00e9lev\u00e9e", "Extr\u00eame"),
   en = c("Low", "Moderate", "High", "Very high", "Extreme"),
   stringsAsFactors = FALSE
 )
@@ -312,7 +316,7 @@ period_label <- function(key) {
   loc <- format(ts, tz = "America/Montreal", format = "%b %d")
   hloc <- as.integer(format(ts, tz = "America/Montreal", format = "%H"))
   tzab <- format(ts, tz = "America/Montreal", format = "%Z")
-  sprintf("%s · %d-%d %s", loc, hloc, (hloc + BLOCK_H) %% 24, tzab)
+  sprintf("%s \u00b7 %d-%d %s", loc, hloc, (hloc + BLOCK_H) %% 24, tzab)
 }
 periods_sorted <- sort(all_periods)
 periods <- lapply(periods_sorted, function(k) list(
@@ -328,6 +332,7 @@ result <- list(
     regime_from          = REGIME_FROM,
     specv1_cutover       = SPECV1_CUTOVER_KEY,
     top_per_region_block = 3L,
+    panel                = list(QC = 6L, ROC = PANEL_ROC),
     half_life_h          = HALF_LIFE_H,
     window_blocks        = WINDOW_BLOCKS,
     recency_weight_total = round(RWT, 4),

@@ -20,6 +20,10 @@ on:
       - '.github/workflows/refresh-events-dev.yml'
   workflow_dispatch:
 
+concurrency:
+  group: refresh-events-dev
+  cancel-in-progress: false
+
 jobs:
   build-events:
     runs-on: ubuntu-latest
@@ -72,7 +76,10 @@ jobs:
             echo "events.json inchangé — rien à committer."
           else
             git commit -m "chore: refresh events data (dev)"
-            git pull --rebase origin "${GITHUB_REF_NAME}"
+            # En cas de push concurrent sur la branche pendant le run :
+            # events.json est entièrement régénéré, la version de CE run gagne
+            # (en rebase, « theirs » = le commit rejoué, c.-à-d. le nôtre).
+            git pull --rebase -X theirs origin "${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
 

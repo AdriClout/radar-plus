@@ -361,6 +361,22 @@
     "wl_label_month": "Mois",
     "wl_label_quarter": "Année"
   },
+  "alaune": {
+    "kicker_a": "À la",
+    "kicker_b": "Une",
+    "subtitle": "Les événements saillants des dernières 24 heures — ce que les Unes des grands médias imposent à l'attention, mesuré en continu.",
+    "live": "Cumul 24 h au bloc du {label}",
+    "cumul_label": "Saillance cumulée sur 24 h",
+    "outlets": "{n} médias sur {p} en Une",
+    "source": "Lire chez {media}",
+    "band_none": "Sous les seuils",
+    "others": "+ {n} autres storylines sous « Modérée » dans les dernières 24 h",
+    "empty": "Accalmie médiatique : aucun événement ne se démarque en ce moment.",
+    "usa_note": "Le suivi des événements saillants couvre le Québec et le Canada. Choisissez QC ou CAN pour voir la Une du moment.",
+    "nodata": "Les données d'événements ne sont pas disponibles pour le moment.",
+    "same_index": "Événements et objets du Hot 20 sont classés par le même indice de saillance : les minutes passées en Une, article par article, média par média — visibilité (combien de médias), intensité (combien d'articles) et durée (combien de temps en Une).",
+    "same_index_link": "Méthodologie →"
+  },
   "gran_singular": {
     "4h": "bloc horaire (4 h)",
     "day": "journée",
