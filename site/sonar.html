@@ -3,7 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sonar — Qualité des données | Radar+</title>
+  <title>Sonar · RADAR+</title>
+  <meta name="description" content="Le suivi de qualité des données RADAR+ : couverture des médias, trous documentés et verdicts d'audit, en toute transparence.">
+  <link rel="canonical" href="https://radarplus.org/sonar.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RADAR+">
+  <meta property="og:locale" content="fr_CA">
+  <meta property="og:title" content="Sonar · RADAR+">
+  <meta property="og:description" content="Le suivi de qualité des données RADAR+ : couverture des médias, trous documentés et verdicts d'audit, en toute transparence.">
+  <meta property="og:url" content="https://radarplus.org/sonar.html">
+  <meta property="og:image" content="https://radarplus.org/assets/og/og-radarplus.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sonar · RADAR+">
+  <meta name="twitter:description" content="Le suivi de qualité des données RADAR+ : couverture des médias, trous documentés et verdicts d'audit, en toute transparence.">
+  <meta name="twitter:image" content="https://radarplus.org/assets/og/og-radarplus.png">
+  <link rel="icon" href="./assets/favicon/favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="./assets/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="./assets/favicon/site.webmanifest">
+  <meta name="theme-color" content="#020010">
+  <link rel="stylesheet" href="./assets/css/tokens.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -273,9 +293,22 @@
     (function () {
       'use strict';
 
-      var t = function (cle, defaut) {
+      /* i18n : le global exposé par assets/js/i18n.js est `window.__i18n`.
+         Cette page interrogeait `window.RadarI18n`, qui n'a jamais existé —
+         t() retombait donc toujours sur le défaut français, quelle que soit
+         la langue choisie. Le 3e argument porte les paramètres d'interpolation. */
+      /* Les dates suivent la langue de l'interface (la page les formatait
+         toujours en fr-CA, même en anglais). */
+      var dtLocale = function () {
         try {
-          var v = window.RadarI18n && window.RadarI18n.t ? window.RadarI18n.t(cle) : null;
+          var l = window.__i18n && window.__i18n.currentLang ? window.__i18n.currentLang() : 'fr';
+          return String(l).slice(0, 2) === 'en' ? 'en-CA' : 'fr-CA';
+        } catch (e) { return 'fr-CA'; }
+      };
+
+      var t = function (cle, defaut, params) {
+        try {
+          var v = window.__i18n && window.__i18n.t ? window.__i18n.t(cle, params) : null;
           return v && v !== cle ? v : defaut;
         } catch (e) { return defaut; }
       };
@@ -301,7 +334,7 @@
       function fmtDate(iso) {
         if (!iso) return t('sonarq.today', "aujourd'hui");
         var d = new Date(iso + 'T12:00:00Z');
-        return d.toLocaleDateString('fr-CA', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'America/Montreal' });
+        return d.toLocaleDateString(dtLocale(), { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'America/Montreal' });
       }
 
       var bulle = document.getElementById('infobulle');
@@ -443,44 +476,94 @@
         });
       }
 
+      /* Le pipeline a deux flux publiés à des cadences différentes : les
+         Unes (ticker, ~horaire) et les événements saillants (blocs de 4 h).
+         L'indicateur ne regardait que le ticker — il annonçait « données
+         fraîches » même si les événements étaient bloqués depuis des jours.
+         On évalue les deux et on affiche le PIRE des deux, en nommant le
+         flux en cause : un voyant vert doit signifier que tout va bien. */
+      var FLUX_FRAICHEUR = [
+        { fichier: './ticker.json', cle: 'sonarq.fresh_feed_ticker', defaut: 'Unes',
+          seuil_tard: 8, seuil_panne: 30 },
+        // Rafraîchis avec la constellation (toutes les 4 h) ; mêmes seuils
+        // que la sentinelle de fraîcheur (12 h) pour ne pas crier trop tôt.
+        { fichier: './events.json', cle: 'sonarq.fresh_feed_events', defaut: 'événements',
+          seuil_tard: 12, seuil_panne: 36 }
+      ];
+
       function fraicheur() {
         var el = document.getElementById('fraicheur');
         var texte = document.getElementById('fraicheur-texte');
         // sinon i18n.js réapplique la clé de chargement par-dessus le résultat
         texte.removeAttribute('data-i18n');
-        fetch('./ticker.json', { cache: 'no-store' })
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            var quand = d && d.meta && d.meta.generated_at ? new Date(d.meta.generated_at) : null;
-            if (!quand || isNaN(quand)) throw new Error('sans date');
-            var heures = (Date.now() - quand) / 36e5;
-            var affiche = quand.toLocaleString('fr-CA', {
-              month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Montreal'
-            });
-            if (heures <= 8) {
-              el.className = 'fraicheur ok';
-              texte.textContent = t('sonarq.fresh_ok', 'Données fraîches') + ' · ' + affiche;
-            } else if (heures <= 30) {
-              el.className = 'fraicheur tard';
-              texte.textContent = t('sonarq.fresh_late', 'Mise à jour en retard') + ' · ' + affiche;
-            } else {
-              el.className = 'fraicheur panne';
-              texte.textContent = t('sonarq.fresh_stale', 'Données périmées — incident en cours') + ' · ' + affiche;
-            }
-          })
-          .catch(function () {
+
+        Promise.all(FLUX_FRAICHEUR.map(function (flux) {
+          return fetch(flux.fichier, { cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              var quand = d && d.meta && d.meta.generated_at ? new Date(d.meta.generated_at) : null;
+              if (!quand || isNaN(quand)) return null;
+              var heures = (Date.now() - quand) / 36e5;
+              return {
+                flux: flux, quand: quand, heures: heures,
+                niveau: heures <= flux.seuil_tard ? 0 : (heures <= flux.seuil_panne ? 1 : 2)
+              };
+            })
+            .catch(function () { return null; });
+        })).then(function (etats) {
+          var connus = etats.filter(Boolean);
+          if (!connus.length) {
             el.className = 'fraicheur';
             texte.textContent = t('sonarq.fresh_unknown', 'Fraîcheur indisponible');
+            return;
+          }
+          // Le pire état gouverne le voyant ; à égalité, le flux le plus en retard.
+          var pire = connus.reduce(function (a, b) {
+            if (b.niveau !== a.niveau) return b.niveau > a.niveau ? b : a;
+            return b.heures > a.heures ? b : a;
           });
+          var affiche = pire.quand.toLocaleString(dtLocale(), {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Montreal'
+          });
+          var nom = t(pire.flux.cle, pire.flux.defaut);
+
+          if (pire.niveau === 0) {
+            el.className = 'fraicheur ok';
+            texte.textContent = t('sonarq.fresh_ok', 'Données fraîches') + ' · ' + affiche;
+          } else if (pire.niveau === 1) {
+            el.className = 'fraicheur tard';
+            texte.textContent = t('sonarq.fresh_late_feed',
+              'Mise à jour en retard (' + nom + ')', { feed: nom }) + ' · ' + affiche;
+          } else {
+            el.className = 'fraicheur panne';
+            texte.textContent = t('sonarq.fresh_stale_feed',
+              'Données périmées (' + nom + ') — incident en cours', { feed: nom }) + ' · ' + affiche;
+          }
+        });
       }
+
+      function construireTout() {
+        if (!donneesGlobales) return;
+        construireAxe();
+        construireFrise(donneesGlobales);
+        construireLegende();
+      }
+
+      /* La frise, la légende et la fraîcheur sont composées en JS à partir
+         de t(). Or i18n.js charge ses fichiers de langue de façon asynchrone :
+         au premier rendu, les traductions ne sont pas encore là. Sans ce
+         réabonnement, la page restait figée dans ses libellés de repli — et
+         un changement de langue ne la touchait pas. */
+      document.addEventListener('i18n:applied', function () {
+        construireTout();
+        fraicheur();
+      });
 
       fetch('./qualite.json', { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (donnees) {
           donneesGlobales = donnees;
-          construireAxe();
-          construireFrise(donnees);
-          construireLegende();
+          construireTout();
         })
         .catch(function () {
           document.getElementById('frise').innerHTML =

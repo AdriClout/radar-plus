@@ -1,0 +1,8 @@
+# radarplus.org — production (GitHub Pages).
+# Les Deploy Previews Netlify sont exclues de l'indexation par un en-tête
+# X-Robots-Tag: noindex (netlify.toml), pour ne pas concurrencer ce domaine.
+User-agent: *
+Allow: /
+Disallow: /monitoring.html
+
+Sitemap: https://radarplus.org/sitemap.xml

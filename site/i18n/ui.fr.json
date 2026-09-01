@@ -19,9 +19,10 @@
     "alertes": "Alertes",
     "statistiques": "Statistiques",
     "sonar": "Sonar",
-    "hot20": "Hot 20",
+    "hot20": "Classement",
     "unes": "Dans le radar",
     "analyses": "Analyses",
+    "presentation": "Présentation",
     "radarplus": "Radar+",
     "methodologie": "Méthodologie",
     "partenaires": "Partenaires & contributeurs",
@@ -59,7 +60,7 @@
     "error": "Échec de l'envoi. Réessaie dans quelques instants.",
     "context_prefix": "Contexte: ",
     "default_section": "Navigation Radar+",
-    "token_missing": "Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l'envoi."
+    "token_missing": "Signalement temporairement hors ligne — écrivez-nous via la page Accès aux données."
   },
   "common": {
     "loading": "Chargement…",
@@ -154,11 +155,16 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explorer",
-    "scroll_aria": "Aller au HOT 20"
+    "scroll_aria": "Aller au Classement"
   },
   "hot20": {
-    "title": "HOT",
-    "title_number": "20",
+    "title": "Le",
+    "title_number": "Classement",
+    "mode_objets": "Objets",
+    "mode_evenements": "Événements",
+    "events_usa": "Le suivi des événements saillants couvre le Québec et le Canada. Choisissez QC ou CAN.",
+    "events_note": "Objets et événements sont classés par le même indice de saillance — les minutes passées en Une, article par article, média par média. Données d'événements depuis le 23 juillet 2026.",
+    "events_note_link": "Méthodologie →",
     "header_rank": "Rang",
     "header_movement": "Mouvement",
     "header_subject": "Sujet",
@@ -450,6 +456,20 @@
     "load_error": "Impossible de charger qualite.json.",
     "concordance": "Taux de concordance",
     "pages_rejouees": "pages rejouées, 12 derniers mois",
-    "col_taux": "Concordance"
+    "col_taux": "Concordance",
+    "fresh_feed_ticker": "Unes",
+    "fresh_feed_events": "événements",
+    "fresh_late_feed": "Mise à jour en retard ({feed})",
+    "fresh_stale_feed": "Données périmées ({feed}) — incident en cours"
+  },
+  "unes": {
+    "all_countries": "Tous",
+    "older": "← Plus ancien",
+    "newer": "Plus récent →",
+    "period_none": "Période : --",
+    "loading": "Chargement des Unes…",
+    "no_data": "Aucune donnée disponible.",
+    "empty_country": "Aucune Une pour ce pays dans cette période.",
+    "meta_unes": "Les Unes de {hm} · {total} manchettes visibles · fenêtre de {lookback} h · heures locales ({tz})"
   }
 }

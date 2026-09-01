@@ -65,6 +65,9 @@ jobs:
       - name: Build ticker.json
         run: Rscript pipeline/build_ticker.R
 
+      - name: Contrôle de schéma du ticker
+        run: python3 pipeline/check_schema.py site/ticker.json
+
       - name: Commit and push ticker
         id: commit_data
         env:
@@ -113,3 +116,16 @@ jobs:
 
           echo "Timed out waiting for radarplus.org to serve refreshed ticker.json"
           exit 1
+
+      - name: Alerte Slack en cas d'échec
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL absent — échec non notifié (ajouter le secret pour activer les alertes)"
+            exit 0
+          fi
+          curl -sS -X POST -H 'Content-type: application/json' --data \
+            "{\"text\":\":rotating_light: radar-plus — échec de \`${{ github.workflow }}\` : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"

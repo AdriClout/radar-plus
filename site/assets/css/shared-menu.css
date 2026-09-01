@@ -716,3 +716,15 @@ body.has-alert-bar #object-panel {
   0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(221,230,74,0.55)); }
   50%      { opacity: 0.45; filter: drop-shadow(0 0 1px rgba(221,230,74,0.10)); }
 }
+
+/* ── Footer commun (injecté par shared-menu.js sur les pages sans footer) ── */
+.shared-footer {
+  position: relative; z-index: 1;
+  margin-top: 48px; padding: 22px 20px 26px;
+  border-top: 1px solid rgba(80, 130, 255, 0.12);
+  text-align: center;
+  font-size: 11px; color: rgba(140, 170, 220, 0.75);
+}
+.shared-footer-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 22px; margin-bottom: 10px; }
+.shared-footer-links a { color: rgba(160, 190, 240, 0.9); text-decoration: none; }
+.shared-footer-links a:hover { text-decoration: underline; }

@@ -1,0 +1,19 @@
+# Worker proxy de signalement RADAR+ (voir src/index.js).
+#
+# Secrets à poser une fois (jamais en source) :
+#   npx wrangler secret put GITHUB_TOKEN
+#   → token GitHub fine-grained, repo AdriClout/radar-plus seulement,
+#     permission « Contents: Read and write » (nécessaire au
+#     repository_dispatch), rien d'autre.
+#
+# Déploiement : npx wrangler deploy
+# Puis inscrire l'URL du worker dans REPORT_PROXY_URL
+# (site/assets/js/shared-menu.js).
+
+name = "radarplus-report-issue"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+[observability]
+enabled = true
+head_sampling_rate = 1

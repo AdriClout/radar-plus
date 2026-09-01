@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-constellation-v3-${{ hashFiles('pipeline/build_data.R') }}
+          key: r-constellation-v3-${{ hashFiles('pipeline/build_data.R', 'pipeline/build_events.R') }}
           restore-keys: r-constellation-v3-
 
       - name: Install system dependencies
@@ -77,6 +77,15 @@ jobs:
       - name: Build constellation data (R)
         run: Rscript pipeline/build_data.R
 
+      - name: Build events data (R)
+        run: Rscript pipeline/build_events.R
+
+      - name: Build classement index (Python)
+        run: python3 pipeline/build_classement.py
+
+      - name: Contrôle de schéma des JSON générés
+        run: python3 pipeline/check_schema.py site/graph.json site/timeseries.json site/articles.json site/monitor_input.json site/events.json site/classement.json
+
       - name: Commit & push updated data
         id: commit_data
         env:
@@ -85,7 +94,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
-          git add site/graph.json site/timeseries.json site/articles.json site/monitor_input.json
+          git add site/graph.json site/timeseries.json site/articles.json site/monitor_input.json site/events.json site/classement.json
           if git diff --staged --quiet; then
             echo "updated=false" >> "$GITHUB_OUTPUT"
           else
@@ -135,3 +144,16 @@ jobs:
 
           echo "Timed out waiting for radarplus.org to serve the refreshed JSON files."
           exit 1
+
+      - name: Alerte Slack en cas d'échec
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL absent — échec non notifié (ajouter le secret pour activer les alertes)"
+            exit 0
+          fi
+          curl -sS -X POST -H 'Content-type: application/json' --data \
+            "{\"text\":\":rotating_light: radar-plus — échec de \`${{ github.workflow }}\` : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"
