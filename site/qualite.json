@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-08-16T04:15:00+00:00",
+ "genere_le": "2026-09-13T17:34:40+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -130,9 +130,9 @@
      "debut": "2026-08-14",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte encore dégradée (~50 % des captures) — réparation de la collecte en cours, rejeu final prévu après correctif",
+     "resume": "Collecte dégradée en août 2026 (environ la moitié des captures), revenue à la cadence normale au 12 septembre (136 à 143 captures par jour mesurées dans le brut) ; la fenêtre dégradée reste à rejouer depuis les pages d'accueil archivées avant d'être validée",
      "preuve": {
-      "reference": "aws-infra#484 · aws-refiners#337"
+      "reference": "aws-infra#484 · aws-refiners#337 · mesure du 2026-09-12 sur le brut de production"
      }
     }
    ],
@@ -190,9 +190,9 @@
      "debut": "2026-06-03",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte irrégulière depuis la bascule de l'extracteur : volume réduit sur une partie des jours (mesuré le 2026-08-15)",
+     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités",
      "preuve": {
-      "reference": "aws-infra#484 (collecte) · aws-refiners#335 (inventaire et rejeu)"
+      "reference": "aws-infra#484 (collecte) · aws-refiners#335 (inventaire) · mesure du 2026-09-12"
      }
     }
    ],
@@ -208,6 +208,12 @@
      "fin": "2024-04-08",
      "jours": 12,
      "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2026-06-01",
+     "fin": "2026-06-30",
+     "jours": 30,
+     "cause": "Unes de juin non exploitables après la bascule de l'extracteur — reconstruction depuis la Wayback Machine à faire"
     },
     {
      "debut": "2026-06-03",
@@ -508,7 +514,7 @@
     },
     {
      "debut": "2024-05-28",
-     "fin": "2026-08-10",
+     "fin": "2026-06-01",
      "statut": "valide",
      "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
      "preuve": {
@@ -517,12 +523,12 @@
      }
     },
     {
-     "debut": "2026-08-10",
+     "debut": "2026-06-01",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
+     "resume": "Unes exactes (concordance 100 % sur deux ans) mais le corps des articles n'est plus extrait depuis juin 2026 : une centaine de caractères au lieu de 3 000 à 5 000, encore vrai le 12 septembre — correctif du sélecteur d'article à faire",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-infra#486 · mesure du 2026-09-12"
      }
     }
    ],
@@ -807,9 +813,9 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
+     "resume": "Sous surveillance : depuis août 2026, des blocs de mise en page (ruban, encart vidéo) sont parfois captés à la place de la Une ; depuis le 12 septembre 17h09, la capture est une page vidéo au corps vide, à chaque passe — correctif du sélecteur à faire",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-infra#485 · alertes #77x_tube-errors du 2026-09-12"
      }
     }
    ],
