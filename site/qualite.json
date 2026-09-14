@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-09-13T17:34:40+00:00",
+ "genere_le": "2026-09-14T16:32:47+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -60,9 +60,9 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; les pages « Le fil électoral » en Une (6 % du temps de Une depuis le 27 août) n'ont que leur introduction : le direct, servi par un encart externe, n'est pas capté (aws-infra#594)",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#594"
      }
     }
    ],
@@ -130,9 +130,9 @@
      "debut": "2026-08-14",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte dégradée en août 2026 (environ la moitié des captures), revenue à la cadence normale au 12 septembre (136 à 143 captures par jour mesurées dans le brut) ; la fenêtre dégradée reste à rejouer depuis les pages d'accueil archivées avant d'être validée",
+     "resume": "Collecte dégradée en août 2026 (environ la moitié des captures), revenue à la cadence normale au 12 septembre (136 à 143 captures par jour mesurées dans le brut) ; la fenêtre dégradée reste à rejouer depuis les pages d'accueil archivées avant d'être validée ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme TVA et TTS — les trois extracteurs qui passent par un navigateur et un proxy ; cause en enquête",
      "preuve": {
-      "reference": "aws-infra#484 · aws-refiners#337 · mesure du 2026-09-12 sur le brut de production"
+      "reference": "aws-infra#484 · aws-refiners#337 · mesure du 2026-09-12 sur le brut de production · validation du 2026-09-14"
      }
     }
    ],
@@ -190,9 +190,9 @@
      "debut": "2026-06-03",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités",
+     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TTS — les trois extracteurs qui passent par un navigateur et un proxy ; cause en enquête",
      "preuve": {
-      "reference": "aws-infra#484 (collecte) · aws-refiners#335 (inventaire) · mesure du 2026-09-12"
+      "reference": "aws-infra#484 (collecte) · aws-refiners#335 (inventaire) · mesure du 2026-09-12 · validation du 2026-09-14"
      }
     }
    ],
@@ -526,9 +526,9 @@
      "debut": "2026-06-01",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Unes exactes (concordance 100 % sur deux ans) mais le corps des articles n'est plus extrait depuis juin 2026 : une centaine de caractères au lieu de 3 000 à 5 000, encore vrai le 12 septembre — correctif du sélecteur d'article à faire",
+     "resume": "Unes exactes (concordance 100 % sur deux ans) mais le corps des articles n'est plus extrait depuis juin 2026 : une centaine de caractères au lieu de 3 000 à 5 000, encore vrai le 12 septembre — correctif du sélecteur d'article à faire ; correctif du sélecteur de texte en relecture : aws-infra#593",
      "preuve": {
-      "reference": "aws-infra#486 · mesure du 2026-09-12"
+      "reference": "aws-infra#486 · mesure du 2026-09-12 · aws-infra#593"
      }
     }
    ],
@@ -580,9 +580,9 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un proxy ; cause en enquête",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14"
      }
     }
    ],
@@ -773,9 +773,9 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; Unes exactes, mais texte tronqué sur 25 à 31 % des Unes depuis au moins la fin août : le sélecteur ne lisait que les premiers paragraphes (correctif en relecture : aws-infra#593)",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#593 · validation du 2026-09-14"
      }
     }
    ],
@@ -813,9 +813,9 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Sous surveillance : depuis août 2026, des blocs de mise en page (ruban, encart vidéo) sont parfois captés à la place de la Une ; depuis le 12 septembre 17h09, la capture est une page vidéo au corps vide, à chaque passe — correctif du sélecteur à faire",
+     "resume": "Sous surveillance : depuis août 2026, des blocs de mise en page (ruban, encart vidéo) sont parfois captés à la place de la Une ; depuis le 12 septembre 17h09, la capture est une page vidéo au corps vide, à chaque passe — correctif du sélecteur à faire ; correctif en relecture : aws-infra#590 (premier bloc de tête, vidéos exclues)",
      "preuve": {
-      "reference": "aws-infra#485 · alertes #77x_tube-errors du 2026-09-12"
+      "reference": "aws-infra#485 · alertes #77x_tube-errors du 2026-09-12 · aws-infra#590"
      }
     }
    ],
