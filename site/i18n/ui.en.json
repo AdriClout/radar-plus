@@ -19,9 +19,10 @@
     "alertes": "Alerts",
     "statistiques": "Statistics",
     "sonar": "Sonar",
-    "hot20": "Hot 20",
+    "hot20": "Ranking",
     "unes": "On the radar",
     "analyses": "Analyses",
+    "presentation": "Overview",
     "radarplus": "Radar+",
     "methodologie": "Methodology",
     "partenaires": "Partners & contributors",
@@ -59,7 +60,7 @@
     "error": "Sending failed. Please try again in a moment.",
     "context_prefix": "Context: ",
     "default_section": "Radar+ navigation",
-    "token_missing": "Offline reporting: configure RADAR_REPORT_DISPATCH_TOKEN to enable submissions."
+    "token_missing": "Reporting is temporarily offline — reach us via the Data access page."
   },
   "common": {
     "loading": "Loading…",
@@ -154,11 +155,16 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explore",
-    "scroll_aria": "Go to HOT 20"
+    "scroll_aria": "Go to the Ranking"
   },
   "hot20": {
-    "title": "HOT",
-    "title_number": "20",
+    "title": "The",
+    "title_number": "Ranking",
+    "mode_objets": "Objects",
+    "mode_evenements": "Events",
+    "events_usa": "Salient-event tracking covers Quebec and Canada. Pick QC or CAN.",
+    "events_note": "Objects and events are ranked by the same salience index — minutes spent on front pages, article by article, outlet by outlet. Event data starts July 23, 2026.",
+    "events_note_link": "Methodology →",
     "header_rank": "Rank",
     "header_movement": "Movement",
     "header_subject": "Subject",
@@ -450,6 +456,20 @@
     "load_error": "Could not load qualite.json.",
     "concordance": "Concordance rate",
     "pages_rejouees": "pages replayed, last 12 months",
-    "col_taux": "Concordance"
+    "col_taux": "Concordance",
+    "fresh_feed_ticker": "front pages",
+    "fresh_feed_events": "events",
+    "fresh_late_feed": "Update overdue ({feed})",
+    "fresh_stale_feed": "Stale data ({feed}) — incident in progress"
+  },
+  "unes": {
+    "all_countries": "All",
+    "older": "← Older",
+    "newer": "Newer →",
+    "period_none": "Period: --",
+    "loading": "Loading front pages…",
+    "no_data": "No data available.",
+    "empty_country": "No front page for this country in this period.",
+    "meta_unes": "Front pages as of {hm} · {total} headlines shown · {lookback}h window · local time ({tz})"
   }
 }

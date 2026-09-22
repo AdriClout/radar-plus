@@ -74,6 +74,9 @@ jobs:
             jq empty "${f}"
           done
 
+      - name: Contrôle de schéma des JSON de données
+        run: python3 pipeline/check_schema.py
+
       - name: Validate internal links in HTML
         run: |
           set -euo pipefail

@@ -8,11 +8,12 @@
      sont envoyés ailleurs dans le code via window.gtag('event', ...).
   ================================================================ */
   var GA_MEASUREMENT_ID = 'G-Y2X19DCWGZ';
-  var REPORT_REPO = 'AdriClout/radar-plus';
+  // Signalement via le Worker proxy (workers/report-issue/) : aucun secret
+  // côté client — l'ancien mécanisme injectait un token GitHub dans ce
+  // fichier public (faille corrigée le 2026-08-30). URL vide = hors ligne.
   var REPORT_EVENT_TYPE = 'radar-report-issue';
-  var REPORT_TOKEN = (window.RADAR_REPORT_DISPATCH_TOKEN || '__RADAR_REPORT_DISPATCH_TOKEN__').trim();
-  if (REPORT_TOKEN === '__RADAR_REPORT_DISPATCH_TOKEN__') REPORT_TOKEN = '';
-  var REPORT_ENABLED = REPORT_TOKEN.length > 0;
+  var REPORT_PROXY_URL = '';
+  var REPORT_ENABLED = REPORT_PROXY_URL.length > 0;
   (function loadGtag() {
     if (window.gtag || !GA_MEASUREMENT_ID) return;
     window.dataLayer = window.dataLayer || [];
@@ -60,6 +61,26 @@
     document.body.insertBefore(a, document.body.firstChild);
   }
 
+  function injectSharedFooter() {
+    // Un seul footer canonique pour les pages qui n'en ont pas. Les pages
+    // applications plein écran (Évolution, Constellation) sont exclues.
+    if (document.querySelector('footer')) return;
+    if (document.getElementById('evo-logo') || document.getElementById('cst-logo')) return;
+    // Pages plein écran sans flux de document (deck de présentation)
+    if (document.querySelector('.slide')) return;
+    var f = document.createElement('footer');
+    f.className = 'shared-footer';
+    f.innerHTML =
+      '<div class="shared-footer-links">' +
+        '<a href="./methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>' +
+        '<a href="./acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>' +
+        '<a href="./partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>' +
+        '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>' +
+      '</div>' +
+      '<div class="shared-footer-copy" data-i18n="footer.copyright">© CLESSN · Université Laval · Transparence médiatique 24/7</div>';
+    document.body.appendChild(f);
+  }
+
   function setupSharedMenu() {
     if (document.querySelector('.side-nav')) return;
 
@@ -98,10 +119,11 @@
       '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_qualite">QUALITÉ</span></a>',
-      '<a href="./index.html#hot20" data-i18n="nav.hot20">Hot 20</a>',
+      '<a href="./index.html#hot20" data-i18n="nav.hot20">Classement</a>',
       '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>',
       '<a href="https://www.clessn.com/radar/index.html" target="_blank" rel="noopener" data-i18n="nav.analyses">Analyses</a>',
       '<h3 style="margin-top: 30px;" data-i18n="nav.section_about">À propos</h3>',
+      '<a href="./presentation.html" data-page="presentation.html" data-i18n="nav.presentation">Présentation</a>',
       '<a href="./radarplus.html" data-page="radarplus.html" data-i18n="nav.radarplus">Radar+</a>',
       '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>',
       '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>',
@@ -186,10 +208,14 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupSharedMenu, { once: true });
-  } else {
+  function initSharedChrome() {
     setupSharedMenu();
+    injectSharedFooter();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSharedChrome, { once: true });
+  } else {
+    initSharedChrome();
   }
 
   function reportText(key, fallback) {
@@ -281,7 +307,7 @@
       modal.classList.remove('open');
       if (nameInput) nameInput.value = '';
       if (textarea) textarea.value = '';
-      if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l\'envoi.');
+      if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Signalement temporairement hors ligne — écrivez-nous via la page Accès aux données.');
       uiState = 'idle';
     }
 
@@ -357,13 +383,9 @@
           }
         };
 
-        var res = await fetch('https://api.github.com/repos/' + REPORT_REPO + '/dispatches', {
+        var res = await fetch(REPORT_PROXY_URL, {
           method: 'POST',
-          headers: {
-            Accept: 'application/vnd.github+json',
-            Authorization: 'Bearer ' + REPORT_TOKEN,
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
@@ -561,101 +583,15 @@
     }).join('');
   }
 
-  function populateAlertBar(graphData) {
+  function populateAlertBar(data) {
     var strip    = document.getElementById('alert-bar-strip');
     var bar      = document.getElementById('global-alert-bar');
     var navBadge = document.getElementById('nav-alert-badge');
     if (!strip || !bar) return;
 
-    var periods   = (graphData.meta && graphData.meta.periods) ? graphData.meta.periods : [];
-    var countries = Object.keys(graphData.graphs || {});
-    var alerts    = [];
-    var seen      = {};
-
-    // Uniquement la période la plus récente: évite d'afficher des alertes déjà terminées.
-    var latestPeriod = periods.length ? periods[periods.length - 1] : null;
-    var pKey = latestPeriod && latestPeriod.key;
-    for (var ci = 0; ci < countries.length; ci++) {
-      var country = countries[ci];
-      var gd = graphData.graphs[country] && graphData.graphs[country][pKey];
-      if (!gd) continue;
-
-      // 1) Indexer les events: les membres seront masqués au profit du pivot.
-      // Le pivot lui-même est aussi indexé — sinon il serait émis 2× (une
-      // fois comme tête d'event, une fois comme alerte individuelle) depuis
-      // qu'on force le pivot à être lui-même alerté.
-      var events = Array.isArray(gd.events) ? gd.events : [];
-      var memberIds = {};
-      for (var ei = 0; ei < events.length; ei++) {
-        var ev = events[ei];
-        if (!ev) continue;
-        if (ev.pivot && ev.pivot.id) memberIds[ev.pivot.id] = true;
-        if (!Array.isArray(ev.members)) continue;
-        for (var mi = 0; mi < ev.members.length; mi++) memberIds[ev.members[mi].id] = true;
-      }
-
-      // 2) Émettre les pivots d'événements en premier (level effectif = max parmi membres+pivot)
-      for (var ei2 = 0; ei2 < events.length; ei2++) {
-        var ev2 = events[ei2];
-        if (!ev2 || !ev2.pivot || !Array.isArray(ev2.members) || !ev2.members.length) continue;
-        var lvls = ev2.members.map(function(m){ return m.alert_level; });
-        if (ev2.pivot.alert_active) lvls.push(ev2.pivot.alert_level);
-        var topLvl = null;
-        for (var li = 0; li < ALERT_BAR_LEVELS.length; li++) {
-          if (lvls.indexOf(ALERT_BAR_LEVELS[li]) !== -1) { topLvl = ALERT_BAR_LEVELS[li]; break; }
-        }
-        if (!topLvl) continue;  // bandeau ne montre que les 4 tiers principaux
-        var key2 = country + ':event:' + ev2.pivot.id;
-        if (seen[key2]) continue;
-        seen[key2] = true;
-        // Score représentatif = max alert_score parmi pivot+membres
-        var topScore = ev2.pivot.alert_active && typeof ev2.pivot.alert_score === 'number' ? ev2.pivot.alert_score : 0;
-        ev2.members.forEach(function(m){
-          if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
-        });
-        // Trier les noms de membres par niveau d'alerte pour afficher
-        // les plus saillants en premier dans le défilement.
-        var levelRank = { extreme: 0, tres_eleve: 1, eleve: 2 };
-        var sortedMembers = ev2.members.slice().sort(function(a, b) {
-          var la = levelRank[a.alert_level] !== undefined ? levelRank[a.alert_level] : 9;
-          var lb = levelRank[b.alert_level] !== undefined ? levelRank[b.alert_level] : 9;
-          if (la !== lb) return la - lb;
-          return (b.containment || 0) - (a.containment || 0);
-        });
-        alerts.push({
-          id: ev2.pivot.id,
-          level: topLvl,
-          score: isFinite(topScore) && topScore > 0 ? topScore : null,
-          country: country,
-          isEvent: true,
-          memberCount: ev2.members.length,
-          memberNames: sortedMembers.map(function(m){ return m.id; })
-        });
-      }
-
-      // 3) Émettre les alertes individuelles non couvertes par un event
-      var nodes = gd.nodes || [];
-      for (var ni = 0; ni < nodes.length; ni++) {
-        var node = nodes[ni];
-        if (ALERT_BAR_LEVELS.indexOf(node.alert_level) === -1) continue;
-        if (!node.alert_active) continue;
-        if (memberIds[node.id]) continue;  // masqué (membre d'un event)
-        var key = country + ':' + node.id;
-        if (seen[key]) continue;
-        seen[key] = true;
-        var score = Number(node.alert_score);
-        alerts.push({ id: node.id, level: node.alert_level, score: isFinite(score) ? score : null, country: country });
-      }
-    }
-
-    // Trier: extreme > tres_eleve > eleve, puis score desc
-    var BAR_LEVEL_RANK = { extreme: 0, tres_eleve: 1, eleve: 2 };
-    alerts.sort(function(a, b) {
-      var la = BAR_LEVEL_RANK[a.level] !== undefined ? BAR_LEVEL_RANK[a.level] : 9;
-      var lb = BAR_LEVEL_RANK[b.level] !== undefined ? BAR_LEVEL_RANK[b.level] : 9;
-      if (la !== lb) return la - lb;
-      return (b.score || 0) - (a.score || 0);
-    });
+    // Précalculé par pipeline/build_classement.py (port de l'ancienne
+    // extraction : pivots d'événements + alertes individuelles, triés).
+    var alerts = Array.isArray(data && data.alert_bar) ? data.alert_bar : [];
 
     // Badge compteur dans le menu
     if (navBadge) {
@@ -714,7 +650,9 @@
   var _lastAlertGraphData = null;
   function initAlertBar() {
     injectAlertBar();
-    fetch('./graph.json', { cache: 'no-store' })
+    // classement.json porte le bandeau précalculé (alert_bar) — fini le
+    // rechargement de graph.json (~10 Mo) sur chaque page (audit vague 3).
+    fetch('./classement.json', { cache: 'no-store' })
       .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
       .then(function(data) {
         _lastAlertGraphData = data;

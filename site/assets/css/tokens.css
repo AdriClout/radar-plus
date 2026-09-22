@@ -1,0 +1,66 @@
+/* ============================================================================
+   RADAR+ — tokens canoniques du design system
+   Source de vérité : design_language.md (racine du repo).
+
+   Chargé sur TOUTES les pages AVANT leur <style> local : un :root local
+   gagne donc toujours (migration progressive sans régression). Objectif :
+   supprimer les :root locaux page par page jusqu'à ce que celui-ci soit
+   le seul. Ne jamais introduire une couleur hors de cette palette.
+   ========================================================================== */
+:root {
+  /* Fond et encres — l'observatoire nocturne */
+  --bg: #020010;
+  --text: #d0e0ff;
+  --muted: rgba(140, 170, 220, 0.75);   /* 0.6 → 0.75 : contraste AA (audit) */
+  --accent: #5588ff;
+  --accent-soft: #7aa2ff;
+  --accent-glow: rgba(80, 130, 255, 0.45);
+  --card-bg: rgba(10, 18, 50, 0.7);
+  --border: rgba(90, 140, 255, 0.22);
+  --line: var(--border);                /* alias : certaines pages disent --line */
+
+  /* Paliers d'alerte (objets) — masculins, alignés sur le pipeline */
+  --eleve: #f2cd50;      --eleve-d: #7a6420;
+  --tres-eleve: #ffa050; --tres-eleve-d: #8a4818;
+  --extreme: #ff5050;    --extreme-d: #8a1d1d;
+
+  /* Bandes de saillance (événements) — féminines, seuils Vitrine */
+  --band-faible: #9fb4dd;
+  --band-moderee: #7aa2ff;
+  --band-elevee: var(--eleve);
+  --band-tres-elevee: var(--tres-eleve);
+  --band-extreme: #ff6060;
+
+  /* Typographies — une par rôle */
+  --orbitron: 'Orbitron', 'Arial Black', sans-serif;  /* titres, labels UI (uppercase) */
+  --mono: 'Space Mono', Consolas, monospace;          /* corps, données */
+
+  /* Gabarit */
+  --ticker-height: 44px;
+  --content-max: 1000px;
+}
+
+/* Focus visible partout — l'accent trace le clavier */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Mouvement réduit : neutralise les animations et transitions CSS.
+   (Les canvas animés — champs d'étoiles, radar — doivent en plus vérifier
+   matchMedia('(prefers-reduced-motion: reduce)') dans leur boucle JS.) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Texte pour lecteurs d'écran uniquement */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip-path: inset(50%); overflow: hidden; white-space: nowrap;
+}
