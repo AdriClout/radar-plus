@@ -286,7 +286,7 @@
 <hr />
 <h2 id="architecture-de-collecte">2. Architecture de collecte</h2>
 <h3 id="capture-continue">2.1 Capture continue</h3>
-<p>Le développement de Radar+ a commencé en <strong>septembre 2018</strong> au sein de la CLESSN. La première version publique a été déployée en <strong>septembre 2019</strong> à l’occasion de l’élection fédérale canadienne, avec un site web dédié et des publications quotidiennes sur les réseaux sociaux. Depuis, sans interruption, un système automatisé photographie <strong>toutes les 10 minutes</strong> la page d’accueil de chaque média suivi. Pour chaque capture, le système conserve :</p>
+<p>Le développement de Radar+ a commencé en <strong>septembre 2018</strong> au sein de la CLESSN. La première version publique a été déployée en <strong>septembre 2019</strong> à l’occasion de l’élection fédérale canadienne, avec un site web dédié et des publications quotidiennes sur les réseaux sociaux. Depuis, un système automatisé photographie <strong>toutes les 10 minutes</strong> la page d’accueil de chaque média suivi. Pour chaque capture, le système conserve :</p>
 <ul>
 <li>la <strong>structure HTML</strong> complète de la page;</li>
 <li>la <strong>position relative</strong> de chaque article (coordonnées sur la grille, niveau hiérarchique);</li>
@@ -507,6 +507,7 @@
 <p>Les analyses hebdomadaires (Hot 20 notamment) reposent sur une attente théorique de <strong>42 blocs de 4 heures par semaine</strong> (6 par jour × 7 jours). Un seuil minimal configurable — par défaut <strong>39 blocs sur 42</strong> (≈ 93 %) — sert à valider la complétude des données avant publication. Lorsqu’une semaine présente moins de blocs que ce seuil, le système enregistre l’incomplétude dans les journaux et continue le traitement avec les données disponibles, plutôt que de bloquer la publication. Cette tolérance permet de préserver la continuité de la couverture face aux interruptions techniques mineures, tout en signalant explicitement la dégradation de qualité.</p>
 <h3 id="maturation-technique-et-continuité-historique">7.3 Maturation technique et continuité historique</h3>
 <p>Quatre refontes successives de l’infrastructure technique ont eu lieu entre 2019 et 2024, chacune visant à améliorer la robustesse, la couverture et la précision. Les données antérieures à 2024 (versions plus anciennes) sont conservées et exploitées avec les précautions méthodologiques correspondantes; le <strong>format normalisé issu de la refonte 2024 sert de référence</strong> pour les analyses publiques actuelles.</p>
+<p>La série officielle est continue depuis le <strong>17 avril 2023</strong> pour les médias québécois et canadiens, et depuis le <strong>1er septembre 2024</strong> pour les médias américains. La collecte s’était interrompue de novembre 2022 à avril 2023, et trois trous sont connus depuis : du 6 au 27 juin 2023 (tous les médias), le <em>Toronto Star</em> du 19 juillet à octobre 2023 et le <em>Globe and Mail</em> du 20 septembre au 23 octobre 2023. Les données antérieures au 17 avril 2023 sont des segments historiques, conservés mais hors de la série officielle.</p>
 <h3 id="benchmark-humain">7.4 Benchmark humain</h3>
 <p>Pour chaque mise à jour majeure des modèles, un échantillon de captures fait l’objet d’une <strong>annotation manuelle</strong> par plusieurs membres de l’équipe. Le <strong>taux d’accord inter-annotateur</strong> sert à évaluer la solidité du benchmark, et les divergences sont arbitrées avant intégration dans les seuils des modèles.</p>
 <hr />
@@ -667,7 +668,7 @@
 <hr />
 <h2 id="en-architecture">2. Collection architecture</h2>
 <h3 id="en-capture-continue">2.1 Continuous capture</h3>
-<p>Radar+ development began in <strong>September 2018</strong> within CLESSN. The first public version was deployed in <strong>September 2019</strong> for the Canadian federal election, with a dedicated website and daily social media posts. Since then, without interruption, an automated system photographs <strong>every 10 minutes</strong> the home page of every tracked outlet. For each capture, the system retains:</p>
+<p>Radar+ development began in <strong>September 2018</strong> within CLESSN. The first public version was deployed in <strong>September 2019</strong> for the Canadian federal election, with a dedicated website and daily social media posts. Since then, an automated system photographs <strong>every 10 minutes</strong> the home page of every tracked outlet. For each capture, the system retains:</p>
 <ul>
 <li>the full <strong>HTML structure</strong> of the page;</li>
 <li>the <strong>relative position</strong> of each article (grid coordinates, hierarchical level);</li>
@@ -843,6 +844,7 @@
 <p>Weekly analyses (Hot 20 in particular) rest on a theoretical expectation of <strong>42 blocks of 4 hours per week</strong> (6 per day × 7 days). A configurable minimum threshold — by default <strong>39 of 42 blocks</strong> (≈ 93%) — is used to validate data completeness before publication. When a week shows fewer blocks than this threshold, the system records the incompleteness in logs and continues processing with the available data, rather than blocking publication. This tolerance preserves continuity in the face of minor technical interruptions while explicitly signaling the quality degradation.</p>
 <h3 id="en-maturation">7.3 Technical maturation and historical continuity</h3>
 <p>Four successive overhauls of the technical infrastructure took place between 2019 and 2024, each aimed at improving robustness, coverage and precision. Data prior to 2024 (older versions) is preserved and used with the corresponding methodological precautions; the <strong>normalized format from the 2024 overhaul serves as the reference</strong> for current public analyses.</p>
+<p>The official series is continuous since <strong>17 April 2023</strong> for the Quebec and Canadian outlets, and since <strong>1 September 2024</strong> for the U.S. outlets. Collection stopped between November 2022 and April 2023, and three gaps are known since: 6 to 27 June 2023 (all outlets), the <em>Toronto Star</em> from 19 July to October 2023, and the <em>Globe and Mail</em> from 20 September to 23 October 2023. Data prior to 17 April 2023 are historical segments, preserved but outside the official series.</p>
 <h3 id="en-benchmark">7.4 Human benchmark</h3>
 <p>For each major model update, a sample of captures is subject to <strong>manual annotation</strong> by several team members. The <strong>inter-annotator agreement rate</strong> is used to assess the benchmark’s solidity, and divergences are arbitrated before integration into model thresholds.</p>
 <hr />

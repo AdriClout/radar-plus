@@ -42,7 +42,7 @@ Quatre textes conceptuels à intégrer dans la page d'accueil. Chaque bloc a un 
 
 ## Bloc 1 — Radar+
 
-Radar+ photographie les pages d'accueil des grands médias canadiens et américains toutes les 10 minutes, sans interruption, depuis 2019. L'archive raconte ce que chaque média a mis de l'avant — et ce qu'il a laissé dans l'ombre.
+Radar+ photographie les pages d'accueil des grands médias canadiens et américains toutes les 10 minutes depuis septembre 2019, en série continue depuis le 17 avril 2023. L'archive raconte ce que chaque média a mis de l'avant — et ce qu'il a laissé dans l'ombre.
 
 ---
 

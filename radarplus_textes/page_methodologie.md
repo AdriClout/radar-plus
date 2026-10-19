@@ -109,7 +109,7 @@ Trois littératures encadrent la démarche :
 
 ### 2.1 Capture continue
 
-Le développement de Radar+ a commencé en **septembre 2018** au sein de la CLESSN. La première version publique a été déployée en **septembre 2019** à l'occasion de l'élection fédérale canadienne, avec un site web dédié et des publications quotidiennes sur les réseaux sociaux. Depuis, sans interruption, un système automatisé photographie **toutes les 10 minutes** la page d'accueil de chaque média suivi. Pour chaque capture, le système conserve :
+Le développement de Radar+ a commencé en **septembre 2018** au sein de la CLESSN. La première version publique a été déployée en **septembre 2019** à l'occasion de l'élection fédérale canadienne, avec un site web dédié et des publications quotidiennes sur les réseaux sociaux. Depuis, un système automatisé photographie **toutes les 10 minutes** la page d'accueil de chaque média suivi. Pour chaque capture, le système conserve :
 
 - la **structure HTML** complète de la page;
 - la **position relative** de chaque article (coordonnées sur la grille, niveau hiérarchique);
@@ -297,6 +297,8 @@ Les analyses hebdomadaires (Hot 20 notamment) reposent sur une attente théoriqu
 ### 7.3 Maturation technique et continuité historique
 
 Quatre refontes successives de l'infrastructure technique ont eu lieu entre 2019 et 2024, chacune visant à améliorer la robustesse, la couverture et la précision. Les données antérieures à 2024 (versions plus anciennes) sont conservées et exploitées avec les précautions méthodologiques correspondantes; le **format normalisé issu de la refonte 2024 sert de référence** pour les analyses publiques actuelles.
+
+La série officielle est continue depuis le **17 avril 2023** pour les médias québécois et canadiens, et depuis le **1er septembre 2024** pour les médias américains. La collecte s'était interrompue de novembre 2022 à avril 2023, et trois trous sont connus depuis : du 6 au 27 juin 2023 (tous les médias), le *Toronto Star* du 19 juillet à octobre 2023 et le *Globe and Mail* du 20 septembre au 23 octobre 2023. Les données antérieures au 17 avril 2023 sont des segments historiques, conservés mais hors de la série officielle.
 
 ### 7.4 Benchmark humain
 

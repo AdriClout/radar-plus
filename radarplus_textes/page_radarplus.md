@@ -52,7 +52,7 @@ NE PAS CONVERTIR
 
 ## TL;DR
 
-Radar+ archive les pages d'accueil de 15 grands médias canadiens et américains **toutes les 10 minutes, sans interruption depuis septembre 2019**. Pour chaque sujet — Donald Trump, l'immigration, le climat, Hydro-Québec — un **indice de saillance** combine trois choses : où le sujet est placé, combien d'espace il occupe, combien de temps il y reste. Le résultat : une carte vivante des priorités médiatiques, qui permet de voir comment un événement monte, dure, puis disparaît — et de comparer les choix d'un média à ceux d'un autre. Radar+ fait partie de la **Vitrine démocratique**, un projet de la CLESSN (Université Laval) qui mesure le pouls de la démocratie sous trois angles : médias, opinion publique et promesses électorales. Les données sont ouvertes, la méthode est documentée, et l'outil est utilisable par tout le monde.
+Radar+ archive les pages d'accueil de 15 grands médias canadiens et américains **toutes les 10 minutes depuis septembre 2019, en série continue depuis le 17 avril 2023**. Pour chaque sujet — Donald Trump, l'immigration, le climat, Hydro-Québec — un **indice de saillance** combine trois choses : où le sujet est placé, combien d'espace il occupe, combien de temps il y reste. Le résultat : une carte vivante des priorités médiatiques, qui permet de voir comment un événement monte, dure, puis disparaît — et de comparer les choix d'un média à ceux d'un autre. Radar+ fait partie de la **Vitrine démocratique**, un projet de la CLESSN (Université Laval) qui mesure le pouls de la démocratie sous trois angles : médias, opinion publique et promesses électorales. Les données sont ouvertes, la méthode est documentée, et l'outil est utilisable par tout le monde.
 
 ---
 
