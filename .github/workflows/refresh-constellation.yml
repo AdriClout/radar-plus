@@ -103,7 +103,7 @@ jobs:
       # sur GITHUB_TOKEN (qui ne déclenche pas de workflows), rétablir le dispatch.
 
       - name: Validate live site is updated
-        if: steps.commit_data.outputs.updated == 'true'
+        if: steps.commit_data.outputs.updated == 'true' && github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
 

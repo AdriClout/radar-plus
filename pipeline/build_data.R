@@ -16,11 +16,22 @@
 # ─── Paramètres ────────────────────────────────────────────────────────────────
 
 GRAPH_DAYS       <- 14   # Fenêtre graph.json (constellation)
-HISTORY_DAYS     <- 130  # Fenêtre timeseries.json (évolution) — couvre tout 2026 depuis le 1er janvier
+HISTORY_DAYS     <- 130  # Fenêtre timeseries.json (évolution) ; la série spec v1 commence le 2026-07-12
 TOP_N_OBJECTS    <- 30   # Nœuds max par période × pays
 MIN_COOCCURRENCE <- 1    # Seuil minimum d'URLs partagées pour un lien
 
-ALERT_MIN_ABS_SCORE    <- 1.0  # Plancher absolu de saillance — sous ce seuil, rien
+ALERT_MIN_ABS_SCORE    <- 20   # Plancher absolu (indice spec v1 sur 100) ; diag du 2026-10-18 : l'ancien plancher 1.0 gardait 11 % des couples objet × bloc, équivalent 21,4 sur la nouvelle échelle
+
+# Indice publié dans `size` : salience_index (spec v1, radar-salient-index, 8 août 2026) × 100.
+# L'ancien absolute_normalized_index (n × Σ pond_time_norm) reste lu mais ne sert plus.
+INDEX_META <- list(
+  name         = "salience_index",
+  spec         = "spec-v1",
+  scale        = "0-100",
+  floor        = ALERT_MIN_ABS_SCORE,
+  series_start = "2026-07-12",
+  legacy       = "absolute_normalized_index"
+)
 
 # ─── Taxonomie 3 niveaux (dérivés du pic de saillance) ───────────────────────
 # Voir methodologie.html §10 pour la définition complète.
@@ -96,10 +107,17 @@ df_index <- readr::read_csv(file.path(OUT_DIR, "salient_index.csv"),
   dplyr::mutate(
     date_utc                  = as.Date(date_utc),
     n                         = as.integer(n),
-    absolute_normalized_index = as.numeric(absolute_normalized_index)
+    absolute_normalized_index = as.numeric(absolute_normalized_index),
+    salience_index            = suppressWarnings(as.numeric(salience_index))
   ) |>
   dplyr::filter(date_utc >= as.Date(history_start))
-cat("  →", nrow(df_index), "lignes chargées\n")
+n_total <- nrow(df_index)
+# Spec v1 : lignes sans salience_index (avant le 2026-07-12) exclues ; indice publié sur 100.
+df_index <- df_index |>
+  dplyr::filter(!is.na(salience_index)) |>
+  dplyr::mutate(indice = salience_index * 100)
+cat("  →", n_total, "lignes chargées,", nrow(df_index), "avec salience_index (spec v1) ; première date :",
+    as.character(min(df_index$date_utc)), "\n")
 
 cat("Lecture de salient_headlines_objects (médias)...\n")
 df_objects <- readr::read_csv(file.path(OUT_DIR, "salient_objects.csv"),
@@ -133,9 +151,9 @@ df_index <- df_index |>
 #   moderate  = p50 · high = p80 · very_high = p95 · extreme = p99
 cat("Calcul des paliers de saillance par pays (pics par bloc 4h, saillance >= ", ALERT_MIN_ABS_SCORE, ")...\n", sep = "")
 salience_tiers_df <- df_index |>
-  dplyr::filter(absolute_normalized_index >= ALERT_MIN_ABS_SCORE) |>
+  dplyr::filter(indice >= ALERT_MIN_ABS_SCORE) |>
   dplyr::group_by(country_id, date_utc, time_interval_utc) |>
-  dplyr::summarise(peak = max(absolute_normalized_index, na.rm = TRUE), .groups = "drop") |>
+  dplyr::summarise(peak = max(indice, na.rm = TRUE), .groups = "drop") |>
   dplyr::group_by(country_id) |>
   dplyr::summarise(
     moderate  = stats::quantile(peak, 0.50, na.rm = TRUE),
@@ -175,7 +193,7 @@ cat("Détection des épisodes par (pays, objet) au seuil 'élevé' (p80)...\n")
 df_daily <- df_index |>
   dplyr::group_by(country_id, extracted_objects, date_utc) |>
   dplyr::summarise(
-    day_peak = max(absolute_normalized_index, na.rm = TRUE),
+    day_peak = max(indice, na.rm = TRUE),
     .groups  = "drop"
   )
 
@@ -639,7 +657,7 @@ for (lvl in c("extreme", "tres_eleve", "eleve")) {
 
 df_nodes <- df_index |>
   dplyr::group_by(country_id, date_utc, time_interval_utc) |>
-  dplyr::slice_max(absolute_normalized_index, n = TOP_N_OBJECTS, with_ties = FALSE) |>
+  dplyr::slice_max(indice, n = TOP_N_OBJECTS, with_ties = FALSE) |>
   dplyr::ungroup()
 
 df_obj_media <- df_objects |>
@@ -780,7 +798,7 @@ parse_urls_set <- function(urls_json) {
 build_alert_events <- function(nodes_i) {
   # nodes_i: data frame d'une (country, période), Top N filtré, avec colonnes
   # extracted_objects, urls, alert_active, alert_level, n,
-  # absolute_normalized_index. Doit déjà être ordonné par desc(saillance).
+  # indice. Doit déjà être ordonné par desc(saillance).
   if (nrow(nodes_i) < 2) return(list())
 
   alert_idx <- which(isTRUE(nodes_i$alert_active) | nodes_i$alert_active %in% TRUE)
@@ -864,7 +882,7 @@ build_alert_events <- function(nodes_i) {
     events[[length(events) + 1]] <- list(
       pivot = list(
         id           = pivot_id,
-        size         = round(nodes_i$absolute_normalized_index[p], 3),
+        size         = round(nodes_i$indice[p], 3),
         n            = nodes_i$n[p],
         alert_level  = nodes_i$alert_level[p],
         alert_active = isTRUE(nodes_i$alert_active[p])
@@ -935,7 +953,7 @@ graphs_graph <- purrr::map(countries, function(country) {
 
     excl <- EXCLUSION_BY_COUNTRY[[country]]  # NULL si pays inconnu → aucune exclusion
 
-    nodes_i    <- df_nodes_graph |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(extracted_objects) %in% excl) |> dplyr::arrange(dplyr::desc(absolute_normalized_index))
+    nodes_i    <- df_nodes_graph |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(extracted_objects) %in% excl) |> dplyr::arrange(dplyr::desc(indice))
     node_med_i <- df_obj_media   |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti)
     links_i    <- df_edges       |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(source) %in% excl, !tolower(target) %in% excl)
     link_med_i <- df_edges_media |> dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |> dplyr::filter(!tolower(source) %in% excl, !tolower(target) %in% excl)
@@ -945,7 +963,7 @@ graphs_graph <- purrr::map(countries, function(country) {
     list(
       nodes = purrr::map(seq_len(nrow(nodes_i)), function(j) list(
         id        = nodes_i$extracted_objects[j],
-        size      = round(nodes_i$absolute_normalized_index[j], 3),
+        size      = round(nodes_i$indice[j], 3),
         n         = nodes_i$n[j],
         alert_level = nodes_i$alert_level[j],
         alert_active = isTRUE(nodes_i$alert_active[j]),
@@ -1058,6 +1076,7 @@ result_graph <- list(
     # empirique sur la fenêtre HISTORY_DAYS). Frontend dérive le niveau
     # d'alerte (extreme/tres_eleve/eleve) à partir du pic vs ces seuils.
     salience_tiers = salience_tiers,
+    index        = INDEX_META,
     media_ids    = all_media_ids,
     periods      = make_periods_list(periods_graph),
     countries    = countries
@@ -1093,7 +1112,7 @@ for (country in countries) {
     nodes_i <- df_nodes |>
       dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |>
       dplyr::filter(!tolower(extracted_objects) %in% excl) |>
-      dplyr::arrange(dplyr::desc(absolute_normalized_index))
+      dplyr::arrange(dplyr::desc(indice))
 
     period_nodes <- list()
     period_articles <- list()
@@ -1102,7 +1121,7 @@ for (country in countries) {
         nid <- nodes_i$extracted_objects[j]
         period_nodes[[length(period_nodes) + 1]] <- list(
           id             = nid,
-          size           = round(nodes_i$absolute_normalized_index[j], 3),
+          size           = round(nodes_i$indice[j], 3),
           n              = nodes_i$n[j],
           alert_level    = nodes_i$alert_level[j],
           alert_active   = isTRUE(nodes_i$alert_active[j]),
@@ -1143,6 +1162,7 @@ result_ts <- list(
       block_hours          = 4
     ),
     salience_tiers = salience_tiers,
+    index         = INDEX_META,
     periods       = make_periods_list(periods_ts),
     countries     = countries
   ),
@@ -1172,7 +1192,7 @@ cat("\nAssemblage monitor_input.json (tops entrée)...\n")
 
 required_index_cols <- c(
   "country_id", "date_utc", "time_interval_utc", "extracted_objects",
-  "absolute_normalized_index", "n", "urls", "titles"
+  "absolute_normalized_index", "salience_index", "n", "urls", "titles"
 )
 required_objects_cols <- c(
   "country_id", "time_interval_utc", "media_id", "url",
@@ -1215,7 +1235,7 @@ build_top_input_rows <- function(country) {
 
   idx_top <- df_index |>
     dplyr::filter(country_id == country, date_utc == d, time_interval_utc == ti) |>
-    dplyr::arrange(dplyr::desc(absolute_normalized_index), dplyr::desc(n)) |>
+    dplyr::arrange(dplyr::desc(indice), dplyr::desc(n)) |>
     dplyr::slice_head(n = TOP_N_OBJECTS)
 
   obj_top <- df_objects |>

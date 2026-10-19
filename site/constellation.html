@@ -612,7 +612,7 @@
   const MAX_LINKS_NODE = 5;
 
   // ── Couleurs ──────────────────────────────────────────────────────────────
-  function sizeToT(s) { return Math.min(1, Math.log(s + 1) / Math.log(250)); }
+  function sizeToT(s) { return Math.min(1, Math.log(s + 1) / Math.log(101)); } // indice spec v1 sur 100
 
   function nodeRGB(size) {
     const t = sizeToT(size);
@@ -761,7 +761,7 @@
 
     const articles = Array.isArray(node.articles) ? node.articles : [];
     titleEl.textContent = node.id;
-    metaEl.textContent  = `${(Number(node.size) || 0).toFixed(2)} pts · ${node.n || 0} mentions · ${articles.length} article${articles.length > 1 ? 's' : ''}`;
+    metaEl.textContent  = `${(Number(node.size) || 0).toFixed(1)} pts · ${node.n || 0} mentions · ${articles.length} article${articles.length > 1 ? 's' : ''}`;
 
     const evolutionUrl = `./evolution.html?country=${encodeURIComponent(currentCountry)}&gran=${encodeURIComponent(rankedGranularity)}&nodes=${encodeURIComponent(node.id)}&mode=tracking`;
     var Tcst = window.t || function(k){ return k; };
@@ -869,7 +869,7 @@
     if (c) return c;
     return nodeColorStr(n.size, n._highlighted);
   });
-  setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
+  setIfFn('nodeVal', n => Math.max(4, n.size * 0.3));
   setIfFn('nodeRelSize', 3);
   setIfFn('nodeLabel', () => '');
   // Liens
@@ -926,7 +926,7 @@
       const { nodes } = Graph.graphData();
       nodes.forEach(n => {
         if (n.x == null || n._highlighted === false) return;
-        const r  = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
+        const r  = 3 * Math.sqrt(Math.max(4, n.size * 0.3));
         const [nr, ng, nb] = nodeRGB(n.size);
         // Halo extérieur
         const g1 = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4);
@@ -958,7 +958,7 @@
         if (n.x == null || n._highlighted === false) return;
         const tier = getSalienceTier(n.size);
         if (!tier) return;
-        const r = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
+        const r = 3 * Math.sqrt(Math.max(4, n.size * 0.3));
         ctx.beginPath();
         ctx.arc(n.x, n.y, r + 2, 0, Math.PI * 2);
         ctx.strokeStyle = TIER_RING_COLORS[tier];
@@ -984,7 +984,7 @@
       nodes.forEach(n => {
         if (n._rank >= TOP_LABELS || n.x == null || n._highlighted === false) return;
         const t   = sizeToT(n.size);
-        const r   = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
+        const r   = 3 * Math.sqrt(Math.max(4, n.size * 0.3));
         const fs  = Math.max(2, 11 / gs);
         ctx.font  = `${fs}px 'SF Mono', monospace`;
         ctx.textBaseline = 'middle';
@@ -1028,7 +1028,7 @@
   Graph.d3Force('charge').strength(-110);
   Graph.d3Force('link').distance(65);
 
-  function nodeRadius(n) { return 3 * Math.sqrt(Math.max(4, n.size * 0.5)); }
+  function nodeRadius(n) { return 3 * Math.sqrt(Math.max(4, n.size * 0.3)); }
 
   // Padding label-aware: ajoute une marge horizontale proportionnelle
   // à la longueur du label (capée à ~30px), petite marge verticale

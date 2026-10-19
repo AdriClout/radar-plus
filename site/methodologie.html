@@ -426,19 +426,24 @@
 <li>la <strong>pondération intra-média</strong> : <code>pond_time = headline_minutes / mean_time_média</code>, qui ramène le temps en Une à la moyenne du média;</li>
 <li>la <strong>pondération inter-médias</strong> : <code>pond_time_norm = headline_minutes / mean_time_global</code>, qui ramène ce même temps à la moyenne globale tous médias confondus (<strong>≈ 235,9 min</strong> sur les 15 médias actifs).</li>
 </ul>
-<p>C’est la pondération <strong>inter-médias</strong> qui sert au calcul des indices publics, parce qu’elle permet de comparer rigoureusement des médias aux rythmes éditoriaux différents — un <em>gros titre</em> de 60 minutes à <em>La Presse</em> (où la rotation est rapide) reçoit ainsi un poids différent qu’un <em>gros titre</em> de 60 minutes au <em>Vancouver Sun</em> (où la stabilité est longue).</p>
-<h3 id="indice-de-saillance-absolu">5.2 Indice de saillance absolu</h3>
-<p>L’<strong>indice absolu</strong> d’un objet, sur un bloc de 4 heures, combine deux composantes : la <strong>fréquence</strong> d’apparition de l’objet (nombre de manchettes le mentionnant), et la <strong>somme des pondérations inter-médias</strong> des manchettes correspondantes. Plus formellement :</p>
+<p>C’est la pondération <strong>intra-média</strong> qui entre dans l’indice (facette Durée) : une heure en Une sur une page renouvelée en continu ne vaut pas une heure sur une page qui change deux fois par jour. La pondération inter-médias reste calculée et publiée dans les données, mais elle ne sert plus au score.</p>
+<h3 id="indice-de-saillance-absolu">5.2 Indice de saillance (spécification v1)</h3>
+<p>Depuis octobre 2026, Radar+ affiche l’indice de saillance de <strong>spécification v1</strong>, en service sur la Vitrine démocratique depuis le 12 août 2026 : même formule, calculée par objet ici et par événement là-bas (raffineur <code>radar-salient-index</code>, 8 août 2026). Pour chaque objet, chaque bloc de 4 heures et chaque région (Québec, Canada, États-Unis), trois facettes sont mesurées et ramenées entre 0 et 1 :</p>
+<ul>
+<li><strong>Volume</strong> : nombre d’articles distincts qui mentionnent l’objet, au plus 3 par média (un média qui multiplie les textes sur un même sujet ne compte pas davantage), avec saturation : <code>s_volume = 1 − exp(−articles / 3)</code>.</li>
+<li><strong>Visibilité</strong> : part des médias suivis de la région, au-delà du premier, qui portent l’objet en Une : <code>s_visibilité = (n_médias − 1) / (panel − 1)</code>. Un objet porté par un seul média vaut 0.</li>
+<li><strong>Durée</strong> : temps cumulé en Une, rapporté au rythme de chaque média (<code>pond_time</code>), avec saturation : <code>s_durée = 1 − exp(−Σ pond_time / 2)</code>.</li>
+</ul>
+<p>L’indice est la <strong>moyenne géométrique</strong> des trois facettes, avec un plancher de 0,05 sur chacune :</p>
 <blockquote>
-<p><code>absolute_normalized_index = n × Σ pond_time_norm</code></p>
+<p><code>indice = (s_volume × s_visibilité × s_durée)^(1/3)</code></p>
 </blockquote>
-<p>où <code>n</code> est le nombre de manchettes mentionnant l’objet dans le bloc, et <code>Σ pond_time_norm</code> la somme des pondérations inter-médias de ces manchettes.</p>
-<p>Cet indice traduit donc <strong>à la fois la fréquence et l’insistance</strong> : un sujet présent sur de nombreux médias mais peu de temps obtient un score élevé; un sujet présent longtemps mais sur un seul média aussi. Les deux régimes sont reconnus.</p>
-<p>L’indice absolu se cumule ensuite par addition simple à travers les blocs de 4 heures pour produire des scores <strong>journaliers, hebdomadaires, mensuels et annuels</strong>.</p>
+<p>La moyenne géométrique n’est pas compensatoire : une facette presque nulle plombe le score, et aucune autre ne peut la racheter. Un sujet qu’un seul média garde toute la journée en Une reste donc bas ; un sujet que plusieurs médias portent en même temps monte. L’indice vaut entre 0 et 1 ; Radar+ l’affiche <strong>sur 100, avec une décimale</strong>. Les cumuls par jour ou par semaine sont des sommes de ces valeurs par bloc.</p>
+<p>La série publiée avec cet indice commence le <strong>12 juillet 2026</strong> ; l’historique antérieur sera recalculé avec la même formule. L’ancien indice (<code>n × Σ pond_time_norm</code>, fréquence × temps inter-médias) reste dans les données sous le nom <code>absolute_normalized_index</code> ; il récompensait un sujet long sur un seul média, ce que la spécification v1 corrige.</p>
 <h3 id="indice-de-saillance-relatif">5.3 Indice de saillance relatif</h3>
 <p>L’<strong>indice relatif</strong> d’un objet, sur une fenêtre temporelle donnée, est exprimé en <strong>pourcentage de la saillance totale</strong> de cette fenêtre :</p>
 <blockquote>
-<p><code>relative_normalized_index = (absolute_normalized_index_objet / Σ absolute_normalized_index_tous_objets) × 100</code></p>
+<p><code>part_de_saillance = (indice_objet / Σ indice_tous_objets) × 100</code></p>
 </blockquote>
 <p>Toutes les valeurs relatives d’une fenêtre somment donc à 100 %. Cette normalisation permet de <strong>comparer</strong> :</p>
 <ul>
@@ -566,17 +571,17 @@
 
 <hr />
 <h2 id="paliers">11. Paliers de saillance absolue</h2>
-<p>Le z-score d’alerte mesure l’<em>anomalie pour soi</em> — un objet est inhabituel par rapport à son propre passé. Mais ça ne dit rien de la <em>magnitude absolue</em> : un score de saillance de 8.5 est-il rare ou banal sur le radar ? Pour répondre à cette question, Radar+ publie quatre <strong>paliers de saillance absolue</strong> calibrés empiriquement par pays.</p>
+<p>Le z-score d’alerte mesure l’<em>anomalie pour soi</em> — un objet est inhabituel par rapport à son propre passé. Mais ça ne dit rien de la <em>magnitude absolue</em> : un score de saillance de 45 sur 100 est-il rare ou banal sur le radar ? Pour répondre à cette question, Radar+ publie quatre <strong>paliers de saillance absolue</strong> calibrés empiriquement par pays.</p>
 
 <h3 id="paliers-calibration">11.1 Calibration empirique</h3>
-<p>Sur la fenêtre des 130 derniers jours, on prend pour chaque bloc 4 h le <strong>pic de saillance par pays</strong> — c’est-à-dire la saillance maximale observée parmi les objets de ce bloc, sous réserve d’un plancher (≥ 1.0). Calibrer sur les pics plutôt que sur tous les couples (objet, bloc) garantit que les seuils sont alignés sur la grandeur que le frontend affiche réellement : la courbe d’évolution montre le pic, pas la dispersion des objets secondaires. La distribution de ces pics est ensuite découpée en quatre seuils correspondant aux percentiles :</p>
+<p>Sur la fenêtre des 130 derniers jours, on prend pour chaque bloc 4 h le <strong>pic de saillance par pays</strong> — c’est-à-dire la saillance maximale observée parmi les objets de ce bloc, sous réserve d’un plancher (≥ 20 sur 100). Calibrer sur les pics plutôt que sur tous les couples (objet, bloc) garantit que les seuils sont alignés sur la grandeur que le frontend affiche réellement : la courbe d’évolution montre le pic, pas la dispersion des objets secondaires. La distribution de ces pics est ensuite découpée en quatre seuils correspondant aux percentiles :</p>
 <ul>
 <li><strong>Modéré</strong> — p50 (médiane des pics 4 h). La moitié supérieure des moments du pays.</li>
 <li><strong>Élevé</strong> — p80 (top 20 % des moments).</li>
 <li><strong>Très élevé</strong> — p95 (top 5 %).</li>
 <li><strong>Extrême</strong> — p99 (top 1 % — pic vraiment exceptionnel pour le pays).</li>
 </ul>
-<p>La calibration est <strong>par pays</strong> : la concentration de l’attention médiatique varie considérablement selon les corpus. Un score « extrême » au Québec n’est pas comparable à un « extrême » aux États-Unis (où la base d’articles est plus diluée, donc les pics absolus plus bas). À titre indicatif (valeurs au moment de la rédaction, recalibrées à chaque exécution du pipeline) : CAN ≈ 17 / 30 / 44 / 59, QC ≈ 9 / 17 / 32 / 42, USA ≈ 4 / 6 / 8 / 10. Ces différences reflètent le fait que CAN et QC concentrent fortement la couverture sur peu de sujets-stars (Trump, événements géopolitiques), alors que USA est plus dispersé dans cette base.</p>
+<p>La calibration est <strong>par pays</strong> : la concentration de l’attention médiatique varie considérablement selon les corpus. Un score « extrême » au Québec n’est pas comparable à un « extrême » aux États-Unis (où la base d’articles est plus diluée, donc les pics absolus plus bas). Les valeurs courantes sont publiées dans <code>meta.salience_tiers</code> et recalculées à chaque passage du pipeline. Les différences entre pays reflètent le fait que CAN et QC concentrent fortement la couverture sur peu de sujets-stars (Trump, événements géopolitiques), alors que USA est plus dispersé dans cette base.</p>
 
 <h3 id="paliers-affichage">11.2 Affichage</h3>
 <p>Les paliers apparaissent comme <strong>quatre lignes horizontales pointillées</strong> sur le chart de la page <em>Évolution</em> en mode tracking. La courbe de saillance d’un objet vient s’y promener : on voit en un coup d’œil quel palier il atteint dans l’absolu. Sur la page <em>Alertes</em>, un mini-pill coloré indique le palier max atteint pour chaque carte ou épisode.</p>
@@ -763,19 +768,24 @@
 <li>the <strong>intra-outlet weighting</strong>: <code>pond_time = headline_minutes / mean_time_outlet</code>, which scales front-page time relative to the outlet’s average;</li>
 <li>the <strong>inter-outlet weighting</strong>: <code>pond_time_norm = headline_minutes / mean_time_global</code>, which scales the same time relative to the global average across all outlets (<strong>≈ 235.9 min</strong> for the 15 active outlets).</li>
 </ul>
-<p>It is the <strong>inter-outlet</strong> weighting that is used for public indices, because it allows rigorous comparison across outlets with different editorial paces — a 60-minute <em>banner headline</em> at <em>La Presse</em> (where rotation is fast) thus receives a different weight than a 60-minute one at the <em>Vancouver Sun</em> (where stability is long).</p>
-<h3 id="en-indice-absolu">5.2 Absolute saliency index</h3>
-<p>The <strong>absolute index</strong> of an object, on a 4-hour block, combines two components: the <strong>frequency</strong> of the object’s appearance (number of headlines mentioning it), and the <strong>sum of inter-outlet weightings</strong> of the matching headlines. More formally:</p>
+<p>It is the <strong>intra-outlet</strong> weighting that enters the index (Duration facet): one hour on a front page that turns over continuously is not worth one hour on a page that changes twice a day. The inter-outlet weighting is still computed and published in the data, but no longer feeds the score.</p>
+<h3 id="en-indice-absolu">5.2 Saliency index (specification v1)</h3>
+<p>Since October 2026, Radar+ displays the saliency index of <strong>specification v1</strong>, in service on the Vitrine démocratique since 12 August 2026: the same formula, computed per object here and per event there (refiner <code>radar-salient-index</code>, 8 August 2026). For each object, each 4-hour block and each region (Quebec, Canada, United States), three facets are measured and scaled between 0 and 1:</p>
+<ul>
+<li><strong>Volume</strong>: number of distinct articles mentioning the object, capped at 3 per outlet (an outlet that multiplies pieces on one topic does not count more), with saturation: <code>s_volume = 1 − exp(−articles / 3)</code>.</li>
+<li><strong>Visibility</strong>: share of the region’s tracked outlets, beyond the first, that carry the object on their front page: <code>s_visibility = (n_outlets − 1) / (panel − 1)</code>. An object carried by a single outlet scores 0.</li>
+<li><strong>Duration</strong>: cumulative front-page time, scaled to each outlet’s own pace (<code>pond_time</code>), with saturation: <code>s_duration = 1 − exp(−Σ pond_time / 2)</code>.</li>
+</ul>
+<p>The index is the <strong>geometric mean</strong> of the three facets, each floored at 0.05:</p>
 <blockquote>
-<p><code>absolute_normalized_index = n × Σ pond_time_norm</code></p>
+<p><code>index = (s_volume × s_visibility × s_duration)^(1/3)</code></p>
 </blockquote>
-<p>where <code>n</code> is the number of headlines mentioning the object in the block, and <code>Σ pond_time_norm</code> is the sum of inter-outlet weightings of those headlines.</p>
-<p>This index therefore captures <strong>both frequency and insistence</strong>: a topic on many outlets briefly gets a high score; a topic on a single outlet for a long time also does. Both regimes are recognized.</p>
-<p>The absolute index then accumulates by simple addition across 4-hour blocks to produce <strong>daily, weekly, monthly and yearly</strong> scores.</p>
+<p>A geometric mean is not compensatory: a near-zero facet sinks the score, and no other facet can make up for it. A topic that a single outlet keeps on its front page all day therefore stays low; a topic that several outlets carry at the same time rises. The index ranges from 0 to 1; Radar+ displays it <strong>on a 0–100 scale, with one decimal</strong>. Daily and weekly totals are sums of these per-block values.</p>
+<p>The series published with this index starts on <strong>12 July 2026</strong>; earlier history will be recomputed with the same formula. The former index (<code>n × Σ pond_time_norm</code>, frequency × inter-outlet time) remains in the data as <code>absolute_normalized_index</code>; it rewarded a long-running topic on a single outlet, which specification v1 corrects.</p>
 <h3 id="en-indice-relatif">5.3 Relative saliency index</h3>
 <p>The <strong>relative index</strong> of an object, over a given time window, is expressed as a <strong>percentage of the total saliency</strong> for that window:</p>
 <blockquote>
-<p><code>relative_normalized_index = (absolute_normalized_index_object / Σ absolute_normalized_index_all_objects) × 100</code></p>
+<p><code>saliency_share = (index_object / Σ index_all_objects) × 100</code></p>
 </blockquote>
 <p>All relative values for a window therefore sum to 100%. This normalization allows <strong>comparisons</strong>:</p>
 <ul>
@@ -903,17 +913,17 @@
 
 <hr />
 <h2 id="en-paliers">11. Absolute saliency tiers</h2>
-<p>The alert z-score measures <em>anomaly relative to self</em> — an object is unusual compared to its own past. But it doesn’t say anything about <em>absolute magnitude</em>: is a saliency score of 8.5 rare or banal on the radar? To answer that question, Radar+ publishes four <strong>absolute saliency tiers</strong> empirically calibrated by country.</p>
+<p>The alert z-score measures <em>anomaly relative to self</em> — an object is unusual compared to its own past. But it doesn’t say anything about <em>absolute magnitude</em>: is a saliency score of 45 out of 100 rare or banal on the radar? To answer that question, Radar+ publishes four <strong>absolute saliency tiers</strong> empirically calibrated by country.</p>
 
 <h3 id="en-paliers-calibration">11.1 Empirical calibration</h3>
-<p>Over the past 130-day window, for each 4h block we take the <strong>per-country saliency peak</strong> — i.e. the maximum saliency observed among objects in that block, subject to a floor (≥ 1.0). Calibrating on peaks rather than all (object, block) pairs ensures that thresholds are aligned with what the frontend actually displays: the evolution chart shows the peak, not the dispersion of secondary objects. The distribution of these peaks is then sliced into four thresholds matching the percentiles:</p>
+<p>Over the past 130-day window, for each 4h block we take the <strong>per-country saliency peak</strong> — i.e. the maximum saliency observed among objects in that block, subject to a floor (≥ 20 out of 100). Calibrating on peaks rather than all (object, block) pairs ensures that thresholds are aligned with what the frontend actually displays: the evolution chart shows the peak, not the dispersion of secondary objects. The distribution of these peaks is then sliced into four thresholds matching the percentiles:</p>
 <ul>
 <li><strong>Moderate</strong> — p50 (median of 4h peaks). The upper half of the country’s moments.</li>
 <li><strong>High</strong> — p80 (top 20% of moments).</li>
 <li><strong>Very high</strong> — p95 (top 5%).</li>
 <li><strong>Extreme</strong> — p99 (top 1% — truly exceptional peak for the country).</li>
 </ul>
-<p>Calibration is <strong>per country</strong>: media attention concentration varies considerably across corpora. An “extreme” score in Quebec is not comparable to an “extreme” in the United States (where the article base is more diluted, hence lower absolute peaks). For reference (values at the time of writing, recalibrated at each pipeline run): CAN ≈ 17 / 30 / 44 / 59, QC ≈ 9 / 17 / 32 / 42, USA ≈ 4 / 6 / 8 / 10. These differences reflect the fact that CAN and QC concentrate coverage on few star topics (Trump, geopolitical events), while USA is more dispersed in this dataset.</p>
+<p>Calibration is <strong>per country</strong>: media attention concentration varies considerably across corpora. An “extreme” score in Quebec is not comparable to an “extreme” in the United States (where the article base is more diluted, hence lower absolute peaks). Current values are published in <code>meta.salience_tiers</code> and recomputed at each pipeline run.</p>
 
 <h3 id="en-paliers-affichage">11.2 Display</h3>
 <p>Tiers appear as <strong>four horizontal dotted lines</strong> on the <em>Evolution</em> page chart in tracking mode. An object’s saliency curve wanders between them: at a glance you see which tier it reaches in absolute terms. On the <em>Alerts</em> page, a small colored pill indicates the maximum tier reached for each card or episode.</p>

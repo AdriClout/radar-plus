@@ -230,25 +230,23 @@ Tous les médias ne traitent pas leurs manchettes de la même manière. Certains
 - la **pondération intra-média** : `pond_time = headline_minutes / mean_time_média`, qui ramène le temps en Une à la moyenne du média;
 - la **pondération inter-médias** : `pond_time_norm = headline_minutes / mean_time_global`, qui ramène ce même temps à la moyenne globale tous médias confondus (**≈ 235,9 min** sur les 15 médias actifs).
 
-C'est la pondération **inter-médias** qui sert au calcul des indices publics, parce qu'elle permet de comparer rigoureusement des médias aux rythmes éditoriaux différents — un *gros titre* de 60 minutes à *La Presse* (où la rotation est rapide) reçoit ainsi un poids différent qu'un *gros titre* de 60 minutes au *Vancouver Sun* (où la stabilité est longue).
+C'est la pondération **intra-média** qui entre dans l'indice (facette Durée) : une heure en Une sur une page renouvelée en continu ne vaut pas une heure sur une page qui change deux fois par jour. La pondération inter-médias reste calculée et publiée dans les données, mais elle ne sert plus au score.
 
-### 5.2 Indice de saillance absolu
-
-L'**indice absolu** d'un objet, sur un bloc de 4 heures, combine deux composantes : la **fréquence** d'apparition de l'objet (nombre de manchettes le mentionnant), et la **somme des pondérations inter-médias** des manchettes correspondantes. Plus formellement :
-
-> `absolute_normalized_index = n × Σ pond_time_norm`
-
-où `n` est le nombre de manchettes mentionnant l'objet dans le bloc, et `Σ pond_time_norm` la somme des pondérations inter-médias de ces manchettes.
-
-Cet indice traduit donc **à la fois la fréquence et l'insistance** : un sujet présent sur de nombreux médias mais peu de temps obtient un score élevé; un sujet présent longtemps mais sur un seul média aussi. Les deux régimes sont reconnus.
-
-L'indice absolu se cumule ensuite par addition simple à travers les blocs de 4 heures pour produire des scores **journaliers, hebdomadaires, mensuels et annuels**.
+### 5.2 Indice de saillance (spécification v1)
+Depuis octobre 2026, Radar+ affiche l'indice de saillance de **spécification v1**, en service sur la Vitrine démocratique depuis le 12 août 2026 : même formule, calculée par objet ici et par événement là-bas (raffineur `radar-salient-index`, 8 août 2026). Pour chaque objet, chaque bloc de 4 heures et chaque région (Québec, Canada, États-Unis), trois facettes sont mesurées et ramenées entre 0 et 1 :
+- **Volume** : nombre d'articles distincts qui mentionnent l'objet, au plus 3 par média (un média qui multiplie les textes sur un même sujet ne compte pas davantage), avec saturation : `s_volume = 1 − exp(−articles / 3)`.
+- **Visibilité** : part des médias suivis de la région, au-delà du premier, qui portent l'objet en Une : `s_visibilité = (n_médias − 1) / (panel − 1)`. Un objet porté par un seul média vaut 0.
+- **Durée** : temps cumulé en Une, rapporté au rythme de chaque média (`pond_time`), avec saturation : `s_durée = 1 − exp(−Σ pond_time / 2)`.
+L'indice est la **moyenne géométrique** des trois facettes, avec un plancher de 0,05 sur chacune :
+> `indice = (s_volume × s_visibilité × s_durée)^(1/3)`
+La moyenne géométrique n'est pas compensatoire : une facette presque nulle plombe le score, et aucune autre ne peut la racheter. Un sujet qu'un seul média garde toute la journée en Une reste donc bas ; un sujet que plusieurs médias portent en même temps monte. L'indice vaut entre 0 et 1 ; Radar+ l'affiche **sur 100, avec une décimale**. Les cumuls par jour ou par semaine sont des sommes de ces valeurs par bloc.
+La série publiée avec cet indice commence le **12 juillet 2026** ; l'historique antérieur sera recalculé avec la même formule. L'ancien indice (`n × Σ pond_time_norm`, fréquence × temps inter-médias) reste dans les données sous le nom `absolute_normalized_index` ; il récompensait un sujet long sur un seul média, ce que la spécification v1 corrige.
 
 ### 5.3 Indice de saillance relatif
 
 L'**indice relatif** d'un objet, sur une fenêtre temporelle donnée, est exprimé en **pourcentage de la saillance totale** de cette fenêtre :
 
-> `relative_normalized_index = (absolute_normalized_index_objet / Σ absolute_normalized_index_tous_objets) × 100`
+> `part_de_saillance = (indice_objet / Σ indice_tous_objets) × 100`
 
 Toutes les valeurs relatives d'une fenêtre somment donc à 100 %. Cette normalisation permet de **comparer** :
 

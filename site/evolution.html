@@ -1026,7 +1026,7 @@
 
     const ctx = panelState.contextPeriod || periods[currentIdx];
     const periodLabel = panelPeriodLabel(ctx);
-    const metaLine = `Bloc: ${periodLabel} · Saillance: ${Number(node.size || 0).toFixed(2)} · Mentions: ${Number(node.n || 0)}`;
+    const metaLine = `Bloc: ${periodLabel} · Saillance: ${Number(node.size || 0).toFixed(1)} · Mentions: ${Number(node.n || 0)}`;
 
     // Articles du bloc courant : depuis articlesData (par bloc agrégé ou simple)
     let currentArticles = [];
