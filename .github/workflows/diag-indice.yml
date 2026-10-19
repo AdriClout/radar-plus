@@ -4,6 +4,12 @@ name: Diagnostic indice spec v1 (lecture seule)
 # Ne commite rien, ne déploie rien. Refs #48.
 on:
   workflow_dispatch:
+  push:
+    branches: [feat/48-indice-spec-v1-objets]
+    paths:
+      - pipeline/diag_indice.R
+      - pipeline/fetch_data.py
+      - .github/workflows/diag-indice.yml
 
 jobs:
   diag:
