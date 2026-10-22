@@ -10,14 +10,18 @@ Merci de contribuer.
 
 ## Workflow obligatoire
 
-1. Créer une branche depuis `main`.
-2. Faire les changements sur cette branche.
-3. Ouvrir une Pull Request vers `main`.
-4. Attendre l'approbation requise avant merge.
+> ⚠️ **`main` = PRODUCTION.** Tout merge sur `main` auto-déploie sur **radarplus.org en ~2 min** (`deploy-github-pages.yml`). Il n'y a pas d'environnement de dev intermédiaire : ce qui entre dans `main` est public immédiatement.
+
+1. **Preview local d'abord** : `cd site && python3 -m http.server 8000` → http://localhost:8000/site/. Itérer ici.
+2. **Brancher depuis `main`** : `git checkout main && git pull && git checkout -b feat/mon-sujet`. Jamais de commit direct sur `main` (protégé par ruleset).
+3. **Faire les changements.** ⚠️ **Ne jamais éditer à la main les données machine-owned** : `site/timeseries.json`, `site/graph.json`, `site/ticker.json`, `site/articles.json`. Elles sont rafraîchies automatiquement par les workflows (`refresh-constellation`, `refresh-ticker`) ; toute édition manuelle sera écrasée.
+4. **Push + ouvrir une PR vers `main`** → déclenche le gate `quality-gate` (JSON valide, liens internes, blocage données brutes/secrets, actionlint). Si le gate échoue, corriger avant le merge.
+5. **Revue.** Le ruleset actuel n'exige **pas** d'approbation (projet à mainteneur unique). Quand un collaborateur rejoint, on passera à 1 approbation requise. En attendant : relire sa propre PR avec soin.
+6. **Merge → en ligne sur radarplus.org en ~2 min.**
 
 ## Règles de base
 
-- Pas de push direct sur `main` (sauf mainteneur autorisé).
+- Pas de push direct sur `main` (sauf mainteneur autorisé / bot de données).
 - Une PR doit être claire, testée et documentée.
 - Ajouter des captures pour les changements UI.
 
@@ -70,14 +74,18 @@ Thank you for contributing.
 
 ## Required workflow
 
-1. Create a branch from `main`.
-2. Make changes on that branch.
-3. Open a Pull Request to `main`.
-4. Wait for required approval before merge.
+> ⚠️ **`main` = PRODUCTION.** Every merge to `main` auto-deploys to **radarplus.org within ~2 min** (`deploy-github-pages.yml`). There is no intermediate dev environment: whatever lands on `main` is immediately public.
+
+1. **Preview locally first**: `cd site && python3 -m http.server 8000` → http://localhost:8000/site/. Iterate here.
+2. **Branch off `main`**: `git checkout main && git pull && git checkout -b feat/my-thing`. Never commit straight to `main` (protected by a ruleset).
+3. **Make changes.** ⚠️ **Never hand-edit the machine-owned data**: `site/timeseries.json`, `site/graph.json`, `site/ticker.json`, `site/articles.json`. They are refreshed automatically by workflows (`refresh-constellation`, `refresh-ticker`); manual edits get overwritten.
+4. **Push + open a PR to `main`** → triggers the `quality-gate` (valid JSON, internal links, raw-data/secret block, actionlint). If the gate fails, fix before merging.
+5. **Review.** The current ruleset does **not** require an approval (single-maintainer project). When a collaborator joins, we'll switch to 1 required approval. Until then: review your own PR carefully.
+6. **Merge → live on radarplus.org in ~2 min.**
 
 ## Ground rules
 
-- No direct push to `main` (except authorized maintainer).
+- No direct push to `main` (except authorized maintainer / data bot).
 - A PR must be clear, tested, and documented.
 - Add screenshots for UI changes.
 
