@@ -3,23 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RADAR+ • Dans le radar</title>
+  <title>Dans le radar · RADAR+</title>
+  <meta name="description" content="Les manchettes captées en continu dans les Unes des grands médias du Québec, du Canada et des États-Unis.">
+  <link rel="canonical" href="https://radarplus.org/unes.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RADAR+">
+  <meta property="og:locale" content="fr_CA">
+  <meta property="og:title" content="Dans le radar · RADAR+">
+  <meta property="og:description" content="Les manchettes captées en continu dans les Unes des grands médias du Québec, du Canada et des États-Unis.">
+  <meta property="og:url" content="https://radarplus.org/unes.html">
+  <meta property="og:image" content="https://radarplus.org/assets/og/og-radarplus.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dans le radar · RADAR+">
+  <meta name="twitter:description" content="Les manchettes captées en continu dans les Unes des grands médias du Québec, du Canada et des États-Unis.">
+  <meta name="twitter:image" content="https://radarplus.org/assets/og/og-radarplus.png">
+  <link rel="icon" href="./assets/favicon/favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="./assets/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="./assets/favicon/site.webmanifest">
+  <meta name="theme-color" content="#020010">
+  <link rel="stylesheet" href="./assets/css/tokens.css">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/css/shared-menu.css" />
   <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
   <style>
-    :root {
-      --bg: #020010;
-      --text: #d0e0ff;
-      --muted: rgba(140,170,220,0.68);
-      --accent: #5b8eff;
-      --card-bg: rgba(10,18,50,0.74);
-      --border: rgba(90,140,255,0.24);
-      --orbitron: 'Orbitron', 'Space Mono', monospace;
-      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
-    }
+    /* Tokens : assets/css/tokens.css (design_language.md) */
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -310,23 +321,23 @@
 
     <section class="controls">
       <div class="country-tabs" id="country-tabs">
-        <button class="country-tab active" data-country="ALL">Tous</button>
-        <button class="country-tab" data-country="QC">Québec</button>
-        <button class="country-tab" data-country="CAN">Canada</button>
-        <button class="country-tab" data-country="USA">États-Unis</button>
+        <button class="country-tab active" data-country="ALL" data-i18n="unes.all_countries">Tous</button>
+        <button class="country-tab" data-country="QC" data-i18n="country.QC">Québec</button>
+        <button class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
+        <button class="country-tab" data-country="USA" data-i18n="country.USA">États-Unis</button>
       </div>
 
       <div class="time-controls">
-        <button class="time-btn" id="time-older">← Plus ancien</button>
-        <div class="time-label" id="time-label">Période: --</div>
-        <button class="time-btn" id="time-newer">Plus récent →</button>
+        <button class="time-btn" id="time-older" data-i18n="unes.older">← Plus ancien</button>
+        <div class="time-label" id="time-label" data-i18n="unes.period_none">Période : --</div>
+        <button class="time-btn" id="time-newer" data-i18n="unes.newer">Plus récent →</button>
       </div>
 
-      <div class="meta-line" id="meta-line">Chargement des données…</div>
+      <div class="meta-line" id="meta-line" data-i18n="common.loading">Chargement…</div>
     </section>
 
     <section class="board" id="board">
-      <div class="empty">Chargement des Unes…</div>
+      <div class="empty" data-i18n="unes.loading">Chargement des Unes…</div>
     </section>
   </main>
 
@@ -385,9 +396,24 @@
     let currentBucketIdx = 0;
     let meta = null;
 
+    /* Traduit via i18n.js, avec repli sur le texte français si les fichiers
+       de langue ne sont pas encore chargés (t() renvoie la clé dans ce cas). */
+    function tr(key, params, fallback) {
+      const v = window.t ? window.t(key, params) : key;
+      return (v === key && fallback !== undefined) ? fallback : v;
+    }
+
+    function uiLang() {
+      return ((window.__i18n && window.__i18n.currentLang()) ||
+        document.documentElement.lang || 'fr').slice(0, 2);
+    }
+
+    // Les dates et heures suivent aussi la langue de l'interface.
+    function dtLocale() { return uiLang() === 'en' ? 'en-CA' : 'fr-CA'; }
+
     function localTzShort() {
       try {
-        const parts = new Intl.DateTimeFormat('fr-CA', { timeZoneName: 'short' }).formatToParts(new Date());
+        const parts = new Intl.DateTimeFormat(dtLocale(), { timeZoneName: 'short' }).formatToParts(new Date());
         const tz = parts.find((p) => p.type === 'timeZoneName');
         return tz && tz.value ? tz.value : 'locale';
       } catch (e) {
@@ -396,9 +422,10 @@
     }
 
     function escapeHtml(str) {
+      // Échappe aussi les guillemets : la valeur sert dans des attributs
       const d = document.createElement('div');
       d.textContent = String(str || '');
-      return d.innerHTML;
+      return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     function normalizeCountry(item) {
@@ -416,12 +443,12 @@
     }
 
     function formatHourLabel(dt) {
-      const datePart = new Intl.DateTimeFormat('fr-CA', {
+      const datePart = new Intl.DateTimeFormat(dtLocale(), {
         weekday: 'short',
         day: '2-digit',
         month: 'short'
       }).format(dt);
-      const timePart = new Intl.DateTimeFormat('fr-CA', {
+      const timePart = new Intl.DateTimeFormat(dtLocale(), {
         hour: '2-digit',
         minute: '2-digit'
       }).format(dt);
@@ -431,7 +458,7 @@
     function formatHm(ts) {
       const dt = new Date(ts);
       if (isNaN(dt.getTime())) return '--:--';
-      return new Intl.DateTimeFormat('fr-CA', {
+      return new Intl.DateTimeFormat(dtLocale(), {
         hour: '2-digit',
         minute: '2-digit'
       }).format(dt);
@@ -445,10 +472,11 @@
         return;
       }
       const g = new Date(meta.generated_at);
-      const hm = isNaN(g.getTime()) ? '--:--' : new Intl.DateTimeFormat('fr-CA', { hour: '2-digit', minute: '2-digit' }).format(g);
+      const hm = isNaN(g.getTime()) ? '--:--' : new Intl.DateTimeFormat(dtLocale(), { hour: '2-digit', minute: '2-digit' }).format(g);
       const lookback = meta.lookback_hours || '--';
       const total = buckets.reduce((acc, b) => acc + b.items.length, 0);
-      el.textContent = 'Les Unes de ' + hm + ' · ' + total + ' manchettes visibles · fenêtre de ' + lookback + 'h · heures locales (' + localTzShort() + ')';
+      el.textContent = tr('unes.meta_unes',
+        { hm: hm, total: total, lookback: lookback, tz: localTzShort() });
     }
 
     function render() {
@@ -458,8 +486,9 @@
       const newerBtn = document.getElementById('time-newer');
 
       if (!buckets.length) {
-        board.innerHTML = '<div class="empty">Aucune donnée disponible dans ticker.json.</div>';
-        label.textContent = 'Période: --';
+        board.innerHTML = '<div class="empty">' +
+          escapeHtml(tr('unes.no_data', null, 'Aucune donnée disponible.')) + '</div>';
+        label.textContent = tr('unes.period_none', null, 'Période : --');
         olderBtn.disabled = true;
         newerBtn.disabled = true;
         formatMetaLine();
@@ -467,14 +496,15 @@
       }
 
       const bucket = buckets[currentBucketIdx];
-      label.textContent = 'Période: ' + formatHourLabel(bucket.date);
+      label.textContent = formatHourLabel(bucket.date);
       olderBtn.disabled = currentBucketIdx >= buckets.length - 1;
       newerBtn.disabled = currentBucketIdx <= 0;
 
       const items = bucket.items.filter((it) => selectedCountry === 'ALL' || it.country === selectedCountry);
 
       if (!items.length) {
-        board.innerHTML = '<div class="empty">Aucune Une pour ce pays dans cette période.</div>';
+        board.innerHTML = '<div class="empty">' + escapeHtml(tr('unes.empty_country', null,
+          'Aucune Une pour ce pays dans cette période.')) + '</div>';
         formatMetaLine();
         return;
       }
@@ -511,7 +541,7 @@
 
       return (
         '<article class="country-block">' +
-          '<header class="country-head">' + escapeHtml(countryName[country] || country) + '</header>' +
+          '<header class="country-head">' + escapeHtml(tr('country.' + country, null, countryName[country] || country)) + '</header>' +
           '<div class="headline-list">' + rows + '</div>' +
         '</article>'
       );
@@ -580,6 +610,12 @@
     });
 
     loadUnes();
+
+    // La ligne de méta et les en-têtes de pays sont composés en JS :
+    // un changement de langue doit les reconstruire.
+    document.addEventListener('i18n:applied', function () {
+      if (buckets.length) render();
+    });
   </script>
   <section class="ticker-section" id="ticker-section" aria-live="polite">
     <a class="ticker-label ticker-label-link" href="./unes.html" data-i18n-aria-label="ticker.view_aria" aria-label="Voir toutes les dernières Unes">

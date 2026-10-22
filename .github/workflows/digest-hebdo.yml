@@ -1,0 +1,75 @@
+# Digest hebdomadaire du pipeline RADAR+ — modèle Vitrine (digest-hebdo-sonar).
+#
+# Trois principes hérités (et payés) de la Vitrine :
+#   1. Le digest POSTE TOUJOURS, même semaine parfaite — c'est sa preuve de vie.
+#   2. « non réussi » ≠ « failure » : cancelled/timed_out comptent aussi, sinon
+#      on annonce « semaine propre » une semaine où des runs ont manqué.
+#   3. Garde de cohérence : total − succès − non-réussis − en cours = 0,
+#      sinon on le DIT plutôt que d'arrondir en silence.
+#
+# Mardi matin (12:00 UTC ≈ 8 h Montréal l'été, 7 h l'hiver — un digest peut
+# glisser d'une heure avec la saison, contrairement aux refreshs de données).
+name: Digest hebdo pipeline
+
+on:
+  schedule:
+    - cron: '0 12 * * 2'
+  workflow_dispatch:
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Composer et poster le digest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL absent — digest non envoyé (ajouter le secret pour l'activer)"
+            exit 0
+          fi
+          depuis=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+
+          lignes=""
+          total_g=0; succes_g=0; rates_g=0; encours_g=0; incoherent=0
+          for wf in refresh-ticker.yml refresh-constellation.yml deploy-github-pages.yml sentinelle-fraicheur.yml pr-quality-gate.yml; do
+            page=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/$REPO/actions/workflows/$wf/runs?created=%3E$depuis&per_page=100") || continue
+            total=$(echo "$page" | jq '.workflow_runs | length')
+            succes=$(echo "$page" | jq '[.workflow_runs[] | select(.conclusion == "success")] | length')
+            encours=$(echo "$page" | jq '[.workflow_runs[] | select(.status != "completed")] | length')
+            # non réussi = tout ce qui est terminé sans être success (failure,
+            # cancelled, timed_out, stale, neutral…)
+            rates=$(echo "$page" | jq '[.workflow_runs[] | select(.status == "completed" and .conclusion != "success")] | length')
+            if [ $((total - succes - rates - encours)) -ne 0 ]; then
+              echo "::warning::$wf — compteurs incohérents (total=$total succes=$succes rates=$rates encours=$encours)"
+              incoherent=1
+            fi
+            icone=":white_check_mark:"; [ "$rates" -gt 0 ] && icone=":warning:"
+            lignes="$lignes\n$icone \`$wf\` — $total runs, $succes réussis, $rates non réussis"
+            total_g=$((total_g + total)); succes_g=$((succes_g + succes))
+            rates_g=$((rates_g + rates)); encours_g=$((encours_g + encours))
+          done
+
+          entete=":satellite: *Digest hebdo radar-plus* — $total_g runs sur 7 jours, $succes_g réussis, $rates_g non réussis"
+          [ "$rates_g" -eq 0 ] && entete="$entete — semaine propre :sparkles:"
+          [ "$incoherent" -ne 0 ] && entete="$entete\n:triangular_flag_on_post: compteurs incohérents sur au moins un workflow — voir les logs du digest"
+          pied="\n<https://github.com/$REPO/actions|Toutes les exécutions>"
+
+          jq -n --arg text "$(printf '%b' "$entete$lignes$pied")" '{text: $text}' \
+            | curl -sS -X POST -H 'Content-type: application/json' --data @- "$SLACK_WEBHOOK_URL"
+
+      - name: Alerte Slack en cas d'échec
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          [ -z "$SLACK_WEBHOOK_URL" ] && exit 0
+          curl -sS -X POST -H 'Content-type: application/json' --data \
+            "{\"text\":\":rotating_light: radar-plus — le digest hebdo lui-même a échoué : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"

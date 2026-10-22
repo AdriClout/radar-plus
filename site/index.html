@@ -3,24 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RADAR+ • Analyse de Saillance Médiatique</title>
+  <title>RADAR+ · La saillance médiatique, mesurée en direct</title>
+  <meta name="description" content="RADAR+ mesure en continu ce que les grands médias du Québec, du Canada et des États-Unis mettent en Une : classement des événements et des objets les plus saillants, alertes et évolution dans le temps.">
+  <link rel="canonical" href="https://radarplus.org/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RADAR+">
+  <meta property="og:locale" content="fr_CA">
+  <meta property="og:title" content="RADAR+ · La saillance médiatique, mesurée en direct">
+  <meta property="og:description" content="RADAR+ mesure en continu ce que les grands médias du Québec, du Canada et des États-Unis mettent en Une : classement des événements et des objets les plus saillants, alertes et évolution dans le temps.">
+  <meta property="og:url" content="https://radarplus.org/">
+  <meta property="og:image" content="https://radarplus.org/assets/og/og-radarplus.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RADAR+ · La saillance médiatique, mesurée en direct">
+  <meta name="twitter:description" content="RADAR+ mesure en continu ce que les grands médias du Québec, du Canada et des États-Unis mettent en Une : classement des événements et des objets les plus saillants, alertes et évolution dans le temps.">
+  <meta name="twitter:image" content="https://radarplus.org/assets/og/og-radarplus.png">
+  <link rel="icon" href="./assets/favicon/favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="./assets/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="./assets/favicon/site.webmanifest">
+  <meta name="theme-color" content="#020010">
+  <link rel="stylesheet" href="./assets/css/tokens.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared-menu.css" />
   <style>
-    :root {
-      --bg: #020010;
-      --text: #d0e0ff;
-      --muted: rgba(140,170,220,0.6);
-      --accent: #5588ff;
-      --accent-glow: rgba(80,130,255,0.45);
-      --card-bg: rgba(10,18,50,0.7);
-      --border: rgba(90,140,255,0.22);
-      --ticker-height: 44px;
-      --orbitron: 'Orbitron', 'Space Mono', monospace;
-      --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
-    }
+    /* Tokens : assets/css/tokens.css (design_language.md) */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; }
@@ -394,6 +403,12 @@
       text-transform: capitalize; white-space: nowrap;
       overflow: hidden; text-overflow: ellipsis;
     }
+    /* Mode événements : titres de storylines (phrases) — pas de capitalize,
+       retour à la ligne permis */
+    .hot20-list.mode-evenements .hot20-row-name {
+      text-transform: none; white-space: normal;
+      font-size: 14px; line-height: 1.35;
+    }
     .hot20-row-streak { font-size: 9px; color: var(--muted); margin-top: 3px; }
     .hot20-row-score { padding: 0 12px; }
     .hot20-row-pct {
@@ -693,6 +708,31 @@
       font-size: 10px; color: rgba(120,160,255,0.55);
       letter-spacing: 0.5px;
     }
+
+    /* Fil d'un événement : un chapitre par titre porté, dans l'ordre */
+    .ev-chapitre {
+      margin: 22px 0 2px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(80,130,255,0.18);
+      font-size: 14px; line-height: 1.4; font-weight: 700;
+      color: #e8f0ff;
+    }
+    .ev-chapitre:first-child { margin-top: 6px; border-top: 0; padding-top: 0; }
+    .ev-bande {
+      font-family: var(--orbitron); font-size: 8.5px;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 1px 5px; border-radius: 3px;
+      color: #060d22; background: var(--band-moderee);
+    }
+    .ev-bande.band-faible { background: var(--band-faible); }
+    .ev-bande.band-moderee { background: var(--band-moderee); }
+    .ev-bande.band-elevee { background: var(--band-elevee); }
+    .ev-bande.band-tres_elevee { background: var(--band-tres-elevee); }
+    .ev-bande.band-extreme { background: var(--band-extreme); color: #fff; }
+    .ev-rien {
+      font-size: 11px; color: var(--muted);
+      padding: 5px 0 2px; font-style: italic;
+    }
     .article-panel-links {
       display: flex; gap: 10px; margin-top: 12px;
     }
@@ -720,6 +760,32 @@
     }
 
     /* Scroll-in animation handled in .hot20-row / .hot20-row.visible */
+
+    /* ========== MODE OBJETS | ÉVÉNEMENTS (Classement) ========== */
+    .mode-tabs {
+      display: flex; gap: 8px; margin-bottom: 10px;
+    }
+    .mode-tab {
+      font-family: var(--orbitron); font-size: 11px; letter-spacing: 1.6px;
+      text-transform: uppercase;
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 8px 18px; cursor: pointer;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .mode-tab:hover { color: var(--text); border-color: rgba(90,140,255,0.45); }
+    .mode-tab.active {
+      color: #fff; background: rgba(40,70,160,0.55);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(80,130,255,0.25);
+    }
+
+    .classement-footnote {
+      margin-top: 14px; color: var(--muted);
+      font-size: 11.5px; line-height: 1.6; max-width: 720px;
+    }
+    .classement-footnote a { color: var(--accent); text-decoration: none; }
+    .classement-footnote a:hover { text-decoration: underline; }
 
     /* ========== TICKER ========== */
     .ticker-section {
@@ -958,6 +1024,7 @@
 
 <!-- ========== HERO ========== -->
 <section class="hero" id="hero">
+  <h1 class="sr-only">RADAR+ — La saillance médiatique, mesurée en direct</h1>
   <div class="hero-robot">
     <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
     <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
@@ -981,7 +1048,7 @@
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
     </div>
   </div>
-  <button type="button" class="scroll-hint" id="scroll-to-hot20" data-i18n-aria-label="hero.scroll_aria" aria-label="Aller au HOT 20">
+  <button type="button" class="scroll-hint" id="scroll-to-hot20" data-i18n-aria-label="hero.scroll_aria" aria-label="Aller au Classement">
     <div class="arrow" aria-hidden="true"></div>
     <span data-i18n="hero.explore">Explorer</span>
   </button>
@@ -1005,11 +1072,11 @@
   </svg>
 </div>
 
-<!-- ========== HOT 20 ========== -->
+<!-- ========== CLASSEMENT (ex-HOT 20) ========== -->
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
     <div class="hot20-title-row">
-      <h2 class="hot20-title"><span data-i18n="hot20.title">HOT</span> <span class="accent" data-i18n="hot20.title_number">20</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
+      <h2 class="hot20-title"><span data-i18n="hot20.title">Le</span> <span class="accent" data-i18n="hot20.title_number">Classement</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
       <a class="hot20-evolution-cta" id="hot20-evolution-cta" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta" aria-label="Voir l'évolution dans le temps">
         <span data-i18n="alertes.evo_cta">Voir l&rsquo;évolution dans le temps</span>
         <span class="cta-arrow" aria-hidden="true">↗</span>
@@ -1017,6 +1084,10 @@
     </div>
     <div class="hot20-controls">
       <div class="controls-left">
+        <div class="mode-tabs" id="mode-tabs">
+          <button class="mode-tab active" data-mode="evenements" data-i18n="hot20.mode_evenements">Événements</button>
+          <button class="mode-tab" data-mode="objets" data-i18n="hot20.mode_objets">Objets</button>
+        </div>
         <div class="country-tabs" id="country-tabs">
           <button class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
           <button class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
@@ -1050,6 +1121,10 @@
   <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
   </div>
+  <p class="classement-footnote" id="classement-footnote" hidden>
+    <span data-i18n="hot20.events_note">Objets et événements sont classés par le même indice de saillance — les minutes passées en Une, média par média. Données d'événements depuis le 23 juillet 2026.</span>
+    <a href="./methodologie.html" data-i18n="hot20.events_note_link">Méthodologie →</a>
+  </p>
 </section>
 
 <!-- ========== MODULES ========== -->
@@ -1418,27 +1493,18 @@
 })();
 
 /* ===== HOT 20 ===== */
-var graphData = null;
-var timeseriesData = null;
-// Score cumulé depuis le début (somme de size sur toutes les périodes 4h
-// disponibles), précalculé après chargement de timeseriesData.
+var graphData = null;       // plus chargé à l'accueil (classement.json précalcule tout)
+var timeseriesData = null;  // idem — voir pipeline/build_classement.py
+var classementData = null;  // l'index léger du Classement (audit vague 3)
+// Score cumulé depuis le début, repris de classementData.alltime.
 // Forme: { CAN: { 'donald trump': 123.4, ... }, QC: {...}, USA: {...} }
 var allTimeScores = null;
 function buildAllTimeScores() {
-  var src = timeseriesData || graphData;
-  if (!src || !src.graphs) { allTimeScores = null; return; }
+  if (!classementData || !classementData.alltime) { allTimeScores = null; return; }
   var out = {};
-  for (var country in src.graphs) {
-    var cg = src.graphs[country] || {};
+  for (var country in classementData.alltime) {
     var sums = {};
-    for (var pk in cg) {
-      var nodes = cg[pk] && cg[pk].nodes;
-      if (!nodes) continue;
-      for (var i = 0; i < nodes.length; i++) {
-        var n = nodes[i];
-        sums[n.id] = (sums[n.id] || 0) + (Number(n.size) || 0);
-      }
-    }
+    classementData.alltime[country].forEach(function(pair) { sums[pair[0]] = pair[1]; });
     out[country] = sums;
   }
   allTimeScores = out;
@@ -1466,22 +1532,26 @@ var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
 var currentSlotIdx = 0;
+var currentMode = 'evenements'; // 'evenements' | 'objets' — Événements par défaut partout
+var eventsData = null;         // events.json — événements saillants
 
 function escapeHtml(str) {
+  // Échappe aussi les guillemets : la valeur sert dans des attributs href="…"
   var d = document.createElement('div');
   d.textContent = str;
-  return d.innerHTML;
+  return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 async function loadData() {
   try {
     var results = await Promise.all([
-      fetch('./graph.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
-      fetch('./timeseries.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+      fetch('./classement.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+      fetch('./events.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
     ]);
-    graphData = results[0];
-    timeseriesData = results[1];
+    classementData = results[0];
+    eventsData = results[1];
     buildAllTimeScores();
+    buildEventsGraphs();
   } catch (e) { console.error('Data load error', e); }
   // Prefetch articles non-bloquant → panel s'ouvre instant si déjà prêt, sinon "Chargement…"
   // Re-render le HOT 20 quand les articles arrivent pour mettre à jour les compteurs
@@ -1493,7 +1563,7 @@ async function loadData() {
 }
 
 function buildPeriods() {
-  var src = timeseriesData || graphData;
+  var src = classementData;
   if (!src || !src.meta || !src.meta.periods) return;
   allPeriods = src.meta.periods.slice().sort(function(a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
   currentPeriodIdx = allPeriods.length - 1;
@@ -1561,12 +1631,15 @@ function weekKeyStartDate(weekKey) {
 }
 
 function buildSlots() {
-  var src = timeseriesData || graphData;
-  if (!src || !allPeriods.length) { aggregatedSlots = []; return; }
+  // En mode Événements, les créneaux se construisent sur la grille de
+  // périodes d'events.json (blocs 03-07/07-11/…, régime depuis 2026-07-23).
+  var srcPeriods = currentMode === 'evenements' ? eventsPeriodsList() : allPeriods;
+  var src = currentMode === 'evenements' ? eventsData : classementData;
+  if (!src || !srcPeriods.length) { aggregatedSlots = []; return; }
 
   if (currentGranularity === '4h') {
     // Direct mapping — each period is a slot
-    aggregatedSlots = allPeriods.map(function(p) {
+    aggregatedSlots = srcPeriods.map(function(p) {
       return { periodKeys: [p.key], label: p.label || p.key, raw: p };
     });
     currentSlotIdx = aggregatedSlots.length - 1;
@@ -1576,7 +1649,7 @@ function buildSlots() {
   // Group period keys by granularity bucket
   var buckets = {};
   var bucketOrder = [];
-  allPeriods.forEach(function(p) {
+  srcPeriods.forEach(function(p) {
     var dateStr = periodKeyToDate(p.key);
     var bucketKey;
     if (currentGranularity === 'day') {
@@ -1598,7 +1671,7 @@ function buildSlots() {
   });
 
   // Pour le bucket "all" (année), on dérive l'année depuis la dernière période du dataset
-  var fallbackYear = (allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear());
+  var fallbackYear = (srcPeriods.length ? srcPeriods[srcPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear());
 
   aggregatedSlots = bucketOrder.map(function(bk) {
     var keys = buckets[bk];
@@ -1647,6 +1720,7 @@ function aggregateNodes(countryGraphs, periodKeys) {
       }
       var entry = nodeMap[n.id];
       entry.totalSize += (n.size || 0);
+      if (n.label) entry.label = n.label;  // mode événements : le titre le plus récent gagne
       if (n.articles) {
         for (var k = 0; k < n.articles.length; k++) {
           var a = n.articles[k];
@@ -1671,6 +1745,7 @@ function aggregateNodes(countryGraphs, periodKeys) {
     for (var url in e.articlesMap) { articles.push(e.articlesMap[url]); }
     result.push({
       id: e.id,
+      label: e.label,
       size: e.totalSize,
       articles: articles.slice(0, 15),
       media_ids: Object.keys(e.mediaSet)
@@ -1710,29 +1785,51 @@ function renderHot20() {
   prevBtn.disabled = currentSlotIdx === 0;
   nextBtn.disabled = currentSlotIdx === aggregatedSlots.length - 1;
 
-  var src = timeseriesData || graphData;
-  var countryGraphs = src.graphs ? src.graphs[currentCountry] : null;
+  var footnote = document.getElementById('classement-footnote');
+  if (footnote) footnote.hidden = currentMode !== 'evenements';
+  grid.classList.toggle('mode-evenements', currentMode === 'evenements');
 
-  if (!countryGraphs) {
-    grid.innerHTML = '<div class="hot20-empty">Aucune donnée disponible</div>';
+  if (currentMode === 'evenements' && !EVENTS_REGION[currentCountry]) {
+    var usaMsg = (window.t ? window.t('hot20.events_usa') : null);
+    if (!usaMsg || usaMsg === 'hot20.events_usa') usaMsg = 'Le suivi des événements couvre le Québec et le Canada.';
+    grid.innerHTML = '<div class="hot20-empty">' + escapeHtml(usaMsg) + '</div>';
     return;
   }
 
-  // Get nodes — either single period or aggregated
+  var countryGraphs = activeCountryGraphs();
+
+  // Get nodes — mode objets : créneaux précalculés (classement.json) ;
+  // mode événements : agrégation locale sur events.json (léger).
   var allNodes;
-  if (currentGranularity === '4h') {
-    var periodData = countryGraphs[slot.periodKeys[0]];
-    if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
-      grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ce bloc horaire (4 h)</div>';
+  var emptyMsg = { day: 'cette journée', week: 'cette semaine', month: 'ce mois', quarter: 'cette année' };
+  if (currentMode !== 'evenements') {
+    var granTop = classementData && classementData.top && classementData.top[currentGranularity];
+    var slotKey = currentGranularity === '4h' ? slot.periodKeys[0] : slot.bucketKey;
+    allNodes = granTop && granTop[currentCountry] ? granTop[currentCountry][slotKey] : null;
+    if (!allNodes || !allNodes.length) {
+      grid.innerHTML = '<div class="hot20-empty">' + (currentGranularity === '4h'
+        ? 'Aucune donnée pour ce bloc horaire (4 h)'
+        : 'Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période')) + '</div>';
       return;
     }
-    allNodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
   } else {
-    allNodes = aggregateNodes(countryGraphs, slot.periodKeys);
-    if (!allNodes.length) {
-      var emptyMsg = { day: 'cette journée', week: 'cette semaine', month: 'ce mois', quarter: 'cette année' };
-      grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période') + '</div>';
+    if (!countryGraphs) {
+      grid.innerHTML = '<div class="hot20-empty">Aucune donnée disponible</div>';
       return;
+    }
+    if (currentGranularity === '4h') {
+      var periodData = countryGraphs[slot.periodKeys[0]];
+      if (!periodData || !periodData.nodes || periodData.nodes.length === 0) {
+        grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ce bloc horaire (4 h)</div>';
+        return;
+      }
+      allNodes = periodData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
+    } else {
+      allNodes = aggregateNodes(countryGraphs, slot.periodKeys);
+      if (!allNodes.length) {
+        grid.innerHTML = '<div class="hot20-empty">Aucune donnée pour ' + (emptyMsg[currentGranularity] || 'cette période') + '</div>';
+        return;
+      }
     }
   }
 
@@ -1742,7 +1839,16 @@ function renderHot20() {
   /* Trend: compare with previous slot */
   var prevRanks = {};
   var prevIds = {};
-  if (currentSlotIdx > 0) {
+  var streaks = {};
+  var comebacks = {};
+  if (currentMode !== 'evenements') {
+    // Précalculé par pipeline/build_classement.py (sémantiques identiques)
+    nodes.forEach(function(e) {
+      if (e.prev_rank) { prevRanks[e.id] = e.prev_rank; prevIds[e.id] = true; }
+      if (e.comeback) comebacks[e.id] = true;
+      streaks[e.id] = e.streak || 1;
+    });
+  } else if (currentSlotIdx > 0) {
     var prevSlot = aggregatedSlots[currentSlotIdx - 1];
     var prevNodes;
     if (currentGranularity === '4h') {
@@ -1755,8 +1861,7 @@ function renderHot20() {
   }
 
   /* Consecutive slots: count how many recent slots each entity appears in top 20 */
-  var streaks = {};
-  nodes.forEach(function(node) {
+  if (currentMode === 'evenements') nodes.forEach(function(node) {
     var count = 0;
     for (var si = currentSlotIdx; si >= 0; si--) {
       var s = aggregatedSlots[si];
@@ -1775,8 +1880,7 @@ function renderHot20() {
   });
 
   /* Comeback detection */
-  var comebacks = {};
-  nodes.forEach(function(node) {
+  if (currentMode === 'evenements') nodes.forEach(function(node) {
     if (prevIds[node.id]) return;
     for (var si = currentSlotIdx - 2; si >= Math.max(0, currentSlotIdx - 10); si--) {
       var s = aggregatedSlots[si];
@@ -1797,11 +1901,10 @@ function renderHot20() {
   /* Store nodes for click handler */
   window._hot20Nodes = nodes;
 
-  /* Alertes en cours: lookup sur la dernière période disponible de
-     graphData (la plus récente), indépendamment de la granularité
-     affichée. Permet de signaler "ALERTE / VEILLE / FORTE" pour les
-     objets actuellement en alerte, même quand on regarde une période
-     agrégée (semaine/mois/année). */
+  /* Alertes en cours: alerts_latest de classement.json (dernière période
+     de graph.json au refresh), indépendamment de la granularité affichée.
+     Permet de signaler les objets actuellement en alerte même quand on
+     regarde une période agrégée (semaine/mois/année). */
   var currentAlertByName = {};
   var ALERT_BADGE_LABELS = (function() {
     var out = {};
@@ -1813,8 +1916,8 @@ function renderHot20() {
   })();
   function deriveAlertLevel(country, size) {
     if (typeof size !== 'number' || !isFinite(size)) return null;
-    var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
-      ? graphData.meta.salience_tiers[country] : null;
+    var tiers = classementData && classementData.meta && classementData.meta.salience_tiers
+      ? classementData.meta.salience_tiers[country] : null;
     if (!tiers) return null;
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
@@ -1822,25 +1925,28 @@ function renderHot20() {
     return null;
   }
   try {
-    var meta = (graphData && graphData.meta) || {};
-    var periodsList = meta.periods || [];
-    var latestKey = periodsList.length ? periodsList[periodsList.length - 1].key : null;
-    var latestGd = latestKey && graphData.graphs && graphData.graphs[currentCountry]
-      ? graphData.graphs[currentCountry][latestKey] : null;
-    var latestNodes = latestGd && latestGd.nodes ? latestGd.nodes : [];
-    latestNodes.forEach(function(n) {
-      // Source de vérité = pipeline: si un épisode est actif, on garde
-      // le niveau du pipeline même quand la taille du snapshot a baissé.
-      // Sinon, fallback sur le calcul size-tier pour highlighter les
-      // pics qui n'ont pas (encore) déclenché d'épisode.
-      if (n.alert_active && n.alert_level && n.alert_level !== 'none') {
-        currentAlertByName[n.id] = n.alert_level;
-        return;
+    if (currentMode === 'evenements') {
+      // Bande du DERNIER bloc publié (grille par bloc des événements) →
+      // badge, via le mapping bandes féminines → niveaux d'alerte.
+      var evReg2 = EVENTS_REGION[currentCountry];
+      var evGraphs = eventsGraphsCache && eventsGraphsCache[evReg2];
+      var evPer = eventsPeriodsList();
+      for (var evI = evPer.length - 1; evI >= 0 && evGraphs; evI--) {
+        var evGd = evGraphs[evPer[evI].key];
+        if (!evGd || !evGd.nodes.length) continue;
+        evGd.nodes.forEach(function(n) {
+          var mapped = EVENT_BAND_TO_ALERT[n.band];
+          if (mapped) currentAlertByName[n.id] = mapped;
+        });
+        break;
       }
-      var lvl = deriveAlertLevel(currentCountry, n.size);
-      if (!lvl) return;
-      currentAlertByName[n.id] = lvl;
-    });
+    } else {
+      // Précalculé par build_classement.py depuis la dernière période de
+      // graph.json (niveau pipeline, sinon dérivé des paliers).
+      var latest = classementData && classementData.alerts_latest
+        ? classementData.alerts_latest[currentCountry] : null;
+      if (latest) for (var an in latest) currentAlertByName[an] = latest[an];
+    }
   } catch (_) { /* noop */ }
 
   /* Granularity-specific labels for tooltips (i18n) */
@@ -1866,13 +1972,14 @@ function renderHot20() {
     nodes.map(function(node, i) {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
       var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
-      var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+      // Objets : id capitalisé ; événements : titre du dernier événement
+      var name = node.label || node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
       // Compteur d'articles fiable: agrège sur tous les blocs 4h du
       // slot via articles.json (dédupliqué par URL). Fallback sur
       // node.articles si articles.json pas encore chargé.
       var articleCount = 0;
       var mediaSeen = {};
-      if (articlesData) {
+      if (articlesData && currentMode !== 'evenements') {
         var seenUrls = {};
         slot.periodKeys.forEach(function(pk) {
           var arts = getArticlesFor(currentCountry, pk, node.id, null);
@@ -1884,6 +1991,10 @@ function renderHot20() {
             }
           });
         });
+      } else if (currentMode !== 'evenements') {
+        // classement.json précompte les articles (dédupliqués par URL)
+        articleCount = node.n_articles || 0;
+        (node.media_ids || []).forEach(function(m) { mediaSeen[m] = true; });
       } else {
         var inline = Array.isArray(node.articles) ? node.articles : [];
         articleCount = inline.length;
@@ -1939,8 +2050,13 @@ function renderHot20() {
 
       // Score cumulé depuis le début (toutes périodes 4h confondues) +
       // augmentation pendant le créneau sélectionné (slot agrégé).
-      var totalAllTime = (allTimeScores && allTimeScores[currentCountry])
-        ? (allTimeScores[currentCountry][node.id] || 0) : null;
+      var totalAllTime = null;
+      if (currentMode === 'evenements') {
+        var evReg = EVENTS_REGION[currentCountry];
+        totalAllTime = (eventsAllTime && eventsAllTime[evReg]) ? (eventsAllTime[evReg][node.id] || 0) : null;
+      } else if (allTimeScores && allTimeScores[currentCountry]) {
+        totalAllTime = allTimeScores[currentCountry][node.id] || 0;
+      }
       var slotIncrease = Number(node.size) || 0;
       var totalStr = totalAllTime !== null ? totalAllTime.toFixed(1) : '—';
       var increaseStr = '+' + slotIncrease.toFixed(1);
@@ -2075,6 +2191,68 @@ function scrollToHot20() {
   }, 5000);
 })();
 
+/* ===== MODE ÉVÉNEMENTS (events.json) =====
+   « Événements » est un mode du Classement, au même titre qu'« Objets » :
+   les storylines du raffineur, avec le même moteur de rendu (agrégation par
+   granularité, tendances, streaks, panneau d'articles). Adaptateur : les
+   blocs d'events.json sont projetés dans la forme {periodKey: {nodes: []}}
+   attendue par aggregateNodes/renderHot20 — id = storyline (stable, pour
+   les tendances), label = titre du dernier événement (affichage). */
+var EVENTS_REGION = { QC: 'QC', CAN: 'ROC' };   // pas de suivi événementiel USA
+var eventsGraphsCache = null;   // {region: {periodKey: {nodes: [...]}}}
+var eventsAllTime = null;       // {region: {sid: cumul toutes périodes}}
+
+function buildEventsGraphs() {
+  eventsGraphsCache = {}; eventsAllTime = {};
+  if (!eventsData || !eventsData.blocks || !eventsData.meta) return;
+  var periods = eventsData.meta.periods || [];
+  Object.keys(eventsData.blocks).forEach(function(region) {
+    var blocks = eventsData.blocks[region];
+    var out = {}, tot = {};
+    // Itération chronologique : le titre le plus récent d'une storyline gagne
+    periods.forEach(function(pd) {
+      var evs = blocks[pd.key];
+      if (!evs) return;
+      out[pd.key] = { nodes: evs.map(function(ev) {
+        var sid = ev.storyline || ev.id;
+        tot[sid] = (tot[sid] || 0) + (ev.index || 0);
+        // Les VRAIES manchettes du raffineur (titre du média, pas le titre
+        // d'événement). Repli sur l'article représentatif pour les blocs
+        // antérieurs à leur conservation dans events.json.
+        var arts = Array.isArray(ev.articles) && ev.articles.length
+          ? ev.articles
+          : (ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []);
+        return {
+          id: sid,
+          label: ev.title,
+          size: ev.index || 0,
+          band: ev.band,
+          media_ids: ev.media_ids || [],
+          articles: arts
+        };
+      }) };
+    });
+    eventsGraphsCache[region] = out;
+    eventsAllTime[region] = tot;
+  });
+}
+
+function eventsPeriodsList() {
+  return (eventsData && eventsData.meta && eventsData.meta.periods) || [];
+}
+
+/* Graphes actifs selon le mode (objets: timeseries; événements: adaptateur) */
+function activeCountryGraphs() {
+  if (currentMode === 'evenements') {
+    var region = EVENTS_REGION[currentCountry];
+    return region && eventsGraphsCache ? eventsGraphsCache[region] || null : null;
+  }
+  return null; // mode objets : servi par classement.json, plus par des graphes
+}
+
+/* Bandes d'événements (par bloc) → badge d'alerte du Classement */
+var EVENT_BAND_TO_ALERT = { elevee: 'eleve', tres_elevee: 'tres_eleve', extreme: 'extreme' };
+
 document.getElementById('country-tabs').addEventListener('click', function(e) {
   var tab = e.target.closest('.country-tab');
   if (!tab) return;
@@ -2087,9 +2265,21 @@ document.getElementById('country-tabs').addEventListener('click', function(e) {
   renderHot20();
 });
 
+/* Mode tabs : Objets | Événements */
+document.getElementById('mode-tabs').addEventListener('click', function(e) {
+  var tab = e.target.closest('.mode-tab');
+  if (!tab || tab.dataset.mode === currentMode) return;
+  document.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
+  tab.classList.add('active');
+  currentMode = tab.dataset.mode;
+  buildSlots();
+  currentSlotIdx = aggregatedSlots.length - 1;
+  renderHot20();
+});
+
 // Re-render le HOT 20 quand la langue change (textes dynamiques)
 document.addEventListener('i18n:applied', function () {
-  if (typeof renderHot20 === 'function' && (timeseriesData || graphData)) {
+  if (typeof renderHot20 === 'function' && (classementData || eventsData)) {
     renderHot20();
   }
 });
@@ -2192,12 +2382,115 @@ function articleItemHtml(art) {
   '</a>';
 }
 
+/* Libellé français d'un bloc de 4 h à partir de sa clé « 2026-08-30_15-19 » :
+   les bornes de la clé sont en UTC, on les rend en heure locale. */
+function eventBlockLabel(key) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})$/.exec(key || '');
+  if (!m) return key || '';
+  var start = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], 0, 0));
+  var end = new Date(start.getTime() + 4 * 3600 * 1000);
+  var loc = (window.__i18n && window.__i18n.currentLang() === 'en') ? 'en-CA' : 'fr-CA';
+  var df = new Intl.DateTimeFormat(loc, { weekday: 'short', day: 'numeric', month: 'short' });
+  var hf = new Intl.DateTimeFormat(loc, { hour: 'numeric' });
+  return df.format(start) + ' · ' + hf.format(start) + ' – ' + hf.format(end);
+}
+
+/* Toute la vie d'une storyline, du plus récent au plus ancien. Les articles
+   sont dédupliqués par URL sur l'ensemble du fil : un même papier repris
+   bloc après bloc n'apparaît qu'à sa première occurrence. */
+var EV_MAX_BLOCS_FIL = 60;
+
+function renderEventStoryline(node) {
+  var region = EVENTS_REGION[currentCountry];
+  var blocks = (eventsData && eventsData.blocks && region) ? eventsData.blocks[region] : null;
+  if (!blocks) { window._evStorylineMeta = ''; return ''; }
+
+  var bandLabels = {};
+  ((eventsData.meta && eventsData.meta.bands) || []).forEach(function(b) {
+    bandLabels[b.id] = (window.__i18n && window.__i18n.currentLang() === 'en') ? b.en : b.fr;
+  });
+
+  var seenUrl = {}, chapitres = [], nArts = 0, jours = {}, nBlocs = 0;
+  var keys = Object.keys(blocks).sort().reverse();
+  for (var i = 0; i < keys.length && nBlocs < EV_MAX_BLOCS_FIL; i++) {
+    var evs = blocks[keys[i]] || [];
+    for (var j = 0; j < evs.length; j++) {
+      var ev = evs[j];
+      if ((ev.storyline || ev.id) !== node.id) continue;
+      nBlocs++;
+      jours[keys[i].slice(0, 10)] = true;
+      var arts = (Array.isArray(ev.articles) && ev.articles.length)
+        ? ev.articles
+        : (ev.url ? [{ title: ev.title, url: ev.url, media_id: ev.media || '' }] : []);
+      var frais = arts.filter(function(a) { return a.url && !seenUrl[a.url]; });
+      frais.forEach(function(a) { seenUrl[a.url] = true; });
+      nArts += frais.length;
+      // Blocs consécutifs de même titre = un seul chapitre
+      var dernier = chapitres[chapitres.length - 1];
+      if (!dernier || dernier.titre !== ev.title) {
+        chapitres.push({ titre: ev.title, blocs: [] });
+        dernier = chapitres[chapitres.length - 1];
+      }
+      dernier.blocs.push({ key: keys[i], index: ev.index, band: ev.band, articles: frais });
+    }
+  }
+
+  var nJours = Object.keys(jours).length;
+  window._evStorylineMeta = nArts + ' article' + (nArts === 1 ? '' : 's') + ' · ' +
+    nBlocs + ' bloc' + (nBlocs === 1 ? '' : 's') + ' de 4 h sur ' +
+    nJours + ' jour' + (nJours === 1 ? '' : 's') +
+    (chapitres.length > 1 ? ' · ' + chapitres.length + ' titres successifs' : '');
+
+  if (!chapitres.length) {
+    return '<p style="color:var(--muted);padding:20px 0;font-size:13px;">' +
+      escapeHtml(window.t ? window.t('common.no_articles_dataset') : 'Aucun article disponible.') + '</p>';
+  }
+
+  var html = '';
+  chapitres.forEach(function(ch) {
+    html += '<div class="ev-chapitre">' + escapeHtml(ch.titre || '') + '</div>';
+    ch.blocs.forEach(function(b) {
+      // « aucune » n'est pas une bande : sous le premier seuil, pas de pastille
+      var bande = bandLabels[b.band] || '';
+      html += '<div class="article-period-label">' + escapeHtml(eventBlockLabel(b.key)) +
+        (typeof b.index === 'number' ? ' · ' + b.index.toFixed(1) : '') +
+        (bande ? ' · <span class="ev-bande band-' + escapeHtml(String(b.band)) + '">' +
+          escapeHtml(bande) + '</span>' : '') +
+        '</div>';
+      html += b.articles.length
+        ? b.articles.map(articleItemHtml).join('')
+        : '<div class="ev-rien">Aucun nouvel article — la couverture se poursuit.</div>';
+    });
+  });
+  if (nBlocs >= EV_MAX_BLOCS_FIL) {
+    html += '<div class="ev-rien">Fil tronqué aux ' + EV_MAX_BLOCS_FIL + ' blocs les plus récents.</div>';
+  }
+  return html;
+}
+
 function openArticlePanel(node) {
   var overlay = document.getElementById('article-overlay');
   var panel = document.getElementById('article-panel');
   var title = document.getElementById('article-panel-title');
   var meta = document.getElementById('article-panel-meta');
   var body = document.getElementById('article-panel-body');
+
+  /* Mode événements : le FIL COMPLET de la storyline, pas seulement le
+     créneau affiché. Un événement à « 6 jours de suite » a vécu dans une
+     vingtaine de blocs de 4 h, sous des titres successifs — c'est cette
+     trajectoire qui a de la valeur. On remonte donc tous ses blocs, du
+     plus récent au plus ancien, en regroupant les blocs consécutifs qui
+     ont porté le même titre : on lit ainsi les titres qu'il a portés, dans
+     l'ordre, avec sous chacun les articles apparus à ce moment-là. */
+  if (currentMode === 'evenements') {
+    title.textContent = node.label || node.id;
+    document.getElementById('article-panel-links').innerHTML = '';
+    body.innerHTML = renderEventStoryline(node);
+    overlay.classList.add('open');
+    panel.classList.add('open');
+    meta.textContent = window._evStorylineMeta || '';
+    return;
+  }
 
   var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
   title.textContent = name;
@@ -2207,9 +2500,9 @@ function openArticlePanel(node) {
   var enc = encodeURIComponent(node.id);
   var encCountry = encodeURIComponent(currentCountry);
   links.innerHTML =
-    '<a class="article-panel-link" href="./evolution.html?country=' + encCountry + '&node=' + enc + '" target="_blank">\u00c9volution ↗</a>' +
-    '<a class="article-panel-link" href="./statistiques.html?objet=' + enc + '&pays=' + encCountry + '" target="_blank">Statistiques ↗</a>' +
-    '<a class="article-panel-link" href="./constellation.html?country=' + encCountry + '&node=' + enc + '" target="_blank">Constellation ↗</a>';
+    '<a class="article-panel-link" href="./evolution.html?country=' + encCountry + '&node=' + enc + '" target="_blank" rel="noopener">\u00c9volution ↗</a>' +
+    '<a class="article-panel-link" href="./statistiques.html?objet=' + enc + '&pays=' + encCountry + '" target="_blank" rel="noopener">Statistiques ↗</a>' +
+    '<a class="article-panel-link" href="./constellation.html?country=' + encCountry + '&node=' + enc + '" target="_blank" rel="noopener">Constellation ↗</a>';
 
   /* Période courante */
   /* Skip period keys belonging to the current slot */
@@ -2325,14 +2618,14 @@ document.getElementById('hot20-search-input').addEventListener('input', function
   }
 
   searchTimeout = setTimeout(function() {
-    var src = timeseriesData || graphData;
-    if (!src || !src.graphs) {
+    var top4h = classementData && classementData.top ? classementData.top['4h'] : null;
+    if (!top4h) {
       resultDiv.classList.remove('radar-active', 'radar-inactive');
       resultDiv.classList.remove('visible');
       return;
     }
-    var countryGraphs = src.graphs[currentCountry];
-    if (!countryGraphs) {
+    var countryTop = top4h[currentCountry];
+    if (!countryTop) {
       resultDiv.classList.remove('radar-active', 'radar-inactive');
       resultDiv.classList.remove('visible');
       return;
@@ -2341,9 +2634,9 @@ document.getElementById('hot20-search-input').addEventListener('input', function
     var currentSlot = aggregatedSlots.length ? aggregatedSlots[currentSlotIdx] : null;
     var currentPeriodKey = currentSlot ? currentSlot.periodKeys[currentSlot.periodKeys.length - 1] : (allPeriods.length ? allPeriods[allPeriods.length - 1].key : null);
     function getSortedNodes(periodKey) {
-      var pd = countryGraphs[periodKey];
-      if (!pd || !pd.nodes) return [];
-      return pd.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
+      // Listes déjà triées et plafonnées au top 30 (même profondeur que
+      // l'ancien timeseries.json) — voir pipeline/build_classement.py.
+      return countryTop[periodKey] || [];
     }
 
     function findFirstQueryMatch(sortedNodes) {

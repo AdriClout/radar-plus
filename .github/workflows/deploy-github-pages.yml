@@ -20,8 +20,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      RADAR_REPORT_DISPATCH_TOKEN: ${{ secrets.RADAR_REPORT_DISPATCH_TOKEN }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry1.outputs.page_url || steps.deployment_retry2.outputs.page_url }}
@@ -33,30 +31,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
-      - name: Inject public report token in built assets
-        shell: bash
-        run: |
-          if [ -z "${RADAR_REPORT_DISPATCH_TOKEN}" ]; then
-            echo "RADAR_REPORT_DISPATCH_TOKEN not set; report submit stays offline"
-            exit 0
-          fi
-
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = 'site/assets/js/shared-menu.js';
-          const placeholder = '__RADAR_REPORT_DISPATCH_TOKEN__';
-          const token = process.env.RADAR_REPORT_DISPATCH_TOKEN || '';
-          if (!token) process.exit(0);
-
-          const src = fs.readFileSync(path, 'utf8');
-          if (!src.includes(placeholder)) {
-            throw new Error('Placeholder not found in shared-menu.js');
-          }
-
-          const out = src.replace(placeholder, token);
-          fs.writeFileSync(path, out, 'utf8');
-          console.log('Report token injected in shared-menu.js');
-          NODE
+      # (2026-08-30) L'étape « Inject public report token » a été retirée :
+      # elle publiait le secret RADAR_REPORT_DISPATCH_TOKEN en clair dans
+      # shared-menu.js sur radarplus.org. Le signalement passe désormais par
+      # le Worker proxy (workers/report-issue/), sans secret côté client.
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
@@ -99,3 +77,16 @@ jobs:
             echo "::error::Aucune tentative de déploiement Pages n'a réussi."
             exit 1
           fi
+
+      - name: Alerte Slack en cas d'échec
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL absent — échec non notifié (ajouter le secret pour activer les alertes)"
+            exit 0
+          fi
+          curl -sS -X POST -H 'Content-type: application/json' --data \
+            "{\"text\":\":rotating_light: radar-plus — échec de \`${{ github.workflow }}\` : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            "$SLACK_WEBHOOK_URL"

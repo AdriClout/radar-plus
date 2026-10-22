@@ -19,7 +19,7 @@ les mettre à jour, relancer le pipeline.
 ## Prérequis
 
 - Identifiants AWS **lecture seule** (le pipeline lit le datamart Athena de la
-  CLESSN). En CI c'est le secret `GH_PAT` + boto3 ; en local, la config AWS
+  CLESSN). En CI ce sont les secrets `AWS_ACCESS_KEY_ID_DEV`/`AWS_SECRET_ACCESS_KEY_DEV` + boto3 (`GH_PAT` ne sert qu'au push) ; en local, la config AWS
   habituelle.
 - R + les packages du pipeline ; Python 3 + boto3.
 
