@@ -612,7 +612,21 @@
   const MAX_LINKS_NODE = 5;
 
   // ── Couleurs ──────────────────────────────────────────────────────────────
-  function sizeToT(s) { return Math.min(1, Math.log(s + 1) / Math.log(250)); }
+  // Échelle RELATIVE à la période affichée (indice spec v1, borné et saturant :
+  // les 30 objets d'une journée ont des cumuls proches, une échelle absolue les
+  // rendrait tous égaux). sizeScale est recalculé à chaque slot chargé.
+  let sizeScale = { min: 0, max: 1 };
+  function updateSizeScale(nodes) {
+    const v = (nodes || []).map(n => Number(n.size) || 0);
+    sizeScale = v.length ? { min: Math.min(...v), max: Math.max(...v) } : { min: 0, max: 1 };
+  }
+  function relSize(s) {
+    const span = sizeScale.max - sizeScale.min;
+    if (!(span > 0)) return 1;
+    return Math.max(0, Math.min(1, ((Number(s) || 0) - sizeScale.min) / span));
+  }
+  function sizeToT(s) { return Math.pow(relSize(s), 0.7); }
+  function nodeRadius(n) { return 5 + 27 * Math.pow(relSize(n.size), 1.5); }
 
   function nodeRGB(size) {
     const t = sizeToT(size);
@@ -761,7 +775,7 @@
 
     const articles = Array.isArray(node.articles) ? node.articles : [];
     titleEl.textContent = node.id;
-    metaEl.textContent  = `${(Number(node.size) || 0).toFixed(2)} pts · ${node.n || 0} mentions · ${articles.length} article${articles.length > 1 ? 's' : ''}`;
+    metaEl.textContent  = `${(Number(node.size) || 0).toFixed(1)} pts · ${node.n || 0} mentions · ${articles.length} article${articles.length > 1 ? 's' : ''}`;
 
     const evolutionUrl = `./evolution.html?country=${encodeURIComponent(currentCountry)}&gran=${encodeURIComponent(rankedGranularity)}&nodes=${encodeURIComponent(node.id)}&mode=tracking`;
     var Tcst = window.t || function(k){ return k; };
@@ -869,7 +883,7 @@
     if (c) return c;
     return nodeColorStr(n.size, n._highlighted);
   });
-  setIfFn('nodeVal', n => Math.max(4, n.size * 0.5));
+  setIfFn('nodeVal', n => Math.pow(nodeRadius(n) / 3, 2));
   setIfFn('nodeRelSize', 3);
   setIfFn('nodeLabel', () => '');
   // Liens
@@ -926,7 +940,7 @@
       const { nodes } = Graph.graphData();
       nodes.forEach(n => {
         if (n.x == null || n._highlighted === false) return;
-        const r  = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
+        const r  = nodeRadius(n);
         const [nr, ng, nb] = nodeRGB(n.size);
         // Halo extérieur
         const g1 = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4);
@@ -958,7 +972,7 @@
         if (n.x == null || n._highlighted === false) return;
         const tier = getSalienceTier(n.size);
         if (!tier) return;
-        const r = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
+        const r = nodeRadius(n);
         ctx.beginPath();
         ctx.arc(n.x, n.y, r + 2, 0, Math.PI * 2);
         ctx.strokeStyle = TIER_RING_COLORS[tier];
@@ -984,7 +998,7 @@
       nodes.forEach(n => {
         if (n._rank >= TOP_LABELS || n.x == null || n._highlighted === false) return;
         const t   = sizeToT(n.size);
-        const r   = 3 * Math.sqrt(Math.max(4, n.size * 0.5));
+        const r   = nodeRadius(n);
         const fs  = Math.max(2, 11 / gs);
         ctx.font  = `${fs}px 'SF Mono', monospace`;
         ctx.textBaseline = 'middle';
@@ -1028,7 +1042,6 @@
   Graph.d3Force('charge').strength(-110);
   Graph.d3Force('link').distance(65);
 
-  function nodeRadius(n) { return 3 * Math.sqrt(Math.max(4, n.size * 0.5)); }
 
   // Padding label-aware: ajoute une marge horizontale proportionnelle
   // à la longueur du label (capée à ~30px), petite marge verticale
@@ -1380,6 +1393,7 @@
     if (!slot) return;
     currentSlotIdx = slotIdx;
     const gd = aggregateSlot(country, slot);
+    updateSizeScale(gd.nodes);
 
     // Réutilise les positions précédentes pour les nœuds persistants —
     // évite de relancer un layout from-scratch entre deux slots adjacents.

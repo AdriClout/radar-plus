@@ -2237,7 +2237,7 @@ function openArticlePanel(node) {
   meta.textContent = (articlesLoading && currentArticles.length === 0
     ? 'Chargement\u2026'
     : currentArticles.length + ' article' + (currentArticles.length === 1 ? '' : 's')
-  ) + ' \u00b7 score ' + (node.size || 0).toFixed(2);
+  ) + ' \u00b7 score ' + (node.size || 0).toFixed(1);
 
   var html = currentArticles.length
     ? currentArticles.map(articleItemHtml).join('')
@@ -2434,7 +2434,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
       var statusNow = currentNode
         ? 'Actuellement&nbsp;: rang <strong>' + currentRank + '</strong>' +
           (currentRank <= 20 ? ' (Top 20)' : ' (hors Top 20)') +
-          ' &middot; ' + formatArticleCount(currentNode.n) + ' &middot; score ' + (currentNode.size || 0).toFixed(2)
+          ' &middot; ' + formatArticleCount(currentNode.n) + ' &middot; score ' + (currentNode.size || 0).toFixed(1)
         : 'Actuellement absent du radar';
 
       var lastSeenText = lastSeen
@@ -2443,7 +2443,7 @@ document.getElementById('hot20-search-input').addEventListener('input', function
         : 'Derni&egrave;re apparition&nbsp;: n/a';
 
       var peakSeenText = peakSeen
-        ? 'Bloc horaire le plus saillant (4 h)&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(2) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
+        ? 'Bloc horaire le plus saillant (4 h)&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(1) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
           formatArticleCount(peakSeen.node.n) + ' &middot; ' + formatPeriodForSearch(peakSeen.period)
         : 'Bloc horaire le plus saillant (4 h)&nbsp;: n/a';
 

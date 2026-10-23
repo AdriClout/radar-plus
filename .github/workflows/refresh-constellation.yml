@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: refresh-constellation
+  group: refresh-constellation-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -90,7 +90,7 @@ jobs:
             echo "updated=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore: refresh constellation data"
-            git pull --rebase origin main
+            git pull --rebase origin "${GITHUB_REF_NAME}"
             git push
             echo "updated=true" >> "$GITHUB_OUTPUT"
           fi
@@ -103,7 +103,7 @@ jobs:
       # sur GITHUB_TOKEN (qui ne déclenche pas de workflows), rétablir le dispatch.
 
       - name: Validate live site is updated
-        if: steps.commit_data.outputs.updated == 'true'
+        if: steps.commit_data.outputs.updated == 'true' && github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
 

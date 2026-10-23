@@ -53,7 +53,8 @@ def main():
     print(f"Fetching salient_index from {history_start}...")
     q1 = f"""
         SELECT country_id, date_utc, time_interval_utc, extracted_objects,
-               absolute_normalized_index, n, urls, titles
+               absolute_normalized_index, salience_index, s_volume, s_visibilite, s_duree,
+               n_medias, n_articles, n, urls, titles
         FROM "vitrine_datamart-salient_index"
         WHERE date_utc >= DATE '{history_start}'
     """
