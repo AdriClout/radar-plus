@@ -1271,4 +1271,163 @@ monitor_input <- list(
 jsonlite::write_json(monitor_input, MONITOR_INPUT_FILE, auto_unbox = TRUE, pretty = FALSE)
 cat("✓ monitor_input.json:", round(file.size(MONITOR_INPUT_FILE) / 1024, 1), "Ko\n")
 
+
+# ─── Sorties v2 : données découpées pour R2 (issue #59) ───────────────────────
+# Même calcul, écriture différente : au lieu de 3 gros fichiers, des petits
+# fichiers que le site charge à la demande (site/assets/js/radar-data.js les
+# recompose dans l'ancienne forme). Préfixe « v2/ » dans le bucket.
+#   index.json                         métadonnées, fenêtre, dernière période par pays
+#   latest.json                        dernière période complète par pays (menu, badges)
+#   periods/{AAAA}.json                liste des blocs 4 h de l'année
+#   days/{pays}/{AAAA-MM-JJ}.json      les blocs du jour : nœuds (sans articles), liens, événements
+#   articles/{pays}/{AAAA-MM-JJ}.json  titres du jour par bloc et par objet
+#   series/{pays}/{AAAA}.json          série compacte [idx_bloc, size, n, niveau] par objet
+#   episodes/{pays}/{AAAA}.json        épisodes d'alerte, regroupements, contexte
+
+cat("\nAssemblage des sorties v2 (données découpées)...\n")
+
+V2_DIR <- file.path(OUT_DIR, "out_r2", "v2")
+dir.create(V2_DIR, recursive = TRUE, showWarnings = FALSE)
+
+write_v2 <- function(x, ...) {
+  path <- file.path(V2_DIR, ...)
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  jsonlite::write_json(x, path, auto_unbox = TRUE, pretty = FALSE, null = "null", na = "null")
+}
+
+LEVEL_CODE <- c(none = 0L, eleve = 1L, tres_eleve = 2L, extreme = 3L)
+generated_at_v2 <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
+
+periods_all <- periods_ts |>
+  dplyr::mutate(year = format(as.Date(date_utc), "%Y"))
+
+# periods/{AAAA}.json
+for (yr in unique(periods_all$year)) {
+  pp <- periods_all |> dplyr::filter(year == yr)
+  write_v2(list(year = as.integer(yr), periods = make_periods_list(pp)), "periods", paste0(yr, ".json"))
+}
+
+latest_by_country <- list()
+dates_by_country  <- list()
+
+for (country in countries) {
+  gts   <- graphs_ts[[country]]        # nœuds sans articles, toute la fenêtre
+  ggr   <- graphs_graph[[country]]     # nœuds avec articles + media_ids, liens, événements (14 j)
+  arts  <- articles_ts[[country]]      # articles par période et objet, toute la fenêtre
+  keys  <- periods_all$key
+  dates <- as.character(periods_all$date_utc)
+  dates_by_country[[country]] <- sort(unique(dates))
+
+  # media_ids par (période, objet) sur toute la fenêtre
+  med_country <- df_obj_media |> dplyr::filter(country_id == country) |>
+    dplyr::mutate(key = paste0(date_utc, "_", time_interval_utc))
+
+  # days/ et articles/
+  for (d in dates_by_country[[country]]) {
+    keys_d <- keys[dates == d]
+    day_periods <- list()
+    day_articles <- list()
+    for (pk in keys_d) {
+      nodes_pk <- gts[[pk]]$nodes
+      if (length(nodes_pk)) {
+        md <- med_country |> dplyr::filter(key == pk)
+        nodes_pk <- lapply(nodes_pk, function(nd) {
+          mm <- md |> dplyr::filter(extracted_objects == nd$id)
+          nd$media_ids <- if (nrow(mm) == 0) character(0) else mm$media_ids[[1]]
+          nd
+        })
+      }
+      day_periods[[pk]] <- list(
+        nodes  = nodes_pk,
+        links  = if (!is.null(ggr[[pk]])) ggr[[pk]]$links  else list(),
+        events = if (!is.null(ggr[[pk]])) ggr[[pk]]$events else list()
+      )
+      day_articles[[pk]] <- if (is.null(arts[[pk]])) structure(list(), names = character(0)) else arts[[pk]]
+    }
+    write_v2(list(country = country, date = d, periods = day_periods),
+             "days", country, paste0(d, ".json"))
+    write_v2(list(country = country, date = d, periods = day_articles),
+             "articles", country, paste0(d, ".json"))
+  }
+
+  # series/{AAAA}.json : [idx_bloc (0-based dans l'année), size, n, niveau]
+  for (yr in unique(periods_all$year)) {
+    keys_y <- periods_all$key[periods_all$year == yr]
+    objs <- list()
+    for (i in seq_along(keys_y)) {
+      pk <- keys_y[i]
+      for (nd in gts[[pk]]$nodes) {
+        lvl <- LEVEL_CODE[nd$alert_level]; if (is.na(lvl)) lvl <- 0L
+        objs[[nd$id]] <- c(objs[[nd$id]], list(list(i - 1L, nd$size, nd$n, unname(lvl))))
+      }
+    }
+    write_v2(list(country = country, year = as.integer(yr), periods = keys_y, objects = objs),
+             "series", country, paste0(yr, ".json"))
+  }
+
+  # episodes/{AAAA}.json : épisodes (année du premier jour) + contexte
+  eps_c <- df_episodes |> dplyr::filter(country_id == country, ep_tier != "none")
+  ctx_c <- df_context  |> dplyr::filter(country_id == country)
+  for (yr in unique(periods_all$year)) {
+    eps_y <- eps_c |> dplyr::filter(format(as.Date(ep_first_day), "%Y") == yr)
+    ctx_y <- ctx_c |> dplyr::filter(format(as.Date(ctx_start), "%Y") == yr)
+    write_v2(list(
+      country = country, year = as.integer(yr),
+      episodes = purrr::map(seq_len(nrow(eps_y)), function(k) list(
+        id        = eps_y$ep_episode_id[k],
+        object    = eps_y$extracted_objects[k],
+        first_day = as.character(eps_y$ep_first_day[k]),
+        last_day  = as.character(eps_y$ep_last_day[k]),
+        n_days    = as.integer(eps_y$ep_n_days[k]),
+        peak      = round(eps_y$ep_peak[k], 3),
+        status    = eps_y$ep_status[k],
+        level     = eps_y$ep_tier[k],
+        cluster_id    = if (is.na(eps_y$cluster_id[k])) NULL else eps_y$cluster_id[k],
+        cluster_pivot = isTRUE(eps_y$cluster_pivot[k]),
+        cluster_size  = if (is.na(eps_y$cluster_size[k])) NULL else as.integer(eps_y$cluster_size[k])
+      )),
+      context = purrr::map(seq_len(nrow(ctx_y)), function(k) list(
+        object     = ctx_y$extracted_objects[k],
+        cluster_id = ctx_y$alert_cluster_id_ctx[k],
+        start      = as.character(ctx_y$ctx_start[k]),
+        end        = as.character(ctx_y$ctx_end[k])
+      ))
+    ), "episodes", country, paste0(yr, ".json"))
+  }
+
+  # latest : dernière période de la fenêtre graph (nœuds avec articles + media_ids)
+  last_key <- periods_graph$key[nrow(periods_graph)]
+  latest_by_country[[country]] <- list(
+    period = make_periods_list(periods_graph |> dplyr::slice_tail(n = 1))[[1]],
+    nodes  = ggr[[last_key]]$nodes,
+    links  = ggr[[last_key]]$links,
+    events = ggr[[last_key]]$events
+  )
+}
+
+write_v2(list(generated_at = generated_at_v2, countries = countries, by_country = latest_by_country),
+         "latest.json")
+
+write_v2(list(
+  generated_at     = generated_at_v2,
+  version          = 2L,
+  countries        = countries,
+  salience_tiers   = salience_tiers,
+  alert_thresholds = result_graph$meta$alert_thresholds,
+  index            = INDEX_META,
+  media_ids        = all_media_ids,
+  top_n            = TOP_N_OBJECTS,
+  history_days     = HISTORY_DAYS,
+  graph_days       = GRAPH_DAYS,
+  window           = list(start = as.character(min(periods_all$date_utc)),
+                          end   = as.character(max(periods_all$date_utc))),
+  years            = as.integer(unique(periods_all$year)),
+  dates            = dates_by_country,
+  latest_period    = lapply(latest_by_country, function(x) x$period$key)
+), "index.json")
+
+n_v2 <- length(list.files(V2_DIR, recursive = TRUE))
+cat("✓ out_r2/v2       :", n_v2, "fichiers,",
+    round(sum(file.size(list.files(V2_DIR, recursive = TRUE, full.names = TRUE))) / 1024 / 1024, 2), "Mo\n")
+
 cat("\nFini!\n")
