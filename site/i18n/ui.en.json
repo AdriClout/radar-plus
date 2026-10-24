@@ -457,7 +457,7 @@
     "title_accent": "des Unes",
     "subtitle": "The events dominating front pages over the last 24h",
     "updated": "latest block: {label}",
-    "usa": "Salient-event tracking covers Quebec and Canada. Pick QC or CAN.",
+    "usa": "No salient events for the United States: the US panel has only two outlets, too few to measure a front page of front pages. Choose Québec or Canada.",
     "empty": "No salient event over the last 24 hours.",
     "meta": "{hours}h on front pages · 24h index: {sum} points",
     "headlines": "Headlines from the latest block",
