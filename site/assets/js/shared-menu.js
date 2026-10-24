@@ -43,7 +43,7 @@
     '</svg>';
 
   function injectHomeLogo() {
-    var page = window.location.pathname.split('/').pop() || 'index.html';
+    var page = currentPage();
     // Skip sur l'accueil (où le logo serait redondant) et sur les pages
     // qui ont déjà leur propre logo intégré dans un panneau gauche
     // (evolution.html: #evo-logo, constellation.html: #cst-logo).
@@ -64,9 +64,17 @@
   // RADAR+ à gauche, pages principales au centre, FR/EN et bouton du tiroir à
   // droite. En flux (sticky), donc il ne recouvre rien. Pas sur les deux outils
   // plein écran (évolution, constellation), qui gardent leur panneau gauche.
+  // Page courante : sur Cloudflare Pages, /alertes.html est servi comme /alertes ;
+  // on ramène toujours au nom de fichier pour marquer le lien actif.
+  function currentPage() {
+    var last = window.location.pathname.split('/').pop() || '';
+    if (!last) return 'index.html';
+    return /\.html$/.test(last) ? last : last + '.html';
+  }
+
   var NO_BAR_PAGES = { 'evolution.html': true, 'constellation.html': true };
   function injectSiteBar() {
-    var page = window.location.pathname.split('/').pop() || 'index.html';
+    var page = currentPage();
     if (NO_BAR_PAGES[page] || document.getElementById('site-bar')) return null;
     var bar = document.createElement('header');
     bar.id = 'site-bar';
@@ -163,7 +171,7 @@
       document.body.insertBefore(navToggle, menuHint);
     }
 
-    var current = window.location.pathname.split('/').pop() || 'index.html';
+    var current = currentPage();
     var currentLink = sideNav.querySelector('a[data-page="' + current + '"]');
     if (currentLink) currentLink.classList.add('current');
 
