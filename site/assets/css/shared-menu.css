@@ -763,10 +763,38 @@ body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
 .site-bar-lang { position: static; margin: 0; }
 body.has-site-bar .nav-toggle { position: static; top: auto; right: auto; }
 body.has-site-bar .menu-discover-hint, body.has-site-bar .home-logo { display: none !important; }
-/* Sous 1120 px, les 7 liens ne tiennent plus : le tiroir prend le relais. */
-@media (max-width: 1120px) {
+/* Grand écran : tout est dans le bandeau, pas de bouton. Sous 1240 px, les
+   onglets ne tiennent plus : le bouton ouvre le panneau sous le bandeau. */
+body.has-site-bar .nav-toggle { display: none; }
+@media (max-width: 1240px) {
   .site-bar-nav { display: none; }
+  body.has-site-bar .nav-toggle { display: flex; }
 }
+.site-bar-dropdown { position: relative; }
+.site-bar-dropdown-btn {
+  font-family: 'Orbitron', 'Space Mono', monospace; font-size: 10.5px;
+  letter-spacing: 1.4px; text-transform: uppercase; white-space: nowrap;
+  color: rgba(200, 216, 255, 0.78); background: transparent; cursor: pointer;
+  padding: 8px 10px; border-radius: 4px; border: 1px solid transparent;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.site-bar-dropdown-btn:hover, .site-bar-dropdown.open .site-bar-dropdown-btn { color: #fff; background: rgba(40, 70, 160, 0.35); }
+.site-bar-dropdown.current .site-bar-dropdown-btn { color: #fff; border-color: rgba(120, 170, 255, 0.55); background: rgba(40, 70, 160, 0.45); }
+.site-bar-caret { font-size: 9px; margin-left: 2px; }
+.site-bar-dropdown-menu {
+  position: absolute; top: calc(100% + 8px); left: 0; min-width: 240px;
+  display: none; flex-direction: column; padding: 8px 0;
+  background: linear-gradient(175deg, rgba(6, 12, 38, 0.98), rgba(3, 6, 20, 0.99));
+  border: 1px solid rgba(90, 140, 255, 0.24); border-radius: 6px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); z-index: 240;
+}
+.site-bar-dropdown.open .site-bar-dropdown-menu { display: flex; }
+.site-bar-dropdown-menu a {
+  font-family: 'Space Mono', monospace; font-size: 12.5px; letter-spacing: 0.3px;
+  text-transform: none; color: #d6e2ff; text-decoration: none;
+  padding: 9px 16px; border-radius: 0; border: 0; white-space: nowrap;
+}
+.site-bar-dropdown-menu a:hover, .site-bar-dropdown-menu a.current { background: rgba(40, 70, 160, 0.4); color: #fff; }
 @media (max-width: 600px) {
   .site-bar { height: 52px; padding: 0 12px; gap: 12px; }
   .site-bar-word { font-size: 15px; }
