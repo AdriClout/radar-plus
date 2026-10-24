@@ -151,24 +151,33 @@
     .dotted-bridge svg { width: 100%; height: 100%; }
 
     /* ========== HOT 20 SECTION ========== */
-    /* ========== À LA UNE (événements saillants, cumul 24 h) ========== */
+    /* ========== LA UNE DES UNES (événements saillants) ========== */
     .aune-section {
       position: relative; z-index: 1;
       padding: 84px 40px 120px; /* 1re section : dégage le menu ; respire avant le Hot 20 */
       max-width: 1000px; margin: 0 auto;
     }
-    .aune-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-    @media (min-width: 760px) {
-      .aune-grid { grid-template-columns: 2fr 1fr; align-items: start; }
-      .aune-card.aune-hero { grid-column: 1; grid-row: 1 / span 2; }
-      .aune-card.aune-secondary { grid-column: 2; }
+    .aune-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 16px; }
+    .aune-tab {
+      font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
+      color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 14px; cursor: pointer; transition: color 0.2s, background 0.2s, border-color 0.2s;
     }
-    /* Classes préfixées : « hero » est déjà la section d'accueil (flex centré). */
+    .aune-tab:hover { color: var(--text); border-color: rgba(90,140,255,0.45); }
+    .aune-tab.active { color: #fff; background: rgba(40,70,160,0.55); border-color: var(--accent); box-shadow: 0 0 12px rgba(80,130,255,0.25); }
+    /* Le module garde TOUJOURS la même hauteur (règle d'Adrien) : cartes et liste s'y tiennent. */
+    .aune-grid { --aune-h: 600px; display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 760px) {
+      .aune-grid.view-cards { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; height: var(--aune-h); align-items: stretch; }
+      .aune-grid.view-cards .aune-card.aune-hero { grid-column: 1; grid-row: 1 / span 2; }
+      .aune-grid.view-cards .aune-card.aune-secondary { grid-column: 2; }
+      .aune-grid.view-list { height: var(--aune-h); }
+    }
     .aune-card {
-      position: relative;
+      position: relative; min-height: 0; overflow: hidden;
       background: var(--card-bg); border: 1px solid var(--border);
       border-radius: 10px; padding: 18px 20px;
-      display: flex; flex-direction: column; gap: 10px;
+      display: flex; flex-direction: column; gap: 8px;
       justify-content: flex-start; align-items: stretch;
     }
     .aune-card.aune-hero { padding: 22px 24px; border-color: rgba(120,170,255,0.45); box-shadow: 0 0 24px rgba(80,130,255,0.12); }
@@ -176,38 +185,64 @@
     .aune-rank { font-family: var(--orbitron); font-size: 11px; letter-spacing: 1.5px; color: var(--muted); }
     .aune-band {
       font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 4px; color: #060d22; background: #6b7fa8;
+      padding: 3px 8px; border-radius: 4px; color: #060d22; background: #6b7fa8; white-space: nowrap;
     }
     .aune-band.band-faible { background: #7f93b8; }
     .aune-band.band-moderee { background: #5fa8ff; }
     .aune-band.band-elevee { background: #f2c94c; }
     .aune-band.band-tres_elevee { background: #ff9f43; }
     .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
-    .aune-title { font-size: 17px; line-height: 1.3; font-weight: 700; color: #e8f0ff; margin: 0; }
-    .aune-card.aune-hero .aune-title { font-size: clamp(19px, 2.4vw, 26px); }
-    .aune-art { margin: -22px -24px 4px; position: relative; }
-    .aune-art img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px 10px 0 0; }
+    .aune-title {
+      font-size: 16px; line-height: 1.3; font-weight: 700; color: #e8f0ff; margin: 0;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .aune-card.aune-hero .aune-title { font-size: clamp(18px, 2.1vw, 23px); }
+    .aune-issue { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.6px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .aune-meta { font-size: 12px; color: var(--muted); }
+    /* Illustration : prend la place qui reste au-dessus du texte, recadrée. */
+    .aune-art { margin: -22px -24px 6px; position: relative; flex: 1 1 auto; min-height: 120px; }
+    .aune-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 10px 10px 0 0; }
+    /* Pas d'illustration pour cette Une (la Vitrine n'illustre que SA Une du moment) :
+       on garde l'espace, avec le robot en filigrane, pour que le module ne bouge jamais. */
+    .aune-art.no-art { background: radial-gradient(ellipse at 50% 40%, rgba(60,90,200,0.28), rgba(2,0,16,0) 70%); border-radius: 10px 10px 0 0; }
+    .aune-art.no-art::before {
+      content: ""; position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; transform: translate(-50%, -50%);
+      background: url('assets/img/robot.png') center / contain no-repeat; opacity: 0.22;
+    }
+    .aune-art figcaption { display: none; }
+    .aune-art.has-art figcaption { display: block; }
     .aune-art figcaption {
       position: absolute; right: 10px; bottom: 8px;
       font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.5px;
       color: rgba(220,230,255,0.85); background: rgba(2,0,16,0.55);
       padding: 3px 7px; border-radius: 4px; max-width: 70%; text-align: right;
     }
-    .aune-issue { font-size: 12px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.6px; text-transform: uppercase; }
-    .aune-meta { font-size: 12px; color: var(--muted); }
-    .aune-headlines { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .aune-headlines-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
-    .aune-headline a { color: var(--text); text-decoration: none; font-size: 13.5px; line-height: 1.4; display: flex; gap: 10px; align-items: baseline; }
+    .aune-body { flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+    .aune-headlines { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .aune-headlines-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+    .aune-headline a { color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.4; display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+    .aune-headline a span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .aune-headline a:hover { color: #fff; text-decoration: underline; }
     .aune-media {
       flex: 0 0 auto; font-family: var(--orbitron); font-size: 9px; letter-spacing: 1px;
       padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; color: var(--muted);
     }
+    /* Vue liste (top 10), à l'image du Hot 20 */
+    .aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; height: 100%; overflow: hidden; }
+    .aune-row {
+      display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+      padding: 7px 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; min-height: 0;
+    }
+    .aune-row-rank { font-family: var(--orbitron); font-size: 15px; color: var(--accent); }
+    .aune-row-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .aune-row-title { font-size: 13.5px; font-weight: 700; color: #e8f0ff; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .aune-row-title:hover { text-decoration: underline; color: #fff; }
+    .aune-row-meta { display: flex; gap: 10px; align-items: center; font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; }
+    .aune-row-meta .aune-band { font-size: 8px; padding: 2px 6px; }
+    .aune-row-score { text-align: right; font-family: var(--mono); font-size: 12px; color: #cfe1ff; white-space: nowrap; }
+    .aune-row-score b { color: #fff; font-size: 14px; }
     .aune-empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
-    .aune-note { margin-top: 14px; color: var(--muted); font-size: 11.5px; line-height: 1.6; max-width: 720px; }
-    .aune-note a { color: var(--accent); text-decoration: none; }
-    .aune-note a:hover { text-decoration: underline; }
-    @media (max-width: 700px) { .aune-section { padding: 76px 16px 80px; } }
+    @media (max-width: 700px) { .aune-section { padding: 76px 16px 80px; } .aune-grid { --aune-h: auto; } .aune-art { min-height: 180px; } }
 
     .hot20-section {
       position: relative; z-index: 1;
@@ -999,7 +1034,14 @@
   <div class="hot20-title-row">
     <h2 class="hot20-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span><span class="hot20-subtitle" id="aune-subtitle"></span></h2>
   </div>
-  <div class="aune-grid" id="aune-grid"></div>
+  <div class="aune-tabs" id="aune-tabs" role="tablist">
+    <button type="button" class="aune-tab active" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
+    <button type="button" class="aune-tab" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
+    <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
+    <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
+    <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
+  </div>
+  <div class="aune-grid view-cards" id="aune-grid"></div>
 </section>
 
 <!-- ========== HOT 20 ========== -->
@@ -1537,14 +1579,161 @@ function getArticlesFor(country, periodKey, nodeId, fallback) {
 var allPeriods = [];
 var currentCountry = 'QC';
 
-// ─── À la Une : événements saillants du cumul 24 h (chantier 2, #49) ────────
-// Source : v2/events/latest.json (par région : dernier bloc + storylines du
-// cumul 24 h). Règle d'affichage (rapport #46) : le héros toujours, les 2e et
-// 3e seulement si leur bande 24 h est au moins « Modérée ». Pas d'événements
-// pour les États-Unis (panel de 2 médias).
+// ─── La Une des Unes (chantier 2, #49) ──────────────────────────────────────
+// Sources : v2/events/latest.json (dernier bloc : manchettes), v2/events/index.json
+// (seuils des bandes par région) et v2/events/storylines/{région}/{année}.json
+// (indice par bloc de chaque histoire). Fenêtres en heure de Montréal :
+//   Aujourd'hui (défaut)  = depuis minuit, 3 cartes (toujours 3, décision d'Adrien) ;
+//   Dernières heures (24h), Cette semaine (depuis lundi 0h), Ce mois-ci, Cette année
+//   = top 10 en liste, à l'image du Hot 20. Classement = cumul de l'indice des
+//   blocs de la fenêtre par histoire ; tag = bande du meilleur bloc (seuils Vitrine).
+// Pas d'événements pour les États-Unis (panel de 2 médias). Le module garde la
+// même hauteur quelle que soit la vue.
 var eventsLatestData = null;
-var AUNE_MAX = 3;
-var AUNE_SECONDARY_MIN = { moderee: 1, elevee: 1, tres_elevee: 1, extreme: 1 };
+var auneRange = 'today';
+var AUNE_LIMIT = { today: 3, '24h': 10, week: 10, month: 10, year: 10 };
+var auneStore = { index: null, storylines: {}, loading: {} };
+var AUNE_BANDS = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
+
+function mtlOffsetMs(d) {
+  var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Montreal', timeZoneName: 'longOffset' }).formatToParts(d);
+  var tz = (parts.find(function(x) { return x.type === 'timeZoneName'; }) || {}).value || 'GMT-05:00';
+  var m = tz.match(/GMT([+-])(\d{1,2}):?(\d{2})?/);
+  if (!m) return -5 * 3600e3;
+  return (m[1] === '-' ? -1 : 1) * ((+m[2]) * 3600e3 + (+(m[3] || 0)) * 60e3);
+}
+function mtlParts(d) {
+  var parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).formatToParts(d);
+  var o = {}; parts.forEach(function(x) { o[x.type] = x.value; });
+  return { y: +o.year, m: +o.month, d: +o.day, wd: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(o.weekday) };
+}
+function mtlMidnightUtc(y, m, d) {
+  return Date.UTC(y, m - 1, d) - mtlOffsetMs(new Date(Date.UTC(y, m - 1, d, 12)));
+}
+function auneWindowStart(range) {
+  var now = new Date(), p = mtlParts(now);
+  if (range === '24h') return now.getTime() - 24 * 3600e3;
+  if (range === 'today') return mtlMidnightUtc(p.y, p.m, p.d);
+  if (range === 'week') {
+    var back = (p.wd + 6) % 7; // lundi = 0
+    var q = mtlParts(new Date(mtlMidnightUtc(p.y, p.m, p.d) - back * 86400e3 + 12 * 3600e3));
+    return mtlMidnightUtc(q.y, q.m, q.d);
+  }
+  if (range === 'month') return mtlMidnightUtc(p.y, p.m, 1);
+  if (range === 'year') return mtlMidnightUtc(p.y, 1, 1);
+  return 0;
+}
+function periodStartUtc(key) { // 'AAAA-MM-JJ_HH-HH' (UTC)
+  return Date.UTC(+key.slice(0, 4), +key.slice(5, 7) - 1, +key.slice(8, 10), parseInt(key.slice(11, 13), 10) || 0);
+}
+function auneBand(region, value) {
+  var th = auneStore.index && auneStore.index.thresholds && auneStore.index.thresholds[region] && auneStore.index.thresholds[region].block;
+  if (!th) return 'aucune';
+  var band = 'aucune';
+  AUNE_BANDS.forEach(function(b) { if (typeof th[b] === 'number' && value >= th[b]) band = b; });
+  return band;
+}
+function auneYears(range) {
+  var y0 = new Date(auneWindowStart(range)).getUTCFullYear(), y1 = new Date().getUTCFullYear();
+  var out = []; for (var y = y0; y <= y1; y++) out.push(y); return out;
+}
+function auneReady(region, range) {
+  if (!auneStore.index) return false;
+  return auneYears(range).every(function(y) { return !!auneStore.storylines[region + '/' + y]; });
+}
+function auneLoad(region, range) {
+  var jobs = [];
+  if (!auneStore.index) {
+    if (!auneStore.loading.index) auneStore.loading.index = window.radarData.eventsIndex().then(function(i) { auneStore.index = i; });
+    jobs.push(auneStore.loading.index);
+  }
+  auneYears(range).forEach(function(y) {
+    var k = region + '/' + y;
+    if (!auneStore.storylines[k] && !auneStore.loading[k]) {
+      auneStore.loading[k] = window.radarData.eventsStorylines(region, y)
+        .then(function(f) { auneStore.storylines[k] = f; })
+        .catch(function() { auneStore.storylines[k] = { storylines: {} }; });
+    }
+    if (auneStore.loading[k]) jobs.push(auneStore.loading[k]);
+  });
+  return Promise.all(jobs);
+}
+function auneRanking(region, range, limit) {
+  var start = auneWindowStart(range), now = Date.now(), acc = {};
+  auneYears(range).forEach(function(y) {
+    var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
+    Object.keys(f.storylines).forEach(function(sid) {
+      var st = f.storylines[sid], series = st.series || {};
+      var pts = 0, blocks = 0, peak = 0, lastKey = null;
+      Object.keys(series).forEach(function(key) {
+        var t = periodStartUtc(key); if (t < start || t > now) return;
+        var v = Number(series[key]) || 0;
+        pts += v; blocks++; if (v > peak) peak = v; if (!lastKey || key > lastKey) lastKey = key;
+      });
+      if (!blocks) return;
+      var cur = acc[sid];
+      if (!cur) acc[sid] = { storyline: sid, title: st.title || '', issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
+      else { cur.points += pts; cur.blocks += blocks; if (peak > cur.peak) cur.peak = peak; }
+    });
+  });
+  var list = Object.keys(acc).map(function(k) { return acc[k]; });
+  list.sort(function(a, b) { return b.points - a.points; });
+  return list.slice(0, limit);
+}
+function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
+function auneHeadlines(c, ev, max) {
+  var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, max) : [];
+  if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
+  return arts;
+}
+function auneCardHtml(c, i, byStory, region, lang, T) {
+  var ev = byStory[c.storyline];
+  var band = auneBand(region, c.peak);
+  var issue = auneIssue(c, lang);
+  var arts = auneHeadlines(c, ev, i === 0 ? 3 : 1);
+  var headlines = arts.length
+    ? (i === 0 ? '<div class="aune-headlines-title">' + escapeHtml(T('aune.headlines')) + '</div>' : '') +
+      '<ul class="aune-headlines">' + arts.map(function(a) {
+        return '<li class="aune-headline"><a href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener">' +
+          '<span class="aune-media">' + escapeHtml(a.media_id || '') + '</span><span>' + escapeHtml(a.title || a.url) + '</span></a></li>';
+      }).join('') + '</ul>'
+    : '';
+  var art = (i === 0 && c.storyline)
+    ? '<figure class="aune-art"><img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp') +
+      '" alt="" loading="lazy" onload="this.parentNode.classList.add(\'has-art\')" onerror="this.parentNode.classList.add(\'no-art\'); this.remove()">' +
+      '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>'
+    : '';
+  return '<article class="aune-card ' + (i === 0 ? 'aune-hero' : 'aune-secondary') + '">' + art +
+    '<div class="aune-body">' +
+      '<div class="aune-card-top">' +
+        '<span class="aune-rank">' + (i + 1) + '</span>' +
+        '<span class="aune-band band-' + escapeHtml(band) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>' +
+        (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') +
+      '</div>' +
+      '<h3 class="aune-title">' + escapeHtml(c.title) + '</h3>' +
+      '<div class="aune-meta">' + escapeHtml(T('aune.meta_range', { blocks: c.blocks, points: c.points.toFixed(1) })) + '</div>' +
+      headlines +
+    '</div>' +
+  '</article>';
+}
+function auneRowHtml(c, i, region, lang, T) {
+  var band = auneBand(region, c.peak);
+  var issue = auneIssue(c, lang);
+  var title = escapeHtml(c.title);
+  return '<li class="aune-row">' +
+    '<span class="aune-row-rank">' + (i + 1) + '</span>' +
+    '<div class="aune-row-main">' +
+      (c.url ? '<a class="aune-row-title" href="' + escapeHtml(c.url) + '" target="_blank" rel="noopener">' + title + '</a>'
+             : '<span class="aune-row-title">' + title + '</span>') +
+      '<div class="aune-row-meta">' +
+        '<span class="aune-band band-' + escapeHtml(band) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>' +
+        (issue ? '<span>' + escapeHtml(issue) + '</span>' : '') +
+        '<span>' + escapeHtml(T('aune.blocks', { blocks: c.blocks })) + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="aune-row-score"><b>' + c.points.toFixed(1) + '</b> ' + escapeHtml(T('aune.points')) + '</div>' +
+  '</li>';
+}
 function renderALaUne() {
   var sec = document.getElementById('aune');
   var grid = document.getElementById('aune-grid');
@@ -1553,58 +1742,48 @@ function renderALaUne() {
   var T = window.t || function(k) { return k; };
   var lang = (document.documentElement.lang || 'fr').slice(0, 2);
   sec.hidden = false;
-  if (!eventsLatestData || !eventsLatestData.by_region) {
+  var region = currentCountry;
+  var viewClass = 'aune-grid ' + (auneRange === 'today' ? 'view-cards' : 'view-list');
+  if (region !== 'QC' && region !== 'CAN') {
     sub.textContent = T('aune.subtitle');
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
-    return;
-  }
-  var reg = eventsLatestData.by_region[currentCountry];
-  if (!reg) {
-    sub.textContent = T('aune.subtitle');
+    grid.className = viewClass;
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.usa')) + '</div>';
     return;
   }
-  sub.textContent = T('aune.subtitle') + ' · ' + T('aune.updated', { label: reg.period.label });
-  var current = (reg.current || []).filter(function(c) { return c.band24h && c.band24h !== 'aucune'; });
-  var shown = current.slice(0, AUNE_MAX).filter(function(c, i) { return i === 0 || AUNE_SECONDARY_MIN[c.band24h]; });
-  if (!shown.length) {
+  var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null;
+  sub.textContent = T('aune.range_sub.' + auneRange) + (latest ? ' · ' + T('aune.updated', { label: latest.period.label }) : '');
+  grid.className = viewClass;
+  if (!auneReady(region, auneRange)) {
+    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
+    var r = auneRange, c = region;
+    auneLoad(c, r).then(function() { if (auneRange === r && currentCountry === c) renderALaUne(); });
+    return;
+  }
+  var items = auneRanking(region, auneRange, AUNE_LIMIT[auneRange] || 10);
+  if (!items.length) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
     return;
   }
   var byStory = {};
-  (reg.events || []).forEach(function(e) { if (e && e.storyline) byStory[e.storyline] = e; });
-  grid.innerHTML = shown.map(function(c, i) {
-    var ev = byStory[c.storyline];
-    var issue = lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en);
-    var hours = (c.n_blocks || 1) * 4;
-    var html = '<article class="aune-card ' + (i === 0 ? 'aune-hero' : 'aune-secondary') + '">' +
-      // Illustration de la Vitrine pour cette storyline, si Radar+ l'a archivée
-      // (events/art/<storyline>.webp) ; retirée silencieusement sinon (404).
-      (i === 0 && c.storyline
-        ? '<figure class="aune-art"><img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp') +
-          '" alt="" loading="lazy" onerror="this.closest(\'figure\').remove()">' +
-          '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>'
-        : '') +
-      '<div class="aune-card-top">' +
-        '<span class="aune-rank">' + (i + 1) + '</span>' +
-        '<span class="aune-band band-' + escapeHtml(c.band24h) + '">' + escapeHtml(T('aune.band.' + c.band24h)) + '</span>' +
-        (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') +
-      '</div>' +
-      '<h3 class="aune-title">' + escapeHtml(c.title || '') + '</h3>' +
-      '<div class="aune-meta">' + escapeHtml(T('aune.meta', { hours: hours, sum: Number(c.sum24h || 0).toFixed(1) })) + '</div>';
-    var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, i === 0 ? 3 : 1) : [];
-    // Storyline absente du dernier bloc : la manchette représentative la plus récente.
-    if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
-    if (arts.length) {
-      html += (i === 0 ? '<div class="aune-headlines-title">' + escapeHtml(T('aune.headlines')) + '</div>' : '') +
-        '<ul class="aune-headlines">' + arts.map(function(a) {
-          return '<li class="aune-headline"><a href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener">' +
-            '<span class="aune-media">' + escapeHtml(a.media_id || '') + '</span><span>' + escapeHtml(a.title || a.url) + '</span></a></li>';
-        }).join('') + '</ul>';
-    }
-    return html + '</article>';
-  }).join('');
+  ((latest && latest.events) || []).forEach(function(e) { if (e && e.storyline) byStory[e.storyline] = e; });
+  if (auneRange === 'today') {
+    grid.innerHTML = items.map(function(it, i) { return auneCardHtml(it, i, byStory, region, lang, T); }).join('');
+  } else {
+    grid.innerHTML = '<ol class="aune-list">' + items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T); }).join('') + '</ol>';
+  }
 }
+(function() {
+  var tabs = document.getElementById('aune-tabs');
+  if (!tabs) return;
+  tabs.addEventListener('click', function(e) {
+    var btn = e.target.closest('.aune-tab');
+    if (!btn) return;
+    tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    auneRange = btn.dataset.range;
+    renderALaUne();
+  });
+})();
 var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]

@@ -254,9 +254,14 @@ for (rk in c("QC", "ROC")) {
       .groups = "drop"
     )
   series_df <- by_bs |> arrange(block_ts)
+  # Manchette représentative la plus récente par storyline (pour les lignes cliquables).
+  last_rows <- d |> arrange(desc(block_ts), desc(index)) |> group_by(sid) |>
+    summarise(url = first(representative_url), media = first(representative_media_id),
+              last_event_id = first(event_id), .groups = "drop")
   stories_by_year <- list()
   for (j in seq_len(nrow(meta_story))) {
     s <- meta_story$sid[j]
+    lr <- last_rows[last_rows$sid == s, ]
     ser <- series_df |> filter(sid == s)
     cum <- sum24h[[s]]
     last_cum <- if (!is.null(cum) && length(cum)) cum[[length(cum)]] else NULL
@@ -271,6 +276,9 @@ for (rk in c("QC", "ROC")) {
       peak       = round(meta_story$peak[j], 3),
       n_blocks   = meta_story$n_blocks[j],
       first_seen = if (!is.na(meta_story$first_seen[j])) meta_story$first_seen[j] else NULL,
+      url        = if (nrow(lr) && !is.na(lr$url[1])) lr$url[1] else NULL,
+      media      = if (nrow(lr) && !is.na(lr$media[1])) lr$media[1] else NULL,
+      last_event_id = if (nrow(lr)) lr$last_event_id[1] else NULL,
       series     = as.list(setNames(round(ser$sumVal, 3), ser$period_key)),
       sum24h     = if (!is.null(cum)) cum else setNames(list(), character(0)),
       band24h    = if (!is.null(last_cum)) band_of(last_cum, TH_SUM[[reg]]) else "aucune"

@@ -471,6 +471,23 @@
       "tres_elevee": "Saillance très élevée",
       "extreme": "Saillance extrême"
     },
-    "art_credit": "Illustration générée par intelligence artificielle · direction artistique Mathieu Fortin (Anorak Studio) · Vitrine démocratique"
+    "art_credit": "Illustration générée par intelligence artificielle · direction artistique Mathieu Fortin (Anorak Studio) · Vitrine démocratique",
+    "range": {
+      "today": "Aujourd'hui",
+      "24h": "Dernières heures",
+      "week": "Cette semaine",
+      "month": "Ce mois-ci",
+      "year": "Cette année"
+    },
+    "range_sub": {
+      "today": "Les 3 Unes les plus saillantes depuis minuit",
+      "24h": "Le top 10 des 24 dernières heures",
+      "week": "Le top 10 depuis lundi",
+      "month": "Le top 10 du mois",
+      "year": "Le top 10 de l'année"
+    },
+    "meta_range": "{blocks} blocs en Une · {points} points",
+    "blocks": "{blocks} blocs",
+    "points": "points"
   }
 }
