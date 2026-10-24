@@ -77,6 +77,9 @@ jobs:
       - name: Build events data (R, sorties v2)
         run: Rscript pipeline/build_events.R
 
+      - name: Illustration de la Une (Vitrine, public, archivée par storyline)
+        run: python3 pipeline/fetch_art.py
+
       - name: Vérifier les JSON produits
         run: |
           set -euo pipefail
