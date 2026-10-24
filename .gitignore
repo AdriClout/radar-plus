@@ -129,3 +129,4 @@ wrangler.toml
 
 # Sorties v2 découpées (chantier 7) — publiées dans R2, jamais versionnées
 pipeline/out_r2/
+pipeline/headline_events.csv
