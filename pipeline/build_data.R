@@ -1333,7 +1333,7 @@ for (country in countries) {
         md <- med_country |> dplyr::filter(key == pk)
         nodes_pk <- lapply(nodes_pk, function(nd) {
           mm <- md |> dplyr::filter(extracted_objects == nd$id)
-          nd$media_ids <- if (nrow(mm) == 0) character(0) else mm$media_ids[[1]]
+          nd$media_ids <- I(if (nrow(mm) == 0) character(0) else mm$media_ids[[1]])  # I() : toujours un tableau JSON
           nd
         })
       }
@@ -1361,7 +1361,7 @@ for (country in countries) {
         objs[[nd$id]] <- c(objs[[nd$id]], list(list(i - 1L, nd$size, nd$n, unname(lvl))))
       }
     }
-    write_v2(list(country = country, year = as.integer(yr), periods = keys_y, objects = objs),
+    write_v2(list(country = country, year = as.integer(yr), periods = I(keys_y), objects = objs),
              "series", country, paste0(yr, ".json"))
   }
 
@@ -1399,30 +1399,30 @@ for (country in countries) {
   last_key <- periods_graph$key[nrow(periods_graph)]
   latest_by_country[[country]] <- list(
     period = make_periods_list(periods_graph |> dplyr::slice_tail(n = 1))[[1]],
-    nodes  = ggr[[last_key]]$nodes,
+    nodes  = lapply(ggr[[last_key]]$nodes, function(nd) { nd$media_ids <- I(as.character(nd$media_ids)); nd }),
     links  = ggr[[last_key]]$links,
     events = ggr[[last_key]]$events
   )
 }
 
-write_v2(list(generated_at = generated_at_v2, countries = countries, by_country = latest_by_country),
+write_v2(list(generated_at = generated_at_v2, countries = I(countries), by_country = latest_by_country),
          "latest.json")
 
 write_v2(list(
   generated_at     = generated_at_v2,
   version          = 2L,
-  countries        = countries,
+  countries        = I(countries),
   salience_tiers   = salience_tiers,
   alert_thresholds = result_graph$meta$alert_thresholds,
   index            = INDEX_META,
-  media_ids        = all_media_ids,
+  media_ids        = I(all_media_ids),
   top_n            = TOP_N_OBJECTS,
   history_days     = HISTORY_DAYS,
   graph_days       = GRAPH_DAYS,
   window           = list(start = as.character(min(periods_all$date_utc)),
                           end   = as.character(max(periods_all$date_utc))),
-  years            = as.integer(unique(periods_all$year)),
-  dates            = dates_by_country,
+  years            = I(as.integer(unique(periods_all$year))),
+  dates            = lapply(dates_by_country, I),
   latest_period    = lapply(latest_by_country, function(x) x$period$key)
 ), "index.json")
 
