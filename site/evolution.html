@@ -679,16 +679,25 @@
   try {
   // ── Données ───────────────────────────────────────────────────────────────
   let tsData;
-  let articlesData = null;
-  let articlesLoadingPromise = null;
-  function ensureArticlesLoaded() {
-    if (articlesData) return Promise.resolve(articlesData);
-    if (articlesLoadingPromise) return articlesLoadingPromise;
-    articlesLoadingPromise = fetch(radarDataUrl('articles.json'))
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { articlesData = d; return d; })
-      .catch(() => null);
-    return articlesLoadingPromise;
+  // Données découpées (#59) : les articles sont chargés PAR JOUR à la demande
+  // (articles/{pays}/{date}.json) dans un magasin qui garde l'ancienne forme,
+  // donc getArticlesFor() ne change pas. ensureArticlesFor(clés) charge les
+  // jours manquants ; articlesReadyFor(clés) dit si tout est déjà là.
+  const articleStore = window.radarData.articleStore();
+  const articlesData = articleStore.data;
+  const PREV_ARTICLES_LOOKBACK = 60; // blocs 4 h (≈ 10 jours) pour « Précédemment »
+  function ensureArticlesFor(country, periodKeys) { return articleStore.ensure(country, periodKeys); }
+  function articlesReadyFor(country, periodKeys) { return articleStore.has(country, periodKeys); }
+  function panelArticleKeys(ctx) {
+    const keys = [];
+    if (ctx?.isDay && Array.isArray(ctx.periodKeys)) keys.push(...ctx.periodKeys);
+    else if (ctx?.key) keys.push(ctx.key);
+    const allPeriods = tsData?.meta?.periods || periods || [];
+    const lastKey = keys[keys.length - 1];
+    let idx = lastKey ? allPeriods.findIndex(p => p.key === lastKey) : -1;
+    if (idx < 0) idx = allPeriods.length - 1;
+    keys.push(...articleStore.keysBefore(allPeriods, idx, PREV_ARTICLES_LOOKBACK));
+    return keys;
   }
   function getArticlesFor(country, periodKey, nodeId, fallbackNodeArticles) {
     const a = articlesData?.articles?.[country]?.[periodKey]?.[nodeId];
@@ -696,12 +705,14 @@
     return Array.isArray(fallbackNodeArticles) ? fallbackNodeArticles : [];
   }
   try {
-    const tRes = await fetch(radarDataUrl('timeseries.json'));
-    if (!tRes.ok) throw new Error('timeseries.json: ' + tRes.statusText);
-    tsData = await tRes.json();
-    // Préchargement non-bloquant des articles → panel s'ouvrira instantanément
-    // dès qu'ils arrivent (sinon affiche "Chargement…" temporairement).
-    ensureArticlesLoaded();
+    tsData = await window.radarData.timeseries();
+    // Préchargement non-bloquant des articles des derniers jours pour le pays
+    // courant → le panneau s'ouvre instantanément dans le cas courant.
+    {
+      const allP = tsData.meta.periods;
+      const urlCountry = new URLSearchParams(window.location.search).get('country') || 'QC';
+      ensureArticlesFor(urlCountry, articleStore.keysBefore(allP, allP.length - 1, 42));
+    }
   } catch(e) {
     const loading = document.getElementById('loading-text');
     if (window.location.protocol === 'file:') {
@@ -1050,7 +1061,8 @@
     const seenUrls = new Set();
     currentArticles.forEach(a => { if (a.url) seenUrls.add(a.url); });
 
-    const articlesLoading = !articlesData;
+    const neededKeys = panelArticleKeys(ctx);
+    const articlesLoading = !articlesReadyFor(currentCountry, neededKeys);
     const loadingNotice = articlesLoading
       ? '<div class="empty">Chargement de l\'historique des articles…</div>'
       : '';
@@ -1078,7 +1090,7 @@
 
     // Si articles pas encore chargés, re-render dès que prêt
     if (articlesLoading) {
-      ensureArticlesLoaded().then(() => {
+      ensureArticlesFor(currentCountry, neededKeys).then(() => {
         if (panelState.nodeId === node.id) renderArticlesPanel(node, panelState.contextPeriod);
       });
     }
