@@ -159,17 +159,19 @@
     }
     .aune-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
     @media (min-width: 760px) {
-      .aune-grid { grid-template-columns: 2fr 1fr; }
-      .aune-card.secondary:nth-child(3) { grid-column: 2; }
-      .aune-card.hero { grid-row: span 2; }
+      .aune-grid { grid-template-columns: 2fr 1fr; align-items: start; }
+      .aune-card.aune-hero { grid-column: 1; grid-row: 1 / span 2; }
+      .aune-card.aune-secondary { grid-column: 2; }
     }
+    /* Classes préfixées : « hero » est déjà la section d'accueil (flex centré). */
     .aune-card {
       position: relative;
       background: var(--card-bg); border: 1px solid var(--border);
       border-radius: 10px; padding: 18px 20px;
       display: flex; flex-direction: column; gap: 10px;
+      justify-content: flex-start; align-items: stretch;
     }
-    .aune-card.hero { padding: 22px 24px; border-color: rgba(120,170,255,0.45); box-shadow: 0 0 24px rgba(80,130,255,0.12); }
+    .aune-card.aune-hero { padding: 22px 24px; border-color: rgba(120,170,255,0.45); box-shadow: 0 0 24px rgba(80,130,255,0.12); }
     .aune-card-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .aune-rank { font-family: var(--orbitron); font-size: 11px; letter-spacing: 1.5px; color: var(--muted); }
     .aune-band {
@@ -182,7 +184,7 @@
     .aune-band.band-tres_elevee { background: #ff9f43; }
     .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
     .aune-title { font-size: 17px; line-height: 1.3; font-weight: 700; color: #e8f0ff; margin: 0; }
-    .aune-card.hero .aune-title { font-size: clamp(19px, 2.4vw, 26px); }
+    .aune-card.aune-hero .aune-title { font-size: clamp(19px, 2.4vw, 26px); }
     .aune-issue { font-size: 12px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.6px; text-transform: uppercase; }
     .aune-meta { font-size: 12px; color: var(--muted); }
     .aune-headlines { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
@@ -1568,7 +1570,7 @@ function renderALaUne() {
     var ev = byStory[c.storyline];
     var issue = lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en);
     var hours = (c.n_blocks || 1) * 4;
-    var html = '<article class="aune-card ' + (i === 0 ? 'hero' : 'secondary') + '">' +
+    var html = '<article class="aune-card ' + (i === 0 ? 'aune-hero' : 'aune-secondary') + '">' +
       '<div class="aune-card-top">' +
         '<span class="aune-rank">' + (i + 1) + '</span>' +
         '<span class="aune-band band-' + escapeHtml(c.band24h) + '">' + escapeHtml(T('aune.band.' + c.band24h)) + '</span>' +
