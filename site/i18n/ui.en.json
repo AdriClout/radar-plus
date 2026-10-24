@@ -471,6 +471,23 @@
       "tres_elevee": "Very high salience",
       "extreme": "Extreme salience"
     },
-    "art_credit": "AI-generated illustration · art direction Mathieu Fortin (Anorak Studio) · Vitrine démocratique"
+    "art_credit": "AI-generated illustration · art direction Mathieu Fortin (Anorak Studio) · Vitrine démocratique",
+    "range": {
+      "today": "Today",
+      "24h": "Last hours",
+      "week": "This week",
+      "month": "This month",
+      "year": "This year"
+    },
+    "range_sub": {
+      "today": "The 3 most salient front pages since midnight",
+      "24h": "Top 10 of the last 24 hours",
+      "week": "Top 10 since Monday",
+      "month": "Top 10 of the month",
+      "year": "Top 10 of the year"
+    },
+    "meta_range": "{blocks} blocks on front pages · {points} points",
+    "blocks": "{blocks} blocks",
+    "points": "points"
   }
 }
