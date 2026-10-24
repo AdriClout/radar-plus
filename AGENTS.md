@@ -4,7 +4,7 @@ Règles universelles, indépendantes de l'outil, pour tout agent ou contributeur
 
 ## Ce que c'est
 
-**RADAR+** ([radarplus.org](https://radarplus.org/)) — site web **public** de suivi de la **saillance médiatique** au Québec et au Canada. Projet **personnel d'Adrien** (GitHub `AdriClout`), open source. Frontend statique (HTML/CSS/JS) hydraté au déploiement à partir de **JSON committés dans `site/`**, produits par un pipeline ETL depuis le **datamart AWS Athena de la CLESSN** (tables de saillance). Hébergé sur **GitHub Pages**. Aucune infra AWS dans ce dépôt — l'accès AWS y est en **lecture seule** (extraction de données).
+**RADAR+** ([radarplus.org](https://radarplus.org/)) — site web **public** de suivi de la **saillance médiatique** au Québec et au Canada. Projet **personnel d'Adrien** (GitHub `AdriClout`), open source. Frontend statique (HTML/CSS/JS) qui lit au chargement des **JSON publiés dans un bucket Cloudflare R2** (`radar-plus-data`, adresse dans `site/assets/js/config.js`), produits par un pipeline ETL depuis le **datamart AWS Athena de la CLESSN** (tables de saillance). Ces JSON **ne sont pas dans git** (chantier 5, #52, livré le 24 oct. 2026). Hébergé sur **GitHub Pages** (cible : Cloudflare Pages DEV/PROD, #51). Aucune infra AWS dans ce dépôt — l'accès AWS y est en **lecture seule** (extraction de données).
 
 Pages : Accueil, Évolution, Constellation, Sonar, Unes, Accès aux données.
 
@@ -25,13 +25,13 @@ Rafraîchir les données : voir [`pipeline/README.md`](./pipeline/README.md) —
 ## Branches, PR, déploiement
 
 - **`main` protégée** : toute contribution passe par une **Pull Request** ; le check **`quality-gate` est obligatoire** (`pr-quality-gate.yml`).
-- `deploy-github-pages.yml` publie `site/` sur GitHub Pages au merge.
-- Refresh automatiques (**cron en heure de Montréal**, EDT/EST) : `refresh-constellation.yml` (6×/jour), `refresh-ticker.yml` (~10 min).
+- `deploy-github-pages.yml` publie `site/` sur GitHub Pages au merge (code seulement : les données ne passent pas par là).
+- Refresh automatiques (**cron en heure de Montréal**, EDT/EST) : `refresh-constellation.yml` (6×/jour), `refresh-ticker.yml` (~10 min). Ils écrivent les JSON **dans R2** (`wrangler r2 object put`, secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`), jamais dans git : rafraîchir les données ne crée ni commit ni déploiement.
 - Signalements utilisateur → issues via `report-issue.yml`.
 
 ## Hard rules (non négociables)
 
-1. **Ne jamais éditer à la main les JSON *générés* sous `site/`.** Ce sont exactement `graph.json`, `timeseries.json`, `articles.json`, `monitor_input.json` (écrits par `refresh-constellation.yml`) et `ticker.json` (écrit par `refresh-ticker.yml`) : une édition manuelle est écrasée au refresh suivant. Pour changer ces données, modifier `pipeline/` (voir [`pipeline/README.md`](./pipeline/README.md)).
+1. **Ne jamais éditer à la main, ni commiter, les JSON *générés* du site.** Ce sont exactement `graph.json`, `timeseries.json`, `articles.json`, `monitor_input.json` (écrits par `refresh-constellation.yml`) et `ticker.json` (écrit par `refresh-ticker.yml`). Ils vivent dans le bucket R2 `radar-plus-data` ; un run local du pipeline les écrit dans `site/` où ils sont **gitignorés**. Une édition manuelle est écrasée au refresh suivant. Pour changer ces données, modifier `pipeline/` (voir [`pipeline/README.md`](./pipeline/README.md)).
    **Exception — `site/qualite.json` s'édite à la main, et seulement à la main.** Aucun workflow ni script du pipeline ne l'écrit : il porte des **verdicts d'audit** (campagne `aws-refiners#207`), c'est-à-dire des jugements humains traçables à une preuve chiffrée, pas une sortie de calcul. La règle qui s'y applique n'est donc pas « ne pas éditer » mais la règle 4 : chaque `resume` décrit ce qui **EST** vrai à la date du `genere_le`, jamais une correction encore en revue ou en attente de déploiement.
 2. **Horaires en heure de Montréal (EDT/EST), pas UTC** — partout où un cron apparaît.
 3. **Jamais de credentials ni de données brutes/export dans le dépôt.** Le `quality-gate` les bloque (politique d'accès contrôlé aux données brutes, cf. `site/acces-donnees.html`). Les identifiants AWS servent à l'**extraction en lecture seule** uniquement (workflows), jamais au déploiement.

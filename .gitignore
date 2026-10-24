@@ -107,3 +107,11 @@ data/*
 !constellation/*.js
 !constellation/*.json
 !constellation/*.sh
+
+# Données générées du site — vivent dans le bucket R2 « radar-plus-data »,
+# jamais dans git (chantier 5, #52). Produites en local par pipeline/, ignorées ici.
+site/graph.json
+site/timeseries.json
+site/articles.json
+site/monitor_input.json
+site/ticker.json

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Constellation</title>
@@ -592,7 +593,7 @@
   // ── Données ───────────────────────────────────────────────────────────────
   let graphData;
   try {
-    const gRes = await fetch('./graph.json');
+    const gRes = await fetch(radarDataUrl('graph.json'));
     if (!gRes.ok) throw new Error('graph.json: ' + gRes.statusText);
     graphData = await gRes.json();
   } catch(e) {

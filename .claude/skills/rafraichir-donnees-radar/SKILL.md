@@ -12,9 +12,13 @@ description: >
 
 # Rafraîchir les données de RADAR+
 
-Les JSON de données dans `site/` sont **générés** par le pipeline ETL, jamais
-édités à la main (le garde-fou `.claude/hooks/guard.py` bloque l'édition). Pour
-les mettre à jour, relancer le pipeline.
+Les JSON de données (`graph`, `timeseries`, `articles`, `monitor_input`, `ticker`)
+sont **générés** par le pipeline ETL, jamais édités à la main (le garde-fou
+`.claude/hooks/guard.py` bloque l'édition). Ils vivent dans le bucket Cloudflare R2
+`radar-plus-data` (adresse dans `site/assets/js/config.js`) et sont **gitignorés**
+dans `site/` : un run local les écrit sur disque, mais le site, même en local,
+lit la copie R2. Pour mettre à jour la copie en ligne, relancer le workflow
+(`gh workflow run refresh-constellation.yml` / `refresh-ticker.yml`), pas commiter.
 
 ## Prérequis
 
@@ -43,8 +47,8 @@ Rscript  pipeline/build_ticker.R
 
 ## Rappels
 
-- **Ne jamais** éditer les JSON de `site/` à la main — le garde-fou bloque, et
-  le prochain refresh les écraserait de toute façon.
+- **Ne jamais** éditer les JSON générés à la main ni les commiter — le garde-fou
+  et le `.gitignore` bloquent, et le prochain refresh les écraserait de toute façon.
 - Les CSV intermédiaires de `pipeline/` sont gitignorés (données brutes).
 - En production, ces étapes tournent automatiquement via `.github/workflows/`
   (`refresh-constellation.yml` 6×/jour, `refresh-ticker.yml` ~10 min ; crons en

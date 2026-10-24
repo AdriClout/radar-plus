@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RADAR+ • Dans le radar</title>
@@ -519,7 +520,7 @@
 
     async function loadUnes() {
       try {
-        const res = await fetch('./ticker.json');
+        const res = await fetch(radarDataUrl('ticker.json'));
         if (!res.ok) throw new Error('fetch failed');
         const data = await res.json();
         meta = data.meta || null;

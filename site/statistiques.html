@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Statistiques | Radar+</title>
@@ -2150,8 +2151,8 @@
         try {
           setStatus('Chargement des statistiques…', false);
           const responses = await Promise.all([
-            fetch('./graph.json'),
-            fetch('./timeseries.json')
+            fetch(radarDataUrl('graph.json')),
+            fetch(radarDataUrl('timeseries.json'))
           ]);
           if (!responses[0].ok) {
             throw new Error('graph.json introuvable');

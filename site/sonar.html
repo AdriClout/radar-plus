@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sonar — Qualité des données | Radar+</title>
@@ -448,7 +449,7 @@
         var texte = document.getElementById('fraicheur-texte');
         // sinon i18n.js réapplique la clé de chargement par-dessus le résultat
         texte.removeAttribute('data-i18n');
-        fetch('./ticker.json', { cache: 'no-store' })
+        fetch(radarDataUrl('ticker.json'), { cache: 'no-store' })
           .then(function (r) { return r.json(); })
           .then(function (d) {
             var quand = d && d.meta && d.meta.generated_at ? new Date(d.meta.generated_at) : null;

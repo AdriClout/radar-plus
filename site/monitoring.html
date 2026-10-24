@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SONAR - Monitoring Data Radar+</title>
@@ -416,7 +417,7 @@
   </section>
 
   <script>
-    const SOURCES = { graph: './graph.json', timeseries: './timeseries.json', input: './monitor_input.json' };
+    const SOURCES = { graph: radarDataUrl('graph.json'), timeseries: radarDataUrl('timeseries.json'), input: radarDataUrl('monitor_input.json') };
 
     const statusEl = document.getElementById('status');
     const kpiEl = document.getElementById('kpis');
