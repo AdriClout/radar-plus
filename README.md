@@ -28,7 +28,7 @@ Pages principales:
 - Frontend: HTML, CSS, JavaScript statiques
 - Artefacts de données: JSON publics dans un bucket Cloudflare R2 (adresse dans site/assets/js/config.js), hors git
 - Automatisation: GitHub Actions
-- Hébergement de secours: GitHub Pages
+- Hébergement: Cloudflare Pages (dev: radar-plus-dev.pages.dev; prod: radar-plus.pages.dev, radarplus.org encore sur GitHub Pages jusqu'à la bascule DNS)
 
 ### Démarrage rapide
 
@@ -56,7 +56,7 @@ Puis ouvrir http://localhost:8000/site/
 - Les contributions passent par Pull Request.
 - Le check quality-gate est obligatoire sur PR.
 - quality-gate bloque les données brutes/export et les fichiers de secret local.
-- Le déploiement GitHub Pages est automatisé.
+- Déploiements automatisés : `develop` → dev, `main` → prod (PR de promotion avec vérification sur dev).
 
 ### Documentation
 
@@ -92,7 +92,7 @@ Main pages:
 - Frontend: static HTML, CSS, JavaScript
 - Data artifacts: public JSON files in a Cloudflare R2 bucket (address in site/assets/js/config.js), outside git
 - Automation: GitHub Actions
-- Backup hosting: GitHub Pages
+- Hosting: Cloudflare Pages (dev: radar-plus-dev.pages.dev; prod: radar-plus.pages.dev, radarplus.org still on GitHub Pages until the DNS switch)
 
 ### Quick start
 
@@ -120,7 +120,7 @@ Then open http://localhost:8000/site/
 - Pull requests are required for normal contributions.
 - quality-gate is required on PRs.
 - quality-gate blocks raw/export datasets and local secret files.
-- GitHub Pages deploy is automated.
+- Automated deploys: `develop` → dev, `main` → prod (promotion PR with a dev check).
 
 ### Documentation
 

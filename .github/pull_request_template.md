@@ -1,34 +1,21 @@
-## Resume
+## Quoi
 
-Explique en 3-5 lignes ce que change cette PR.
+<!-- Une PR = un sujet, tenable en un écran. Refs #… -->
 
-## Type de changement
+## Vérifié
 
-- [ ] Fix
-- [ ] Feature
-- [ ] Refactor
-- [ ] Documentation
-- [ ] Gouvernance / Process
+- [ ] En local (`python3 -m http.server 8000` → `/site/`)
+- [ ] Sur dev (https://radar-plus-dev.pages.dev) si le changement est visible
 
-## Validation
+## Non exécuté
 
-- [ ] J'ai teste localement
-- [ ] Les liens modifies fonctionnent
-- [ ] Pas de regression visuelle evidente
+<!-- Ce qui n'a pas été testé et pourquoi. « Rien » est une réponse valable. -->
 
-## Checklist science, legal, data
+## Données et méthodologie
 
-- [ ] Aucun contenu media brut (texte integral, image, etc.) n'est ajoute au repo
-- [ ] Les contenus affiches pointent vers les sources originales
-- [ ] Les changements respectent la posture scientifique et de transparence du projet
-- [ ] Si impact sur acces aux donnees: justification et documentation incluses
+<!-- Si la PR touche pipeline/ ou l'indice : quoi, et impact sur ce que le site affiche. Sinon : « aucun ». -->
 
-## Impact
+---
+**Promotion vers `main` seulement** (PR `develop → main`) — obligatoire, vérifiée par `garde-promotion` :
 
-- Impact utilisateur:
-- Impact technique:
-- Impact methodologique:
-
-## Captures (si UI)
-
-Ajoute des captures avant/apres si pertinent.
+- [ ] Vérifié sur dev le AAAA-MM-JJ : <ce que tu as observé>

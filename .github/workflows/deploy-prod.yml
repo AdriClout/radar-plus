@@ -1,0 +1,63 @@
+name: Déployer PROD (Cloudflare Pages)
+
+# main → projet Pages « radar-plus » (https://radar-plus.pages.dev, puis
+# radarplus.org après la bascule DNS décidée par Adrien, #51). Se déclenche à
+# la fusion d'une PR de promotion develop → main (garde-promotion.yml).
+# Une prod ne s'annule pas : concurrency sans cancel-in-progress.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/scripts/preparer-site.sh"
+      - ".github/workflows/deploy-prod.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://radar-plus.pages.dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Préparer le site (prod)
+        env:
+          RADAR_REPORT_DISPATCH_TOKEN: ${{ secrets.RADAR_REPORT_DISPATCH_TOKEN }}
+        run: bash .github/scripts/preparer-site.sh prod dist
+
+      - name: Déployer sur Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4 pages deploy dist \
+            --project-name radar-plus \
+            --branch main \
+            --commit-hash "${GITHUB_SHA}" \
+            --commit-dirty=true
+
+      - name: Vérifier que prod répond
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 10); do
+            if curl -fsS "https://radar-plus.pages.dev/?v=${GITHUB_SHA}" | grep -q 'assets/js/config.js'; then
+              echo "prod répond (tentative ${attempt})"; exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::prod ne répond pas après le déploiement"; exit 1
