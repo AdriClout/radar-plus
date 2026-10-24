@@ -55,7 +55,9 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 10); do
-            if curl -fsS "https://radar-plus.pages.dev/?v=${GITHUB_SHA}" | grep -q 'assets/js/config.js'; then
+            # Téléchargement complet puis grep : « curl | grep -q » casse sous pipefail
+            # (grep ferme le tube avant la fin, curl sort en erreur 23).
+            if curl -fsS "https://radar-plus.pages.dev/?v=${GITHUB_SHA}-${attempt}" -o page.html && grep -q 'assets/js/config.js' page.html; then
               echo "prod répond (tentative ${attempt})"; exit 0
             fi
             sleep 10
