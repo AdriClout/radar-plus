@@ -1447,16 +1447,20 @@ function buildAllTimeScores() {
   }
   allTimeScores = out;
 }
-var articlesData = null;
-var articlesLoadingPromise = null;
-function ensureArticlesLoaded() {
-  if (articlesData) return Promise.resolve(articlesData);
-  if (articlesLoadingPromise) return articlesLoadingPromise;
-  articlesLoadingPromise = fetch(radarDataUrl('articles.json'))
-    .then(function(r) { return r.ok ? r.json() : null; })
-    .then(function(d) { articlesData = d; return d; })
-    .catch(function() { return null; });
-  return articlesLoadingPromise;
+// Données découpées (#59) : articles chargés PAR JOUR à la demande dans un
+// magasin qui garde l'ancienne forme de articles.json (getArticlesFor inchangé).
+var articleStore = window.radarData.articleStore();
+var articlesData = articleStore.data;
+var PREV_ARTICLES_LOOKBACK = 60; // blocs 4 h (≈ 10 jours) pour « Précédemment »
+function ensureArticlesFor(country, periodKeys) { return articleStore.ensure(country, periodKeys); }
+function articlesReadyFor(country, periodKeys) { return articleStore.has(country, periodKeys); }
+function panelArticleKeys(slotKeys) {
+  var keys = (slotKeys || []).slice();
+  var lastKey = keys[keys.length - 1];
+  var idx = -1;
+  for (var i = allPeriods.length - 1; i >= 0; i--) { if (allPeriods[i].key === lastKey) { idx = i; break; } }
+  if (idx < 0) idx = allPeriods.length - 1;
+  return keys.concat(articleStore.keysBefore(allPeriods, idx, PREV_ARTICLES_LOOKBACK));
 }
 function getArticlesFor(country, periodKey, nodeId, fallback) {
   var a = articlesData && articlesData.articles && articlesData.articles[country] &&
@@ -1479,21 +1483,18 @@ function escapeHtml(str) {
 
 async function loadData() {
   try {
+    // Données découpées (#59) : latest.json (badges, paliers) + séries par année,
+    // recomposés dans l'ancienne forme ; plus de graph.json ni de timeseries.json.
     var results = await Promise.all([
-      fetch(radarDataUrl('graph.json'), { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
-      fetch(radarDataUrl('timeseries.json'), { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+      window.radarData.latestAsGraph().catch(function() { return null; }),
+      window.radarData.timeseries().catch(function() { return null; })
     ]);
     graphData = results[0];
     timeseriesData = results[1];
     buildAllTimeScores();
   } catch (e) { console.error('Data load error', e); }
-  // Prefetch articles non-bloquant → panel s'ouvre instant si déjà prêt, sinon "Chargement…"
-  // Re-render le HOT 20 quand les articles arrivent pour mettre à jour les compteurs
-  ensureArticlesLoaded().then(function(d) {
-    if (d) renderHot20();
-  });
   buildPeriods();
-  renderHot20();
+  renderHot20(); // charge les articles du slot courant si besoin, puis se relance
 }
 
 function buildPeriods() {
@@ -1700,6 +1701,14 @@ function renderHot20() {
   }
 
   var slot = aggregatedSlots[currentSlotIdx];
+  // Articles du slot : si les jours ne sont pas encore chargés, on rend avec
+  // le repli inline puis on se relance une fois les jours arrivés.
+  var slotArticlesReady = slot && slot.periodKeys ? articlesReadyFor(currentCountry, slot.periodKeys) : true;
+  if (slot && slot.periodKeys && !slotArticlesReady) {
+    ensureArticlesFor(currentCountry, slot.periodKeys).then(function() {
+      if (aggregatedSlots[currentSlotIdx] === slot) renderHot20();
+    });
+  }
 
   // Update date label
   if (currentGranularity === '4h') {
@@ -1876,7 +1885,7 @@ function renderHot20() {
       // node.articles si articles.json pas encore chargé.
       var articleCount = 0;
       var mediaSeen = {};
-      if (articlesData) {
+      if (slotArticlesReady) {
         var seenUrls = {};
         slot.periodKeys.forEach(function(pk) {
           var arts = getArticlesFor(currentCountry, pk, node.id, null);
@@ -1900,7 +1909,7 @@ function renderHot20() {
       var articlesTip = articleCount
         ? T('hot20.articles_tip', { count: articleCount }) +
           (mediaIds.length ? ' • ' + escapeHtml(T('hot20.media_tip', { list: mediaIds.join(', ') })) : '')
-        : (articlesData ? T('common.no_articles_dataset') : T('common.loading'));
+        : (slotArticlesReady ? T('common.no_articles_dataset') : T('common.loading'));
 
       /* Trend badge (i18n) */
       var trendHtml = '';
@@ -2236,7 +2245,8 @@ function openArticlePanel(node) {
     });
   }
 
-  var articlesLoading = !articlesData;
+  var panelKeys = panelArticleKeys(slotKeys);
+  var articlesLoading = !articlesReadyFor(currentCountry, panelKeys);
   // meta avec le compteur R\u00c9EL d'articles courants + score
   meta.textContent = (articlesLoading && currentArticles.length === 0
     ? 'Chargement\u2026'
@@ -2286,9 +2296,9 @@ function openArticlePanel(node) {
   overlay.classList.add('open');
   panel.classList.add('open');
 
-  /* Re-render d\u00e8s que articles.json est dispo */
+  /* Re-render d\u00e8s que les jours d'articles n\u00e9cessaires sont charg\u00e9s */
   if (articlesLoading) {
-    ensureArticlesLoaded().then(function() {
+    ensureArticlesFor(currentCountry, panelKeys).then(function() {
       if (panel.classList.contains('open') && title.textContent === name) {
         openArticlePanel(node);
       }

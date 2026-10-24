@@ -39,6 +39,17 @@ else
   echo "RADAR_REPORT_DISPATCH_TOKEN absent : le formulaire de signalement reste hors ligne"
 fi
 
+# Version des ressources : Pages sert les .js/.css avec max-age=14400 (4 h), donc
+# un navigateur peut garder l'ancien script sous un HTML neuf → page cassée après
+# un déploiement (vécu le 24 oct. 2026 : articleStore is not a function). On
+# suffixe chaque référence ./assets/…/x.js|css par ?v=<sha court> dans les HTML.
+version="${ASSET_VERSION:-${GITHUB_SHA:-$(date +%s)}}"
+version="${version:0:12}"
+find "${out}" -maxdepth 1 -name '*.html' -print0 | xargs -0 sed -i.bak -E \
+  "s#(\./assets/(js|css)/[A-Za-z0-9_.-]+\.(js|css))\"#\1?v=${version}\"#g"
+find "${out}" -name '*.html.bak' -delete
+echo "Ressources versionnées : ?v=${version}"
+
 if [ "${env}" = "dev" ]; then
   printf '/*\n  X-Robots-Tag: noindex\n' > "${out}/_headers"
 fi
