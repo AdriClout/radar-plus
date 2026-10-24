@@ -451,5 +451,25 @@
     "concordance": "Taux de concordance",
     "pages_rejouees": "pages rejouées, 12 derniers mois",
     "col_taux": "Concordance"
+  },
+  "aune": {
+    "title": "À la",
+    "title_accent": "Une",
+    "subtitle": "Les événements qui dominent les Unes depuis 24 h",
+    "updated": "dernier bloc : {label}",
+    "usa": "Le suivi des événements saillants couvre le Québec et le Canada. Choisissez QC ou CAN.",
+    "empty": "Aucun événement saillant sur les 24 dernières heures.",
+    "meta": "{hours} h en Une · indice 24 h {sum}",
+    "headlines": "Manchettes du dernier bloc",
+    "note": "Objets et événements sont classés par le même indice de saillance — les minutes passées en Une, média par média. Données d'événements depuis le 23 juillet 2026.",
+    "note_link": "Méthodologie →",
+    "band": {
+      "aucune": "—",
+      "faible": "Faible",
+      "moderee": "Modérée",
+      "elevee": "Élevée",
+      "tres_elevee": "Très élevée",
+      "extreme": "Extrême"
+    }
   }
 }

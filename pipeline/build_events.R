@@ -289,9 +289,13 @@ for (rk in c("QC", "ROC")) {
     cum <- sum24h[[s]]
     if (!length(cum) || names(cum)[length(cum)] != last_pk) next
     st <- meta_story[meta_story$sid == s, ]
+    last_row <- d |> filter(sid == s) |> arrange(desc(block_ts), desc(index)) |> slice(1)
     current[[length(current) + 1]] <- list(
       storyline = s,
       title     = st$title[1],
+      last_key  = last_row$period_key[1],
+      url       = if (!is.na(last_row$representative_url[1])) last_row$representative_url[1] else NULL,
+      media     = if (!is.na(last_row$representative_media_id[1])) last_row$representative_media_id[1] else NULL,
       label     = if (!is.na(st$label[1])) st$label[1] else NULL,
       issue_fr  = if (!is.na(st$issue_fr[1])) st$issue_fr[1] else NULL,
       issue_en  = if (!is.na(st$issue_en[1])) st$issue_en[1] else NULL,
