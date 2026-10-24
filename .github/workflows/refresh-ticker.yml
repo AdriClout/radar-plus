@@ -90,7 +90,7 @@ jobs:
 
       - name: Validate live ticker is updated
         env:
-          RADAR_DATA_BASE: https://pub-c15b38c656dc4ffdb6048d644e6e6d16.r2.dev
+          RADAR_DATA_BASE: https://data.radarplus.org
         run: |
           set -euo pipefail
           # Collation bytewise déterministe pour la comparaison lexicale ISO 8601 (revue Copilot)

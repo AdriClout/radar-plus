@@ -6,7 +6,7 @@
 // En local (python3 -m http.server), le site lit la même adresse : rien à
 // télécharger. qualite.json et i18n/ restent servis avec le site.
 (function () {
-  var base = 'https://pub-c15b38c656dc4ffdb6048d644e6e6d16.r2.dev';
+  var base = 'https://data.radarplus.org';
   window.RADAR_DATA_BASE = base;
   window.radarDataUrl = function (name) {
     return base.replace(/\/+$/, '') + '/' + String(name).replace(/^\/+/, '');
