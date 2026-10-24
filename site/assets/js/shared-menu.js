@@ -93,6 +93,21 @@
         '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
         '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
         '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>' +
+        '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>' +
+        // Tout ce qui restait dans l'ancien tiroir : menu déroulant vers le bas.
+        '<div class="site-bar-dropdown">' +
+          '<button type="button" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.section_about">À propos</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</button>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./radarplus.html" data-page="radarplus.html" data-i18n="nav.radarplus">Radar+</a>' +
+            '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>' +
+            '<a href="./acces-donnees.html" data-page="acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>' +
+            '<a href="https://www.clessn.com/radar/index.html" target="_blank" rel="noopener" data-i18n="nav.analyses">Analyses</a>' +
+            '<a href="#" class="site-bar-report-link" data-i18n="nav.report_issue">Signaler un problème</a>' +
+            '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>' +
+          '</div>' +
+        '</div>' +
       '</nav>' +
       '<div class="site-bar-right">' +
         '<div class="lang-switch site-bar-lang" role="group" aria-label="Language">' +
@@ -103,7 +118,26 @@
     document.body.insertBefore(bar, document.body.firstChild);
     document.body.classList.add('has-site-bar');
     var current = bar.querySelector('.site-bar-nav a[data-page="' + page + '"]');
-    if (current) current.classList.add('current');
+    if (current) {
+      current.classList.add('current');
+      var dd = current.closest('.site-bar-dropdown');
+      if (dd) dd.classList.add('current');
+    }
+    // Menu déroulant « À propos » : clic (et clavier) ; se ferme au clic ailleurs.
+    var ddBtn = bar.querySelector('.site-bar-dropdown-btn');
+    var ddWrap = bar.querySelector('.site-bar-dropdown');
+    function setDropdown(open) {
+      ddWrap.classList.toggle('open', open);
+      ddBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    ddBtn.addEventListener('click', function(e) { e.stopPropagation(); setDropdown(!ddWrap.classList.contains('open')); });
+    document.addEventListener('click', function(e) { if (!ddWrap.contains(e.target)) setDropdown(false); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') setDropdown(false); });
+    var rep = bar.querySelector('.site-bar-report-link');
+    if (rep) rep.addEventListener('click', function(e) {
+      e.preventDefault(); setDropdown(false);
+      if (typeof window.__radarIssueReporterOpen === 'function') window.__radarIssueReporterOpen();
+    });
     return bar;
   }
 
