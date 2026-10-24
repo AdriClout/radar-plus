@@ -456,9 +456,9 @@
             var quand = d && d.meta && d.meta.generated_at ? new Date(d.meta.generated_at) : null;
             if (!quand || isNaN(quand)) throw new Error('sans date');
             var heures = (Date.now() - quand) / 36e5;
-            var affiche = quand.toLocaleString('fr-CA', {
+            var affiche = window.radarTypo(quand.toLocaleString('fr-CA', {
               month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Montreal'
-            });
+            }));
             if (heures <= 8) {
               el.className = 'fraicheur ok';
               texte.textContent = t('sonarq.fresh_ok', 'Données fraîches') + ' · ' + affiche;

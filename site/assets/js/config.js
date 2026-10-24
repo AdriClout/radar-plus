@@ -21,3 +21,11 @@
     return base.replace(/\/+$/, '') + '/' + String(name).replace(/^\/+/, '');
   };
 })();
+
+// Typographie des heures (règle Vitrine, Adrien 24 oct. 2026) : « 17h57 », « 24h »,
+// jamais d'espace avant le h. À appliquer aux sorties des formateurs de date.
+window.radarTypo = function (s) {
+  return String(s == null ? '' : s)
+    .replace(/(\d{1,2})\s*h\s*(\d{2})/g, '$1h$2')
+    .replace(/(\d{1,2})\s+h\b/g, '$1h');
+};

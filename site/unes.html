@@ -427,16 +427,16 @@
         hour: '2-digit',
         minute: '2-digit'
       }).format(dt);
-      return datePart + ' · ' + timePart + ' (' + localTzShort() + ')';
+      return datePart + ' · ' + window.radarTypo(timePart) + ' (' + localTzShort() + ')';
     }
 
     function formatHm(ts) {
       const dt = new Date(ts);
       if (isNaN(dt.getTime())) return '--:--';
-      return new Intl.DateTimeFormat('fr-CA', {
+      return window.radarTypo(new Intl.DateTimeFormat('fr-CA', {
         hour: '2-digit',
         minute: '2-digit'
-      }).format(dt);
+      }).format(dt));
     }
 
     function formatMetaLine() {
@@ -447,7 +447,7 @@
         return;
       }
       const g = new Date(meta.generated_at);
-      const hm = isNaN(g.getTime()) ? '--:--' : new Intl.DateTimeFormat('fr-CA', { hour: '2-digit', minute: '2-digit' }).format(g);
+      const hm = isNaN(g.getTime()) ? '--:--' : window.radarTypo(new Intl.DateTimeFormat('fr-CA', { hour: '2-digit', minute: '2-digit' }).format(g));
       const lookback = meta.lookback_hours || '--';
       const total = buckets.reduce((acc, b) => acc + b.items.length, 0);
       el.textContent = 'Les Unes de ' + hm + ' · ' + total + ' manchettes visibles · fenêtre de ' + lookback + 'h · heures locales (' + localTzShort() + ')';
