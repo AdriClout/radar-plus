@@ -31,5 +31,5 @@ Les scripts ici font le travail de transformation :
 
 Les CSV intermédiaires restent dans `pipeline/` et sont gitignorés.
 Les JSON finaux sont écrits dans `site/` (gitignorés). En CI, les workflows les publient
-ensuite dans le bucket Cloudflare R2 `radar-plus-data` (https://pub-c15b38c656dc4ffdb6048d644e6e6d16.r2.dev),
+ensuite dans le bucket Cloudflare R2 `radar-plus-data` (https://data.radarplus.org),
 que le site lit directement (`site/assets/js/config.js`). Aucun JSON généré n'est commité.
