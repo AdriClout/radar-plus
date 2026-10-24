@@ -11,7 +11,10 @@ concurrency:
 
 jobs:
   refresh:
-    runs-on: ubuntu-latest
+    # Image épinglée : les paquets R compilés sont mis en cache, et un changement
+    # d'image (ubuntu-latest a bougé le 24 oct. 2026) casse les binaires (stringi
+    # cherchait libicui18n.so.74). La clé de cache porte aussi l'empreinte de l'image.
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
@@ -24,12 +27,19 @@ jobs:
         with:
           r-version: '4.4'
 
+      - name: Empreinte de l'image du runner (pour la clé de cache)
+        id: img
+        run: |
+          icu="$(find /usr/lib/x86_64-linux-gnu -maxdepth 1 -name 'libicui18n.so.*' 2>/dev/null | sort | head -1 | sed 's/.*so\.//')"
+          echo "id=$(lsb_release -rs)-icu${icu:-none}-R4.4" >> "$GITHUB_OUTPUT"
+          echo "Empreinte : $(lsb_release -rs)-icu${icu:-none}-R4.4"
+
       - name: Cache R packages
         uses: actions/cache@v6
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-ticker-v1-${{ hashFiles('pipeline/build_ticker.R') }}
-          restore-keys: r-ticker-v1-
+          key: r-ticker-v2-${{ steps.img.outputs.id }}-${{ hashFiles('pipeline/build_ticker.R') }}
+          restore-keys: r-ticker-v2-${{ steps.img.outputs.id }}-
 
       - name: Install R packages
         run: |
