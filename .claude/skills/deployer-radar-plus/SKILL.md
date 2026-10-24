@@ -109,6 +109,13 @@ Pièges du navigateur intégré :
 
 ## 4. Promotion develop → main
 
+**Règle d'Adrien (24 oct. 2026) : un changement visible n'est promu qu'après
+son propre regard sur dev.** Après le déploiement dev, lui donner l'adresse
+exacte à regarder (page, onglet, geste) et attendre son GO ; ne pas ouvrir ni
+fusionner la promotion avant. Seuls les changements invisibles (pipeline,
+workflows, docs, skills) se promeuvent sur vérification technique.
+
+
 ```bash
 gh pr create --base main --head develop --title "promotion : …" --body-file <corps.md>
 ```
