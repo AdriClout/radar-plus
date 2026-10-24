@@ -837,9 +837,11 @@
   // ─── Chargement ────────────────────────────────────────────────
   async function loadData() {
     try {
+      // Données découpées (#59) : latest.json (paliers, pays) + séries/épisodes
+      // recomposés dans l'ancienne forme par radar-data.js.
       var [g, t] = await Promise.all([
-        fetch(radarDataUrl('graph.json') + '?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
-        fetch(radarDataUrl('timeseries.json') + '?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+        window.radarData.latestAsGraph().catch(() => null),
+        window.radarData.timeseries().catch(() => null)
       ]);
       graphData = g;
       timeseriesData = t;
@@ -851,14 +853,13 @@
     }
   }
 
-  function loadArticles() {
-    if (articlesData) return Promise.resolve(articlesData);
-    if (articlesLoadPromise) return articlesLoadPromise;
-    articlesLoadPromise = fetch(radarDataUrl('articles.json') + '?t=' + Date.now(), { cache: 'no-store' })
-      .then(r => r.ok ? r.json() : null)
-      .then(j => { articlesData = j; return j; })
-      .catch(e => { console.error('Erreur articles.json:', e); return null; });
-    return articlesLoadPromise;
+  // Articles chargés PAR JOUR à la demande (articles/{pays}/{date}.json) dans
+  // un magasin qui garde l'ancienne forme de articles.json.
+  var articleStore = window.radarData.articleStore();
+  articlesData = articleStore.data;
+  function loadArticlesFor(country, date) {
+    return articleStore.ensure(country, [date]).then(function() { return articlesData; })
+      .catch(function(e) { console.error('Erreur articles du jour:', e); return articlesData; });
   }
 
   // ─── Calcul de la période courante ─────────────────────────────
@@ -1457,7 +1458,7 @@
     var restoreBtn = document.getElementById('ticker-restore');
     if (updatedEl) updatedEl.textContent = T('alertes.ticker_loading', 'Chargement…');
     if (restoreBtn) restoreBtn.classList.add('is-visible');
-    loadArticles().then(function(data) {
+    loadArticlesFor(country, date).then(function(data) {
       var arts = [];
       if (data && data.articles && data.articles[country]) {
         var seenUrls = {};
@@ -1527,7 +1528,7 @@
 
     showSidePanel();
 
-    loadArticles().then(function(data) {
+    loadArticlesFor(country, date).then(function(data) {
       var arts = [];
       if (data && data.articles && data.articles[country]) {
         var seen = {};
