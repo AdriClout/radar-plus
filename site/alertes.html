@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <!-- deployed: 2026-05-16T19:30:00Z -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -836,8 +837,8 @@
   async function loadData() {
     try {
       var [g, t] = await Promise.all([
-        fetch('./graph.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
-        fetch('./timeseries.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+        fetch(radarDataUrl('graph.json') + '?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
+        fetch(radarDataUrl('timeseries.json') + '?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
       ]);
       graphData = g;
       timeseriesData = t;
@@ -852,7 +853,7 @@
   function loadArticles() {
     if (articlesData) return Promise.resolve(articlesData);
     if (articlesLoadPromise) return articlesLoadPromise;
-    articlesLoadPromise = fetch('./articles.json?t=' + Date.now(), { cache: 'no-store' })
+    articlesLoadPromise = fetch(radarDataUrl('articles.json') + '?t=' + Date.now(), { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(j => { articlesData = j; return j; })
       .catch(e => { console.error('Erreur articles.json:', e); return null; });
@@ -1491,7 +1492,7 @@
       window.__initSharedTicker();
     } else {
       // Fallback : reload via fetch
-      fetch('./ticker.json?t=' + Date.now(), { cache: 'no-store' })
+      fetch(radarDataUrl('ticker.json') + '?t=' + Date.now(), { cache: 'no-store' })
         .then(r => r.ok ? r.json() : null)
         .then(function(j) {
           if (j && j.items) {

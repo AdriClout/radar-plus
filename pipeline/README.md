@@ -21,7 +21,7 @@ AWS Athena (datamart) → Raffineurs CLESSN → Tables propres → site/ charge 
 
 Quand les raffineurs existeront, ce dossier `pipeline/` pourra être supprimé.
 Les workflows GitHub Actions (`refresh-constellation.yml`, `refresh-ticker.yml`)
-seront remplacés par un simple déclencheur qui copie les JSON depuis S3 vers `site/`.
+seront remplacés par un simple déclencheur qui copie les JSON depuis S3 vers le bucket R2 du site.
 
 ## En attendant
 
@@ -30,4 +30,6 @@ Les scripts ici font le travail de transformation :
 - `build_data.R` / `build_ticker.R` — Transformation (CSV → JSON dans `site/`)
 
 Les CSV intermédiaires restent dans `pipeline/` et sont gitignorés.
-Les JSON finaux sont écrits dans `site/` (déployé via GitHub Pages).
+Les JSON finaux sont écrits dans `site/` (gitignorés). En CI, les workflows les publient
+ensuite dans le bucket Cloudflare R2 `radar-plus-data` (https://pub-c15b38c656dc4ffdb6048d644e6e6d16.r2.dev),
+que le site lit directement (`site/assets/js/config.js`). Aucun JSON généré n'est commité.

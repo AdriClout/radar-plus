@@ -26,7 +26,7 @@ Pages principales:
 ### Stack technique
 
 - Frontend: HTML, CSS, JavaScript statiques
-- Artefacts de données: JSON publics dans site/
+- Artefacts de données: JSON publics dans un bucket Cloudflare R2 (adresse dans site/assets/js/config.js), hors git
 - Automatisation: GitHub Actions
 - Hébergement de secours: GitHub Pages
 
@@ -43,7 +43,7 @@ Puis ouvrir http://localhost:8000/site/
 
 ### Structure du dépôt
 
-- site/: pages web de production et JSON publiés
+- site/: pages web de production (les JSON générés sont lus depuis R2, pas versionnés)
 - pipeline/: scripts ETL temporaires de rafraîchissement
 - radarplus_textes/: textes éditoriaux du site
 - docs/: documentation
@@ -90,7 +90,7 @@ Main pages:
 ### Tech stack
 
 - Frontend: static HTML, CSS, JavaScript
-- Data artifacts: public JSON files in site/
+- Data artifacts: public JSON files in a Cloudflare R2 bucket (address in site/assets/js/config.js), outside git
 - Automation: GitHub Actions
 - Backup hosting: GitHub Pages
 
@@ -107,7 +107,7 @@ Then open http://localhost:8000/site/
 
 ### Repository layout
 
-- site/: production web pages and published JSON
+- site/: production web pages (generated JSON files are read from R2, not versioned)
 - pipeline/: temporary ETL refresh scripts
 - radarplus_textes/: site editorial texts
 - docs/: documentation

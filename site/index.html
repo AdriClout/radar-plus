@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RADAR+ • Analyse de Saillance Médiatique</title>
@@ -1450,7 +1451,7 @@ var articlesLoadingPromise = null;
 function ensureArticlesLoaded() {
   if (articlesData) return Promise.resolve(articlesData);
   if (articlesLoadingPromise) return articlesLoadingPromise;
-  articlesLoadingPromise = fetch('./articles.json')
+  articlesLoadingPromise = fetch(radarDataUrl('articles.json'))
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(d) { articlesData = d; return d; })
     .catch(function() { return null; });
@@ -1478,8 +1479,8 @@ function escapeHtml(str) {
 async function loadData() {
   try {
     var results = await Promise.all([
-      fetch('./graph.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
-      fetch('./timeseries.json', { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
+      fetch(radarDataUrl('graph.json'), { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; }),
+      fetch(radarDataUrl('timeseries.json'), { cache: 'no-store' }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; })
     ]);
     graphData = results[0];
     timeseriesData = results[1];
@@ -2156,7 +2157,7 @@ async function loadTicker() {
   var section = document.getElementById('ticker-section');
   var track = document.getElementById('ticker-track');
   try {
-    var res = await fetch('./ticker.json');
+    var res = await fetch(radarDataUrl('ticker.json'));
     if (!res.ok) throw new Error('fetch failed');
     var data = await res.json();
     setTickerGeneratedAt(data && data.meta ? data.meta.generated_at : null);

@@ -714,7 +714,7 @@
   var _lastAlertGraphData = null;
   function initAlertBar() {
     injectAlertBar();
-    fetch('./graph.json', { cache: 'no-store' })
+    fetch(radarDataUrl('graph.json'), { cache: 'no-store' })
       .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
       .then(function(data) {
         _lastAlertGraphData = data;

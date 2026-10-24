@@ -83,7 +83,7 @@
 
     async function loadTicker() {
       try {
-        var res = await fetch('./ticker.json?t=' + Date.now(), { cache: 'no-store' });
+        var res = await fetch(radarDataUrl('ticker.json') + '?t=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) throw new Error('fetch failed');
         var data = await res.json();
         setTickerGeneratedAt(data && data.meta ? data.meta.generated_at : null);

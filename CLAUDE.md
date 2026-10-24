@@ -18,7 +18,7 @@
 
 ## Rappels rapides (les règles le plus souvent oubliées)
 
-- **Ne jamais éditer à la main les JSON sous `site/`** — réécrits par les workflows de refresh depuis `pipeline/`.
+- **Ne jamais éditer à la main ni commiter les JSON générés du site** (`graph`, `timeseries`, `articles`, `monitor_input`, `ticker`) — ils vivent dans R2, réécrits par les workflows de refresh depuis `pipeline/` ; en local ils sont gitignorés.
 - **Les crons sont en heure de Montréal** (EDT/EST), pas UTC.
 - **Aucun secret ni donnée brute dans le repo** — le `quality-gate` les bloque.
 - **`main` est protégée** : passer par une PR, `quality-gate` requis.

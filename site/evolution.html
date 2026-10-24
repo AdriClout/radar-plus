@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script src="./assets/js/config.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Évolution</title>
@@ -682,7 +683,7 @@
   function ensureArticlesLoaded() {
     if (articlesData) return Promise.resolve(articlesData);
     if (articlesLoadingPromise) return articlesLoadingPromise;
-    articlesLoadingPromise = fetch('./articles.json')
+    articlesLoadingPromise = fetch(radarDataUrl('articles.json'))
       .then(r => r.ok ? r.json() : null)
       .then(d => { articlesData = d; return d; })
       .catch(() => null);
@@ -694,7 +695,7 @@
     return Array.isArray(fallbackNodeArticles) ? fallbackNodeArticles : [];
   }
   try {
-    const tRes = await fetch('./timeseries.json');
+    const tRes = await fetch(radarDataUrl('timeseries.json'));
     if (!tRes.ok) throw new Error('timeseries.json: ' + tRes.statusText);
     tsData = await tRes.json();
     // Préchargement non-bloquant des articles → panel s'ouvrira instantanément
