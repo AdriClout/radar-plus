@@ -5,7 +5,7 @@
 ## Vérifié
 
 - [ ] En local (`python3 -m http.server 8000` → `/site/`)
-- [ ] Sur dev (https://radar-plus-dev.pages.dev) si le changement est visible
+- [ ] Sur dev (https://dev.radarplus.org) si le changement est visible
 
 ## Non exécuté
 

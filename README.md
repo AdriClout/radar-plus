@@ -28,7 +28,7 @@ Pages principales:
 - Frontend: HTML, CSS, JavaScript statiques
 - Artefacts de données: JSON publics dans un bucket Cloudflare R2 (adresse dans site/assets/js/config.js), hors git
 - Automatisation: GitHub Actions
-- Hébergement: Cloudflare Pages (dev: radar-plus-dev.pages.dev; prod: radar-plus.pages.dev, radarplus.org encore sur GitHub Pages jusqu'à la bascule DNS)
+- Hébergement: Cloudflare Pages (dev: dev.radarplus.org; prod: radarplus.org)
 
 ### Démarrage rapide
 
@@ -92,7 +92,7 @@ Main pages:
 - Frontend: static HTML, CSS, JavaScript
 - Data artifacts: public JSON files in a Cloudflare R2 bucket (address in site/assets/js/config.js), outside git
 - Automation: GitHub Actions
-- Hosting: Cloudflare Pages (dev: radar-plus-dev.pages.dev; prod: radar-plus.pages.dev, radarplus.org still on GitHub Pages until the DNS switch)
+- Hosting: Cloudflare Pages (dev: dev.radarplus.org; prod: radarplus.org)
 
 ### Quick start
 
