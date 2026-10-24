@@ -427,6 +427,7 @@ body.has-shared-menu .topbar {
   overflow: hidden;
 }
 
+#global-alert-bar.measuring { display: flex; visibility: hidden; }
 #global-alert-bar.ready {
   display: flex;
 }
