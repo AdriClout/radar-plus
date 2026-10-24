@@ -121,3 +121,8 @@ site/ticker.json
 .dev.vars*
 !.dev.vars.example
 !.env.example
+
+# Config Workers écrite par erreur par wrangler (pages project create) ; les déploiements
+# passent par wrangler pages deploy sans fichier de config.
+wrangler.jsonc
+wrangler.toml
