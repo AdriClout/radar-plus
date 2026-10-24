@@ -451,5 +451,25 @@
     "concordance": "Concordance rate",
     "pages_rejouees": "pages replayed, last 12 months",
     "col_taux": "Concordance"
+  },
+  "aune": {
+    "title": "Front",
+    "title_accent": "page",
+    "subtitle": "The events dominating front pages over the last 24 h",
+    "updated": "latest block: {label}",
+    "usa": "Salient-event tracking covers Quebec and Canada. Pick QC or CAN.",
+    "empty": "No salient event over the last 24 hours.",
+    "meta": "{hours} h on front pages · 24 h index {sum}",
+    "headlines": "Headlines from the latest block",
+    "note": "Objects and events are ranked by the same salience index — minutes spent on front pages, outlet by outlet. Event data since July 23, 2026.",
+    "note_link": "Methodology →",
+    "band": {
+      "aucune": "—",
+      "faible": "Low",
+      "moderee": "Moderate",
+      "elevee": "High",
+      "tres_elevee": "Very high",
+      "extreme": "Extreme"
+    }
   }
 }

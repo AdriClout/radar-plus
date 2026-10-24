@@ -151,6 +151,56 @@
     .dotted-bridge svg { width: 100%; height: 100%; }
 
     /* ========== HOT 20 SECTION ========== */
+    /* ========== À LA UNE (événements saillants, cumul 24 h) ========== */
+    .aune-section {
+      position: relative; z-index: 1;
+      padding: 0 40px 36px;
+      max-width: 1000px; margin: 0 auto;
+    }
+    .aune-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 760px) {
+      .aune-grid { grid-template-columns: 2fr 1fr; align-items: start; }
+      .aune-card.aune-hero { grid-column: 1; grid-row: 1 / span 2; }
+      .aune-card.aune-secondary { grid-column: 2; }
+    }
+    /* Classes préfixées : « hero » est déjà la section d'accueil (flex centré). */
+    .aune-card {
+      position: relative;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      justify-content: flex-start; align-items: stretch;
+    }
+    .aune-card.aune-hero { padding: 22px 24px; border-color: rgba(120,170,255,0.45); box-shadow: 0 0 24px rgba(80,130,255,0.12); }
+    .aune-card-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .aune-rank { font-family: var(--orbitron); font-size: 11px; letter-spacing: 1.5px; color: var(--muted); }
+    .aune-band {
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 4px; color: #060d22; background: #6b7fa8;
+    }
+    .aune-band.band-faible { background: #7f93b8; }
+    .aune-band.band-moderee { background: #5fa8ff; }
+    .aune-band.band-elevee { background: #f2c94c; }
+    .aune-band.band-tres_elevee { background: #ff9f43; }
+    .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
+    .aune-title { font-size: 17px; line-height: 1.3; font-weight: 700; color: #e8f0ff; margin: 0; }
+    .aune-card.aune-hero .aune-title { font-size: clamp(19px, 2.4vw, 26px); }
+    .aune-issue { font-size: 12px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.6px; text-transform: uppercase; }
+    .aune-meta { font-size: 12px; color: var(--muted); }
+    .aune-headlines { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .aune-headlines-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+    .aune-headline a { color: var(--text); text-decoration: none; font-size: 13.5px; line-height: 1.4; display: flex; gap: 10px; align-items: baseline; }
+    .aune-headline a:hover { color: #fff; text-decoration: underline; }
+    .aune-media {
+      flex: 0 0 auto; font-family: var(--orbitron); font-size: 9px; letter-spacing: 1px;
+      padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; color: var(--muted);
+    }
+    .aune-empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
+    .aune-note { margin-top: 14px; color: var(--muted); font-size: 11.5px; line-height: 1.6; max-width: 720px; }
+    .aune-note a { color: var(--accent); text-decoration: none; }
+    .aune-note a:hover { text-decoration: underline; }
+    @media (max-width: 700px) { .aune-section { padding: 0 16px 28px; } }
+
     .hot20-section {
       position: relative; z-index: 1;
       padding: 0 40px 80px;
@@ -1009,6 +1059,15 @@
   </svg>
 </div>
 
+<!-- ========== À LA UNE (événements saillants, cumul 24 h) ========== -->
+<section class="aune-section" id="aune" hidden>
+  <div class="hot20-title-row">
+    <h2 class="hot20-title"><span data-i18n="aune.title">À la</span> <span class="accent" data-i18n="aune.title_accent">Une</span><span class="hot20-subtitle" id="aune-subtitle"></span></h2>
+  </div>
+  <div class="aune-grid" id="aune-grid"></div>
+  <p class="aune-note"><span data-i18n="aune.note">Objets et événements sont classés par le même indice de saillance — les minutes passées en Une, média par média. Données d'événements depuis le 23 juillet 2026.</span> <a href="./methodologie.html" data-i18n="aune.note_link">Méthodologie →</a></p>
+</section>
+
 <!-- ========== HOT 20 ========== -->
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
@@ -1470,6 +1529,68 @@ function getArticlesFor(country, periodKey, nodeId, fallback) {
 }
 var allPeriods = [];
 var currentCountry = 'QC';
+
+// ─── À la Une : événements saillants du cumul 24 h (chantier 2, #49) ────────
+// Source : v2/events/latest.json (par région : dernier bloc + storylines du
+// cumul 24 h). Règle d'affichage (rapport #46) : le héros toujours, les 2e et
+// 3e seulement si leur bande 24 h est au moins « Modérée ». Pas d'événements
+// pour les États-Unis (panel de 2 médias).
+var eventsLatestData = null;
+var AUNE_MAX = 3;
+var AUNE_SECONDARY_MIN = { moderee: 1, elevee: 1, tres_elevee: 1, extreme: 1 };
+function renderALaUne() {
+  var sec = document.getElementById('aune');
+  var grid = document.getElementById('aune-grid');
+  var sub = document.getElementById('aune-subtitle');
+  if (!sec || !grid) return;
+  var T = window.t || function(k) { return k; };
+  var lang = (document.documentElement.lang || 'fr').slice(0, 2);
+  sec.hidden = false;
+  if (!eventsLatestData || !eventsLatestData.by_region) {
+    sub.textContent = T('aune.subtitle');
+    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
+    return;
+  }
+  var reg = eventsLatestData.by_region[currentCountry];
+  if (!reg) {
+    sub.textContent = T('aune.subtitle');
+    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.usa')) + '</div>';
+    return;
+  }
+  sub.textContent = T('aune.subtitle') + ' · ' + T('aune.updated', { label: reg.period.label });
+  var current = (reg.current || []).filter(function(c) { return c.band24h && c.band24h !== 'aucune'; });
+  var shown = current.slice(0, AUNE_MAX).filter(function(c, i) { return i === 0 || AUNE_SECONDARY_MIN[c.band24h]; });
+  if (!shown.length) {
+    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
+    return;
+  }
+  var byStory = {};
+  (reg.events || []).forEach(function(e) { if (e && e.storyline) byStory[e.storyline] = e; });
+  grid.innerHTML = shown.map(function(c, i) {
+    var ev = byStory[c.storyline];
+    var issue = lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en);
+    var hours = (c.n_blocks || 1) * 4;
+    var html = '<article class="aune-card ' + (i === 0 ? 'aune-hero' : 'aune-secondary') + '">' +
+      '<div class="aune-card-top">' +
+        '<span class="aune-rank">' + (i + 1) + '</span>' +
+        '<span class="aune-band band-' + escapeHtml(c.band24h) + '">' + escapeHtml(T('aune.band.' + c.band24h)) + '</span>' +
+        (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') +
+      '</div>' +
+      '<h3 class="aune-title">' + escapeHtml(c.title || '') + '</h3>' +
+      '<div class="aune-meta">' + escapeHtml(T('aune.meta', { hours: hours, sum: Number(c.sum24h || 0).toFixed(1) })) + '</div>';
+    var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, i === 0 ? 3 : 1) : [];
+    // Storyline absente du dernier bloc : la manchette représentative la plus récente.
+    if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
+    if (arts.length) {
+      html += (i === 0 ? '<div class="aune-headlines-title">' + escapeHtml(T('aune.headlines')) + '</div>' : '') +
+        '<ul class="aune-headlines">' + arts.map(function(a) {
+          return '<li class="aune-headline"><a href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener">' +
+            '<span class="aune-media">' + escapeHtml(a.media_id || '') + '</span><span>' + escapeHtml(a.title || a.url) + '</span></a></li>';
+        }).join('') + '</ul>';
+    }
+    return html + '</article>';
+  }).join('');
+}
 var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
@@ -1495,6 +1616,10 @@ async function loadData() {
   } catch (e) { console.error('Data load error', e); }
   buildPeriods();
   renderHot20(); // charge les articles du slot courant si besoin, puis se relance
+  renderALaUne();
+  window.radarData.eventsLatest()
+    .then(function(d) { eventsLatestData = d; renderALaUne(); })
+    .catch(function(e) { console.warn('À la Une : événements indisponibles', e); renderALaUne(); });
 }
 
 function buildPeriods() {
@@ -2098,6 +2223,7 @@ document.getElementById('country-tabs').addEventListener('click', function(e) {
   buildSlots();
   currentSlotIdx = aggregatedSlots.length - 1;
   renderHot20();
+  renderALaUne();
 });
 
 // Re-render le HOT 20 quand la langue change (textes dynamiques)
@@ -2105,6 +2231,7 @@ document.addEventListener('i18n:applied', function () {
   if (typeof renderHot20 === 'function' && (timeseriesData || graphData)) {
     renderHot20();
   }
+  if (typeof renderALaUne === 'function') renderALaUne();
 });
 
 /* Granularity tabs */
