@@ -813,9 +813,12 @@
     async function run() {
       try {
         setStatus('Chargement des tables SONAR...', 'warn');
+        // Données découpées (#59) : graph (14 j, liens) et timeseries sont
+        // recomposés depuis les fichiers v2 par radar-data.js ; monitor_input
+        // reste un fichier à part.
         const [graph, timeseries, input] = await Promise.all([
-          loadJson('graph'),
-          loadJson('timeseries'),
+          window.radarData.graph(),
+          window.radarData.timeseries(),
           loadJson('input').catch(() => ({ by_country: {} }))
         ]);
         allData = { graph, timeseries, input };
