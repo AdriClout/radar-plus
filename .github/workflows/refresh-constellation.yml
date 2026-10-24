@@ -102,7 +102,7 @@ jobs:
 
       - name: Validate live site is updated
         env:
-          RADAR_DATA_BASE: https://pub-c15b38c656dc4ffdb6048d644e6e6d16.r2.dev
+          RADAR_DATA_BASE: https://data.radarplus.org
         run: |
           set -euo pipefail
 
