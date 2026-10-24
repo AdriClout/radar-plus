@@ -480,14 +480,27 @@
       "year": "Cette année"
     },
     "range_sub": {
-      "today": "Les 3 Unes les plus saillantes depuis minuit",
-      "24h": "Le top 10 des 24 dernières heures",
+      "today": "Les 3 Unes les plus saillantes des 24 dernières heures (indice 24h)",
+      "24h": "Le top 10 des 24 dernières heures (indice 24h)",
       "week": "Le top 10 depuis lundi",
       "month": "Le top 10 du mois",
       "year": "Le top 10 de l'année"
     },
     "meta_range": "{blocks} blocs en Une · {points} points",
     "blocks": "{blocks} blocs",
-    "points": "points"
+    "points": "points",
+    "meta_24h": "{blocks} blocs en Une · indice 24h : {points} points",
+    "index24h_label": "indice 24h",
+    "index24h_tip": "Indice de la Vitrine : moyenne des indices des 6 derniers blocs de 4h, pondérée vers le plus récent (demi-vie 10h). C'est lui qui choisit La Une des Unes.",
+    "band24h_tip": "Niveau de l'indice 24h (seuils de la Vitrine).",
+    "peak_label": "pic : {points} points",
+    "peak_prefix": "Pic ·",
+    "peak_tip": "Meilleur bloc de 4h de l'histoire dans la période : l'indice de son moment le plus fort.",
+    "score_tip": "Cumul de l'indice de cette histoire depuis sa première Une (somme de tous ses blocs de 4h).",
+    "gain_tip": {
+      "week": "Points gagnés depuis lundi",
+      "month": "Points gagnés ce mois-ci",
+      "year": "Points gagnés cette année"
+    }
   }
 }

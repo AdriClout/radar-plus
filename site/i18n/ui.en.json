@@ -480,14 +480,27 @@
       "year": "This year"
     },
     "range_sub": {
-      "today": "The 3 most salient front pages since midnight",
-      "24h": "Top 10 of the last 24 hours",
+      "today": "The 3 most salient front pages of the last 24 hours (24h index)",
+      "24h": "Top 10 of the last 24 hours (24h index)",
       "week": "Top 10 since Monday",
       "month": "Top 10 of the month",
       "year": "Top 10 of the year"
     },
     "meta_range": "{blocks} blocks on front pages · {points} points",
     "blocks": "{blocks} blocks",
-    "points": "points"
+    "points": "points",
+    "meta_24h": "{blocks} blocks on front pages · 24h index: {points} points",
+    "index24h_label": "24h index",
+    "index24h_tip": "The Vitrine's index: mean of the indices of the last six 4-hour blocks, weighted towards the most recent (10h half-life). It picks the front page of front pages.",
+    "band24h_tip": "Level of the 24h index (Vitrine thresholds).",
+    "peak_label": "peak: {points} points",
+    "peak_prefix": "Peak ·",
+    "peak_tip": "The story's best 4-hour block in the period: the index of its strongest moment.",
+    "score_tip": "Cumulative index of this story since its first front page (sum of all its 4-hour blocks).",
+    "gain_tip": {
+      "week": "Points gained since Monday",
+      "month": "Points gained this month",
+      "year": "Points gained this year"
+    }
   }
 }

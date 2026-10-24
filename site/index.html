@@ -73,8 +73,9 @@
 
     /* ========== HERO (viewport) ========== */
     .hero {
-      position: relative; min-height: 100vh; display: flex;
+      position: relative; display: flex;
       flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 0 60px; /* 80 px (bas du Hot 20) + 40 = 120 px, comme La Une → Hot 20 */
       z-index: 1; overflow: hidden;
     }
 
@@ -240,8 +241,10 @@
     .aune-row-title:hover { text-decoration: underline; color: #fff; }
     .aune-row-meta { display: flex; gap: 10px; align-items: center; font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; }
     .aune-row-meta .aune-band { font-size: 8px; padding: 2px 6px; }
-    .aune-row-score { text-align: right; font-family: var(--mono); font-size: 12px; color: #cfe1ff; white-space: nowrap; }
-    .aune-row-score b { color: #fff; font-size: 14px; }
+    .aune-row-score { width: 170px; }
+    .aune-row-score .hot20-row-pct { margin-bottom: 4px; }
+    .aune-meta b { color: #e8f0ff; }
+    @media (max-width: 700px) { .aune-row-score { width: 120px; } }
     .aune-empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
     @media (max-width: 700px) { .aune-section { padding: 76px 16px 80px; } .aune-grid { --aune-h: auto; } .aune-art { min-height: 180px; } }
 
@@ -1591,10 +1594,13 @@ var currentCountry = 'QC';
 // Sources : v2/events/latest.json (dernier bloc : manchettes), v2/events/index.json
 // (seuils des bandes par région) et v2/events/storylines/{région}/{année}.json
 // (indice par bloc de chaque histoire). Fenêtres en heure de Montréal :
-//   Aujourd'hui (défaut)  = depuis minuit, 3 cartes (toujours 3, décision d'Adrien) ;
-//   Dernières heures (24h), Cette semaine (depuis lundi 0h), Ce mois-ci, Cette année
-//   = top 10 en liste, à l'image du Hot 20. Classement = cumul de l'indice des
-//   blocs de la fenêtre par histoire ; tag = bande du meilleur bloc (seuils Vitrine).
+//   Aujourd'hui (défaut) et Dernières heures = la mesure de la Vitrine : cumul 24h
+//   glissant avec décroissance (sum24h / band24h de events/latest.json « current »),
+//   pour que la Une n° 1 soit la même que celle de la Vitrine (et son illustration).
+//   Aujourd'hui = 3 cartes (toujours 3, décision d'Adrien) ; Dernières heures = top 10.
+//   Cette semaine (depuis lundi 0h), Ce mois-ci, Cette année = top 10 en liste,
+//   classement = somme de l'indice des blocs de la fenêtre ; tag = bande du
+//   meilleur bloc (seuils Vitrine).
 // Pas d'événements pour les États-Unis (panel de 2 médias). Le module garde la
 // même hauteur quelle que soit la vue.
 var eventsLatestData = null;
@@ -1642,13 +1648,15 @@ function auneBand(region, value) {
   AUNE_BANDS.forEach(function(b) { if (typeof th[b] === 'number' && value >= th[b]) band = b; });
   return band;
 }
-function auneYears(range) {
-  var y0 = new Date(auneWindowStart(range)).getUTCFullYear(), y1 = new Date().getUTCFullYear();
-  var out = []; for (var y = y0; y <= y1; y++) out.push(y); return out;
+var AUNE_FIRST_YEAR = 2026; // début du suivi des événements : 23 juillet 2026
+function auneYears() {
+  var y1 = new Date().getUTCFullYear();
+  var out = []; for (var y = AUNE_FIRST_YEAR; y <= y1; y++) out.push(y); return out;
 }
+function auneIs24h(range) { return range === 'today' || range === '24h'; }
 function auneReady(region, range) {
   if (!auneStore.index) return false;
-  return auneYears(range).every(function(y) { return !!auneStore.storylines[region + '/' + y]; });
+  return auneYears().every(function(y) { return !!auneStore.storylines[region + '/' + y]; });
 }
 function auneLoad(region, range) {
   var jobs = [];
@@ -1656,7 +1664,7 @@ function auneLoad(region, range) {
     if (!auneStore.loading.index) auneStore.loading.index = window.radarData.eventsIndex().then(function(i) { auneStore.index = i; });
     jobs.push(auneStore.loading.index);
   }
-  auneYears(range).forEach(function(y) {
+  auneYears().forEach(function(y) {
     var k = region + '/' + y;
     if (!auneStore.storylines[k] && !auneStore.loading[k]) {
       auneStore.loading[k] = window.radarData.eventsStorylines(region, y)
@@ -1667,9 +1675,36 @@ function auneLoad(region, range) {
   });
   return Promise.all(jobs);
 }
+// Trois mesures, chacune à sa place (voir le commentaire de tête) :
+//   total = somme de tous les blocs de l'histoire depuis sa première Une ;
+//   gain  = somme des blocs dans la fenêtre choisie ;
+//   peak  = meilleur bloc de 4h dans la fenêtre (indice du moment le plus fort).
+function auneSums(region, range) {
+  var start = auneWindowStart(range), now = Date.now(), out = {};
+  auneYears().forEach(function(y) {
+    var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
+    Object.keys(f.storylines).forEach(function(sid) {
+      var series = f.storylines[sid].series || {};
+      var o = out[sid] || (out[sid] = { total: 0, gain: 0, peak: 0, peakKey: null });
+      Object.keys(series).forEach(function(key) {
+        var v = Number(series[key]) || 0; o.total += v;
+        var t = periodStartUtc(key); if (t < start || t > now) return;
+        o.gain += v; if (v > o.peak) { o.peak = v; o.peakKey = key; }
+      });
+    });
+  });
+  return out;
+}
+function auneRanking24h(latest, limit) {
+  var cur = (latest && latest.current) || [];
+  return cur.slice().sort(function(a, b) { return (b.sum24h || 0) - (a.sum24h || 0); }).slice(0, limit).map(function(c) {
+    return { storyline: c.storyline, title: c.title || '', issue_fr: c.issue_fr, issue_en: c.issue_en, url: c.url, media: c.media,
+             points: Number(c.sum24h) || 0, blocks: c.n_blocks || 0, band: c.band24h || 'aucune', lastKey: c.last_key, is24h: true };
+  });
+}
 function auneRanking(region, range, limit) {
   var start = auneWindowStart(range), now = Date.now(), acc = {};
-  auneYears(range).forEach(function(y) {
+  auneYears().forEach(function(y) {
     var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
     Object.keys(f.storylines).forEach(function(sid) {
       var st = f.storylines[sid], series = st.series || {};
@@ -1697,7 +1732,7 @@ function auneHeadlines(c, ev, max) {
 }
 function auneCardHtml(c, i, byStory, region, lang, T) {
   var ev = byStory[c.storyline];
-  var band = auneBand(region, c.peak);
+  var band = c.band || 'aucune';
   var issue = auneIssue(c, lang);
   var arts = auneHeadlines(c, ev, i === 0 ? 3 : 1);
   var headlines = arts.length
@@ -1716,31 +1751,52 @@ function auneCardHtml(c, i, byStory, region, lang, T) {
     '<div class="aune-body">' +
       '<div class="aune-card-top">' +
         '<span class="aune-rank">' + (i + 1) + '</span>' +
-        '<span class="aune-band band-' + escapeHtml(band) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>' +
+        '<span class="aune-band band-' + escapeHtml(band) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.band24h_tip')) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>' +
         (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') +
       '</div>' +
       '<h3 class="aune-title">' + escapeHtml(c.title) + '</h3>' +
-      '<div class="aune-meta">' + escapeHtml(T('aune.meta_range', { blocks: c.blocks, points: c.points.toFixed(1) })) + '</div>' +
+      '<div class="aune-meta">' +
+        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + escapeHtml(T('aune.index24h_label')) + ' : <b>' + c.points.toFixed(1) + '</b> ' + escapeHtml(T('aune.points')) + '</span>' +
+        ' · <span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>' +
+      '</div>' +
       headlines +
     '</div>' +
   '</article>';
 }
 function auneRowHtml(c, i, region, lang, T) {
-  var band = auneBand(region, c.peak);
   var issue = auneIssue(c, lang);
   var title = escapeHtml(c.title);
+  var titleHtml = c.url ? '<a class="aune-row-title" href="' + escapeHtml(c.url) + '" target="_blank" rel="noopener">' + title + '</a>'
+                        : '<span class="aune-row-title">' + title + '</span>';
+  var issueHtml = issue ? '<span>' + escapeHtml(issue) + '</span>' : '';
+  var peakHtml = '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>';
+  var tagHtml, scoreHtml;
+  if (c.is24h) {
+    // Dernières heures : la mesure est l'indice 24h de la Vitrine ; le tag est SON niveau.
+    tagHtml = '<span class="aune-band band-' + escapeHtml(c.band) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.band24h_tip')) + '">' + escapeHtml(T('aune.band.' + c.band)) + '</span>';
+    scoreHtml = '<div class="hot20-row-pct">' +
+        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '"><strong>' + c.points.toFixed(1) + '</strong> ' + escapeHtml(T('aune.index24h_label')) + '</span>' +
+      '</div>';
+  } else {
+    // Semaine / mois / année : la mesure est un cumul de points (pas de niveau défini
+    // pour un cumul) ; le tag est le PIC, dit explicitement. Score = total depuis la
+    // première Une + hausse dans la période, comme le Hot 20.
+    tagHtml = '<span class="aune-band band-' + escapeHtml(c.peakBand) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_prefix')) + ' ' + escapeHtml(T('aune.band.' + c.peakBand)) + '</span>';
+    scoreHtml = '<div class="hot20-row-pct">' +
+        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '"><strong>' + (c.total || 0).toFixed(1) + '</strong> ' + escapeHtml(T('aune.points')) + '</span>' +
+        '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + auneRange)) + '">+' + (c.gain || 0).toFixed(1) + '</span>' +
+      '</div>';
+  }
   return '<li class="aune-row">' +
     '<span class="aune-row-rank">' + (i + 1) + '</span>' +
-    '<div class="aune-row-main">' +
-      (c.url ? '<a class="aune-row-title" href="' + escapeHtml(c.url) + '" target="_blank" rel="noopener">' + title + '</a>'
-             : '<span class="aune-row-title">' + title + '</span>') +
-      '<div class="aune-row-meta">' +
-        '<span class="aune-band band-' + escapeHtml(band) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>' +
-        (issue ? '<span>' + escapeHtml(issue) + '</span>' : '') +
-        '<span>' + escapeHtml(T('aune.blocks', { blocks: c.blocks })) + '</span>' +
+    '<div class="aune-row-main">' + titleHtml +
+      '<div class="aune-row-meta">' + tagHtml + issueHtml +
+        '<span>' + escapeHtml(T('aune.blocks', { blocks: c.blocks })) + '</span>' + peakHtml +
       '</div>' +
     '</div>' +
-    '<div class="aune-row-score"><b>' + c.points.toFixed(1) + '</b> ' + escapeHtml(T('aune.points')) + '</div>' +
+    '<div class="aune-row-score">' + scoreHtml +
+      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + (c.barPct || 2) + '%"></div></div>' +
+    '</div>' +
   '</li>';
 }
 function renderALaUne() {
@@ -1768,7 +1824,18 @@ function renderALaUne() {
     auneLoad(c, r).then(function() { if (auneRange === r && auneCountry === c) renderALaUne(); });
     return;
   }
-  var items = auneRanking(region, auneRange, AUNE_LIMIT[auneRange] || 10);
+  var items = auneIs24h(auneRange)
+    ? auneRanking24h(latest, AUNE_LIMIT[auneRange] || 10)
+    : auneRanking(region, auneRange, AUNE_LIMIT[auneRange] || 10);
+  var sums = auneSums(region, auneRange);
+  items.forEach(function(it) {
+    var o = sums[it.storyline] || { total: 0, gain: 0, peak: 0 };
+    it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakBand = auneBand(region, o.peak);
+  });
+  // Barre = mesure de classement de la vue, relative au 1er (comme le Hot 20)
+  var key = auneIs24h(auneRange) ? 'points' : 'gain';
+  var top = items.reduce(function(m, it) { return Math.max(m, it[key]); }, 0) || 1;
+  items.forEach(function(it) { it.barPct = Math.max(2, Math.round(100 * it[key] / top)); });
   if (!items.length) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
     return;
