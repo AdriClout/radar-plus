@@ -59,3 +59,24 @@ Règle : une page ne télécharge que ce qu'elle affiche. Le menu lit `latest.js
 Statistiques lit `index` + `periods` + `series` + `episodes` + `latest`. Les
 agrégats précalculés (`agg/`) et les fichiers par objet viendront dans une
 tranche suivante si les séries par année deviennent trop lourdes.
+
+### Événements saillants (chantier 2, #49) — `events/` dans v2
+
+`build_events.R` lit `pipeline/headline_events.csv` (table Athena
+`vitrine_datamart-headline_events_4h`, top 3 événements par région et par bloc de
+4 h, régime LLM depuis le 23 juillet 2026) et écrit sous `pipeline/out_r2/v2/events/`,
+publié dans R2 avec le reste (même indice que la Vitrine : colonne publiée
+`salience_index_qc` / `salience_index_roc`, spec v1 ; seuils et cumul 24 h aux
+conventions du frontend Vitrine, à resynchroniser à chaque recalibration).
+Régions : `QC` et `CAN` (= `ROC` de la table).
+
+| Fichier | Contenu |
+|---|---|
+| `events/index.json` | seuils par bande (`block`, `sum24h`), bandes FR/EN, périodes, `dates` par région, `latest_period` |
+| `events/latest.json` | par région : `period`, `events` (top 3 du dernier bloc, avec manchettes) et `current` (storylines du cumul 24 h courant, triées, avec `band24h`) → accueil « À la Une » |
+| `events/{QC\|CAN}/{AAAA-MM-JJ}.json` | `periods[key] = [événement…]` : `id`, `storyline`, `title`, `text`, `issue*`, `index`, `band`, `rank`, `outlets`, `media_ids`, `articles[]` (titre, url, média, minutes), `url`, `media`, `first_seen`, `convergence` |
+| `events/storylines/{région}/{AAAA}.json` | fiches storylines : `series` (indice par bloc), `sum24h` (cumul par bloc), `band24h`, `peak`, `n_blocks`, `first_key`/`last_key` → future page Événements et Classement |
+
+Cadrage d'affichage (rapport PR #46) : par bloc, 1 à 3 événements suffisent ; sur le
+cumul 24 h, top 3 au Québec et top 5 au Canada couvrent « Modérée+ ». Les manchettes
+ne gardent jamais `body_preview` (texte intégral de média, règle dure #3).

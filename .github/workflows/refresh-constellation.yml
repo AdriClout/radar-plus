@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ env.R_LIBS_USER }}
-          key: r-constellation-v4-${{ steps.img.outputs.id }}-${{ hashFiles('pipeline/build_data.R') }}
+          key: r-constellation-v4-${{ steps.img.outputs.id }}-${{ hashFiles('pipeline/build_data.R', 'pipeline/build_events.R') }}
           restore-keys: r-constellation-v4-${{ steps.img.outputs.id }}-
 
       - name: Install system dependencies
@@ -73,6 +73,9 @@ jobs:
 
       - name: Build constellation data (R)
         run: Rscript pipeline/build_data.R
+
+      - name: Build events data (R, sorties v2)
+        run: Rscript pipeline/build_events.R
 
       - name: Vérifier les JSON produits
         run: |
