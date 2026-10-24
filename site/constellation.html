@@ -594,9 +594,9 @@
   // ── Données ───────────────────────────────────────────────────────────────
   let graphData;
   try {
-    const gRes = await fetch(radarDataUrl('graph.json'));
-    if (!gRes.ok) throw new Error('graph.json: ' + gRes.statusText);
-    graphData = await gRes.json();
+    // Données découpées (#59) : la fenêtre « graph » (14 jours, liens et
+    // événements) est recomposée depuis days/ et articles/ par radar-data.js.
+    graphData = await window.radarData.graph();
   } catch(e) {
     const loading = document.getElementById('loading-text');
     if (window.location.protocol === 'file:') {
