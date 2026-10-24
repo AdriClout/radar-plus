@@ -714,8 +714,14 @@
   var _lastAlertGraphData = null;
   function initAlertBar() {
     injectAlertBar();
-    fetch(radarDataUrl('graph.json'), { cache: 'no-store' })
-      .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    // Données découpées (#59) : latest.json ne porte que la dernière période par
+    // pays (~100 ko) au lieu de graph.json entier (9 Mo). Repli sur graph.json
+    // si le chargeur n'est pas disponible.
+    var load = (window.radarData && window.radarData.latestAsGraph)
+      ? window.radarData.latestAsGraph()
+      : fetch(radarDataUrl('graph.json'), { cache: 'no-store' })
+          .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); });
+    load
       .then(function(data) {
         _lastAlertGraphData = data;
         populateAlertBar(data);
