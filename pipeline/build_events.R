@@ -294,6 +294,7 @@ for (rk in c("QC", "ROC")) {
       storyline = s,
       title     = st$title[1],
       last_key  = last_row$period_key[1],
+      last_event_id = last_row$event_id[1],
       url       = if (!is.na(last_row$representative_url[1])) last_row$representative_url[1] else NULL,
       media     = if (!is.na(last_row$representative_media_id[1])) last_row$representative_media_id[1] else NULL,
       label     = if (!is.na(st$label[1])) st$label[1] else NULL,

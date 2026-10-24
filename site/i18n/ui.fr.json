@@ -154,7 +154,7 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explorer",
-    "scroll_aria": "Aller au HOT 20"
+    "scroll_aria": "Explorer les modules"
   },
   "hot20": {
     "title": "HOT",
@@ -453,8 +453,8 @@
     "col_taux": "Concordance"
   },
   "aune": {
-    "title": "À la",
-    "title_accent": "Une",
+    "title": "La Une",
+    "title_accent": "des Unes",
     "subtitle": "Les événements qui dominent les Unes depuis 24 h",
     "updated": "dernier bloc : {label}",
     "usa": "Le suivi des événements saillants couvre le Québec et le Canada. Choisissez QC ou CAN.",
@@ -470,6 +470,7 @@
       "elevee": "Élevée",
       "tres_elevee": "Très élevée",
       "extreme": "Extrême"
-    }
+    },
+    "art_credit": "Illustration générée par intelligence artificielle · direction artistique Mathieu Fortin (Anorak Studio) · Vitrine démocratique"
   }
 }

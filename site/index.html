@@ -154,7 +154,7 @@
     /* ========== À LA UNE (événements saillants, cumul 24 h) ========== */
     .aune-section {
       position: relative; z-index: 1;
-      padding: 0 40px 36px;
+      padding: 84px 40px 36px; /* 1re section de la page : dégage le menu fixe */
       max-width: 1000px; margin: 0 auto;
     }
     .aune-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
@@ -185,6 +185,14 @@
     .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
     .aune-title { font-size: 17px; line-height: 1.3; font-weight: 700; color: #e8f0ff; margin: 0; }
     .aune-card.aune-hero .aune-title { font-size: clamp(19px, 2.4vw, 26px); }
+    .aune-art { margin: -22px -24px 4px; position: relative; }
+    .aune-art img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px 10px 0 0; }
+    .aune-art figcaption {
+      position: absolute; right: 10px; bottom: 8px;
+      font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.5px;
+      color: rgba(220,230,255,0.85); background: rgba(2,0,16,0.55);
+      padding: 3px 7px; border-radius: 4px; max-width: 70%; text-align: right;
+    }
     .aune-issue { font-size: 12px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.6px; text-transform: uppercase; }
     .aune-meta { font-size: 12px; color: var(--muted); }
     .aune-headlines { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
@@ -199,7 +207,7 @@
     .aune-note { margin-top: 14px; color: var(--muted); font-size: 11.5px; line-height: 1.6; max-width: 720px; }
     .aune-note a { color: var(--accent); text-decoration: none; }
     .aune-note a:hover { text-decoration: underline; }
-    @media (max-width: 700px) { .aune-section { padding: 0 16px 28px; } }
+    @media (max-width: 700px) { .aune-section { padding: 76px 16px 28px; } }
 
     .hot20-section {
       position: relative; z-index: 1;
@@ -986,83 +994,10 @@
 <canvas id="stars-canvas"></canvas>
 
 <!-- ========== HERO ========== -->
-<section class="hero" id="hero">
-<!-- Constellation hover zones (dans le héros : elles défilent avec lui) -->
-<div class="cst-zone" id="cst-zone-0" style="left:2%;top:12%;width:18%;height:21%">
-  <div class="cst-tooltip" style="left:2%;top:calc(100% + 8px)">
-    <div class="cst-tooltip-name">Radar+</div>
-    <div class="cst-tooltip-desc">Radar+ photographie les pages d'accueil des grands m&eacute;dias canadiens et am&eacute;ricains toutes les 10&nbsp;minutes depuis septembre 2019, en s&eacute;rie continue depuis le 17 avril 2023. L'archive raconte ce que chaque m&eacute;dia a mis de l'avant &mdash; et ce qu'il a laiss&eacute; dans l'ombre.</div>
-  </div>
-</div>
-<div class="cst-zone" id="cst-zone-1" style="right:2%;top:19%;width:21%;height:20%">
-  <div class="cst-tooltip" style="right:calc(100% - 60px);top:calc(100% - 30px)">
-    <div class="cst-tooltip-name">Saillance m&eacute;diatique</div>
-    <div class="cst-tooltip-desc">La saillance, c'est la place qu'un sujet occupe dans la couverture d'un m&eacute;dia&nbsp;: haut ou bas de la page, gros titre ou simple br&egrave;ve, mis en avant pendant des heures ou &eacute;vacu&eacute; en quelques minutes. Plus un sujet est saillant, plus il a de chances de marquer le public.</div>
-  </div>
-</div>
-<div class="cst-zone" id="cst-zone-2" style="left:1%;top:68%;width:20%;height:19%">
-  <div class="cst-tooltip" style="left:2%;bottom:calc(100% + 8px)">
-    <div class="cst-tooltip-name">Indices de saillance</div>
-    <div class="cst-tooltip-desc">Radar+ traduit cette visibilit&eacute; en chiffres. Chaque sujet &mdash; un enjeu, une personne, un lieu &mdash; re&ccedil;oit un indice qui combine sa position, sa taille et sa dur&eacute;e. Un indice &eacute;lev&eacute; signale un sujet qui domine la couverture; un indice faible, un sujet qui passe presque inaper&ccedil;u.</div>
-  </div>
-</div>
-<div class="cst-zone" id="cst-zone-3" style="right:8%;top:56%;width:24%;height:25%">
-  <div class="cst-tooltip" style="right:2%;bottom:calc(100% + 8px)">
-    <div class="cst-tooltip-name">Recherche scientifique</div>
-    <div class="cst-tooltip-desc">Les m&eacute;dias fa&ccedil;onnent les priorit&eacute;s du public&nbsp;: ce qu'ils r&eacute;p&egrave;tent finit par compter aux yeux des citoyens. Pourtant, ces choix &eacute;ditoriaux sont rarement mesur&eacute;s &agrave; grande &eacute;chelle. Radar+ comble ce vide en fournissant des donn&eacute;es ouvertes, comparables et continues &mdash; utiles autant &agrave; la recherche qu'au journalisme et au regard citoyen.</div>
-  </div>
-</div>
-  <div class="hero-robot">
-    <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
-    <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
-    <div class="media-overlay" id="media-overlay">
-      <!-- Row 1: Global News · Montreal Gazette · ICI Radio-Canada · CBC · TVA -->
-      <a class="media-hotspot" href="https://globalnews.ca"            target="_blank" rel="noopener" style="top:2%;  left:2%;  width:12%; height:8%"><span class="media-tooltip">Global News</span></a>
-      <a class="media-hotspot" href="https://montrealgazette.com"      target="_blank" rel="noopener" style="top:4%;  left:22%; width:12%; height:8%"><span class="media-tooltip">Montreal Gazette</span></a>
-      <a class="media-hotspot" href="https://ici.radio-canada.ca"      target="_blank" rel="noopener" style="top:2%;  left:40%; width:12%; height:8%"><span class="media-tooltip">ICI Radio-Canada</span></a>
-      <a class="media-hotspot" href="https://tvanouvelles.ca"          target="_blank" rel="noopener" style="top:11%; left:59%; width:12%; height:8%"><span class="media-tooltip">TVA Nouvelles</span></a>
-      <a class="media-hotspot" href="https://cbc.ca"                   target="_blank" rel="noopener" style="top:9%;  left:72%; width:12%; height:8%"><span class="media-tooltip">CBC</span></a>
-      <!-- Row 2: The Globe and Mail · CTV · Journal de Montréal · La Presse -->
-      <a class="media-hotspot" href="https://theglobeandmail.com"      target="_blank" rel="noopener" style="top:16%; left:58%; width:12%; height:10%"><span class="media-tooltip">The Globe and Mail</span></a>
-      <a class="media-hotspot" href="https://ctvnews.ca"               target="_blank" rel="noopener" style="top:16%; left:32%; width:13%; height:9%"><span class="media-tooltip">CTV News</span></a>
-      <a class="media-hotspot" href="https://journaldemontreal.com"    target="_blank" rel="noopener" style="top:20%; left:0%;  width:12%; height:8%"><span class="media-tooltip">Journal de Montréal</span></a>
-      <a class="media-hotspot" href="https://lapresse.ca"              target="_blank" rel="noopener" style="top:23%; left:77%; width:12%; height:8%"><span class="media-tooltip">La Presse</span></a>
-      <!-- Row 3: The Star · Le Devoir (text logo) · Vancouver Sun -->
-      <a class="media-hotspot" href="https://thestar.com"              target="_blank" rel="noopener" style="top:28%; left:19%; width:12%; height:7%"><span class="media-tooltip">Toronto Star</span></a>
-      <a class="media-hotspot" href="https://ledevoir.com"             target="_blank" rel="noopener" style="top:29%; left:60%; width:12%; height:7%"><span class="media-tooltip">Le Devoir</span></a>
-      <!-- Row 4: National Post · Vancouver Sun -->
-      <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:40%; left:6%;  width:13%; height:7%"><span class="media-tooltip">National Post</span></a>
-      <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
-    </div>
-  </div>
-  <button type="button" class="scroll-hint" id="scroll-to-hot20" data-i18n-aria-label="hero.scroll_aria" aria-label="Aller au HOT 20">
-    <div class="arrow" aria-hidden="true"></div>
-    <span data-i18n="hero.explore">Explorer</span>
-  </button>
-</section>
-
-<!-- Dotted bridge -->
-<div class="dotted-bridge">
-  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <line x1="350" y1="0" x2="300" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="500" y1="0" x2="500" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="650" y1="0" x2="700" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2s" repeatCount="indefinite" path="M350,0 L300,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.3s" repeatCount="indefinite" path="M500,0 L500,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.6s" repeatCount="indefinite" path="M650,0 L700,120"/>
-    </circle>
-  </svg>
-</div>
-
-<!-- ========== À LA UNE (événements saillants, cumul 24 h) ========== -->
+<!-- ========== LA UNE DES UNES (événements saillants, cumul 24 h) ========== -->
 <section class="aune-section" id="aune" hidden>
   <div class="hot20-title-row">
-    <h2 class="hot20-title"><span data-i18n="aune.title">À la</span> <span class="accent" data-i18n="aune.title_accent">Une</span><span class="hot20-subtitle" id="aune-subtitle"></span></h2>
+    <h2 class="hot20-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span><span class="hot20-subtitle" id="aune-subtitle"></span></h2>
   </div>
   <div class="aune-grid" id="aune-grid"></div>
   <p class="aune-note"><span data-i18n="aune.note">Objets et événements sont classés par le même indice de saillance — les minutes passées en Une, média par média. Données d'événements depuis le 23 juillet 2026.</span> <a href="./methodologie.html" data-i18n="aune.note_link">Méthodologie →</a></p>
@@ -1116,6 +1051,79 @@
 </section>
 
 <!-- ========== MODULES ========== -->
+<section class="hero" id="hero">
+<!-- Constellation hover zones (dans le héros : elles défilent avec lui) -->
+<div class="cst-zone" id="cst-zone-0" style="left:2%;top:12%;width:18%;height:21%">
+  <div class="cst-tooltip" style="left:2%;top:calc(100% + 8px)">
+    <div class="cst-tooltip-name">Radar+</div>
+    <div class="cst-tooltip-desc">Radar+ photographie les pages d'accueil des grands m&eacute;dias canadiens et am&eacute;ricains toutes les 10&nbsp;minutes depuis septembre 2019, en s&eacute;rie continue depuis le 17 avril 2023. L'archive raconte ce que chaque m&eacute;dia a mis de l'avant &mdash; et ce qu'il a laiss&eacute; dans l'ombre.</div>
+  </div>
+</div>
+<div class="cst-zone" id="cst-zone-1" style="right:2%;top:19%;width:21%;height:20%">
+  <div class="cst-tooltip" style="right:calc(100% - 60px);top:calc(100% - 30px)">
+    <div class="cst-tooltip-name">Saillance m&eacute;diatique</div>
+    <div class="cst-tooltip-desc">La saillance, c'est la place qu'un sujet occupe dans la couverture d'un m&eacute;dia&nbsp;: haut ou bas de la page, gros titre ou simple br&egrave;ve, mis en avant pendant des heures ou &eacute;vacu&eacute; en quelques minutes. Plus un sujet est saillant, plus il a de chances de marquer le public.</div>
+  </div>
+</div>
+<div class="cst-zone" id="cst-zone-2" style="left:1%;top:68%;width:20%;height:19%">
+  <div class="cst-tooltip" style="left:2%;bottom:calc(100% + 8px)">
+    <div class="cst-tooltip-name">Indices de saillance</div>
+    <div class="cst-tooltip-desc">Radar+ traduit cette visibilit&eacute; en chiffres. Chaque sujet &mdash; un enjeu, une personne, un lieu &mdash; re&ccedil;oit un indice qui combine sa position, sa taille et sa dur&eacute;e. Un indice &eacute;lev&eacute; signale un sujet qui domine la couverture; un indice faible, un sujet qui passe presque inaper&ccedil;u.</div>
+  </div>
+</div>
+<div class="cst-zone" id="cst-zone-3" style="right:8%;top:56%;width:24%;height:25%">
+  <div class="cst-tooltip" style="right:2%;bottom:calc(100% + 8px)">
+    <div class="cst-tooltip-name">Recherche scientifique</div>
+    <div class="cst-tooltip-desc">Les m&eacute;dias fa&ccedil;onnent les priorit&eacute;s du public&nbsp;: ce qu'ils r&eacute;p&egrave;tent finit par compter aux yeux des citoyens. Pourtant, ces choix &eacute;ditoriaux sont rarement mesur&eacute;s &agrave; grande &eacute;chelle. Radar+ comble ce vide en fournissant des donn&eacute;es ouvertes, comparables et continues &mdash; utiles autant &agrave; la recherche qu'au journalisme et au regard citoyen.</div>
+  </div>
+</div>
+  <div class="hero-robot">
+    <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
+    <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
+    <div class="media-overlay" id="media-overlay">
+      <!-- Row 1: Global News · Montreal Gazette · ICI Radio-Canada · CBC · TVA -->
+      <a class="media-hotspot" href="https://globalnews.ca"            target="_blank" rel="noopener" style="top:2%;  left:2%;  width:12%; height:8%"><span class="media-tooltip">Global News</span></a>
+      <a class="media-hotspot" href="https://montrealgazette.com"      target="_blank" rel="noopener" style="top:4%;  left:22%; width:12%; height:8%"><span class="media-tooltip">Montreal Gazette</span></a>
+      <a class="media-hotspot" href="https://ici.radio-canada.ca"      target="_blank" rel="noopener" style="top:2%;  left:40%; width:12%; height:8%"><span class="media-tooltip">ICI Radio-Canada</span></a>
+      <a class="media-hotspot" href="https://tvanouvelles.ca"          target="_blank" rel="noopener" style="top:11%; left:59%; width:12%; height:8%"><span class="media-tooltip">TVA Nouvelles</span></a>
+      <a class="media-hotspot" href="https://cbc.ca"                   target="_blank" rel="noopener" style="top:9%;  left:72%; width:12%; height:8%"><span class="media-tooltip">CBC</span></a>
+      <!-- Row 2: The Globe and Mail · CTV · Journal de Montréal · La Presse -->
+      <a class="media-hotspot" href="https://theglobeandmail.com"      target="_blank" rel="noopener" style="top:16%; left:58%; width:12%; height:10%"><span class="media-tooltip">The Globe and Mail</span></a>
+      <a class="media-hotspot" href="https://ctvnews.ca"               target="_blank" rel="noopener" style="top:16%; left:32%; width:13%; height:9%"><span class="media-tooltip">CTV News</span></a>
+      <a class="media-hotspot" href="https://journaldemontreal.com"    target="_blank" rel="noopener" style="top:20%; left:0%;  width:12%; height:8%"><span class="media-tooltip">Journal de Montréal</span></a>
+      <a class="media-hotspot" href="https://lapresse.ca"              target="_blank" rel="noopener" style="top:23%; left:77%; width:12%; height:8%"><span class="media-tooltip">La Presse</span></a>
+      <!-- Row 3: The Star · Le Devoir (text logo) · Vancouver Sun -->
+      <a class="media-hotspot" href="https://thestar.com"              target="_blank" rel="noopener" style="top:28%; left:19%; width:12%; height:7%"><span class="media-tooltip">Toronto Star</span></a>
+      <a class="media-hotspot" href="https://ledevoir.com"             target="_blank" rel="noopener" style="top:29%; left:60%; width:12%; height:7%"><span class="media-tooltip">Le Devoir</span></a>
+      <!-- Row 4: National Post · Vancouver Sun -->
+      <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:40%; left:6%;  width:13%; height:7%"><span class="media-tooltip">National Post</span></a>
+      <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
+    </div>
+  </div>
+  <button type="button" class="scroll-hint" id="scroll-to-hot20" data-i18n-aria-label="hero.scroll_aria" aria-label="Explorer les modules">
+    <div class="arrow" aria-hidden="true"></div>
+    <span data-i18n="hero.explore">Explorer</span>
+  </button>
+</section>
+
+<!-- Dotted bridge -->
+<div class="dotted-bridge">
+  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="350" y1="0" x2="300" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="500" y1="0" x2="500" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="650" y1="0" x2="700" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <circle r="3" fill="rgba(80,130,255,0.7)">
+      <animateMotion dur="2s" repeatCount="indefinite" path="M350,0 L300,120"/>
+    </circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)">
+      <animateMotion dur="2.3s" repeatCount="indefinite" path="M500,0 L500,120"/>
+    </circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)">
+      <animateMotion dur="2.6s" repeatCount="indefinite" path="M650,0 L700,120"/>
+    </circle>
+  </svg>
+</div>
+
 <section class="modules-section" id="modules">
   <h2 class="modules-title" data-i18n="modules.title">Outils d&rsquo;analyse</h2>
   <div class="modules-grid">
@@ -1571,6 +1579,13 @@ function renderALaUne() {
     var issue = lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en);
     var hours = (c.n_blocks || 1) * 4;
     var html = '<article class="aune-card ' + (i === 0 ? 'aune-hero' : 'aune-secondary') + '">' +
+      // Illustration de la Vitrine pour cette storyline, si Radar+ l'a archivée
+      // (events/art/<storyline>.webp) ; retirée silencieusement sinon (404).
+      (i === 0 && c.storyline
+        ? '<figure class="aune-art"><img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp') +
+          '" alt="" loading="lazy" onerror="this.closest(\'figure\').remove()">' +
+          '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>'
+        : '') +
       '<div class="aune-card-top">' +
         '<span class="aune-rank">' + (i + 1) + '</span>' +
         '<span class="aune-band band-' + escapeHtml(c.band24h) + '">' + escapeHtml(T('aune.band.' + c.band24h)) + '</span>' +
@@ -2188,7 +2203,8 @@ updateEvolutionCtaLink();
    décale de --alert-bar-h pour que le titre HOT 20 ne se retrouve
    pas caché derrière. */
 function scrollToHot20() {
-  var target = document.getElementById('hot20');
+  // Le héros (robot) est maintenant APRÈS le Hot 20 : « Explorer » mène aux modules.
+  var target = document.getElementById('modules');
   if (!target) return;
   var hasBar = document.body.classList.contains('has-alert-bar');
   var rootStyle = getComputedStyle(document.documentElement);
@@ -2201,16 +2217,8 @@ function scrollToHot20() {
 (function() {
   var btn = document.getElementById('scroll-to-hot20');
   if (btn) btn.addEventListener('click', scrollToHot20);
-
-  // Auto-scroll vers HOT 20 après 5s sans interaction utilisateur
-  var userInteracted = false;
-  function flagInteract() { userInteracted = true; }
-  ['scroll','wheel','click','keydown','touchstart'].forEach(function(ev) {
-    window.addEventListener(ev, flagInteract, { once: true, passive: true });
-  });
-  setTimeout(function() {
-    if (!userInteracted) scrollToHot20();
-  }, 5000);
+  // Plus d'auto-défilement après 5 s : le contenu (La Une des Unes, Hot 20)
+  // est maintenant en tête de page, le héros ferme la page.
 })();
 
 document.getElementById('country-tabs').addEventListener('click', function(e) {

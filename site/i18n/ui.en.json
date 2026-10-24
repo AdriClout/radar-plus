@@ -154,7 +154,7 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explore",
-    "scroll_aria": "Go to HOT 20"
+    "scroll_aria": "Explore the modules"
   },
   "hot20": {
     "title": "HOT",
@@ -453,8 +453,8 @@
     "col_taux": "Concordance"
   },
   "aune": {
-    "title": "Front",
-    "title_accent": "page",
+    "title": "La Une",
+    "title_accent": "des Unes",
     "subtitle": "The events dominating front pages over the last 24 h",
     "updated": "latest block: {label}",
     "usa": "Salient-event tracking covers Quebec and Canada. Pick QC or CAN.",
@@ -470,6 +470,7 @@
       "elevee": "High",
       "tres_elevee": "Very high",
       "extreme": "Extreme"
-    }
+    },
+    "art_credit": "AI-generated illustration · art direction Mathieu Fortin (Anorak Studio) · Vitrine démocratique"
   }
 }
