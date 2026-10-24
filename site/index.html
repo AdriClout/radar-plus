@@ -1043,7 +1043,9 @@
     <div class="country-tabs" id="aune-country-tabs">
       <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
       <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
-      <button type="button" class="country-tab" data-country="USA" data-i18n="country.USA">États-Unis</button>
+      <!-- Pas d'États-Unis : la table d'événements de la Vitrine ne couvre que QC et
+           reste du Canada (panel américain de 2 médias). Un panel américain est prévu
+           au postdoc d'Adrien (avec Soroka). -->
     </div>
   <div class="aune-tabs" id="aune-tabs" role="tablist">
     <button type="button" class="aune-tab active" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
@@ -1603,8 +1605,10 @@ var currentCountry = 'QC';
 //   Cette semaine (depuis lundi 0h), Ce mois-ci, Cette année = top 10 en liste,
 //   classement = somme de l'indice des blocs de la fenêtre ; tag = bande du
 //   meilleur bloc (seuils Vitrine).
-// Pas d'événements pour les États-Unis (panel de 2 médias). Le module garde la
-// même hauteur quelle que soit la vue.
+// Pas d'événements pour les États-Unis (la table de la Vitrine ne couvre que QC
+// et reste du Canada ; panel américain de 2 médias) : le bouton n'est pas offert,
+// le message « aune.usa » reste en garde-fou. Le module garde la même hauteur
+// quelle que soit la vue.
 var eventsLatestData = null;
 var auneRange = 'today';
 var auneCountry = 'QC'; // sélecteur propre au module, indépendant de celui du Hot 20
