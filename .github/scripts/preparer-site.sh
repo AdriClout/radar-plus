@@ -2,7 +2,7 @@
 # Prépare le dossier à déployer sur Cloudflare Pages à partir de site/.
 # Usage : preparer-site.sh <dev|prod> <dossier de sortie>
 #
-# - Exclut les JSON générés (ils vivent dans R2, #52) et le CNAME de GitHub Pages.
+# - Exclut les JSON générés (ils vivent dans R2, #52) et un éventuel CNAME (reliquat GitHub Pages).
 # - Injecte le jeton public de signalement dans shared-menu.js (même mécanisme
 #   que deploy-github-pages.yml) si RADAR_REPORT_DISPATCH_TOKEN est défini.
 # - En dev : _headers avec X-Robots-Tag: noindex (site de travail, pas indexé).
