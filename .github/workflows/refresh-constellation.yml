@@ -100,6 +100,29 @@ jobs:
               --remote
           done
 
+      # Sorties v2 découpées (chantier 7, #59) : synchronisation des fichiers
+      # modifiés seulement, via l'API S3 de R2. Sautée tant que les secrets
+      # R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY ne sont pas posés.
+      - name: Publier les sorties v2 dans R2
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          if [ -z "${R2_ACCESS_KEY_ID}" ] || [ -z "${R2_SECRET_ACCESS_KEY}" ]; then
+            echo "::warning::Secrets R2 absents : sorties v2 non publiées"
+            exit 0
+          fi
+          python3 pipeline/publish_r2.py pipeline/out_r2 --prefix ""
+
+      - name: Archiver les sorties v2 (lancement manuel seulement)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v6
+        with:
+          name: out_r2
+          path: pipeline/out_r2
+          retention-days: 3
+
       - name: Validate live site is updated
         env:
           RADAR_DATA_BASE: https://data.radarplus.org

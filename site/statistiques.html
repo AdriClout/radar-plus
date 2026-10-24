@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/radar-data.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Statistiques | Radar+</title>
@@ -2150,18 +2151,16 @@
       async function loadData() {
         try {
           setStatus('Chargement des statistiques…', false);
-          const responses = await Promise.all([
-            fetch(radarDataUrl('graph.json')),
-            fetch(radarDataUrl('timeseries.json'))
+          // Données découpées (#59) : la « période courante » vient de latest.json
+          // (dernière période par pays) et la série de series/{pays}/{année}.json,
+          // recomposés dans l'ancienne forme par radar-data.js. Plus de graph.json
+          // (9 Mo) ni de timeseries.json (18 Mo) à télécharger.
+          const [graphLike, timeseriesLike] = await Promise.all([
+            window.radarData.latestAsGraph(),
+            window.radarData.timeseries()
           ]);
-          if (!responses[0].ok) {
-            throw new Error('graph.json introuvable');
-          }
-          if (!responses[1].ok) {
-            throw new Error('timeseries.json introuvable');
-          }
-          state.graphData = await responses[0].json();
-          state.timeseriesData = await responses[1].json();
+          state.graphData = graphLike;
+          state.timeseriesData = timeseriesLike;
           state.countries = state.timeseriesData?.meta?.countries || Object.keys(state.timeseriesData?.graphs || {});
           if (state.countries.indexOf(state.activeCountry) === -1) {
             state.activeCountry = state.countries[0] || 'QC';
