@@ -60,10 +60,50 @@
     document.body.insertBefore(a, document.body.firstChild);
   }
 
+  // Bandeau de menu en haut de page (décision d'Adrien, 24 oct. 2026) : robot +
+  // RADAR+ à gauche, pages principales au centre, FR/EN et bouton du tiroir à
+  // droite. En flux (sticky), donc il ne recouvre rien. Pas sur les deux outils
+  // plein écran (évolution, constellation), qui gardent leur panneau gauche.
+  var NO_BAR_PAGES = { 'evolution.html': true, 'constellation.html': true };
+  function injectSiteBar() {
+    var page = window.location.pathname.split('/').pop() || 'index.html';
+    if (NO_BAR_PAGES[page] || document.getElementById('site-bar')) return null;
+    var bar = document.createElement('header');
+    bar.id = 'site-bar';
+    bar.className = 'site-bar';
+    bar.innerHTML =
+      '<a class="site-bar-brand" href="./index.html" data-i18n-aria-label="nav.home_logo_aria" aria-label="Retour à l’accueil Radar+">' +
+        '<span class="site-bar-robot" aria-hidden="true"></span>' +
+        '<span class="site-bar-word">RADAR<span class="site-bar-plus">+</span></span>' +
+        '<span class="site-bar-beta" aria-hidden="true">BETA</span>' +
+      '</a>' +
+      '<nav class="site-bar-nav" data-i18n-aria-label="nav.main_nav_aria" aria-label="Navigation principale">' +
+        '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>' +
+        '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
+        '<a href="./evolution.html" data-page="evolution.html" data-i18n="nav.evolution">Évolution</a>' +
+        '<a href="./alertes.html" data-page="alertes.html" data-i18n="nav.alertes">Alertes</a>' +
+        '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
+        '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
+        '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>' +
+      '</nav>' +
+      '<div class="site-bar-right">' +
+        '<div class="lang-switch site-bar-lang" role="group" aria-label="Language">' +
+          '<button type="button" class="lang-btn" data-lang="fr" aria-label="Français">FR</button>' +
+          '<button type="button" class="lang-btn" data-lang="en" aria-label="English">EN</button>' +
+        '</div>' +
+      '</div>';
+    document.body.insertBefore(bar, document.body.firstChild);
+    document.body.classList.add('has-site-bar');
+    var current = bar.querySelector('.site-bar-nav a[data-page="' + page + '"]');
+    if (current) current.classList.add('current');
+    return bar;
+  }
+
   function setupSharedMenu() {
     if (document.querySelector('.side-nav')) return;
 
-    injectHomeLogo();
+    var siteBar = injectSiteBar();
+    if (!siteBar) injectHomeLogo();
     document.body.classList.add('has-shared-menu');
 
     var navToggle = document.createElement('button');
@@ -115,8 +155,13 @@
     ].join('');
 
     document.body.insertBefore(sideNav, document.body.firstChild);
-    document.body.insertBefore(menuHint, sideNav);
-    document.body.insertBefore(navToggle, menuHint);
+    if (siteBar) {
+      // Le bouton du tiroir vit dans le bandeau ; plus d'indice « Ouvrir menu ».
+      siteBar.querySelector('.site-bar-right').appendChild(navToggle);
+    } else {
+      document.body.insertBefore(menuHint, sideNav);
+      document.body.insertBefore(navToggle, menuHint);
+    }
 
     var current = window.location.pathname.split('/').pop() || 'index.html';
     var currentLink = sideNav.querySelector('a[data-page="' + current + '"]');
@@ -159,11 +204,11 @@
     // Toggle FR/EN: handler + état actif synchronisé avec __i18n.
     function refreshLangButtons() {
       var lang = (window.__i18n && window.__i18n.currentLang && window.__i18n.currentLang()) || 'fr';
-      sideNav.querySelectorAll('.lang-btn').forEach(function (b) {
+      document.querySelectorAll('.lang-btn').forEach(function (b) {
         b.classList.toggle('active', b.dataset.lang === lang);
       });
     }
-    sideNav.querySelectorAll('.lang-btn').forEach(function (btn) {
+    document.querySelectorAll('.lang-btn').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         if (window.__i18n && window.__i18n.setLang) {

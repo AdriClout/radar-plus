@@ -43,6 +43,27 @@ def get(url, binary=False):
     return data if binary else json.loads(data.decode("utf-8"))
 
 
+def family(storyline: str) -> str:
+    """« story-france-26a66a62 » → « story-france » (sans le hachage final)."""
+    parts = storyline.rsplit("-", 1)
+    return parts[0] if len(parts) == 2 and len(parts[1]) >= 6 else storyline
+
+
+def words(text: str) -> set:
+    import re
+    import unicodedata
+    t = unicodedata.normalize("NFKD", text.lower())
+    t = "".join(ch for ch in t if not unicodedata.combining(ch))
+    return {w for w in re.findall(r"[a-z0-9]+", t) if len(w) >= 4}
+
+
+def jaccard(a: str, b: str) -> float:
+    wa, wb = words(a), words(b)
+    if not wa or not wb:
+        return 0.0
+    return len(wa & wb) / len(wa | wb)
+
+
 def main() -> int:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     events_dir = os.path.join(script_dir, "out_r2", "v2", "events")
@@ -65,13 +86,29 @@ def main() -> int:
         return 0
 
     latest = json.load(open(latest_path, encoding="utf-8"))
+    v_title = hero.get("title") or ""
+
+    def same_story(storyline, event_id, title):
+        # Même storyline ou même event_id : certain. Sinon, même famille de
+        # storyline (« story-<slug>-<hash> » : le slug est le sujet) ET titres
+        # très proches (Jaccard des mots ≥ 0,5) : la Vitrine et Radar+ lisent la
+        # même table mais peuvent porter des identifiants différents pour la
+        # même histoire (vu le 24 oct. 2026 : story-france-26a66a62 / -44245166).
+        if v_story and storyline == v_story:
+            return True
+        if v_event and event_id == v_event:
+            return True
+        if v_story and storyline and family(storyline) == family(v_story) and jaccard(title, v_title) >= 0.5:
+            return True
+        return False
+
     keys = set()
     for region, data in (latest.get("by_region") or {}).items():
         for ev in data.get("events") or []:
-            if (v_story and ev.get("storyline") == v_story) or (v_event and ev.get("id") == v_event):
+            if same_story(ev.get("storyline"), ev.get("id"), ev.get("title") or ""):
                 keys.add(ev.get("storyline"))
         for cur in data.get("current") or []:
-            if (v_story and cur.get("storyline") == v_story) or (v_event and cur.get("last_event_id") == v_event):
+            if same_story(cur.get("storyline"), cur.get("last_event_id"), cur.get("title") or ""):
                 keys.add(cur.get("storyline"))
     keys.discard(None)
     keys.add(v_key)  # clé de la Vitrine, toujours archivée

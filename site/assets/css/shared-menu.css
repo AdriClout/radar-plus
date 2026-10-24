@@ -716,3 +716,60 @@ body.has-alert-bar #object-panel {
   0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(221,230,74,0.55)); }
   50%      { opacity: 0.45; filter: drop-shadow(0 0 1px rgba(221,230,74,0.10)); }
 }
+
+
+/* ========== Bandeau de menu (24 oct. 2026) ========== */
+.site-bar {
+  position: sticky; top: 0; z-index: 215;
+  display: flex; align-items: center; gap: 22px;
+  height: 58px; padding: 0 20px;
+  background: rgba(2, 0, 16, 0.86);
+  border-bottom: 1px solid rgba(90, 140, 255, 0.22);
+  backdrop-filter: blur(10px);
+}
+body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
+.site-bar-brand {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: #e6f1ff; flex: 0 0 auto;
+}
+.site-bar-robot {
+  width: 36px; height: 36px; flex: 0 0 auto;
+  background: url(../img/animation-radar.svg) no-repeat;
+  background-size: 260% auto; background-position: 50% 2%;
+}
+.site-bar-word {
+  font-family: 'Orbitron', 'Space Mono', monospace; font-weight: 700;
+  font-size: 18px; letter-spacing: 2px; line-height: 1;
+}
+.site-bar-plus { color: #e6ff8a; }
+.site-bar-beta {
+  font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1.5px;
+  padding: 2px 6px; border-radius: 3px;
+  background: #e6f1ff; color: #06112a; font-weight: 700;
+}
+.site-bar-nav {
+  display: flex; align-items: center; gap: 4px; flex: 1 1 auto;
+  min-width: 0; overflow: hidden;
+}
+.site-bar-nav a {
+  font-family: 'Orbitron', 'Space Mono', monospace; font-size: 10.5px;
+  letter-spacing: 1.4px; text-transform: uppercase; white-space: nowrap;
+  color: rgba(200, 216, 255, 0.78); text-decoration: none;
+  padding: 8px 10px; border-radius: 4px; border: 1px solid transparent;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.site-bar-nav a:hover { color: #fff; background: rgba(40, 70, 160, 0.35); }
+.site-bar-nav a.current { color: #fff; border-color: rgba(120, 170, 255, 0.55); background: rgba(40, 70, 160, 0.45); }
+.site-bar-right { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; margin-left: auto; }
+.site-bar-lang { position: static; margin: 0; }
+body.has-site-bar .nav-toggle { position: static; top: auto; right: auto; }
+body.has-site-bar .menu-discover-hint, body.has-site-bar .home-logo { display: none !important; }
+/* Sous 1120 px, les 7 liens ne tiennent plus : le tiroir prend le relais. */
+@media (max-width: 1120px) {
+  .site-bar-nav { display: none; }
+}
+@media (max-width: 600px) {
+  .site-bar { height: 52px; padding: 0 12px; gap: 12px; }
+  .site-bar-word { font-size: 15px; }
+  .site-bar-beta { display: none; }
+}
