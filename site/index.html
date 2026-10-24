@@ -157,7 +157,8 @@
       padding: 84px 40px 120px; /* 1re section : dégage le menu ; respire avant le Hot 20 */
       max-width: 1000px; margin: 0 auto;
     }
-    .aune-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 16px; }
+    .aune-controls { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 0 0 16px; }
+    .aune-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
     .aune-tab {
       font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
       color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 6px;
@@ -1034,12 +1035,19 @@
   <div class="hot20-title-row">
     <h2 class="hot20-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span><span class="hot20-subtitle" id="aune-subtitle"></span></h2>
   </div>
+  <div class="aune-controls">
+    <div class="country-tabs" id="aune-country-tabs">
+      <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
+      <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
+      <button type="button" class="country-tab" data-country="USA" data-i18n="country.USA">États-Unis</button>
+    </div>
   <div class="aune-tabs" id="aune-tabs" role="tablist">
     <button type="button" class="aune-tab active" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
     <button type="button" class="aune-tab" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
     <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
     <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
     <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
+  </div>
   </div>
   <div class="aune-grid view-cards" id="aune-grid"></div>
 </section>
@@ -1591,6 +1599,7 @@ var currentCountry = 'QC';
 // même hauteur quelle que soit la vue.
 var eventsLatestData = null;
 var auneRange = 'today';
+var auneCountry = 'QC'; // sélecteur propre au module, indépendant de celui du Hot 20
 var AUNE_LIMIT = { today: 3, '24h': 10, week: 10, month: 10, year: 10 };
 var auneStore = { index: null, storylines: {}, loading: {} };
 var AUNE_BANDS = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
@@ -1742,7 +1751,7 @@ function renderALaUne() {
   var T = window.t || function(k) { return k; };
   var lang = (document.documentElement.lang || 'fr').slice(0, 2);
   sec.hidden = false;
-  var region = currentCountry;
+  var region = auneCountry;
   var viewClass = 'aune-grid ' + (auneRange === 'today' ? 'view-cards' : 'view-list');
   if (region !== 'QC' && region !== 'CAN') {
     sub.textContent = T('aune.subtitle');
@@ -1756,7 +1765,7 @@ function renderALaUne() {
   if (!auneReady(region, auneRange)) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
     var r = auneRange, c = region;
-    auneLoad(c, r).then(function() { if (auneRange === r && currentCountry === c) renderALaUne(); });
+    auneLoad(c, r).then(function() { if (auneRange === r && auneCountry === c) renderALaUne(); });
     return;
   }
   var items = auneRanking(region, auneRange, AUNE_LIMIT[auneRange] || 10);
@@ -1774,13 +1783,21 @@ function renderALaUne() {
 }
 (function() {
   var tabs = document.getElementById('aune-tabs');
-  if (!tabs) return;
-  tabs.addEventListener('click', function(e) {
+  var countries = document.getElementById('aune-country-tabs');
+  if (tabs) tabs.addEventListener('click', function(e) {
     var btn = e.target.closest('.aune-tab');
     if (!btn) return;
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     auneRange = btn.dataset.range;
+    renderALaUne();
+  });
+  if (countries) countries.addEventListener('click', function(e) {
+    var btn = e.target.closest('.country-tab');
+    if (!btn) return;
+    countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    auneCountry = btn.dataset.country;
     renderALaUne();
   });
 })();
@@ -2402,14 +2419,13 @@ function scrollToHot20() {
 document.getElementById('country-tabs').addEventListener('click', function(e) {
   var tab = e.target.closest('.country-tab');
   if (!tab) return;
-  document.querySelectorAll('.country-tab').forEach(function(t) { t.classList.remove('active'); });
+  this.querySelectorAll('.country-tab').forEach(function(t) { t.classList.remove('active'); });
   tab.classList.add('active');
   currentCountry = tab.dataset.country;
   updateEvolutionCtaLink();
   buildSlots();
   currentSlotIdx = aggregatedSlots.length - 1;
   renderHot20();
-  renderALaUne();
 });
 
 // Re-render le HOT 20 quand la langue change (textes dynamiques)

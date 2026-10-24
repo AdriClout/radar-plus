@@ -457,7 +457,7 @@
     "title_accent": "des Unes",
     "subtitle": "Les événements qui dominent les Unes depuis 24h",
     "updated": "dernier bloc : {label}",
-    "usa": "Le suivi des événements saillants couvre le Québec et le Canada. Choisissez QC ou CAN.",
+    "usa": "Pas d'événements saillants pour les États-Unis : le panel américain ne compte que deux médias, trop peu pour mesurer une Une des Unes. Choisissez Québec ou Canada.",
     "empty": "Aucun événement saillant sur les 24 dernières heures.",
     "meta": "{hours}h en Une · indice 24h : {sum} points",
     "headlines": "Manchettes du dernier bloc",
