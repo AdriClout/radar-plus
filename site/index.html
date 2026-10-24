@@ -2217,16 +2217,8 @@ function scrollToHot20() {
 (function() {
   var btn = document.getElementById('scroll-to-hot20');
   if (btn) btn.addEventListener('click', scrollToHot20);
-
-  // Auto-scroll vers HOT 20 après 5s sans interaction utilisateur
-  var userInteracted = false;
-  function flagInteract() { userInteracted = true; }
-  ['scroll','wheel','click','keydown','touchstart'].forEach(function(ev) {
-    window.addEventListener(ev, flagInteract, { once: true, passive: true });
-  });
-  setTimeout(function() {
-    if (!userInteracted) scrollToHot20();
-  }, 5000);
+  // Plus d'auto-défilement après 5 s : le contenu (La Une des Unes, Hot 20)
+  // est maintenant en tête de page, le héros ferme la page.
 })();
 
 document.getElementById('country-tabs').addEventListener('click', function(e) {
