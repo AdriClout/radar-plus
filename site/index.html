@@ -246,6 +246,7 @@
     .aune-meta b { color: #e8f0ff; }
     @media (max-width: 700px) { .aune-row-score { width: 120px; } }
     .aune-empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
+    .aune-foot { margin-top: 8px; text-align: right; font-family: var(--mono); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); min-height: 14px; }
     @media (max-width: 700px) { .aune-section { padding: 76px 16px 80px; } .aune-grid { --aune-h: auto; } .aune-art { min-height: 180px; } }
 
     .hot20-section {
@@ -1053,6 +1054,7 @@
   </div>
   </div>
   <div class="aune-grid view-cards" id="aune-grid"></div>
+  <div class="aune-foot" id="aune-foot"></div>
 </section>
 
 <!-- ========== HOT 20 ========== -->
@@ -1724,6 +1726,13 @@ function auneRanking(region, range, limit) {
   list.sort(function(a, b) { return b.points - a.points; });
   return list.slice(0, limit);
 }
+function auneBlockLabel(key, lang) {
+  var start = periodStartUtc(key), end = start + 4 * 3600e3;
+  var loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+  var day = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(start));
+  var hour = function(t) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(new Date(t)).replace(/^24$/, '0') + 'h'; };
+  return day + ' · ' + hour(start) + '–' + hour(end);
+}
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
 function auneHeadlines(c, ev, max) {
   var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, max) : [];
@@ -1811,12 +1820,15 @@ function renderALaUne() {
   var viewClass = 'aune-grid ' + (auneRange === 'today' ? 'view-cards' : 'view-list');
   if (region !== 'QC' && region !== 'CAN') {
     sub.textContent = T('aune.subtitle');
+    var f0 = document.getElementById('aune-foot'); if (f0) f0.textContent = '';
     grid.className = viewClass;
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.usa')) + '</div>';
     return;
   }
   var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null;
-  sub.textContent = T('aune.range_sub.' + auneRange) + (latest ? ' · ' + T('aune.updated', { label: latest.period.label }) : '');
+  sub.textContent = T('aune.range_sub.' + auneRange);
+  var foot = document.getElementById('aune-foot');
+  if (foot) foot.textContent = (latest && latest.period && latest.period.key) ? T('aune.updated', { label: auneBlockLabel(latest.period.key, lang) }) : '';
   grid.className = viewClass;
   if (!auneReady(region, auneRange)) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
