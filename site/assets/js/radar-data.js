@@ -242,10 +242,51 @@
     });
   }
 
+  // Magasin d'articles progressif, dans l'ancienne forme de articles.json
+  // ({ articles: { pays: { clé_de_période: { objet: [articles] } } } }) : les pages
+  // gardent leur getArticlesFor(...) tel quel, et appellent ensure(...) avant de
+  // rendre ce qui dépend des articles (compteurs, panneau, « Précédemment »).
+  function articleStore() {
+    var data = { articles: {} };
+    var loadedDays = Object.create(null); // "pays|date" → true
+    var pending = Object.create(null);    // "pays|date" → promesse
+
+    function datesOf(periodKeys) {
+      var out = Object.create(null);
+      (periodKeys || []).forEach(function (k) { if (k) out[String(k).slice(0, 10)] = true; });
+      return Object.keys(out);
+    }
+    function has(country, periodKeys) {
+      return datesOf(periodKeys).every(function (d) { return loadedDays[country + '|' + d]; });
+    }
+    function ensure(country, periodKeys) {
+      data.articles[country] = data.articles[country] || {};
+      return Promise.all(datesOf(periodKeys).map(function (date) {
+        var id = country + '|' + date;
+        if (loadedDays[id]) return Promise.resolve();
+        if (!pending[id]) {
+          pending[id] = articlesDay(country, date).then(function (a) {
+            Object.keys(a.periods || {}).forEach(function (key) { data.articles[country][key] = a.periods[key]; });
+          }).catch(function () { /* jour absent : aucun article */ })
+            .then(function () { loadedDays[id] = true; delete pending[id]; });
+        }
+        return pending[id];
+      })).then(function () { return data; });
+    }
+    // Clés des `nBack` périodes qui précèdent l'index `idx` dans `periodList` (plus la période elle-même).
+    function keysBefore(periodList, idx, nBack) {
+      var out = [];
+      for (var i = Math.max(0, idx - nBack); i <= idx && i < periodList.length; i++) out.push(periodList[i].key);
+      return out;
+    }
+    return { data: data, has: has, ensure: ensure, keysBefore: keysBefore };
+  }
+
   window.radarData = {
     base: base,
     index: index, latest: latest, periods: periods,
     day: day, articlesDay: articlesDay, series: series, episodes: episodes,
-    timeseries: timeseries, graph: graph, articles: articles, latestAsGraph: latestAsGraph
+    timeseries: timeseries, graph: graph, articles: articles, latestAsGraph: latestAsGraph,
+    articleStore: articleStore
   };
 })();
