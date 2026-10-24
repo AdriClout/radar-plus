@@ -1,0 +1,62 @@
+name: Déployer DEV (Cloudflare Pages)
+
+# develop → projet Pages « radar-plus-dev » (https://radar-plus-dev.pages.dev,
+# puis dev.radarplus.org quand la zone sera sur Cloudflare, #51).
+# Aucune donnée ne passe par ici : le site lit R2 (#52).
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "site/**"
+      - ".github/scripts/preparer-site.sh"
+      - ".github/workflows/deploy-dev.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: https://radar-plus-dev.pages.dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Préparer le site (dev)
+        env:
+          RADAR_REPORT_DISPATCH_TOKEN: ${{ secrets.RADAR_REPORT_DISPATCH_TOKEN }}
+        run: bash .github/scripts/preparer-site.sh dev dist
+
+      - name: Déployer sur Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler@4 pages deploy dist \
+            --project-name radar-plus-dev \
+            --branch develop \
+            --commit-hash "${GITHUB_SHA}" \
+            --commit-dirty=true
+
+      - name: Vérifier que dev répond
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 10); do
+            if curl -fsS "https://radar-plus-dev.pages.dev/?v=${GITHUB_SHA}" | grep -q 'assets/js/config.js'; then
+              echo "dev répond (tentative ${attempt})"; exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::dev ne répond pas après le déploiement"; exit 1

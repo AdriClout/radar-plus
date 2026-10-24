@@ -24,8 +24,13 @@ Rafraîchir les données : voir [`pipeline/README.md`](./pipeline/README.md) —
 
 ## Branches, PR, déploiement
 
-- **`main` protégée** : toute contribution passe par une **Pull Request** ; le check **`quality-gate` est obligatoire** (`pr-quality-gate.yml`).
-- `deploy-github-pages.yml` publie `site/` sur GitHub Pages au merge (code seulement : les données ne passent pas par là).
+Modèle DEV/PROD calqué sur la Vitrine (#51, livré le 24 oct. 2026 ; DNS encore à basculer — voir plus bas).
+
+- **`develop` = DEV** (branche par défaut). Toute fonctionnalité : branche depuis `develop` → PR vers `develop` (check **`quality-gate` obligatoire**, `pr-quality-gate.yml`). À la fusion, `deploy-dev.yml` publie `site/` sur le projet Cloudflare Pages **`radar-plus-dev`** → https://radar-plus-dev.pages.dev (`noindex` ; cible `dev.radarplus.org`).
+- **`main` = PROD.** On n'y arrive que par une **PR de promotion `develop → main`** (branche `develop` ou `promotion/AAAA-MM-JJ-sujet`), dont le corps contient `- [x] Vérifié sur dev le AAAA-MM-JJ : <observé>` — vérifié par **`garde-promotion`** (`garde-promotion.yml`), en plus du `quality-gate`. À la fusion, `deploy-prod.yml` publie sur le projet Pages **`radar-plus`** → https://radar-plus.pages.dev (cible `radarplus.org`). Une prod ne s'annule pas (`cancel-in-progress: false`).
+- **Transition (état au 24 oct. 2026)** : `radarplus.org` pointe encore sur **GitHub Pages** (`deploy-github-pages.yml`, déclenché par `main`). La bascule DNS vers Cloudflare Pages est un GO explicite d'Adrien ; ensuite `deploy-github-pages.yml`, `finalize-pages-domain.yml` et `site/CNAME` disparaissent.
+- Les deux déploiements passent par `.github/scripts/preparer-site.sh` (exclut les JSON générés et `CNAME`, injecte le jeton public de signalement, `_headers` noindex en dev) puis `wrangler pages deploy` (secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` ; environnements GitHub `development` et `production`, ce dernier réservé à `main`).
+- **Permissions** : zéro approbation requise et dérogation admin pour Adrien (seul contributeur). Quand un second contributeur arrive : passer à 1 approbation et retirer la dérogation dans les rulesets, rien d'autre à changer.
 - Refresh automatiques (**cron en heure de Montréal**, EDT/EST) : `refresh-constellation.yml` (6×/jour), `refresh-ticker.yml` (~10 min). Ils écrivent les JSON **dans R2** (`wrangler r2 object put`, secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`), jamais dans git : rafraîchir les données ne crée ni commit ni déploiement.
 - Signalements utilisateur → issues via `report-issue.yml`.
 

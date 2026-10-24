@@ -10,14 +10,17 @@ Merci de contribuer.
 
 ## Workflow obligatoire
 
-1. Créer une branche depuis `main`.
-2. Faire les changements sur cette branche.
-3. Ouvrir une Pull Request vers `main`.
-4. Attendre l'approbation requise avant merge.
+`develop` = site de dev (https://radar-plus-dev.pages.dev), `main` = production (radarplus.org).
+
+1. Créer une branche depuis `develop`.
+2. Faire les changements, vérifier en local (`python3 -m http.server 8000` → `/site/`).
+3. Ouvrir une Pull Request vers `develop` ; attendre `quality-gate` vert, fusionner.
+4. Regarder le résultat sur dev (déployé automatiquement).
+5. Promouvoir : PR `develop → main` avec la case `- [x] Vérifié sur dev le AAAA-MM-JJ : <observé>` (vérifiée par `garde-promotion`). La fusion déploie la production.
 
 ## Règles de base
 
-- Pas de push direct sur `main` (sauf mainteneur autorisé).
+- Pas de push direct sur `develop` ni `main` (sauf mainteneur autorisé, en urgence).
 - Une PR doit être claire, testée et documentée.
 - Ajouter des captures pour les changements UI.
 
@@ -70,14 +73,17 @@ Thank you for contributing.
 
 ## Required workflow
 
-1. Create a branch from `main`.
-2. Make changes on that branch.
-3. Open a Pull Request to `main`.
-4. Wait for required approval before merge.
+`develop` = dev site (https://radar-plus-dev.pages.dev), `main` = production (radarplus.org).
+
+1. Create a branch from `develop`.
+2. Make changes, check locally (`python3 -m http.server 8000` → `/site/`).
+3. Open a Pull Request to `develop`; wait for a green `quality-gate`, merge.
+4. Look at the result on dev (deployed automatically).
+5. Promote: PR `develop → main` with the line `- [x] Vérifié sur dev le YYYY-MM-DD : <what you saw>` (checked by `garde-promotion`). Merging deploys production.
 
 ## Ground rules
 
-- No direct push to `main` (except authorized maintainer).
+- No direct push to `develop` or `main` (except authorized maintainer, in an emergency).
 - A PR must be clear, tested, and documented.
 - Add screenshots for UI changes.
 

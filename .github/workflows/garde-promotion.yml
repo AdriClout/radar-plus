@@ -1,0 +1,40 @@
+name: Garde promotion (PR vers main)
+
+# Toute PR vers main est une promotion : son corps doit prouver que le
+# changement a été vu sur dev — case cochée, date, observation d'au moins
+# 15 caractères :
+#   - [x] Vérifié sur dev le 2026-10-24 : évolution et constellation OK, ticker frais
+# Modèle calqué sur la Vitrine (garde-promotion). Le gabarit de PR porte la case.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: garde-promotion-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  garde-promotion:
+    name: garde-promotion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Case « Vérifié sur dev » cochée, datée, documentée
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          if printf '%s\n' "${PR_BODY}" | grep -Eq -- '- \[[xX]\] Vérifié sur dev le [0-9]{4}-[0-9]{2}-[0-9]{2} ?: .{15,}'; then
+            echo "Vérification sur dev déclarée."
+          else
+            echo "::error::Le corps de la PR doit contenir « - [x] Vérifié sur dev le AAAA-MM-JJ : <ce que tu as observé, 15 caractères ou plus> »."
+            exit 1
+          fi
+          case "${HEAD_REF}" in
+            develop|promotion/*) echo "Branche de promotion : ${HEAD_REF}" ;;
+            *) echo "::warning::La PR vers main ne vient pas de develop ni de promotion/* (${HEAD_REF}). Le flux normal est fonctionnalité → develop → promotion." ;;
+          esac
