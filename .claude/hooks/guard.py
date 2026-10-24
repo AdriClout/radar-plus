@@ -36,12 +36,12 @@ if base in DATA_JSON and ("/site/" in norm or norm.startswith("site/")):
     )
     sys.exit(2)
 
-# Règle dure #3 — aucun chemin de déploiement AWS dans ce repo (GitHub Pages seulement).
+# Règle dure #3 — aucun chemin de déploiement AWS dans ce repo (Cloudflare Pages seulement).
 if "aws-actions/configure-aws-credentials" in content:
     sys.stderr.write(
         "BLOQUÉ — radar-plus n'a aucun chemin de déploiement AWS (AGENTS.md, règle dure #3). "
         "Les identifiants AWS servent uniquement à l'extraction en lecture seule (workflows "
-        "refresh). Le site est déployé sur GitHub Pages.\n"
+        "refresh). Le site est déployé sur Cloudflare Pages.\n"
     )
     sys.exit(2)
 

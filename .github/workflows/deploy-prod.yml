@@ -1,7 +1,7 @@
 name: Déployer PROD (Cloudflare Pages)
 
-# main → projet Pages « radar-plus » (https://radar-plus.pages.dev, puis
-# radarplus.org après la bascule DNS décidée par Adrien, #51). Se déclenche à
+# main → projet Pages « radar-plus » (https://radarplus.org ; alias technique
+# https://radar-plus.pages.dev, utilisé pour la vérification). Se déclenche à
 # la fusion d'une PR de promotion develop → main (garde-promotion.yml).
 # Une prod ne s'annule pas : concurrency sans cancel-in-progress.
 on:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://radar-plus.pages.dev
+      url: https://radarplus.org
     steps:
       - name: Checkout
         uses: actions/checkout@v7

@@ -56,7 +56,7 @@ Référence canonique : <https://adriencloutier.com/documents/clessn/workflow-vi
 └────────────────────────────┬────────────────────────────────────────────┘
                              ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  FRONTEND (HTML/JS, GitHub Pages)                                       │
+│  FRONTEND (HTML/JS, Cloudflare Pages ; JSON lus depuis R2)              │
 │  Fait des transformations significatives :                              │
 │   • aggregateNodes / buildSlots — agrégation 4h→day/week/month/year     │
 │   • renderHot20 — calcul Hot 20                                         │

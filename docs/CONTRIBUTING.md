@@ -10,7 +10,7 @@ Merci de contribuer.
 
 ## Workflow obligatoire
 
-`develop` = site de dev (https://radar-plus-dev.pages.dev), `main` = production (radarplus.org).
+`develop` = site de dev (https://dev.radarplus.org), `main` = production (https://radarplus.org).
 
 1. Créer une branche depuis `develop`.
 2. Faire les changements, vérifier en local (`python3 -m http.server 8000` → `/site/`).
@@ -73,7 +73,7 @@ Thank you for contributing.
 
 ## Required workflow
 
-`develop` = dev site (https://radar-plus-dev.pages.dev), `main` = production (radarplus.org).
+`develop` = dev site (https://dev.radarplus.org), `main` = production (https://radarplus.org).
 
 1. Create a branch from `develop`.
 2. Make changes, check locally (`python3 -m http.server 8000` → `/site/`).

@@ -1,7 +1,7 @@
 name: Déployer DEV (Cloudflare Pages)
 
-# develop → projet Pages « radar-plus-dev » (https://radar-plus-dev.pages.dev,
-# puis dev.radarplus.org quand la zone sera sur Cloudflare, #51).
+# develop → projet Pages « radar-plus-dev » (https://dev.radarplus.org ; alias
+# technique https://radar-plus-dev.pages.dev, utilisé pour la vérification).
 # Aucune donnée ne passe par ici : le site lit R2 (#52).
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: development
-      url: https://radar-plus-dev.pages.dev
+      url: https://dev.radarplus.org
     steps:
       - name: Checkout
         uses: actions/checkout@v7
