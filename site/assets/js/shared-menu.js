@@ -574,202 +574,121 @@
     document.body.classList.add('has-alert-bar');
   }
 
-  function buildBarItems(alerts) {
-    return alerts.map(function(a) {
-      var lbl = alertBarLabel(a.level);
-      var sc  = a.score !== null ? ' \u00b7\u00a0z\u00a0' + a.score.toFixed(1) + '\u00d7' : '';
-      var href = './evolution.html?country=' + encodeURIComponent(a.country) +
-                 '&node=' + encodeURIComponent(a.id) +
-                 '&mode=tracking&gran=week';
+  // ─── Bandeau d'alertes = ÉVÉNEMENTS saillants (règle d'Adrien, 24 oct. 2026) ───
+  // Source : v2/events/latest.json → événements du dernier bloc, par région,
+  // dont la bande est au moins « Élevée ». Un après l'autre, chacun avec son
+  // niveau, suivi des médias qui l'ont couvert (chips cliquables vers l'article).
+  // Clic sur l'événement : un des médias au hasard (comme la Vitrine).
+  // Vitesse constante et lisible ; seule la couleur du bandeau change (niveau
+  // le plus élevé parmi les événements affichés).
+  var EVENT_BAND_TO_LEVEL = { elevee: 'eleve', tres_elevee: 'tres_eleve', extreme: 'extreme' };
+  var EVENT_BAR_PX_PER_SEC = 45;
+  var EVENT_BAR_MAX_MEDIA = 6;
 
-      var lvlCss = levelCss(a.level);
-      if (a.isEvent && a.memberNames && a.memberNames.length) {
-        var membersList = a.memberNames.map(function(n) {
-          return '<span class="alert-bar-event-member">' + escHtml(n) + '</span>';
-        }).join('<span class="alert-bar-event-sep" aria-hidden="true"> \u00b7 </span>');
-        return '<a class="alert-bar-item is-event level-' + escHtml(lvlCss) + '" href="' + escHtml(href) + '">' +
-          '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
-          '<span class="alert-bar-event-tag" aria-hidden="true">\u25c6</span>' +
-          '<span class="alert-bar-event-pivot">' + escHtml(a.id) + '</span>' +
-          '<span class="alert-bar-event-link" aria-hidden="true">\u2014</span>' +
-          '<span class="alert-bar-event-members">' + membersList + '</span>' +
-          (sc ? '<span class="alert-bar-item-score">' + escHtml(sc) + '</span>' : '') +
-          '<span class="alert-bar-item-country">' + escHtml(a.country) + '</span>' +
-          '</a>' +
-          '<span class="alert-bar-sep" aria-hidden="true">\u2022</span>';
-      }
+  function eventBarItems(latest) {
+    var items = [];
+    var regions = (latest && latest.by_region) ? Object.keys(latest.by_region) : [];
+    regions.forEach(function(region) {
+      var evs = (latest.by_region[region] && latest.by_region[region].events) || [];
+      evs.forEach(function(ev) {
+        var level = EVENT_BAND_TO_LEVEL[ev.band];
+        if (!level) return;
+        var arts = Array.isArray(ev.articles) ? ev.articles.filter(function(a) { return a && a.url; }) : [];
+        var byMedia = {}; var media = [];
+        arts.forEach(function(a) {
+          var m = a.media_id || '';
+          if (!m || byMedia[m]) return;
+          byMedia[m] = true; media.push({ media_id: m, url: a.url, title: a.title || '' });
+        });
+        if (!media.length && ev.url) media.push({ media_id: ev.media || '', url: ev.url, title: ev.title || '' });
+        items.push({ id: ev.id, title: ev.title || '', level: level, region: region, index: Number(ev.index) || 0,
+                     urls: arts.map(function(a) { return a.url; }), media: media.slice(0, EVENT_BAR_MAX_MEDIA) });
+      });
+    });
+    var rank = { extreme: 0, tres_eleve: 1, eleve: 2 };
+    items.sort(function(a, b) { return (rank[a.level] - rank[b.level]) || (b.index - a.index); });
+    return items;
+  }
 
-      return '<a class="alert-bar-item level-' + escHtml(lvlCss) + '" href="' + escHtml(href) + '">' +
-        '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
-        '<span class="alert-bar-item-name">'  + escHtml(a.id)  + '</span>' +
-        (sc ? '<span class="alert-bar-item-score">' + escHtml(sc) + '</span>' : '') +
-        '<span class="alert-bar-item-country">' + escHtml(a.country) + '</span>' +
+  function buildEventBarItems(items) {
+    return items.map(function(it) {
+      var lvlCss = levelCss(it.level);
+      var urls = it.urls.length ? it.urls : it.media.map(function(m) { return m.url; });
+      var chips = it.media.map(function(m) {
+        return '<a class="alert-bar-media-chip" href="' + escHtml(m.url) + '" target="_blank" rel="noopener" title="' + escHtml(m.title) + '">' + escHtml(m.media_id) + '</a>';
+      }).join('');
+      return '<span class="alert-bar-item is-event level-' + escHtml(lvlCss) + '">' +
+        '<a class="alert-bar-event-main" href="' + escHtml(urls[0] || '#') + '" target="_blank" rel="noopener" data-urls="' + escHtml(JSON.stringify(urls)) + '">' +
+          '<span class="alert-bar-item-badge">' + escHtml(alertBarLabel(it.level)) + '</span>' +
+          '<span class="alert-bar-item-name">' + escHtml(it.title) + '</span>' +
+          '<span class="alert-bar-item-country">' + escHtml(it.region) + '</span>' +
         '</a>' +
-        '<span class="alert-bar-sep" aria-hidden="true">\u2022</span>';
+        (chips ? '<span class="alert-bar-media">' + chips + '</span>' : '') +
+      '</span>' +
+      '<span class="alert-bar-sep" aria-hidden="true">•</span>';
     }).join('');
   }
 
-  function populateAlertBar(graphData) {
+  function populateAlertBar(latest) {
     var strip    = document.getElementById('alert-bar-strip');
     var bar      = document.getElementById('global-alert-bar');
     var navBadge = document.getElementById('nav-alert-badge');
     if (!strip || !bar) return;
 
-    var periods   = (graphData.meta && graphData.meta.periods) ? graphData.meta.periods : [];
-    var countries = Object.keys(graphData.graphs || {});
-    var alerts    = [];
-    var seen      = {};
-
-    // Uniquement la période la plus récente: évite d'afficher des alertes déjà terminées.
-    var latestPeriod = periods.length ? periods[periods.length - 1] : null;
-    var pKey = latestPeriod && latestPeriod.key;
-    for (var ci = 0; ci < countries.length; ci++) {
-      var country = countries[ci];
-      var gd = graphData.graphs[country] && graphData.graphs[country][pKey];
-      if (!gd) continue;
-
-      // 1) Indexer les events: les membres seront masqués au profit du pivot.
-      // Le pivot lui-même est aussi indexé — sinon il serait émis 2× (une
-      // fois comme tête d'event, une fois comme alerte individuelle) depuis
-      // qu'on force le pivot à être lui-même alerté.
-      var events = Array.isArray(gd.events) ? gd.events : [];
-      var memberIds = {};
-      for (var ei = 0; ei < events.length; ei++) {
-        var ev = events[ei];
-        if (!ev) continue;
-        if (ev.pivot && ev.pivot.id) memberIds[ev.pivot.id] = true;
-        if (!Array.isArray(ev.members)) continue;
-        for (var mi = 0; mi < ev.members.length; mi++) memberIds[ev.members[mi].id] = true;
-      }
-
-      // 2) Émettre les pivots d'événements en premier (level effectif = max parmi membres+pivot)
-      for (var ei2 = 0; ei2 < events.length; ei2++) {
-        var ev2 = events[ei2];
-        if (!ev2 || !ev2.pivot || !Array.isArray(ev2.members) || !ev2.members.length) continue;
-        var lvls = ev2.members.map(function(m){ return m.alert_level; });
-        if (ev2.pivot.alert_active) lvls.push(ev2.pivot.alert_level);
-        var topLvl = null;
-        for (var li = 0; li < ALERT_BAR_LEVELS.length; li++) {
-          if (lvls.indexOf(ALERT_BAR_LEVELS[li]) !== -1) { topLvl = ALERT_BAR_LEVELS[li]; break; }
-        }
-        if (!topLvl) continue;  // bandeau ne montre que les 4 tiers principaux
-        var key2 = country + ':event:' + ev2.pivot.id;
-        if (seen[key2]) continue;
-        seen[key2] = true;
-        // Score représentatif = max alert_score parmi pivot+membres
-        var topScore = ev2.pivot.alert_active && typeof ev2.pivot.alert_score === 'number' ? ev2.pivot.alert_score : 0;
-        ev2.members.forEach(function(m){
-          if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
-        });
-        // Trier les noms de membres par niveau d'alerte pour afficher
-        // les plus saillants en premier dans le défilement.
-        var levelRank = { extreme: 0, tres_eleve: 1, eleve: 2 };
-        var sortedMembers = ev2.members.slice().sort(function(a, b) {
-          var la = levelRank[a.alert_level] !== undefined ? levelRank[a.alert_level] : 9;
-          var lb = levelRank[b.alert_level] !== undefined ? levelRank[b.alert_level] : 9;
-          if (la !== lb) return la - lb;
-          return (b.containment || 0) - (a.containment || 0);
-        });
-        alerts.push({
-          id: ev2.pivot.id,
-          level: topLvl,
-          score: isFinite(topScore) && topScore > 0 ? topScore : null,
-          country: country,
-          isEvent: true,
-          memberCount: ev2.members.length,
-          memberNames: sortedMembers.map(function(m){ return m.id; })
-        });
-      }
-
-      // 3) Émettre les alertes individuelles non couvertes par un event
-      var nodes = gd.nodes || [];
-      for (var ni = 0; ni < nodes.length; ni++) {
-        var node = nodes[ni];
-        if (ALERT_BAR_LEVELS.indexOf(node.alert_level) === -1) continue;
-        if (!node.alert_active) continue;
-        if (memberIds[node.id]) continue;  // masqué (membre d'un event)
-        var key = country + ':' + node.id;
-        if (seen[key]) continue;
-        seen[key] = true;
-        var score = Number(node.alert_score);
-        alerts.push({ id: node.id, level: node.alert_level, score: isFinite(score) ? score : null, country: country });
-      }
-    }
-
-    // Trier: extreme > tres_eleve > eleve, puis score desc
-    var BAR_LEVEL_RANK = { extreme: 0, tres_eleve: 1, eleve: 2 };
-    alerts.sort(function(a, b) {
-      var la = BAR_LEVEL_RANK[a.level] !== undefined ? BAR_LEVEL_RANK[a.level] : 9;
-      var lb = BAR_LEVEL_RANK[b.level] !== undefined ? BAR_LEVEL_RANK[b.level] : 9;
-      if (la !== lb) return la - lb;
-      return (b.score || 0) - (a.score || 0);
-    });
-
-    // Badge compteur dans le menu
+    var items = eventBarItems(latest);
     if (navBadge) {
-      if (alerts.length) { navBadge.textContent = String(alerts.length); navBadge.classList.add('active'); }
+      if (items.length) { navBadge.textContent = String(items.length); navBadge.classList.add('active'); }
       else { navBadge.style.display = 'none'; }
     }
-
-    if (!alerts.length) {
+    if (!items.length) {
       bar.style.display = 'none';
       document.body.classList.remove('has-alert-bar');
       return;
     }
-
     bar.classList.remove('bar-extreme', 'bar-tres-eleve', 'bar-eleve');
-    bar.classList.add('bar-' + levelCss(alerts[0].level));
+    bar.classList.add('bar-' + levelCss(items[0].level));
 
-    // Toujours partir d'une seule copie de itemsHtml comme référence
-    // de mesure. La logique du multiplicateur ci-dessous calcule
-    // combien de copies sont nécessaires pour remplir la piste, puis
-    // pose le strip final avec un nombre PAIR de copies (pour que
-    // translateX(-50%) reste un loop continu).
-    //
-    // Token de synchro: si populateAlertBar est rappelé rapidement
-    // (ex: changement de langue après le fetch initial), seule la
-    // dernière rAF s'exécute. Sinon les rAF se chevauchent et
-    // multiplient la largeur déjà multipliée → strip 4x/8x trop large
-    // → vitesse perçue ultra-lente.
-    var itemsHtml = buildBarItems(alerts);
-    strip.innerHTML = itemsHtml; // une seule copie initiale, on multipliera dans rAF
+    // Une seule copie comme référence de mesure, puis un nombre PAIR de copies
+    // pour que translateX(-50%) boucle sans couture (rAF : mesure après rendu).
+    var itemsHtml = buildEventBarItems(items);
+    strip.innerHTML = itemsHtml;
     var token = (_alertBarRenderToken = (_alertBarRenderToken || 0) + 1);
-
     window.requestAnimationFrame(function() {
-      if (token !== _alertBarRenderToken) return; // appel obsolète
+      if (token !== _alertBarRenderToken) return;
       var track = document.getElementById('alert-bar-track');
       var trackW = track ? track.clientWidth : 800;
-      // Largeur d'UNE copie (la référence stable, pas la version multipliée)
       var oneW = strip.scrollWidth || 1;
-      // On veut au moins 2 copies (pour le loop) et assez pour que
-      // 1 demi-strip dépasse la piste avec une marge de 40px.
       var copies = Math.max(2, Math.ceil((trackW + 40) / oneW) * 2);
       var multi = '';
       for (var i = 0; i < copies; i++) multi += itemsHtml;
       strip.innerHTML = multi;
       var halfW = strip.scrollWidth / 2 || oneW;
-
-      // Vitesse uniforme ~1.5 px/s (très lent, lecture très posée).
-      // Plancher 360s. Indépendant du nombre d'alertes/copies.
-      var pxPerSec = 1.5;
-      var dur = Math.max(360, Math.round(halfW / pxPerSec));
+      // Vitesse constante (px/s), lisible ; plancher 20 s.
+      var dur = Math.max(20, Math.round(halfW / EVENT_BAR_PX_PER_SEC));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
       bar.classList.add('ready');
     });
   }
+
+  // Clic sur l'événement : un des articles au hasard.
+  document.addEventListener('click', function(e) {
+    var a = e.target.closest && e.target.closest('.alert-bar-event-main[data-urls]');
+    if (!a) return;
+    var urls = [];
+    try { urls = JSON.parse(a.getAttribute('data-urls') || '[]'); } catch (err) { urls = []; }
+    if (urls.length > 1) {
+      e.preventDefault();
+      window.open(urls[Math.floor(Math.random() * urls.length)], '_blank', 'noopener');
+    }
+  });
   var _alertBarRenderToken = 0;
 
   var _lastAlertGraphData = null;
   function initAlertBar() {
     injectAlertBar();
-    // Données découpées (#59) : latest.json ne porte que la dernière période par
-    // pays (~100 ko) au lieu de graph.json entier (9 Mo). Repli sur graph.json
-    // si le chargeur n'est pas disponible.
-    var load = (window.radarData && window.radarData.latestAsGraph)
-      ? window.radarData.latestAsGraph()
-      : fetch(radarDataUrl('graph.json'), { cache: 'no-store' })
-          .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); });
-    load
+    // Source : événements saillants du dernier bloc (v2/events/latest.json, ~15 ko).
+    if (!(window.radarData && window.radarData.eventsLatest)) return;
+    window.radarData.eventsLatest()
       .then(function(data) {
         _lastAlertGraphData = data;
         populateAlertBar(data);

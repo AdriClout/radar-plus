@@ -42,9 +42,9 @@
     "event_tag": "Event",
     "event_members": "{n} related entities",
     "level": {
-      "extreme": "Extreme",
-      "tres_eleve": "Very high",
-      "eleve": "High"
+      "extreme": "Extreme salience",
+      "tres_eleve": "Very high salience",
+      "eleve": "High salience"
     }
   },
   "report": {
@@ -236,9 +236,9 @@
     "level_tres_eleve": "Very high",
     "level_eleve": "High",
     "level_short": {
-      "extreme": "Extr.",
-      "tres_eleve": "V. high",
-      "eleve": "High"
+      "extreme": "Extreme salience",
+      "tres_eleve": "Very high salience",
+      "eleve": "High salience"
     },
     "level_tip_extreme": "Peak above the extreme threshold (p99 of the country).",
     "level_tip_tres_eleve": "Peak between p95 and p99 country thresholds.",
@@ -465,11 +465,11 @@
     "note_link": "Methodology →",
     "band": {
       "aucune": "—",
-      "faible": "Low",
-      "moderee": "Moderate",
-      "elevee": "High",
-      "tres_elevee": "Very high",
-      "extreme": "Extreme"
+      "faible": "Low salience",
+      "moderee": "Moderate salience",
+      "elevee": "High salience",
+      "tres_elevee": "Very high salience",
+      "extreme": "Extreme salience"
     },
     "art_credit": "AI-generated illustration · art direction Mathieu Fortin (Anorak Studio) · Vitrine démocratique"
   }
