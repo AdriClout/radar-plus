@@ -616,7 +616,7 @@
   // Vitesse constante et lisible ; seule la couleur du bandeau change (niveau
   // le plus élevé parmi les événements affichés).
   var EVENT_BAND_TO_LEVEL = { elevee: 'eleve', tres_elevee: 'tres_eleve', extreme: 'extreme' };
-  var EVENT_BAR_PX_PER_SEC = 45;
+  var EVENT_BAR_PX_PER_SEC = 40;
   var EVENT_BAR_MAX_MEDIA = 6;
 
   function eventBarItems(latest) {
@@ -686,22 +686,28 @@
     // pour que translateX(-50%) boucle sans couture (rAF : mesure après rendu).
     var itemsHtml = buildEventBarItems(items);
     strip.innerHTML = itemsHtml;
+    // Le bandeau est en display:none tant qu'il n'est pas « ready » : il faut le
+    // rendre (invisible) AVANT de mesurer, sinon la largeur vaut ~0, les copies
+    // explosent et le ruban file à toute vitesse (vécu le 24 oct. au soir).
+    bar.classList.add('measuring');
     var token = (_alertBarRenderToken = (_alertBarRenderToken || 0) + 1);
-    window.requestAnimationFrame(function() {
+    window.requestAnimationFrame(function() { window.requestAnimationFrame(function() {
       if (token !== _alertBarRenderToken) return;
       var track = document.getElementById('alert-bar-track');
       var trackW = track ? track.clientWidth : 800;
-      var oneW = strip.scrollWidth || 1;
+      var oneW = Math.max(strip.scrollWidth, 1);
       var copies = Math.max(2, Math.ceil((trackW + 40) / oneW) * 2);
+      if (copies > 20) copies = 20;
       var multi = '';
       for (var i = 0; i < copies; i++) multi += itemsHtml;
       strip.innerHTML = multi;
       var halfW = strip.scrollWidth / 2 || oneW;
-      // Vitesse constante (px/s), lisible ; plancher 20 s.
-      var dur = Math.max(20, Math.round(halfW / EVENT_BAR_PX_PER_SEC));
+      // Vitesse constante et lisible (px/s) ; plancher 30 s.
+      var dur = Math.max(30, Math.round(halfW / EVENT_BAR_PX_PER_SEC));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
+      bar.classList.remove('measuring');
       bar.classList.add('ready');
-    });
+    }); });
   }
 
   // Clic sur l'événement : un des articles au hasard.
