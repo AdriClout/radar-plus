@@ -803,3 +803,16 @@ body.has-alert-bar .side-nav.site-menu-panel { top: calc(var(--alert-bar-h) + va
 .side-nav.site-menu-panel .lang-switch { grid-column: 1 / -1; margin-bottom: 14px; }
 .side-nav.site-menu-panel h3 { grid-column: 1 / -1; margin: 10px 0 10px; }
 .side-nav.site-menu-panel .nav-github { grid-column: 1 / -1; }
+
+/* Bandeau d'alertes = événements (24 oct. 2026) : titre + niveau, puis médias cliquables */
+.alert-bar-item.is-event { gap: 8px; }
+.alert-bar-event-main { display: inline-flex; align-items: center; gap: 6px; color: inherit; text-decoration: none; cursor: pointer; }
+.alert-bar-event-main:hover .alert-bar-item-name { text-decoration: underline; }
+.alert-bar-item.is-event .alert-bar-item-name { text-transform: none; }
+.alert-bar-media { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px; }
+.alert-bar-media-chip {
+  font-family: 'Orbitron', 'Space Mono', monospace; font-size: 8px; letter-spacing: 1px;
+  padding: 1px 5px; border: 1px solid currentColor; border-radius: 3px;
+  color: inherit; text-decoration: none; opacity: 0.8; line-height: 1.5;
+}
+.alert-bar-media-chip:hover { opacity: 1; background: rgba(255,255,255,0.08); }

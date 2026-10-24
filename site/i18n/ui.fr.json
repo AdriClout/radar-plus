@@ -42,9 +42,9 @@
     "event_tag": "Événement",
     "event_members": "{n} entités liées",
     "level": {
-      "extreme": "Extrême",
-      "tres_eleve": "Très élevé",
-      "eleve": "Élevé"
+      "extreme": "Saillance extrême",
+      "tres_eleve": "Saillance très élevée",
+      "eleve": "Saillance élevée"
     }
   },
   "report": {
@@ -236,9 +236,9 @@
     "level_tres_eleve": "Très élevé",
     "level_eleve": "Élevé",
     "level_short": {
-      "extreme": "Extr.",
-      "tres_eleve": "T. élevé",
-      "eleve": "Élevé"
+      "extreme": "Saillance extrême",
+      "tres_eleve": "Saillance très élevée",
+      "eleve": "Saillance élevée"
     },
     "level_tip_extreme": "Pic au-dessus du seuil extrême (p99 du pays).",
     "level_tip_tres_eleve": "Pic entre les seuils p95 et p99 du pays.",
@@ -465,11 +465,11 @@
     "note_link": "Méthodologie →",
     "band": {
       "aucune": "—",
-      "faible": "Faible",
-      "moderee": "Modérée",
-      "elevee": "Élevée",
-      "tres_elevee": "Très élevée",
-      "extreme": "Extrême"
+      "faible": "Saillance faible",
+      "moderee": "Saillance modérée",
+      "elevee": "Saillance élevée",
+      "tres_elevee": "Saillance très élevée",
+      "extreme": "Saillance extrême"
     },
     "art_credit": "Illustration générée par intelligence artificielle · direction artistique Mathieu Fortin (Anorak Studio) · Vitrine démocratique"
   }
