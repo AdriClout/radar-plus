@@ -21,6 +21,7 @@
 *.png
 !site/assets/img/GRCP-Logo.png
 !site/assets/img/infrastructure-radarplus.png
+!site/assets/img/robot.png
 *.pdf
 *.xlsx
 
@@ -130,3 +131,4 @@ wrangler.toml
 # Sorties v2 découpées (chantier 7) — publiées dans R2, jamais versionnées
 pipeline/out_r2/
 pipeline/headline_events.csv
+!site/assets/img/robot.png

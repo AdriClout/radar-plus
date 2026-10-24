@@ -72,7 +72,7 @@
     return /\.html$/.test(last) ? last : last + '.html';
   }
 
-  var NO_BAR_PAGES = { 'evolution.html': true, 'constellation.html': true };
+  var NO_BAR_PAGES = {}; // bandeau sur toutes les pages (décision du 24 oct. au soir)
   function injectSiteBar() {
     var page = currentPage();
     if (NO_BAR_PAGES[page] || document.getElementById('site-bar')) return null;
@@ -111,7 +111,6 @@
     if (document.querySelector('.side-nav')) return;
 
     var siteBar = injectSiteBar();
-    if (!siteBar) injectHomeLogo();
     document.body.classList.add('has-shared-menu');
 
     var navToggle = document.createElement('button');
@@ -129,8 +128,9 @@
     menuHint.setAttribute('aria-label', 'Ouvrir le menu');
     menuHint.innerHTML = '<span data-i18n="nav.menu_open_hint">Ouvrir menu</span> <span class="menu-discover-arrow"></span>';
 
+    // Panneau de menu : descend sous le bandeau, pleine largeur (plus de tiroir à droite).
     var sideNav = document.createElement('nav');
-    sideNav.className = 'side-nav';
+    sideNav.className = 'side-nav site-menu-panel';
     sideNav.id = 'sideNav';
     sideNav.setAttribute('data-i18n-aria-label', 'nav.main_nav_aria');
     sideNav.setAttribute('aria-label', 'Navigation principale');
@@ -163,13 +163,8 @@
     ].join('');
 
     document.body.insertBefore(sideNav, document.body.firstChild);
-    if (siteBar) {
-      // Le bouton du tiroir vit dans le bandeau ; plus d'indice « Ouvrir menu ».
-      siteBar.querySelector('.site-bar-right').appendChild(navToggle);
-    } else {
-      document.body.insertBefore(menuHint, sideNav);
-      document.body.insertBefore(navToggle, menuHint);
-    }
+    // Le bouton du menu vit dans le bandeau ; plus d'indice « Ouvrir menu ».
+    siteBar.querySelector('.site-bar-right').appendChild(navToggle);
 
     var current = currentPage();
     var currentLink = sideNav.querySelector('a[data-page="' + current + '"]');
