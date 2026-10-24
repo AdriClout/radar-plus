@@ -653,7 +653,7 @@
       }).join('');
       return '<span class="alert-bar-item is-event level-' + escHtml(lvlCss) + '">' +
         '<a class="alert-bar-event-main" href="' + escHtml(urls[0] || '#') + '" target="_blank" rel="noopener" data-urls="' + escHtml(JSON.stringify(urls)) + '">' +
-          '<span class="alert-bar-item-badge">' + escHtml(alertBarLabel(it.level)) + '</span>' +
+          '<span class="alert-bar-item-badge" data-level="' + escHtml(it.level) + '">' + escHtml(alertBarLabel(it.level)) + '</span>' +
           '<span class="alert-bar-item-name">' + escHtml(it.title) + '</span>' +
           '<span class="alert-bar-item-country">' + escHtml(it.region) + '</span>' +
         '</a>' +
@@ -742,11 +742,10 @@
   document.addEventListener('i18n:applied', function () {
     var strip = document.getElementById('alert-bar-strip');
     if (!strip) return;
-    strip.querySelectorAll('.alert-bar-item').forEach(function (item) {
-      var cls = item.className.match(/level-(\w+)/);
-      if (!cls) return;
-      var badge = item.querySelector('.alert-bar-item-badge');
-      if (badge) badge.textContent = alertBarLabel(cls[1]);
+    // Les libellés sont calculés au rendu ; si i18n arrive après (ou change de
+    // langue), on les recalcule depuis data-level (clé avec underscore).
+    strip.querySelectorAll('.alert-bar-item-badge[data-level]').forEach(function (badge) {
+      badge.textContent = alertBarLabel(badge.getAttribute('data-level'));
     });
   });
 
