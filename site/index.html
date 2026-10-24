@@ -31,8 +31,11 @@
     }
 
     /* ========== CONSTELLATION HIT-ZONES ========== */
+    /* Les zones vivent DANS le héros (position absolue), pas fixées au viewport :
+       fixées, elles restaient sous le curseur après le défilement et volaient
+       les clics du bouton Québec du HOT 20 (signalement #27, Firefox). */
     .cst-zone {
-      position: fixed;
+      position: absolute;
       z-index: 3;
       cursor: default;
     }
@@ -107,10 +110,10 @@
     }
     .media-hotspot:hover .media-tooltip { opacity: 1; }
 
-    /* Scroll indicator — placé plus haut pour ne pas se perdre au-dessus
-       du ticker et de la barre d'alerte en haut */
+    /* Scroll indicator — au-dessus du ticker, mais un peu plus bas qu'avant
+       (signalement #25 : « descendre un peu le Explorer ») */
     .scroll-hint {
-      position: absolute; bottom: calc(var(--ticker-height) + 90px); left: 50%;
+      position: absolute; bottom: calc(var(--ticker-height) + 56px); left: 50%;
       transform: translateX(-50%); text-align: center;
       animation: float 2.5s ease-in-out infinite;
       z-index: 5;
@@ -930,7 +933,9 @@
 <!-- Starfield -->
 <canvas id="stars-canvas"></canvas>
 
-<!-- Constellation hover zones -->
+<!-- ========== HERO ========== -->
+<section class="hero" id="hero">
+<!-- Constellation hover zones (dans le héros : elles défilent avec lui) -->
 <div class="cst-zone" id="cst-zone-0" style="left:2%;top:12%;width:18%;height:21%">
   <div class="cst-tooltip" style="left:2%;top:calc(100% + 8px)">
     <div class="cst-tooltip-name">Radar+</div>
@@ -955,9 +960,6 @@
     <div class="cst-tooltip-desc">Les m&eacute;dias fa&ccedil;onnent les priorit&eacute;s du public&nbsp;: ce qu'ils r&eacute;p&egrave;tent finit par compter aux yeux des citoyens. Pourtant, ces choix &eacute;ditoriaux sont rarement mesur&eacute;s &agrave; grande &eacute;chelle. Radar+ comble ce vide en fournissant des donn&eacute;es ouvertes, comparables et continues &mdash; utiles autant &agrave; la recherche qu'au journalisme et au regard citoyen.</div>
   </div>
 </div>
-
-<!-- ========== HERO ========== -->
-<section class="hero" id="hero">
   <div class="hero-robot">
     <img src="./assets/img/animation-radar.svg" alt="RADAR+ — Robot moissonneur des médias" />
     <!-- Interactive media hotspots overlaid on the SVG — positions from SVG animation keyframes (960×683 canvas) -->
