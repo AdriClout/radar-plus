@@ -506,6 +506,12 @@
     "title_from": {
       "peak": "The title shown is the one from that block ({label}).",
       "last": "The title shown is the one from the latest appearance ({label})."
-    }
+    },
+    "header_index24h": "24h index",
+    "trend_up_tip": "Up {n} rank(s): {prev} in the previous period, {now} now",
+    "trend_down_tip": "Down {n} rank(s): {prev} in the previous period, {now} now",
+    "trend_stable_tip": "Same rank as in the previous period ({now})",
+    "trend_new_tip": "New story: absent from the previous period's top 10",
+    "trend_return_tip": "Back: a story seen before, absent from the previous period's top 10"
   }
 }
