@@ -226,7 +226,14 @@
     "following": "✓ Following",
     "previously_section": "Previously featured",
     "object_unavailable": "Object unavailable",
-    "no_articles_found": "No article found for this object."
+    "no_articles_found": "No article found for this object.",
+    "mode_events": "EVENTS",
+    "events_head": "The big stories · {label}",
+    "events_usa": "No salient events for the United States (two-outlet panel). Choose QC or CAN.",
+    "events_empty": "No salient event in this period.",
+    "events_peak": "peak {v} pts · {when}",
+    "events_cumul": "{v} pts in total",
+    "events_open": "Open the representative article"
   },
   "alertes": {
     "title": "Media",
