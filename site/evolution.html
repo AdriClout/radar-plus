@@ -1156,7 +1156,31 @@
   const FR_MONTHS         = new Proxy({}, { get(_, k) { return getMonths()[k]; } });
   const FR_MONTHS_SHORT   = new Proxy({}, { get(_, k) { return getMonthsShort()[k]; } });
   const FR_WEEKDAYS_SHORT = new Proxy({}, { get(_, k) { return getWeekdaysShort()[k]; } });
-  const LOCAL_UTC_OFFSET_HOURS = 4; // EDT, cohérent avec le pipeline actuel
+  // Décalage UTC → Montréal du moment (EDT = 4, EST = 5), lu via Intl.
+  const LOCAL_UTC_OFFSET_HOURS = (() => {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Montreal', timeZoneName: 'longOffset' }).formatToParts(new Date());
+      const tz = (parts.find(x => x.type === 'timeZoneName') || {}).value || 'GMT-04:00';
+      const m = tz.match(/GMT([+-])(\d{1,2})/);
+      return m ? (m[1] === '-' ? 1 : -1) * Number(m[2]) : 4;
+    } catch (e) { return 4; }
+  })();
+  // Grille des blocs de 4h en heure locale, DÉRIVÉE des clés de périodes (les blocs du
+  // pipeline sont UTC 03-07, 07-11, … soit 23h, 3h, 7h, 11h, 15h, 19h à Montréal en EDT).
+  // Un jour local = les blocs étiquetés à sa date (le bloc de 23h appartient au jour où il commence).
+  let DAY_BLOCK_STARTS = [3, 7, 11, 15, 19, 23];
+  function computeDayBlockStarts(sourcePeriods) {
+    const set = new Set();
+    (sourcePeriods || []).forEach(p => { const ls = localBlockStartFromPeriodKey(p.key); if (Number.isFinite(ls)) set.add(ls); });
+    if (set.size) DAY_BLOCK_STARTS = [...set].sort((a, b) => a - b);
+  }
+  // Début du bloc courant dans cette grille (-1 si aucun bloc du jour n'est encore commencé).
+  function currentLocalBlockStart(now) {
+    const h = now.getHours();
+    let cur = -1;
+    DAY_BLOCK_STARTS.forEach(st => { if (st <= h) cur = st; });
+    return cur;
+  }
   const EN_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
 
   function periodKeyToDate(key) {
@@ -1209,6 +1233,7 @@
   }
 
   function buildRankedSlots(sourcePeriods = periods) {
+    computeDayBlockStarts(sourcePeriods); // grille réelle des blocs (après la déclaration des constantes)
     if (!sourcePeriods.length) {
       rankedSlots = [];
       rankedSlotIdx = 0;
@@ -1256,7 +1281,7 @@
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
-      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
+      const currentBlockStart = currentLocalBlockStart(now);
 
       const eligibleKeys = slot.periodKeys.filter(key => {
         if (!isToday) return true;
@@ -1300,9 +1325,9 @@
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
-      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
-      // All 6 blocks of the day including Minuit-4h (UTC 04-08 = local 00-04)
-      const starts = [0, 4, 8, 12, 16, 20];
+      const currentBlockStart = currentLocalBlockStart(now);
+      // Les 6 blocs du jour, dans la grille réelle du pipeline (voir DAY_BLOCK_STARTS)
+      const starts = DAY_BLOCK_STARTS;
       const byStart = new Map();
       slot.periods.forEach(p => {
         const localStart = localBlockStartFromPeriodKey(p.key);
@@ -1348,7 +1373,7 @@
     // Semaine / Mois / Année : agréger par JOUR (pas par bloc 4h)
     const now = new Date();
     const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
+    const currentBlockStart = currentLocalBlockStart(now);
 
     const dayMap = new Map();
     for (const p of slot.periods) {
@@ -1450,8 +1475,12 @@
     if (nextBtn) nextBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx >= rankedSlots.length - 1 : currentIdx >= periods.length - 1;
   }
 
-  const FR_BLOCK_LONG  = { 0: 'Minuit–4h', 4: '4h–8h', 8: '8h–Midi', 12: 'Midi–16h', 16: '16h–20h', 20: '20h–Minuit' };
-  const FR_BLOCK_SHORT = { 0: 'Minuit',    4: '4h',    8: '8h',     12: 'Midi',     16: '16h',     20: '20h'    };
+  const FR_BLOCK_SHORT = {}, FR_BLOCK_LONG = {};
+  for (let h = 0; h < 24; h++) {
+    const shortOf = x => (x === 0 ? 'Minuit' : x === 12 ? 'Midi' : x + 'h');
+    FR_BLOCK_SHORT[h] = shortOf(h);
+    FR_BLOCK_LONG[h] = shortOf(h) + '–' + shortOf((h + 4) % 24);
+  }
 
   function blockStartFromPeriod(period) {
     const ex = Number(period?.blockStart);
@@ -2159,9 +2188,9 @@
   function dayBlockHour(p) {
     if (!p || p.isVeille) return 0;
     const s = blockStartFromPeriod(p);
-    // End-of-block positioning: Minuit-4h→h=4, 4h-8h→h=8, etc.
-    // Veille stays at h=0; each block appears where its 4h window closes.
-    return Number.isFinite(s) ? s + 4 : 0;
+    // Chaque bloc est placé à la fin de sa fenêtre de 4h, en heures comptées depuis le
+    // début du premier bloc du jour (grille réelle) ; la veille reste à 0.
+    return Number.isFinite(s) ? s + 4 - (DAY_BLOCK_STARTS[0] || 0) : 0;
   }
 
   function renderDayModeChart(gd, hoverIdx = null, skipLegend = false) {
