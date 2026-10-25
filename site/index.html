@@ -2790,7 +2790,8 @@ function articleWhenText(art) {
   if (art.until) {
     var d = new Date(art.until);
     if (!isNaN(d)) {
-      var hm = new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Montreal', hour: '2-digit', minute: '2-digit', hour12: false }).format(d).replace(':', 'h');
+      // en-CA donne « 18:58 » (fr-CA donne « 18 h 58 ») → 18h58, règle typographique du site
+      var hm = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: '2-digit', minute: '2-digit', hour12: false }).format(d).replace(/^24:/, '00:').replace(':', 'h');
       parts.push(T('article_panel.until', { time: hm }));
     }
   }
@@ -2867,7 +2868,8 @@ function openArticlePanel(node) {
     : currentArticles.length + ' article' + (currentArticles.length === 1 ? '' : 's')
   ) + ' \u00b7 score ' + (node.size || 0).toFixed(1);
 
-  var slotLabel = (aggregatedSlots.length && aggregatedSlots[currentSlotIdx]) ? (aggregatedSlots[currentSlotIdx].label || '') : '';
+  var wlDate = document.getElementById('wl-date');
+  var slotLabel = (wlDate && wlDate.textContent !== '\u2014') ? wlDate.textContent.trim() : '';
   var html = '<div class="article-section-header article-section-header-first">' + escapeHtml(T('article_panel.current')) + (slotLabel ? ' \u00b7 ' + escapeHtml(slotLabel) : '') + '</div>';
   html += currentArticles.length
     ? currentGroups.map(function(g) {
