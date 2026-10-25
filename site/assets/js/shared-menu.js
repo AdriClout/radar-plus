@@ -87,8 +87,8 @@
       '</a>' +
       '<nav class="site-bar-nav" data-i18n-aria-label="nav.main_nav_aria" aria-label="Navigation principale">' +
         '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>' +
-        '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
         '<a href="./evolution.html" data-page="evolution.html" data-i18n="nav.evolution">Évolution</a>' +
+        '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
         '<a href="./alertes.html" data-page="alertes.html" data-i18n="nav.alertes">Alertes</a>' +
         '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
         '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
@@ -175,8 +175,8 @@
       '</div>',
       '<h3 data-i18n="nav.section_navigation">Navigation</h3>',
       '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>',
-      '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
       '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
+      '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
       '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_qualite">QUALITÉ</span></a>',
