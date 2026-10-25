@@ -477,14 +477,16 @@
       "24h": "Dernières heures",
       "week": "Cette semaine",
       "month": "Ce mois-ci",
-      "year": "Cette année"
+      "year": "Cette année",
+      "total": "Total"
     },
     "range_sub": {
       "today": "Les 3 Unes les plus saillantes des 24 dernières heures (indice 24h)",
       "24h": "Le top 10 des 24 dernières heures (indice 24h)",
       "week": "Le top 10 depuis lundi",
       "month": "Le top 10 du mois",
-      "year": "Le top 10 de l'année"
+      "year": "Le top 10 de l'année",
+      "total": "Le top 10 depuis le début du suivi des événements (23 juillet 2026)"
     },
     "meta_range": "{blocks} blocs en Une · {points} points",
     "blocks": "{blocks} blocs",
@@ -500,7 +502,8 @@
     "gain_tip": {
       "week": "Points gagnés depuis lundi",
       "month": "Points gagnés ce mois-ci",
-      "year": "Points gagnés cette année"
+      "year": "Points gagnés cette année",
+      "total": "Points gagnés depuis le début du suivi"
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
     "title_from": {
@@ -508,10 +511,22 @@
       "last": "Le titre affiché est celui de la dernière apparition ({label})."
     },
     "header_index24h": "Indice 24h",
-    "trend_up_tip": "Gagne {n} rang(s) : {prev}e à la période précédente, {now}e maintenant",
-    "trend_down_tip": "Perd {n} rang(s) : {prev}e à la période précédente, {now}e maintenant",
-    "trend_stable_tip": "Même rang qu'à la période précédente ({now}e)",
-    "trend_new_tip": "Nouvelle histoire : absente du top 10 de la période précédente",
-    "trend_return_tip": "De retour : histoire déjà vue, absente du top 10 de la période précédente"
+    "trend_up_tip": "Gagne {n} rang(s) depuis hier : {prev}e → {now}e",
+    "trend_down_tip": "Perd {n} rang(s) depuis hier : {prev}e → {now}e",
+    "trend_stable_tip": "Même rang qu'hier ({now}e)",
+    "trend_new_tip": "Nouvelle histoire : absente du classement d'hier",
+    "trend_return_tip": "De retour dans le top 10 : {prev}e hier",
+    "nav_label": {
+      "week": "Semaine du {date}",
+      "total": "Depuis le début"
+    },
+    "nav_desc": {
+      "day": "Indice 24h de la Vitrine, au dernier bloc de 4h",
+      "day_past": "Indice 24h au dernier bloc de la journée",
+      "week": "Points cumulés du lundi au dimanche",
+      "month": "Points cumulés du mois",
+      "year": "Points cumulés de l'année",
+      "total": "Points cumulés depuis le 23 juillet 2026"
+    }
   }
 }
