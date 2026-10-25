@@ -3,6 +3,7 @@
 <head>
   <script src="./assets/js/config.js"></script>
   <script src="./assets/js/radar-data.js"></script>
+  <script src="./assets/js/evolution-events.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Évolution</title>
@@ -289,6 +290,22 @@
     #mode-tabs-row { display: flex; flex-direction: column; gap: 4px; }
     .mode-tab { padding: 7px 10px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: left; width: 100%; }
     .mode-tab:hover { border-color: rgba(100,150,255,0.6); color: #a0c0ff; }
+    .mode-tab[data-mode="events"].active { background: rgba(120,70,20,0.35); border-color: rgba(255,170,80,0.7); color: #ffe0b8; box-shadow: 0 0 10px rgba(255,160,60,0.22); }
+    /* Mode Événements : légende des grandes histoires dans le panneau de gauche */
+    #left-events-section { display: none; flex-direction: column; gap: 6px; min-height: 0; overflow: auto; pointer-events: all; }
+    body.view-events #left-events-section { display: flex; }
+    body.view-events #left-hot10-section { display: none !important; }
+    #events-legend-list { display: flex; flex-direction: column; gap: 5px; }
+    .evt-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border: 1px solid rgba(90,130,250,0.18); border-radius: 5px; background: rgba(8,18,48,0.5); cursor: pointer; transition: border-color 0.15s, background 0.15s, opacity 0.15s; }
+    .evt-row:hover, .evt-row.focused { border-color: rgba(140,180,255,0.6); background: rgba(14,28,70,0.7); }
+    .evt-row.dimmed { opacity: 0.45; }
+    .evt-rank { flex: 0 0 18px; height: 18px; border-radius: 50%; color: #00000f; font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .evt-main { flex: 1; min-width: 0; }
+    .evt-title { font-size: 11px; line-height: 1.3; color: rgba(225,235,255,0.95); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .evt-meta { font-size: 9px; color: rgba(130,165,220,0.7); margin-top: 2px; }
+    .evt-link { flex: 0 0 auto; color: rgba(140,180,255,0.7); text-decoration: none; font-size: 12px; padding: 0 2px; }
+    .evt-link:hover { color: #fff; }
+    .evt-empty { font-size: 11px; color: rgba(140,170,220,0.65); padding: 10px 4px; font-style: italic; }
     .mode-tab[data-mode="ranked"].active { background: rgba(40,80,180,0.35); border-color: rgba(120,180,255,0.7); color: #d0e8ff; box-shadow: 0 0 10px rgba(80,130,255,0.25); }
     .mode-tab[data-mode="tracking"].active { background: rgba(20,72,52,0.38); border-color: rgba(80,200,140,0.65); color: rgba(140,230,185,0.95); box-shadow: 0 0 10px rgba(60,180,110,0.22); }
     /* Track button (panneau articles) */
@@ -639,9 +656,14 @@
 <div id="left-panel">
     <div id="mode-tabs" class="lpanel-section">
       <div id="mode-tabs-row">
+        <button class="mode-tab" data-mode="events" type="button" data-i18n="evolution.mode_events">ÉVÉNEMENTS</button>
         <button class="mode-tab" data-mode="ranked" type="button" data-i18n="evolution.mode_hot10">HOT 10</button>
         <button class="mode-tab" data-mode="tracking" type="button" data-i18n="evolution.mode_search">Recherche</button>
       </div>
+    </div>
+    <div id="left-events-section">
+      <div id="events-legend-head" class="lpanel-label"></div>
+      <div id="events-legend-list"></div>
     </div>
     <div id="left-hot10-section">
       <div id="ranked-search-wrap">
@@ -1133,6 +1155,7 @@
   const trackColorMap = new Map();
   let trackColorSeq = 0;
   let currentMode = 'ranked';
+  let rankedView = 'events'; // sous-vue du mode classement : 'events' (défaut) ou 'objects'
   let evoMaxVal = 1;
   let rankedHoverIdx = null;
   let selectedPeriodIdx = null;
@@ -1786,6 +1809,7 @@
   }
 
   function renderRankedLegend(series, hoverIdx) {
+    if (currentMode === 'ranked' && rankedView === 'events') return;
     const list = document.getElementById('ranked-legend-list');
     const periodEl = document.getElementById('ranked-legend-period');
     if (!list) return;
@@ -2510,7 +2534,31 @@
     return { major: label, minor: '' };
   }
 
+  // Fenêtre de la vue, en blocs, pour le module événements (veille exclue ; blocs
+  // futurs du jour gardés pour l'axe ; semaine+ = tous les blocs des jours).
+  function eventsWindowPeriods() {
+    if (rankedGranularity === 'total') return periods.map(p => ({ key: p.key, future: false }));
+    const out = [];
+    getRankedWindowPeriods().forEach(p => {
+      if (p.isVeille) return;
+      if (p.isDay && Array.isArray(p.periodKeys)) p.periodKeys.forEach(k => out.push({ key: k, future: false }));
+      else out.push({ key: p.key, future: !!p.isFuture, blockStart: p.blockStart });
+    });
+    return out;
+  }
+  function renderEventsView() {
+    const canvas = document.getElementById('evo-canvas');
+    if (!canvas || !window.radarEvents) return;
+    const rect = canvas.getBoundingClientRect();
+    const slot = rankedSlots[rankedSlotIdx];
+    window.radarEvents.render({
+      canvas, country: currentCountry, gran: rankedGranularity,
+      periods: eventsWindowPeriods(), slotLabel: slot?.label || '',
+      layout: getRankedChartLayout(rect), stars: STARS
+    });
+  }
   function renderRankedChart(gd, hoverIdx = null, skipLegend = false) {
+    if (currentMode === 'ranked' && rankedView === 'events') { renderEventsView(); return; }
     if (rankedGranularity === 'day') { renderDayModeChart(gd, hoverIdx, skipLegend); return; }
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
@@ -3179,6 +3227,13 @@
   }
 
   function setMode(mode) {
+    // 'events' et 'ranked' partagent la navigation du classement ; seule la vue change.
+    if (mode === 'events' || mode === 'ranked') {
+      rankedView = mode === 'events' ? 'events' : 'objects';
+      mode = 'ranked';
+      if (window.radarEvents) window.radarEvents.reset();
+    }
+    document.body.classList.toggle('view-events', mode === 'ranked' && rankedView === 'events');
     // Sauvegarder l'index courant avant de changer de mode
     if (currentMode === 'ranked') graphIdx = currentIdx;
     else tsIdx = currentIdx;
@@ -3190,7 +3245,8 @@
     clearRankedSeriesCache();
     document.body.classList.toggle('mode-ranked', mode === 'ranked');
     document.body.classList.toggle('mode-tracking', mode === 'tracking');
-    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    const activeTab = mode === 'ranked' ? (rankedView === 'events' ? 'events' : 'ranked') : mode;
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === activeTab));
 
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
@@ -3268,10 +3324,12 @@
   // Evolution canvas events
   const evoCanvas = document.getElementById('evo-canvas');
   evoCanvas.addEventListener('mousemove', e => {
+    if (currentMode === 'ranked' && rankedView === 'events') { window.radarEvents && window.radarEvents.hover(e.clientX, e.clientY); return; }
     if (currentMode === 'tracking') evoChartHoverAt(e.clientX, e.clientY);
     else rankedChartHoverAt(e.clientX, e.clientY);
   });
   evoCanvas.addEventListener('mouseleave', () => {
+    if (currentMode === 'ranked' && rankedView === 'events') { window.radarEvents && window.radarEvents.hover(null); document.getElementById('evo-tooltip').style.display = 'none'; return; }
     if (currentMode === 'tracking') renderEvolutionChart(null);
     else {
       rankedHoverIdx = null;
@@ -3282,6 +3340,7 @@
     document.getElementById('evo-tooltip').style.display = 'none';
   });
   evoCanvas.addEventListener('click', e => {
+    if (currentMode === 'ranked' && rankedView === 'events') { window.radarEvents && window.radarEvents.click(e.clientX, e.clientY); return; }
     if (currentMode === 'ranked') {
       const period = periods[currentIdx];
       const gd = getGD(currentCountry, period?.key);
@@ -3574,8 +3633,8 @@
   applyTimelineHeat(currentCountry);
   loadPeriod(currentCountry, currentIdx);
 
-  // Mode par défaut: classement évolutif
-  setMode('ranked');
+  // Mode par défaut : Événements (les grandes histoires) ; ?mode=objets pour le HOT 10
+  setMode((new URLSearchParams(window.location.search).get('mode') || '').toLowerCase() === 'objets' ? 'ranked' : 'events');
   renderTrackedList();
 
   // ── Timer live : EN DIRECT avance chaque 30s ─────────────────────────────

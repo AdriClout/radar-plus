@@ -224,7 +224,14 @@
     "following": "✓ Suivi",
     "previously_section": "Précédemment à la une",
     "object_unavailable": "Objet indisponible",
-    "no_articles_found": "Aucun article trouvé pour cet objet."
+    "no_articles_found": "Aucun article trouvé pour cet objet.",
+    "mode_events": "ÉVÉNEMENTS",
+    "events_head": "Les grandes histoires · {label}",
+    "events_usa": "Pas d'événements saillants pour les États-Unis (panel de 2 médias). Choisissez QC ou CAN.",
+    "events_empty": "Aucun événement saillant dans cette période.",
+    "events_peak": "sommet {v} pts · {when}",
+    "events_cumul": "{v} pts au cumul",
+    "events_open": "Ouvrir l'article représentatif"
   },
   "alertes": {
     "title": "Alertes",
