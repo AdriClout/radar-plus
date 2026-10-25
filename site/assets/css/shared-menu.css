@@ -789,7 +789,13 @@ body.has-site-bar .nav-toggle { display: none; }
   border: 1px solid rgba(90, 140, 255, 0.24); border-radius: 6px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); z-index: 240;
 }
-.site-bar-dropdown.open .site-bar-dropdown-menu { display: flex; }
+.site-bar-dropdown.open .site-bar-dropdown-menu, .site-bar-dropdown.hoverable:hover .site-bar-dropdown-menu { display: flex; }
+/* « Accueil » : le bouton est un lien (va à l'accueil), le menu liste ses modules */
+.site-bar-home .site-bar-dropdown-btn { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+.site-bar-home .site-bar-dropdown-menu { min-width: 200px; }
+/* Ancres des modules de l'accueil : dégager le menu (et le bandeau) */
+#aune, #hot20 { scroll-margin-top: calc(var(--site-bar-h, 58px) + 12px); }
+body.has-alert-bar #aune, body.has-alert-bar #hot20 { scroll-margin-top: calc(var(--alert-bar-h, 32px) + var(--site-bar-h, 58px) + 12px); }
 .site-bar-dropdown-menu a {
   font-family: 'Space Mono', monospace; font-size: 12.5px; letter-spacing: 0.3px;
   text-transform: none; color: #d6e2ff; text-decoration: none;

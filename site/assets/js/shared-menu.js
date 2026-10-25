@@ -86,7 +86,15 @@
         '<span class="site-bar-beta" aria-hidden="true">BETA</span>' +
       '</a>' +
       '<nav class="site-bar-nav" data-i18n-aria-label="nav.main_nav_aria" aria-label="Navigation principale">' +
-        '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>' +
+        '<div class="site-bar-dropdown site-bar-home hoverable">' +
+          '<a href="./index.html" data-page="index.html" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.home">Accueil</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</a>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./index.html#aune" data-i18n="nav.home_une">La Une des Unes</a>' +
+            '<a href="./index.html#hot20" data-i18n="nav.home_hot20">Hot 20</a>' +
+          '</div>' +
+        '</div>' +
         '<a href="./evolution.html" data-page="evolution.html" data-i18n="nav.evolution">Évolution</a>' +
         '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
         '<a href="./alertes.html" data-page="alertes.html" data-i18n="nav.alertes">Alertes</a>' +
@@ -123,19 +131,31 @@
       var dd = current.closest('.site-bar-dropdown');
       if (dd) dd.classList.add('current');
     }
-    // Menu déroulant « À propos » : clic (et clavier) ; se ferme au clic ailleurs.
-    var ddBtn = bar.querySelector('.site-bar-dropdown-btn');
-    var ddWrap = bar.querySelector('.site-bar-dropdown');
-    function setDropdown(open) {
-      ddWrap.classList.toggle('open', open);
-      ddBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    // Menus déroulants : « À propos » s'ouvre au clic ; « Accueil » s'ouvre au survol
+    // (hoverable, CSS) et son bouton reste un lien vers l'accueil. Les deux se ferment
+    // au clic ailleurs et à Échap.
+    var ddWraps = Array.prototype.slice.call(bar.querySelectorAll('.site-bar-dropdown'));
+    function setDropdown(wrap, open) {
+      wrap.classList.toggle('open', open);
+      var b = wrap.querySelector('.site-bar-dropdown-btn');
+      if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
-    ddBtn.addEventListener('click', function(e) { e.stopPropagation(); setDropdown(!ddWrap.classList.contains('open')); });
-    document.addEventListener('click', function(e) { if (!ddWrap.contains(e.target)) setDropdown(false); });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') setDropdown(false); });
+    ddWraps.forEach(function(wrap) {
+      var b = wrap.querySelector('.site-bar-dropdown-btn');
+      if (!b || wrap.classList.contains('hoverable')) return;
+      b.addEventListener('click', function(e) { e.stopPropagation(); setDropdown(wrap, !wrap.classList.contains('open')); });
+    });
+    document.addEventListener('click', function(e) { ddWraps.forEach(function(w) { if (!w.contains(e.target)) setDropdown(w, false); }); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') ddWraps.forEach(function(w) { setDropdown(w, false); }); });
+    // Au clavier, le menu Accueil s'ouvre quand un de ses éléments a le focus.
+    ddWraps.filter(function(w) { return w.classList.contains('hoverable'); }).forEach(function(w) {
+      w.addEventListener('focusin', function() { setDropdown(w, true); });
+      w.addEventListener('focusout', function() { setTimeout(function() { if (!w.contains(document.activeElement)) setDropdown(w, false); }, 0); });
+    });
+    function setDropdownAll(open) { ddWraps.forEach(function(w) { setDropdown(w, open); }); }
     var rep = bar.querySelector('.site-bar-report-link');
     if (rep) rep.addEventListener('click', function(e) {
-      e.preventDefault(); setDropdown(false);
+      e.preventDefault(); setDropdownAll(false);
       if (typeof window.__radarIssueReporterOpen === 'function') window.__radarIssueReporterOpen();
     });
     return bar;

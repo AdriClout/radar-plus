@@ -33,7 +33,9 @@
     "badge_object": "OBJET",
     "badge_monitoring": "QUALITÉ",
     "badge_archive": "ARCHIVE",
-    "alert_marker": "!"
+    "alert_marker": "!",
+    "home_une": "La Une des Unes",
+    "home_hot20": "Hot 20"
   },
   "alertbar": {
     "label": "ALERTE",
@@ -509,6 +511,16 @@
       "month": "Points gagnés ce mois-ci",
       "year": "Points gagnés cette année"
     },
-    "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)"
+    "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
+    "title_from": {
+      "peak": "Le titre affiché est celui de ce bloc ({label}).",
+      "last": "Le titre affiché est celui de la dernière apparition ({label})."
+    },
+    "header_index24h": "Indice 24h",
+    "trend_up_tip": "Gagne {n} rang(s) : {prev}e à la période précédente, {now}e maintenant",
+    "trend_down_tip": "Perd {n} rang(s) : {prev}e à la période précédente, {now}e maintenant",
+    "trend_stable_tip": "Même rang qu'à la période précédente ({now}e)",
+    "trend_new_tip": "Nouvelle histoire : absente du top 10 de la période précédente",
+    "trend_return_tip": "De retour : histoire déjà vue, absente du top 10 de la période précédente"
   }
 }
