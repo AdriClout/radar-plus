@@ -401,6 +401,16 @@
         align-items: flex-start;
       }
     }
+    /* Mobile : les rangées de périodes passent à la ligne (« Total » était coupé),
+       le navigateur de dates prend toute la largeur et ses flèches restent visibles. */
+    @media (max-width: 700px) {
+      .hot20-section { padding: 0 16px 80px; }
+      .controls-left { width: 100%; min-width: 0; }
+      .country-tabs, .granularity-tabs { flex-wrap: wrap; }
+      .week-nav { width: 100%; }
+      .week-label { min-width: 0; flex: 1; }
+      .week-label-interval { white-space: normal; }
+    }
     .week-label-date {
       font-family: var(--orbitron); font-size: 14px; color: #e8f0ff; letter-spacing: 1px;
     }
