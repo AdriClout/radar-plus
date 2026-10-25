@@ -1927,10 +1927,21 @@ function auneBlockLabel(key, lang) {
   return day + ' · ' + hour(start) + '–' + hour(end);
 }
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
+// Média déduit du domaine de l'article quand la fiche ne le porte pas.
+var AUNE_MEDIA_DOMAINS = { 'radio-canada.ca': 'RCI', 'tvanouvelles.ca': 'TVA', 'lapresse.ca': 'LAP', 'journaldemontreal.com': 'JDM',
+  'ledevoir.com': 'LED', 'montrealgazette.com': 'MG', 'cbc.ca': 'CBC', 'ctvnews.ca': 'CTV', 'theglobeandmail.com': 'GAM',
+  'globalnews.ca': 'GN', 'nationalpost.com': 'NP', 'thestar.com': 'TTS', 'cnn.com': 'CNN', 'foxnews.com': 'FXN', 'vice.com': 'VS' };
+function auneMediaFromUrl(url) {
+  try {
+    var host = new URL(url).hostname.replace(/^www\./, '');
+    var hit = Object.keys(AUNE_MEDIA_DOMAINS).find(function(d) { return host === d || host.endsWith('.' + d); });
+    return hit ? AUNE_MEDIA_DOMAINS[hit] : host.split('.').slice(-2, -1)[0].toUpperCase().slice(0, 4);
+  } catch (e) { return ''; }
+}
 function auneHeadlines(c, ev, max) {
   var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, max) : [];
-  if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
-  return arts;
+  if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || auneMediaFromUrl(c.url), title: c.title }];
+  return arts.map(function(a) { return a.media_id ? a : Object.assign({}, a, { media_id: auneMediaFromUrl(a.url) }); });
 }
 // Clic sur un titre ou une illustration : un média au hasard parmi ceux qui ont
 // couvert l'histoire (comme la Vitrine et le bandeau d'alerte).
