@@ -33,7 +33,9 @@
     "badge_object": "OBJECT",
     "badge_monitoring": "QUALITY",
     "badge_archive": "ARCHIVE",
-    "alert_marker": "!"
+    "alert_marker": "!",
+    "home_une": "La Une des Unes",
+    "home_hot20": "Hot 20"
   },
   "alertbar": {
     "label": "ALERT",
@@ -502,6 +504,16 @@
       "month": "Points gained this month",
       "year": "Points gained this year"
     },
-    "open_random": "Open one of the outlets that covered this front page (at random)"
+    "open_random": "Open one of the outlets that covered this front page (at random)",
+    "title_from": {
+      "peak": "The title shown is the one from that block ({label}).",
+      "last": "The title shown is the one from the latest appearance ({label})."
+    },
+    "header_index24h": "24h index",
+    "trend_up_tip": "Up {n} rank(s): {prev} in the previous period, {now} now",
+    "trend_down_tip": "Down {n} rank(s): {prev} in the previous period, {now} now",
+    "trend_stable_tip": "Same rank as in the previous period ({now})",
+    "trend_new_tip": "New story: absent from the previous period's top 10",
+    "trend_return_tip": "Back: a story seen before, absent from the previous period's top 10"
   }
 }

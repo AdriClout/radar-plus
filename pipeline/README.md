@@ -75,7 +75,7 @@ Régions : `QC` et `CAN` (= `ROC` de la table).
 | `events/index.json` | seuils par bande (`block`, `sum24h`), bandes FR/EN, périodes, `dates` par région, `latest_period` |
 | `events/latest.json` | par région : `period`, `events` (top 3 du dernier bloc, avec manchettes) et `current` (storylines du cumul 24 h courant, triées, avec `band24h`) → accueil « À la Une » |
 | `events/{QC\|CAN}/{AAAA-MM-JJ}.json` | `periods[key] = [événement…]` : `id`, `storyline`, `title`, `text`, `issue*`, `index`, `band`, `rank`, `outlets`, `media_ids`, `articles[]` (titre, url, média, minutes), `url`, `media`, `first_seen`, `convergence` |
-| `events/storylines/{région}/{AAAA}.json` | fiches storylines : `series` (indice par bloc), `sum24h` (cumul par bloc), `band24h`, `peak`, `n_blocks`, `first_key`/`last_key` → future page Événements et Classement |
+| `events/storylines/{région}/{AAAA}.json` | fiches storylines : `series` (indice par bloc), `sum24h` (cumul par bloc), `band24h`, `peak`, `peak_key`, `n_blocks`, `first_key`/`last_key`, `url`/`media`/`last_event_id` (manchette la plus récente), `title_first`/`title_peak`/`title_last` (titre à la première apparition, au pic, à la dernière apparition ; `title` = `title_last`) → La Une des Unes (pic dans les vues cumulatives, dernière apparition dans les vues 24h) |
 
 Cadrage d'affichage (rapport PR #46) : par bloc, 1 à 3 événements suffisent ; sur le
 cumul 24 h, top 3 au Québec et top 5 au Canada couvrent « Modérée+ ». Les manchettes
