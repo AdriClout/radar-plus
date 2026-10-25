@@ -1168,17 +1168,26 @@
   // Grille des blocs de 4h en heure locale, DÉRIVÉE des clés de périodes (les blocs du
   // pipeline sont UTC 03-07, 07-11, … soit 23h, 3h, 7h, 11h, 15h, 19h à Montréal en EDT).
   // Un jour local = les blocs étiquetés à sa date (le bloc de 23h appartient au jour où il commence).
+  // La grille a changé au fil du temps (avant : UTC 04-08 = 0h local). On lit donc la
+  // grille RÉCENTE (6 derniers blocs) pour aujourd'hui, et chaque jour passé garde la
+  // sienne (gridOfPeriods sur ses propres blocs). ACTIVE_DAY_STARTS = grille du jour affiché.
   let DAY_BLOCK_STARTS = [3, 7, 11, 15, 19, 23];
-  function computeDayBlockStarts(sourcePeriods) {
+  let ACTIVE_DAY_STARTS = DAY_BLOCK_STARTS;
+  function gridOfPeriods(list) {
     const set = new Set();
-    (sourcePeriods || []).forEach(p => { const ls = localBlockStartFromPeriodKey(p.key); if (Number.isFinite(ls)) set.add(ls); });
-    if (set.size) DAY_BLOCK_STARTS = [...set].sort((a, b) => a - b);
+    (list || []).forEach(p => { const ls = localBlockStartFromPeriodKey(p.key); if (Number.isFinite(ls)) set.add(ls); });
+    return set.size ? [...set].sort((a, b) => a - b) : null;
+  }
+  function computeDayBlockStarts(sourcePeriods) {
+    const g = gridOfPeriods((sourcePeriods || []).slice(-6));
+    if (g && g.length === 6) DAY_BLOCK_STARTS = g;
+    ACTIVE_DAY_STARTS = DAY_BLOCK_STARTS;
   }
   // Début du bloc courant dans cette grille (-1 si aucun bloc du jour n'est encore commencé).
   function currentLocalBlockStart(now) {
     const h = now.getHours();
     let cur = -1;
-    DAY_BLOCK_STARTS.forEach(st => { if (st <= h) cur = st; });
+    ACTIVE_DAY_STARTS.forEach(st => { if (st <= h) cur = st; });
     return cur;
   }
   const EN_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
@@ -1326,8 +1335,10 @@
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
       const currentBlockStart = currentLocalBlockStart(now);
-      // Les 6 blocs du jour, dans la grille réelle du pipeline (voir DAY_BLOCK_STARTS)
-      const starts = DAY_BLOCK_STARTS;
+      // Les 6 blocs du jour : grille récente pour aujourd'hui, sinon celle des blocs du jour.
+      const ownGrid = isToday ? null : gridOfPeriods(slot.periods);
+      ACTIVE_DAY_STARTS = (ownGrid && ownGrid.length === 6) ? ownGrid : DAY_BLOCK_STARTS;
+      const starts = ACTIVE_DAY_STARTS;
       const byStart = new Map();
       slot.periods.forEach(p => {
         const localStart = localBlockStartFromPeriodKey(p.key);
@@ -2190,7 +2201,7 @@
     const s = blockStartFromPeriod(p);
     // Chaque bloc est placé à la fin de sa fenêtre de 4h, en heures comptées depuis le
     // début du premier bloc du jour (grille réelle) ; la veille reste à 0.
-    return Number.isFinite(s) ? s + 4 - (DAY_BLOCK_STARTS[0] || 0) : 0;
+    return Number.isFinite(s) ? s + 4 - (ACTIVE_DAY_STARTS[0] || 0) : 0;
   }
 
   function renderDayModeChart(gd, hoverIdx = null, skipLegend = false) {
@@ -2228,7 +2239,7 @@
     const isToday = slot?.key === todayKey;
     // Heure « en direct » dans l'axe du graphique : heures comptées depuis le début du
     // premier bloc du jour (grille réelle), comme dayBlockHour.
-    const liveHour = ((now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600) - (DAY_BLOCK_STARTS[0] || 0) + 24) % 24;
+    const liveHour = ((now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600) - (ACTIVE_DAY_STARTS[0] || 0) + 24) % 24;
 
     const allVals = series.flatMap(s => s.data.filter(v => v !== null));
     const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
@@ -2296,7 +2307,7 @@
     // Labels X
     // Étiquettes à la FIN de chaque bloc de la grille réelle (7h, 11h, 15h, 19h, 23h, 3h en EDT).
     const DAY_LABELS = [{ h: 0, label: 'Hier', align: 'left' }].concat(
-      DAY_BLOCK_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[(st + 4) % 24], align: i === DAY_BLOCK_STARTS.length - 1 ? 'right' : 'center' }))
+      ACTIVE_DAY_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[(st + 4) % 24], align: i === ACTIVE_DAY_STARTS.length - 1 ? 'right' : 'center' }))
     );
     DAY_LABELS.forEach(({ h, label, align }) => {
       const x = xOfHour(h);
