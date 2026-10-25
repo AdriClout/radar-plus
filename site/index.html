@@ -228,7 +228,15 @@
     .aune-body { flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
     /* Cases 2 et 3 : le corps prend toute la hauteur, les manchettes se collent au bas. */
     .aune-card.aune-secondary .aune-body { flex: 1 1 auto; }
-    .aune-card.aune-secondary .aune-headlines { margin-top: auto; }
+    .aune-card.aune-secondary .aune-headlines, .aune-card.aune-secondary .aune-chips { margin-top: auto; }
+    .aune-card.aune-secondary .aune-title { -webkit-line-clamp: 4; }
+    .aune-chips { margin-top: auto; padding-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .aune-media-chip {
+      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1px; text-decoration: none;
+      padding: 4px 9px; border: 1px solid rgba(90,140,255,0.4); border-radius: 4px; color: #cfe1ff;
+      background: rgba(20,40,110,0.35); transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .aune-media-chip:hover { background: rgba(40,70,160,0.6); border-color: var(--accent); color: #fff; }
     .aune-headlines { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
     .aune-headlines-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
     .aune-headline a { color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.4; display: flex; gap: 10px; align-items: baseline; min-width: 0; }
@@ -1894,13 +1902,12 @@ function auneCardHtml(c, i, byStory, region, lang, T) {
   var ev = byStory[c.storyline];
   var band = c.band || 'aucune';
   var issue = auneIssue(c, lang);
-  var arts = auneHeadlines(c, ev, 3);
+  // Puces des médias qui ont couvert (un par média, dernier article scrapé), pas de titres.
+  var arts = auneHeadlines(c, ev, 12);
   var headlines = arts.length
-    ? (i === 0 ? '<div class="aune-headlines-title">' + escapeHtml(T('aune.headlines')) + '</div>' : '') +
-      '<ul class="aune-headlines">' + arts.map(function(a) {
-        return '<li class="aune-headline"><a href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener">' +
-          '<span class="aune-media">' + escapeHtml(a.media_id || '') + '</span><span>' + escapeHtml(a.title || a.url) + '</span></a></li>';
-      }).join('') + '</ul>'
+    ? '<div class="aune-chips">' + arts.map(function(a) {
+        return '<a class="aune-media-chip" href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener" title="' + escapeHtml(a.title || '').replace(/"/g, '&quot;') + '">' + escapeHtml(a.media_id || '') + '</a>';
+      }).join('') + '</div>'
     : '';
   var urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
   var art = (i === 0 && c.storyline)
