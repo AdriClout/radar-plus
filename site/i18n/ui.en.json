@@ -501,6 +501,7 @@
       "week": "Points gained since Monday",
       "month": "Points gained this month",
       "year": "Points gained this year"
-    }
+    },
+    "open_random": "Open one of the outlets that covered this front page (at random)"
   }
 }

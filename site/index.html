@@ -77,9 +77,8 @@
 
     /* ========== HERO (viewport) ========== */
     .hero {
-      position: relative; display: flex;
+      position: relative; min-height: 100vh; display: flex;
       flex-direction: column; align-items: center; justify-content: center;
-      padding: 40px 0 60px; /* 80 px (bas du Hot 20) + 40 = 120 px, comme La Une → Hot 20 */
       z-index: 1; overflow: hidden;
     }
 
@@ -159,7 +158,7 @@
     /* ========== LA UNE DES UNES (événements saillants) ========== */
     .aune-section {
       position: relative; z-index: 1;
-      padding: 84px 40px 120px; /* 1re section : dégage le menu ; respire avant le Hot 20 */
+      padding: 84px 40px 220px; /* 1re section : dégage le menu ; grand espace avant le Hot 20, comme avant le robot */
       max-width: 1000px; margin: 0 auto;
     }
     .aune-controls { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 0 0 16px; }
@@ -198,6 +197,9 @@
     .aune-band.band-elevee { background: #f2c94c; }
     .aune-band.band-tres_elevee { background: #ff9f43; }
     .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
+    .aune-clickable { cursor: pointer; }
+    .aune-title.aune-clickable:hover, .aune-row-title.aune-clickable:hover { color: #fff; text-decoration: underline; }
+    .aune-art.aune-clickable:hover img { filter: brightness(1.08); }
     .aune-title {
       font-size: 16px; line-height: 1.3; font-weight: 700; color: #e8f0ff; margin: 0;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
@@ -224,6 +226,9 @@
       padding: 3px 7px; border-radius: 4px; max-width: 70%; text-align: right;
     }
     .aune-body { flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+    /* Cases 2 et 3 : le corps prend toute la hauteur, les manchettes se collent au bas. */
+    .aune-card.aune-secondary .aune-body { flex: 1 1 auto; }
+    .aune-card.aune-secondary .aune-headlines { margin-top: auto; }
     .aune-headlines { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
     .aune-headlines-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
     .aune-headline a { color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.4; display: flex; gap: 10px; align-items: baseline; min-width: 0; }
@@ -239,10 +244,18 @@
       display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; gap: 12px; align-items: center;
       padding: 7px 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; min-height: 0;
     }
-    .aune-row-rank { font-family: var(--orbitron); font-size: 15px; color: var(--accent); }
+    .aune-row-rank { font-family: var(--orbitron); font-size: 15px; color: rgba(80,130,255,0.55); }
+    /* Top 3 mis en évidence : or, argent, bronze, comme le Hot 20 */
+    .aune-row.rank-1, .aune-row.rank-2, .aune-row.rank-3 { background: rgba(14,24,64,0.85); }
+    .aune-row.rank-1 { border-color: rgba(255,200,60,0.55); box-shadow: 0 0 14px rgba(255,200,60,0.12); }
+    .aune-row.rank-2 { border-color: rgba(200,210,230,0.45); }
+    .aune-row.rank-3 { border-color: rgba(200,150,80,0.5); }
+    .aune-row.rank-1 .aune-row-rank { color: rgba(255,200,60,0.95); font-size: 18px; }
+    .aune-row.rank-2 .aune-row-rank { color: rgba(200,210,230,0.85); font-size: 17px; }
+    .aune-row.rank-3 .aune-row-rank { color: rgba(200,150,80,0.9); font-size: 16px; }
+    .aune-row.rank-1 .aune-row-title { font-size: 15px; }
     .aune-row-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
     .aune-row-title { font-size: 13.5px; font-weight: 700; color: #e8f0ff; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .aune-row-title:hover { text-decoration: underline; color: #fff; }
     .aune-row-meta { display: flex; gap: 10px; align-items: center; font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; }
     .aune-row-meta .aune-band { font-size: 8px; padding: 2px 6px; }
     .aune-row-score { width: 170px; }
@@ -251,7 +264,7 @@
     @media (max-width: 700px) { .aune-row-score { width: 120px; } }
     .aune-empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
     .aune-foot { margin-top: 8px; text-align: right; font-family: var(--mono); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); min-height: 14px; }
-    @media (max-width: 700px) { .aune-section { padding: 76px 16px 80px; } .aune-grid { --aune-h: auto; } .aune-art { min-height: 180px; } }
+    @media (max-width: 700px) { .aune-section { padding: 76px 16px 120px; } .aune-grid { --aune-h: auto; } .aune-art { min-height: 180px; } }
 
     .hot20-section {
       position: relative; z-index: 1;
@@ -1667,10 +1680,44 @@ function auneYears() {
 function auneIs24h(range) { return range === 'today' || range === '24h'; }
 function auneReady(region, range) {
   if (!auneStore.index) return false;
+  if (!auneDayDates().every(function(d) { return !!auneStore.storylines['day:' + region + ':' + d]; })) return false;
   return auneYears().every(function(y) { return !!auneStore.storylines[region + '/' + y]; });
+}
+function auneDayDates() {
+  var d = eventsLatestData && eventsLatestData.by_region && eventsLatestData.by_region.QC && eventsLatestData.by_region.QC.period
+    ? eventsLatestData.by_region.QC.period.date : new Date().toISOString().slice(0, 10);
+  var t = Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
+  return [d, new Date(t - 86400e3).toISOString().slice(0, 10)];
+}
+function auneArticlesByStory(region) {
+  var out = {}, since = Date.now() - 24 * 3600e3;
+  auneDayDates().forEach(function(date) {
+    var f = auneStore.storylines['day:' + region + ':' + date]; if (!f || !f.periods) return;
+    Object.keys(f.periods).sort().reverse().forEach(function(key) {
+      if (periodStartUtc(key) < since) return;
+      (f.periods[key] || []).forEach(function(ev) {
+        if (!ev || !ev.storyline) return;
+        var o = out[ev.storyline] || (out[ev.storyline] = { articles: [], seen: {} });
+        (ev.articles || []).forEach(function(a) {
+          if (!a || !a.url || o.seen[a.media_id]) return; // un média par manchette, le plus récent
+          o.seen[a.media_id] = true; o.articles.push(a);
+        });
+      });
+    });
+  });
+  return out;
 }
 function auneLoad(region, range) {
   var jobs = [];
+  auneDayDates().forEach(function(date) {
+    var k = 'day:' + region + ':' + date;
+    if (!auneStore.storylines[k] && !auneStore.loading[k]) {
+      auneStore.loading[k] = window.radarData.eventsDay(region, date)
+        .then(function(f) { auneStore.storylines[k] = f; })
+        .catch(function() { auneStore.storylines[k] = { periods: {} }; });
+    }
+    if (auneStore.loading[k]) jobs.push(auneStore.loading[k]);
+  });
   if (!auneStore.index) {
     if (!auneStore.loading.index) auneStore.loading.index = window.radarData.eventsIndex().then(function(i) { auneStore.index = i; });
     jobs.push(auneStore.loading.index);
@@ -1748,11 +1795,23 @@ function auneHeadlines(c, ev, max) {
   if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
   return arts;
 }
+// Clic sur un titre ou une illustration : un média au hasard parmi ceux qui ont
+// couvert l'histoire (comme la Vitrine et le bandeau d'alerte).
+function auneUrls(c, ev) {
+  var urls = (ev && Array.isArray(ev.articles) ? ev.articles : []).map(function(a) { return a && a.url; }).filter(Boolean);
+  if (!urls.length && c.url) urls = [c.url];
+  return urls;
+}
+function auneRandomAttr(urls, T) {
+  if (!urls.length) return '';
+  // escapeHtml ne touche pas aux guillemets : on les encode pour l'attribut.
+  return ' data-urls="' + escapeHtml(JSON.stringify(urls)).replace(/"/g, '&quot;') + '" title="' + escapeHtml(T('aune.open_random')).replace(/"/g, '&quot;') + '"';
+}
 function auneCardHtml(c, i, byStory, region, lang, T) {
   var ev = byStory[c.storyline];
   var band = c.band || 'aucune';
   var issue = auneIssue(c, lang);
-  var arts = auneHeadlines(c, ev, i === 0 ? 3 : 1);
+  var arts = auneHeadlines(c, ev, 3);
   var headlines = arts.length
     ? (i === 0 ? '<div class="aune-headlines-title">' + escapeHtml(T('aune.headlines')) + '</div>' : '') +
       '<ul class="aune-headlines">' + arts.map(function(a) {
@@ -1760,8 +1819,9 @@ function auneCardHtml(c, i, byStory, region, lang, T) {
           '<span class="aune-media">' + escapeHtml(a.media_id || '') + '</span><span>' + escapeHtml(a.title || a.url) + '</span></a></li>';
       }).join('') + '</ul>'
     : '';
+  var urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
   var art = (i === 0 && c.storyline)
-    ? '<figure class="aune-art"><img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp') +
+    ? '<figure class="aune-art' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '><img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp') +
       '" alt="" loading="lazy" onload="this.parentNode.classList.add(\'has-art\')" onerror="this.parentNode.classList.add(\'no-art\'); this.remove()">' +
       '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>'
     : '';
@@ -1772,7 +1832,7 @@ function auneCardHtml(c, i, byStory, region, lang, T) {
         '<span class="aune-band band-' + escapeHtml(band) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.band24h_tip')) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>' +
         (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') +
       '</div>' +
-      '<h3 class="aune-title">' + escapeHtml(c.title) + '</h3>' +
+      '<h3 class="aune-title' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' + escapeHtml(c.title) + '</h3>' +
       '<div class="aune-meta">' +
         '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + escapeHtml(T('aune.index24h_label')) + ' : <b>' + c.points.toFixed(1) + '</b> ' + escapeHtml(T('aune.points')) + '</span>' +
         ' · <span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>' +
@@ -1781,11 +1841,12 @@ function auneCardHtml(c, i, byStory, region, lang, T) {
     '</div>' +
   '</article>';
 }
-function auneRowHtml(c, i, region, lang, T) {
+function auneRowHtml(c, i, region, lang, T, byStory) {
   var issue = auneIssue(c, lang);
   var title = escapeHtml(c.title);
-  var titleHtml = c.url ? '<a class="aune-row-title" href="' + escapeHtml(c.url) + '" target="_blank" rel="noopener">' + title + '</a>'
-                        : '<span class="aune-row-title">' + title + '</span>';
+  var urls = auneUrls(c, byStory && byStory[c.storyline]);
+  var titleHtml = urls.length ? '<span class="aune-row-title aune-clickable"' + auneRandomAttr(urls, T) + '>' + title + '</span>'
+                              : '<span class="aune-row-title">' + title + '</span>';
   var issueHtml = issue ? '<span>' + escapeHtml(issue) + '</span>' : '';
   var peakHtml = '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>';
   var tagHtml, scoreHtml;
@@ -1805,7 +1866,7 @@ function auneRowHtml(c, i, region, lang, T) {
         '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + auneRange)) + '">+' + (c.gain || 0).toFixed(1) + '</span>' +
       '</div>';
   }
-  return '<li class="aune-row">' +
+  return '<li class="aune-row' + (i < 3 ? ' rank-' + (i + 1) : '') + '">' +
     '<span class="aune-row-rank">' + (i + 1) + '</span>' +
     '<div class="aune-row-main">' + titleHtml +
       '<div class="aune-row-meta">' + tagHtml + issueHtml +
@@ -1861,15 +1922,26 @@ function renderALaUne() {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
     return;
   }
-  var byStory = {};
-  ((latest && latest.events) || []).forEach(function(e) { if (e && e.storyline) byStory[e.storyline] = e; });
+  // Manchettes : les blocs des 24 dernières heures (fichiers du jour), sinon le dernier bloc.
+  var byStory = auneArticlesByStory(region);
+  ((latest && latest.events) || []).forEach(function(e) { if (e && e.storyline && !byStory[e.storyline]) byStory[e.storyline] = e; });
   if (auneRange === 'today') {
     grid.innerHTML = items.map(function(it, i) { return auneCardHtml(it, i, byStory, region, lang, T); }).join('');
   } else {
-    grid.innerHTML = '<ol class="aune-list">' + items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T); }).join('') + '</ol>';
+    grid.innerHTML = '<ol class="aune-list">' + items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory); }).join('') + '</ol>';
   }
 }
 (function() {
+  var grid = document.getElementById('aune-grid');
+  if (grid) grid.addEventListener('click', function(e) {
+    if (e.target.closest('a')) return; // manchettes et puces : liens normaux
+    var el = e.target.closest('.aune-clickable');
+    if (!el || !el.dataset.urls) return;
+    var urls = [];
+    try { urls = JSON.parse(el.dataset.urls); } catch (err) { urls = []; }
+    if (!urls.length) return;
+    window.open(urls[Math.floor(Math.random() * urls.length)], '_blank', 'noopener');
+  });
   var tabs = document.getElementById('aune-tabs');
   var countries = document.getElementById('aune-country-tabs');
   if (tabs) tabs.addEventListener('click', function(e) {
