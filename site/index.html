@@ -830,6 +830,8 @@
       font-family: var(--orbitron); font-size: 9px; letter-spacing: 2px;
       color: var(--muted); text-transform: uppercase;
     }
+    .article-section-header-first { margin-top: 4px; border-top: 0; }
+    .article-item-when { margin-left: 10px; font-family: var(--mono); font-weight: 400; text-transform: none; letter-spacing: 0.3px; color: var(--muted); }
     .article-period-label {
       margin: 14px 0 0;
       font-size: 10px; color: rgba(120,160,255,0.55);
@@ -2781,9 +2783,28 @@ async function loadTicker() {
 }
 
 /* ===== ARTICLE PANEL ===== */
+// « en Une jusqu'à 17h20 · 3h50 » : fin du passage en Une (heure de Montréal) et durée.
+function articleWhenText(art) {
+  var T = window.t || function(k) { return k; };
+  var parts = [];
+  if (art.until) {
+    var d = new Date(art.until);
+    if (!isNaN(d)) {
+      var hm = new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Montreal', hour: '2-digit', minute: '2-digit', hour12: false }).format(d).replace(':', 'h');
+      parts.push(T('article_panel.until', { time: hm }));
+    }
+  }
+  var m = Number(art.minutes);
+  if (m > 0) {
+    var h = Math.floor(m / 60), mn = Math.round(m % 60);
+    parts.push(h ? h + 'h' + (mn ? String(mn).padStart(2, '0') : '') : mn + ' min');
+  }
+  return parts.join(' · ');
+}
 function articleItemHtml(art) {
+  var when = articleWhenText(art);
   return '<a class="article-item" href="' + escapeHtml(art.url || '#') + '" target="_blank" rel="noopener">' +
-    '<div class="article-item-media">' + escapeHtml(art.media_id || '') + '</div>' +
+    '<div class="article-item-media">' + escapeHtml(art.media_id || '') + (when ? '<span class="article-item-when">' + escapeHtml(when) + '</span>' : '') + '</div>' +
     '<div class="article-item-title">' + escapeHtml(art.title || 'Sans titre') + '</div>' +
   '</a>';
 }
@@ -2814,18 +2835,28 @@ function openArticlePanel(node) {
   var currentSlotKeys = {};
   slotKeys.forEach(function(k) { currentSlotKeys[k] = true; });
 
-  /* P\u00e9riode courante : agr\u00e9ger via articles.json (avec fallback inline) */
+  /* P\u00e9riode courante : par bloc de 4h, du plus r\u00e9cent au plus ancien (dit DE QUAND
+     sont les articles), d\u00e9doublonn\u00e9 par URL. */
+  var T = window.t || function(k) { return k; };
   var seenUrls = {};
   var currentArticles = [];
-  slotKeys.forEach(function(pk) {
+  var currentGroups = [];
+  slotKeys.slice().reverse().forEach(function(pk) {
+    var fresh = [];
     getArticlesFor(currentCountry, pk, node.id, null).forEach(function(a) {
-      if (a.url && !seenUrls[a.url]) { seenUrls[a.url] = true; currentArticles.push(a); }
+      if (a.url && !seenUrls[a.url]) { seenUrls[a.url] = true; currentArticles.push(a); fresh.push(a); }
     });
+    if (fresh.length) {
+      var per = allPeriods.find(function(p) { return p.key === pk; });
+      var pf = parsePeriodLabel((per && per.label) || pk);
+      currentGroups.push({ label: pf.date + ' \u00b7 ' + pf.interval, articles: fresh });
+    }
   });
   if (currentArticles.length === 0 && Array.isArray(node.articles)) {
     node.articles.forEach(function(a) {
       if (a.url && !seenUrls[a.url]) { seenUrls[a.url] = true; currentArticles.push(a); }
     });
+    if (currentArticles.length) currentGroups.push({ label: '', articles: currentArticles });
   }
 
   var panelKeys = panelArticleKeys(slotKeys);
@@ -2836,8 +2867,12 @@ function openArticlePanel(node) {
     : currentArticles.length + ' article' + (currentArticles.length === 1 ? '' : 's')
   ) + ' \u00b7 score ' + (node.size || 0).toFixed(1);
 
-  var html = currentArticles.length
-    ? currentArticles.map(articleItemHtml).join('')
+  var slotLabel = (aggregatedSlots.length && aggregatedSlots[currentSlotIdx]) ? (aggregatedSlots[currentSlotIdx].label || '') : '';
+  var html = '<div class="article-section-header article-section-header-first">' + escapeHtml(T('article_panel.current')) + (slotLabel ? ' \u00b7 ' + escapeHtml(slotLabel) : '') + '</div>';
+  html += currentArticles.length
+    ? currentGroups.map(function(g) {
+        return (g.label ? '<div class="article-period-label">' + escapeHtml(window.radarTypo ? window.radarTypo(g.label) : g.label) + '</div>' : '') + g.articles.map(articleItemHtml).join('');
+      }).join('')
     : (articlesLoading
         ? '<p style="color:var(--muted);padding:20px 0;font-size:13px;">Chargement des articles\u2026</p>'
         : '<p style="color:var(--muted);padding:20px 0;font-size:13px;">Aucun article disponible pour cette p\u00e9riode.</p>');
@@ -2865,14 +2900,14 @@ function openArticlePanel(node) {
   }
 
   if (prevGroups.length > 0) {
-    html += '<div class="article-section-header">Pr\u00e9c\u00e9demment</div>';
+    html += '<div class="article-section-header">' + escapeHtml(T('common.previous')) + '</div>';
     prevGroups.forEach(function(g) {
-      html += '<div class="article-period-label">' + escapeHtml(g.label) + '</div>';
+      html += '<div class="article-period-label">' + escapeHtml(window.radarTypo ? window.radarTypo(g.label) : g.label) + '</div>';
       html += g.articles.map(articleItemHtml).join('');
     });
   } else if (articlesLoading) {
-    html += '<div class="article-section-header">Pr\u00e9c\u00e9demment</div>';
-    html += '<p style="color:var(--muted);padding:14px 0;font-size:12px;">Chargement de l\'historique\u2026</p>';
+    html += '<div class="article-section-header">' + escapeHtml(T('common.previous')) + '</div>';
+    html += '<p style="color:var(--muted);padding:14px 0;font-size:12px;">' + escapeHtml(T('common.loading_history')) + '</p>';
   }
 
   body.innerHTML = html;
