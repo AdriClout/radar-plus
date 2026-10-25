@@ -24,8 +24,10 @@
       --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; }
+    /* Pas de défilement latéral sur mobile : iOS Safari ignore overflow-x sur body
+       seul, il faut aussi html ; « clip » ne crée pas de conteneur de défilement. */
+    html { scroll-behavior: smooth; overflow-x: hidden; overflow-x: clip; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; overflow-x: clip; }
 
     /* ========== STARFIELD ========== */
     #stars-canvas {
@@ -41,6 +43,8 @@
       z-index: 3;
       cursor: default;
     }
+    /* Mobile : pas de constellations ni de zones (le dessin est aussi coupé dans drawConstellations). */
+    @media (max-width: 767px) { .cst-zone { display: none; } }
     .cst-zone .cst-tooltip {
       position: absolute;
       pointer-events: none;
@@ -1416,6 +1420,7 @@
   function drawConstellations(time, dt) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    if (vw < 768) return; // mobile : étoiles seulement, pas de constellations (demande d'Adrien)
 
     for (let ci = 0; ci < constellationDefs.length; ci++) {
       const cst = constellationDefs[ci];
