@@ -515,5 +515,9 @@
     "trend_stable_tip": "Same rank as in the previous period ({now})",
     "trend_new_tip": "New story: absent from the previous period's top 10",
     "trend_return_tip": "Back: a story seen before, absent from the previous period's top 10"
+  },
+  "article_panel": {
+    "current": "Current period",
+    "until": "on the front page until {time}"
   }
 }

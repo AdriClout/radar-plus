@@ -106,7 +106,7 @@ def main():
     print(f"Fetching salient_headlines_objects from {history_start}...")
     q2 = f"""
         SELECT country_id, time_interval_utc, media_id, url,
-               headline_stop_utc, extracted_objects
+               headline_stop_utc, headline_minutes, extracted_objects
         FROM "vitrine_datamart-salient_headlines_objects"
         WHERE substr(headline_stop_utc, 1, 10) >= '{history_start}'
     """

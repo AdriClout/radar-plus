@@ -515,5 +515,9 @@
     "trend_stable_tip": "Même rang qu'à la période précédente ({now}e)",
     "trend_new_tip": "Nouvelle histoire : absente du top 10 de la période précédente",
     "trend_return_tip": "De retour : histoire déjà vue, absente du top 10 de la période précédente"
+  },
+  "article_panel": {
+    "current": "Période courante",
+    "until": "en Une jusqu'à {time}"
   }
 }
