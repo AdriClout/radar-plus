@@ -243,7 +243,16 @@ for (rk in c("QC", "ROC")) {
     group_by(sid) |>
     summarise(
       label      = first(na.omit(c(na_if(event_label, ""), NA_character_))),
+      # Trois titres par histoire (le raffineur en écrit un par bloc) :
+      #   title_last  = dernière apparition (bloc le plus récent) — aussi `title`, rétrocompatible ;
+      #   title_peak  = bloc du pic (indice le plus fort) ;
+      #   title_first = première apparition. Le site montre le pic dans les vues
+      #   cumulatives (semaine/mois/année) et la dernière apparition dans les vues 24h.
       title      = first(titre),
+      title_last = first(titre),
+      title_peak = titre[which.max(index)],
+      title_first = titre[which.min(block_ts)],
+      peak_key   = period_key[which.max(index)],
       issue_fr   = first(na.omit(c(main_issue_text_fr, NA_character_))),
       issue_en   = first(na.omit(c(main_issue_text_en, NA_character_))),
       first_key  = min(period_key),
@@ -269,6 +278,10 @@ for (rk in c("QC", "ROC")) {
     stories_by_year[[yr]][[s]] <- list(
       label      = if (!is.na(meta_story$label[j])) meta_story$label[j] else NULL,
       title      = meta_story$title[j],
+      title_last = meta_story$title_last[j],
+      title_peak = meta_story$title_peak[j],
+      title_first = meta_story$title_first[j],
+      peak_key   = meta_story$peak_key[j],
       issue_fr   = if (!is.na(meta_story$issue_fr[j])) meta_story$issue_fr[j] else NULL,
       issue_en   = if (!is.na(meta_story$issue_en[j])) meta_story$issue_en[j] else NULL,
       first_key  = meta_story$first_key[j],
