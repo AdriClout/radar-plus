@@ -814,6 +814,16 @@ body.has-site-bar.has-alert-bar #graph, body.has-site-bar.has-alert-bar #constel
   top: calc(var(--alert-bar-h) + var(--site-bar-h)) !important;
 }
 @media (max-width: 600px) { :root { --site-bar-h: 52px; } }
+/* Pages avec une barre de filtres propre sous le menu (evolution.html) : la barre se
+   place sous le menu, et le contenu plein écran descend d'autant. */
+body.has-site-bar #filter-bar { top: var(--site-bar-h) !important; }
+body.has-site-bar.has-alert-bar #filter-bar { top: calc(var(--alert-bar-h) + var(--site-bar-h)) !important; }
+body.has-site-bar.has-filter-bar #left-panel, body.has-site-bar.has-filter-bar #evolution-view {
+  top: calc(var(--site-bar-h) + var(--filter-bar-h, 0px)) !important;
+}
+body.has-site-bar.has-alert-bar.has-filter-bar #left-panel, body.has-site-bar.has-alert-bar.has-filter-bar #evolution-view {
+  top: calc(var(--alert-bar-h) + var(--site-bar-h) + var(--filter-bar-h, 0px)) !important;
+}
 
 /* Panneau de menu : descend sous le bandeau, pleine largeur. Remplace le tiroir à droite. */
 .side-nav.site-menu-panel {
