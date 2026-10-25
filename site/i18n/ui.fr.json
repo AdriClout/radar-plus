@@ -502,6 +502,10 @@
       "month": "Points gagnés ce mois-ci",
       "year": "Points gagnés cette année"
     },
-    "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)"
+    "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
+    "title_from": {
+      "peak": "Le titre affiché est celui de ce bloc ({label}).",
+      "last": "Le titre affiché est celui de la dernière apparition ({label})."
+    }
   }
 }

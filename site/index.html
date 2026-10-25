@@ -1784,7 +1784,12 @@ function auneRanking(region, range, limit) {
       });
       if (!blocks) return;
       var cur = acc[sid];
-      if (!cur) acc[sid] = { storyline: sid, title: st.title || '', issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
+      // Titre : celui du bloc du pic de l'histoire si ce pic est dans la fenêtre (cohérent
+      // avec le tag « Pic »), sinon celui de la dernière apparition.
+      var peakIn = st.peak_key && periodStartUtc(st.peak_key) >= start && periodStartUtc(st.peak_key) <= now;
+      var ttl = (peakIn && st.title_peak) ? st.title_peak : (st.title_last || st.title || '');
+      if (!cur) acc[sid] = { storyline: sid, title: ttl, titleFrom: peakIn && st.title_peak ? 'peak' : 'last', titleKey: peakIn ? st.peak_key : st.last_key,
+                             issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
       else { cur.points += pts; cur.blocks += blocks; if (peak > cur.peak) cur.peak = peak; }
     });
   });
@@ -1858,7 +1863,10 @@ function auneRowHtml(c, i, region, lang, T, byStory) {
   var titleHtml = urls.length ? '<span class="aune-row-title aune-clickable"' + auneRandomAttr(urls, T) + '>' + title + '</span>'
                               : '<span class="aune-row-title">' + title + '</span>';
   var issueHtml = issue ? '<span>' + escapeHtml(issue) + '</span>' : '';
-  var peakHtml = '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>';
+  var titleTip = c.titleFrom && c.titleKey
+    ? ' ' + T('aune.title_from.' + c.titleFrom, { label: auneBlockLabel(c.titleKey, lang) })
+    : '';
+  var peakHtml = '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>';
   var tagHtml, scoreHtml;
   if (c.is24h) {
     // Dernières heures : la mesure est l'indice 24h de la Vitrine ; le tag est SON niveau.

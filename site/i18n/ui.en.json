@@ -502,6 +502,10 @@
       "month": "Points gained this month",
       "year": "Points gained this year"
     },
-    "open_random": "Open one of the outlets that covered this front page (at random)"
+    "open_random": "Open one of the outlets that covered this front page (at random)",
+    "title_from": {
+      "peak": "The title shown is the one from that block ({label}).",
+      "last": "The title shown is the one from the latest appearance ({label})."
+    }
   }
 }
