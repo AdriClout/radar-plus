@@ -501,6 +501,7 @@
       "week": "Points gagnés depuis lundi",
       "month": "Points gagnés ce mois-ci",
       "year": "Points gagnés cette année"
-    }
+    },
+    "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)"
   }
 }
