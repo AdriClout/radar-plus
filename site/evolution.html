@@ -2226,7 +2226,9 @@
     const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const slot = rankedSlots[rankedSlotIdx];
     const isToday = slot?.key === todayKey;
-    const liveHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+    // Heure « en direct » dans l'axe du graphique : heures comptées depuis le début du
+    // premier bloc du jour (grille réelle), comme dayBlockHour.
+    const liveHour = ((now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600) - (DAY_BLOCK_STARTS[0] || 0) + 24) % 24;
 
     const allVals = series.flatMap(s => s.data.filter(v => v !== null));
     const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
@@ -2292,14 +2294,10 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
-    const DAY_LABELS = [
-      { h: 0, label: 'Hier', align: 'left' },
-      { h: 4, label: '4h', align: 'center' },
-      { h: 8, label: '8h', align: 'center' },
-      { h: 12, label: 'Midi', align: 'center' },
-      { h: 16, label: '16h', align: 'center' },
-      { h: 20, label: '20h', align: 'center' },
-    ];
+    // Étiquettes à la FIN de chaque bloc de la grille réelle (7h, 11h, 15h, 19h, 23h, 3h en EDT).
+    const DAY_LABELS = [{ h: 0, label: 'Hier', align: 'left' }].concat(
+      DAY_BLOCK_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[(st + 4) % 24], align: i === DAY_BLOCK_STARTS.length - 1 ? 'right' : 'center' }))
+    );
     DAY_LABELS.forEach(({ h, label, align }) => {
       const x = xOfHour(h);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
