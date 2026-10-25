@@ -33,7 +33,9 @@
     "badge_object": "OBJET",
     "badge_monitoring": "QUALITÉ",
     "badge_archive": "ARCHIVE",
-    "alert_marker": "!"
+    "alert_marker": "!",
+    "home_une": "La Une des Unes",
+    "home_hot20": "Hot 20"
   },
   "alertbar": {
     "label": "ALERTE",
