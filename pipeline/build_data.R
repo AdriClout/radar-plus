@@ -118,6 +118,18 @@ df_index <- df_index |>
   dplyr::mutate(indice = salience_index * 100)
 cat("  →", n_total, "lignes chargées,", nrow(df_index), "avec salience_index (spec v1) ; première date :",
     as.character(min(df_index$date_utc)), "\n")
+# Un bloc peut être publié deux fois par le raffineur (vu les 26-27 août 2026 :
+# 2 697 objets en copie identique) : chaque objet serait compté deux fois dans
+# les séries. Une ligne par (pays, date, bloc, objet), la plus forte si deux
+# copies différaient — même règle que build_events.R pour les événements.
+n_avant_dedup <- nrow(df_index)
+df_index <- df_index |>
+  dplyr::mutate(.ordre = dplyr::row_number()) |>
+  dplyr::arrange(dplyr::desc(salience_index)) |>
+  dplyr::distinct(country_id, date_utc, time_interval_utc, extracted_objects, .keep_all = TRUE) |>
+  dplyr::arrange(.ordre) |>
+  dplyr::select(-.ordre)
+cat("  →", n_avant_dedup - nrow(df_index), "lignes en double retirées (même pays, bloc et objet)\n")
 
 cat("Lecture de salient_headlines_objects (médias)...\n")
 df_objects <- readr::read_csv(file.path(OUT_DIR, "salient_objects.csv"),
