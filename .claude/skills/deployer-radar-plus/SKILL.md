@@ -115,6 +115,14 @@ exacte à regarder (page, onglet, geste) et attendre son GO ; ne pas ouvrir ni
 fusionner la promotion avant. Seuls les changements invisibles (pipeline,
 workflows, docs, skills) se promeuvent sur vérification technique.
 
+**Une promotion embarque TOUT ce qui attend sur develop**, pas seulement le
+changement qu'on veut publier (vécu le 25 oct. 2026 : un correctif de Sonar
+aurait emmené 67 commits de pages jamais regardés). Avant de proposer une
+promotion, compter l'écart (`git rev-list --count origin/main..origin/develop`)
+et lister les pages touchées (`git diff --stat origin/main origin/develop -- site/`)
+pour qu'Adrien les regarde toutes sur dev d'un seul coup. Ne pas contourner par
+une PR directe vers `main` : le flux reste develop → main.
+
 
 ```bash
 gh pr create --base main --head develop --title "promotion : …" --body-file <corps.md>
