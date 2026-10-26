@@ -52,7 +52,7 @@ NE PAS CONVERTIR
 
 ## TL;DR
 
-Radar+ archive les pages d'accueil de 15 grands médias canadiens et américains **toutes les 10 minutes depuis septembre 2019, en série continue depuis le 17 avril 2023**. Pour chaque sujet — Donald Trump, l'immigration, le climat, Hydro-Québec — un **indice de saillance** combine trois choses : combien de médias le mettent en Une, combien d'articles ils y consacrent, combien de temps il y reste. Le résultat : une carte vivante des priorités médiatiques, qui permet de voir comment un événement monte, dure, puis disparaît — et de comparer les choix d'un média à ceux d'un autre. Radar+ fait partie de la **Vitrine démocratique**, un projet de la CLESSN (Université Laval) qui mesure le pouls de la démocratie sous trois angles : médias, opinion publique et promesses électorales. Les données sont ouvertes, la méthode est documentée, et l'outil est utilisable par tout le monde.
+Radar+ archive les pages d'accueil de 15 grands médias canadiens et américains **depuis septembre 2019 — toutes les 10 minutes et en série continue depuis le 17 avril 2023**. Pour chaque sujet — Donald Trump, l'immigration, le climat, Hydro-Québec — un **indice de saillance** combine trois choses : combien de médias le mettent en Une, combien d'articles ils y consacrent, combien de temps il y reste. Le résultat : une carte vivante des priorités médiatiques, qui permet de voir comment un événement monte, dure, puis disparaît — et de comparer les choix d'un média à ceux d'un autre. Radar+ fait partie de la **Vitrine démocratique**, un projet de la CLESSN (Université Laval) qui mesure le pouls de la démocratie sous trois angles : médias, opinion publique et promesses électorales. Les données sont ouvertes, la méthode est documentée, et l'outil est utilisable par tout le monde.
 
 ---
 
@@ -68,9 +68,9 @@ Pour étudier ce phénomène sérieusement, il faut des **données systématique
 
 ### 2. Comment Radar+ mesure
 
-**Capture continue.** Toutes les 10 minutes, depuis septembre 2019, Radar+ photographie la page d'accueil de chaque média suivi. Aucune interruption, aucun jour manqué — près de sept ans d'archive et plus de **5 millions de captures** cumulées sur 15 médias.
+**Capture continue.** Depuis le 17 avril 2023, Radar+ photographie toutes les 10 minutes la page d'accueil de chaque média suivi (toutes les 5 à 15 minutes auparavant, depuis 2019). Depuis mai 2024, l'archive compte plus de **1,6 million de pages d'accueil**. Les pannes de collecte arrivent, comme pour tout système de ce type : chacune est documentée en direct sur la page [Sonar](sonar.html).
 
-**Identification automatique des objets.** Sur chaque capture, deux modèles d'intelligence artificielle tournant localement entrent en action : un premier repère les **entités nommées** présentes (personnes, lieux, organisations, enjeux), un second les normalise et les harmonise entre français et anglais. Aucun dictionnaire fermé : le système peut détecter des objets émergents qu'aucun chercheur n'aurait pensé à inclure d'avance.
+**Identification automatique des objets.** Toutes les 4 heures, un grand modèle de langue (GPT-4o, d'OpenAI, depuis mai 2025) lit le titre et le texte de chaque Une, en extrait les **objets** présents (personnes, lieux, organisations, enjeux) et les harmonise entre français et anglais. Aucun dictionnaire fermé : le système peut détecter des objets émergents qu'aucun chercheur n'aurait pensé à inclure d'avance. Une chaîne de modèles exécutés sur nos serveurs analyse les mêmes Unes en parallèle; elle sert à la tonalité, et l'équipe la valide pour qu'elle prenne un jour le relais.
 
 **Trois dimensions de la saillance.** Pour chaque objet identifié, on mesure :
 - **la position** sur la page (haut, milieu, bas);
