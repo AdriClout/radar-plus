@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-26T02:20:43+00:00",
+ "genere_le": "2026-10-26T18:01:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -58,7 +58,7 @@
     },
     {
      "debut": "2026-08-10",
-     "fin": "2026-09-17",
+     "fin": "2026-09-16",
      "statut": "surveillance",
      "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; les pages « Le fil électoral » en Une (6 % du temps de Une depuis le 27 août) n'ont que leur introduction : le direct, servi par un encart externe, n'est pas capté (aws-infra#594)",
      "preuve": {
@@ -66,19 +66,19 @@
      }
     },
     {
-     "debut": "2026-09-17",
-     "fin": "2026-10-06",
+     "debut": "2026-09-16",
+     "fin": "2026-10-23",
      "statut": "surveillance",
-     "resume": "En réparation : pendant la campagne électorale québécoise, La Presse a placé un bloc « Campagne électorale » en tête de page ; le sélecteur le sautait et captait l'article au rang 6 (ligne de base 2), signalé par le garde-Une chaque jour du 17 septembre au 5 octobre. Plus signalé après le scrutin du 5 octobre, le bloc ayant disparu. Correctif de sélecteur aws-infra#654 (fusionné le 19 octobre), en production depuis le 23 octobre (aws-infra#657). Les Unes de cette fenêtre sont à reconstruire depuis les pages d'accueil archivées ; les indices de ces jours sont à recalculer au recompute.",
+     "resume": "En réparation : La Presse a placé un bloc thématique en tête de ses grands titres (« Campagne électorale », puis d'autres blocs après le scrutin, comme « Incendie sur une base militaire en Alberta ») ; le sélecteur sautait la carte de tête de ce bloc, du 16 septembre (19 h 55) jusqu'au correctif aws-infra#654, en production le 23 octobre (aws-infra#657). Collecte brute réparée le 26 octobre 2026 : vraie Une retrouvée sur chacune des 1 316 captures fausses à partir des pages d'accueil archivées, validée à l'œil sur les pages rendues ; textes repris de la page d'époque déjà collectée (97), du billet le plus récent du direct à l'heure de la capture (213, fil électoral, débats, match) ou de la page actuelle de l'article (947) ; 59 captures sans texte, déclarées (par exemple l'article du jour du vote, réécrit au fil de la journée). Reste à propager la réparation aux objets et à l'indice.",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une, 17 sept. → 5 oct.) · aws-infra#654 · aws-infra#657"
+      "reference": "aws-refiners#286 (garde-Une, 17 sept. → 5 oct.) · aws-infra#654 · aws-infra#657 · réparation brute du 26 oct. 2026"
      }
     },
     {
-     "debut": "2026-10-06",
+     "debut": "2026-10-23",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — le sélecteur d'origine est redevenu juste au retrait du bloc de campagne, puis le correctif aws-infra#654 est en production depuis le 23 octobre ; un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; les pages « Le fil électoral » en Une n'ont que leur introduction : le direct, servi par un encart externe, n'est pas capté (aws-infra#594)",
+     "resume": "Collecte courante avec le sélecteur corrigé (aws-infra#654, en production depuis le 23 octobre) — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; les directs en Une (fil électoral, matchs) n'ont que leur introduction : le direct, servi par un encart externe (Norkon), n'est pas capté à la collecte (aws-infra#594)",
      "preuve": {
       "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#594 · aws-infra#657"
      }
@@ -488,7 +488,7 @@
     },
     {
      "debut": "2026-08-10",
-     "fin": "2026-09-28",
+     "fin": "2026-09-22",
      "statut": "surveillance",
      "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
@@ -496,19 +496,19 @@
      }
     },
     {
-     "debut": "2026-09-28",
+     "debut": "2026-09-22",
      "fin": "2026-10-23",
      "statut": "surveillance",
-     "resume": "En réparation : Global News a refondu le code de sa page d'accueil (le titre de Une n'est plus un lien) ; le sélecteur retombait sur un article de bas de page, rang 22 à 43 (ligne de base 1), signalé par le garde-Une du 28 septembre au 19 octobre. Correctif de sélecteur aws-infra#654 (fusionné le 19 octobre), en production depuis le 23 octobre (aws-infra#657). Les Unes de cette fenêtre sont à reconstruire depuis les pages d'accueil archivées ; les indices de ces jours sont à recalculer au recompute.",
+     "resume": "En réparation : Global News a refondu le code de sa page d'accueil (le titre de Une n'est plus un lien) ; par intermittence, le sélecteur retombait sur un article plus bas dans la page, du 22 septembre (19 h 25) jusqu'au correctif aws-infra#654, en production le 23 octobre (aws-infra#657). Le garde-Une l'a signalé à partir du 28 septembre. Collecte brute réparée le 26 octobre 2026 : vraie Une retrouvée sur chacune des 1 181 captures fausses à partir des pages d'accueil archivées, validée à l'œil sur les pages rendues ; textes repris de la page d'époque déjà collectée (571) ou de la page actuelle de l'article (579) ; 31 captures sans texte, déclarées (article au gabarit « long format », voir le segment suivant). Reste à propager la réparation aux objets et à l'indice.",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une, 28 sept. → 19 oct.) · aws-infra#654 · aws-infra#657"
+      "reference": "aws-refiners#286 (garde-Une, 28 sept. → 19 oct.) · aws-infra#654 · aws-infra#657 · réparation brute du 26 oct. 2026"
      }
     },
     {
      "debut": "2026-10-23",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante avec le sélecteur corrigé (aws-infra#654, en production depuis le 23 octobre) ; premier contrôle du garde-Une attendu le 24 octobre — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
+     "resume": "Collecte courante avec le sélecteur corrigé (aws-infra#654, en production depuis le 23 octobre) — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; les articles au gabarit « long format » de Global News n'ont que leur chapeau : le sélecteur de texte ne lit pas ce gabarit (constat du 26 octobre 2026, correctif à faire)",
      "preuve": {
       "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#657"
      }
