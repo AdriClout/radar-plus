@@ -255,7 +255,7 @@
 <li>Cadre conceptuel</li>
 <li>Architecture de collecte</li>
 <li>Identification des objets médiatiques</li>
-<li>Mesure de la saillance : trois dimensions</li>
+<li>Mesure de la saillance : la Une, puis trois facettes</li>
 <li>Calcul des indices</li>
 <li>Fenêtres temporelles</li>
 <li>Validation et fiabilité</li>
@@ -288,14 +288,13 @@
 <hr />
 <h2 id="architecture-de-collecte">2. Architecture de collecte</h2>
 <h3 id="capture-continue">2.1 Capture continue</h3>
-<p>Le développement de Radar+ a commencé en <strong>septembre 2018</strong> au sein de la CLESSN. La première version publique a été déployée en <strong>septembre 2019</strong> à l’occasion de l’élection fédérale canadienne, avec un site web dédié et des publications quotidiennes sur les réseaux sociaux. Depuis, un système automatisé photographie <strong>toutes les 10 minutes</strong> la page d’accueil de chaque média suivi. Pour chaque capture, le système conserve :</p>
+<p>Le développement de Radar+ a commencé en <strong>septembre 2018</strong> au sein de la CLESSN; la première collecte publique a été déployée en <strong>septembre 2019</strong> à l’occasion de l’élection fédérale canadienne, avec un site web dédié et des publications quotidiennes sur les réseaux sociaux. Sa collecte a connu quatre générations techniques : une capture toutes les <strong>5 minutes</strong> en 2019 et 2020, environ toutes les <strong>15 minutes</strong> de 2021 à l’automne 2022, puis toutes les <strong>10 minutes</strong> depuis le <strong>17 avril 2023</strong>. Cette date marque le début de la série continue que Radar+ exploite ; la collecte s’était arrêtée de novembre 2022 à avril 2023, et les données antérieures sont conservées à part. Pour chaque capture, le système conserve :</p>
 <ul>
-<li>la <strong>structure HTML</strong> complète de la page;</li>
-<li>la <strong>position relative</strong> de chaque article (coordonnées sur la grille, niveau hiérarchique);</li>
-<li>les <strong>éléments visuels</strong> associés (titre, surtitre, présence d’une photo, taille du bloc);</li>
+<li>la <strong>page d’accueil complète</strong>, telle que le média la servait;</li>
+<li>la <strong>Une</strong> de la page — l’élément éditorial le plus haut et le plus visible — : son adresse, son titre et le texte de l’article;</li>
 <li>l’<strong>horodatage</strong> précis.</li>
 </ul>
-<p>Cette granularité de 10 minutes a été retenue comme compromis entre fidélité à la dynamique éditoriale (les unes peuvent changer plusieurs fois dans une heure lors d’événements vifs) et coûts de stockage. Sur près de sept ans, l’archive cumule plus de <strong>5 millions de captures</strong>.</p>
+<p>Comme la page entière est archivée, la position et la taille de chaque titre restent mesurables après coup; elles ne sont pas encore calculées (voir §4.1). La granularité de 10 minutes est un compromis entre fidélité à la dynamique éditoriale (une Une peut changer plusieurs fois par heure lors d’événements vifs) et coûts de stockage. Depuis mai 2024, l’archive compte plus de <strong>1,6 million de pages d’accueil</strong> (au 11 juillet 2026). La collecte connaît des pannes, comme tout système de ce type : chacune, avec sa durée et son traitement, est documentée en direct sur la page <a href="sonar.html">Sonar</a>.</p>
 <h3 id="médias-suivis">2.2 Médias suivis</h3>
 <p>Au moment de la mise en ligne publique du site, Radar+ collecte les pages d’accueil de <strong>15 médias actifs</strong> répartis comme suit :</p>
 <ul>
@@ -326,32 +325,29 @@
 <li><strong>Lieux</strong> : (ex. <em>Ottawa</em>, <em>Kyiv</em>, <em>Gaza</em>).</li>
 </ul>
 <h3 id="pipeline-dextraction">3.2 Pipeline d’extraction</h3>
-<p>À chaque capture, deux modèles d’intelligence artificielle tournant <strong>entièrement en local</strong> (aucun appel à des API externes, ni à OpenAI ni à Anthropic) traitent les titres et amorces d’articles :</p>
-<ol type="1">
-<li><p><strong>Reconnaissance d’entités nommées</strong> — <strong>GLiNER</strong> (<em>Generalist and Lightweight Model for Named Entity Recognition</em>), modèle de NER ouvert et zero-shot, identifie l’ensemble des entités présentes dans chaque manchette sans s’appuyer sur un dictionnaire fermé. Cette approche permet de détecter des objets émergents — un nouvel acteur politique, une crise inattendue, un mot-valise propre à un événement — qu’aucun chercheur n’aurait pensé à inclure d’avance.</p></li>
-<li><p><strong>Normalisation bilingue</strong> — <strong>Gemma 3</strong>, modèle de langage open-weight de Google DeepMind exécuté localement, harmonise les variantes d’un même objet (<em>Donald J. Trump</em>, <em>Trump</em>, <em>le président américain</em>) et résout les correspondances français-anglais (<em>Cour suprême</em> / <em>Supreme Court</em>; <em>changements climatiques</em> / <em>climate change</em>). Cette étape est cruciale pour comparer rigoureusement la saillance d’un même objet à travers des médias de langues différentes.</p></li>
-</ol>
-<p>L’exécution locale garantit la souveraineté des données, l’absence de dépendance commerciale, la reproductibilité scientifique et une maîtrise complète des coûts de traitement.</p>
+<p>Toutes les 4 heures, le titre et le texte de chaque Une sont analysés par un <strong>grand modèle de langue</strong>, qui en extrait les objets saillants (personnes, enjeux, institutions, lieux) sans s’appuyer sur une liste fermée — ce qui permet de détecter un nouvel acteur ou une crise inattendue. Le même modèle harmonise les variantes d’un objet (<em>Donald J. Trump</em>, <em>Trump</em>, <em>le président américain</em>) et ses correspondances entre le français et l’anglais (<em>Cour suprême</em> / <em>Supreme Court</em>), une étape essentielle pour comparer des médias de langues différentes. Depuis mai 2025, ce modèle est <strong>GPT-4o</strong> (OpenAI).</p>
+<p>Le regroupement des Unes en <strong>événements</strong> (les articles de plusieurs médias qui traitent de la même nouvelle) est confié à <strong>Claude Sonnet 5</strong> (Anthropic) depuis la fin d’août 2026. La série des événements depuis mai 2025 a été recalculée avec ce même modèle, à l’exception de la période du 23 juillet au 26 août 2026, regroupée par GPT-4o.</p>
+<p>Une seconde chaîne, <strong>entièrement locale</strong>, analyse les mêmes Unes en parallèle : <strong>GLiNER</strong>, un modèle ouvert de reconnaissance d’entités, puis <strong>Gemma 3</strong> (Google DeepMind), exécuté sur nos serveurs, pour la normalisation bilingue. Elle sert aujourd’hui à l’analyse de la tonalité. L’objectif de l’équipe est de lui confier aussi l’extraction des objets, pour la souveraineté des données, l’indépendance commerciale et la reproductibilité; ce n’est pas encore le cas, faute d’une validation terminée.</p>
 <h3 id="validation-humaine">3.3 Validation humaine</h3>
-<p>Les modèles font l’objet d’une <strong>validation humaine continue</strong>. Un benchmark d’environ <strong>1 500 phrases annotées manuellement</strong> par l’équipe sert à étalonner les seuils de prédiction des modèles, à mesurer leur taux d’accord avec le jugement humain et à guider les ajustements successifs lors des mises à jour.</p>
+<p>L’extraction des objets est comparée à une <strong>annotation humaine de référence</strong> (environ 300 articles annotés par l’équipe). Ce banc sert à choisir les modèles et à mesurer leur écart au jugement humain; ses résultats et ses limites sont détaillés dans l’article scientifique associé à Radar+, en préparation.</p>
 <hr />
-<h2 id="mesure-de-la-saillance-trois-dimensions">4. Mesure de la saillance : trois dimensions</h2>
-<p>Pour chaque objet identifié sur une capture donnée, trois dimensions sont mesurées.</p>
-<h3 id="position">4.1 Position</h3>
-<p>La <strong>position</strong> indique où l’objet apparaît sur la page d’accueil. Elle est calculée à partir des coordonnées de l’élément HTML correspondant et hiérarchisée selon la logique éditoriale du média (zone supérieure, bloc principal, colonnes secondaires, bas de page). Un objet en haut de page reçoit une pondération supérieure à un objet en bas. Cette dimension correspond directement au postulat de <strong>saillance verticale</strong> (§1.2).</p>
-<h3 id="taille">4.2 Taille</h3>
-<p>La <strong>taille</strong> mesure l’espace que l’objet occupe : longueur du titre, présence et taille d’une photo associée, dimension du bloc HTML. Un <em>gros titre</em> avec image principale n’a pas le même poids qu’une simple brève dans une colonne.</p>
+<h2 id="mesure-de-la-saillance-trois-dimensions">4. Mesure de la saillance : la Une, puis trois facettes</h2>
+<p>La saillance d’un objet se mesure en deux temps : Radar+ ne regarde que la <strong>Une</strong> de chaque média, puis trois facettes décrivent la place que l’objet y occupe — sa <strong>diffusion</strong> entre les médias, son <strong>volume</strong> d’articles et sa <strong>durée</strong> en Une.</p>
+<h3 id="position">4.1 Proéminence : la Une seulement</h3>
+<p>Pour chaque média et chaque capture, Radar+ ne retient que la Une : l’élément éditorial le plus haut et le plus visible de la page, quel que soit l’ordre du code HTML. La proéminence est donc incluse par construction — tout objet mesuré était au sommet de la page — mais elle n’est pas graduée : un objet en deuxième position ou en bas de page n’est pas compté. Cette définition correspond au postulat de <strong>saillance verticale</strong> (§1.2) dans sa forme la plus stricte. Les cas particuliers sont tranchés par des règles écrites et vérifiés sur les pages archivées : un bloc thématique placé en tête (par exemple « Campagne électorale ») a pour Une sa carte de tête; un direct en tête (fil électoral, match) a pour Une son billet le plus récent au moment de la capture.</p>
+<h3 id="taille">4.2 Diffusion et volume</h3>
+<p>La <strong>diffusion</strong> compte combien de médias d’une même région portent l’objet en Une pendant le même bloc de 4 heures; le <strong>volume</strong>, combien d’articles distincts le mentionnent, au plus trois par média, pour qu’un média qui multiplie les textes sur un sujet ne pèse pas davantage. Leur calcul exact est donné au §5.2.</p>
 <h3 id="durée">4.3 Durée</h3>
-<p>La <strong>durée</strong> capte la persistance de l’objet dans le temps. Comme les captures sont effectuées toutes les 10 minutes, on peut suivre précisément combien de temps un objet reste affiché sur la page d’accueil — quelques minutes, plusieurs heures, des journées entières — et reconstituer sa <strong>trajectoire</strong> complète. Concrètement, chaque manchette se voit attribuer un nombre de minutes en Une (<code>headline_minutes</code>), qui sert ensuite de matière première au calcul des indices (§5).</p>
+<p>La <strong>durée</strong> capte la persistance de l’objet dans le temps. Comme les captures sont effectuées toutes les 10 minutes, on peut suivre précisément combien de temps un objet reste affiché sur la page d’accueil — quelques minutes, plusieurs heures, des journées entières — et reconstituer sa <strong>trajectoire</strong> complète. Concrètement, chaque Une se voit attribuer un nombre de minutes en Une dans le bloc, qui sert ensuite de matière première au calcul des indices (§5). Limite connue : un article qui quitte la Une puis y revient dans le même bloc est compté en continu, ce qui surestime d’environ 1 % le temps total en Une.</p>
 <h3 id="pour-les-chercheurs-les-indicateurs-textuels-complémentaires">4.4 Pour les chercheurs : les indicateurs textuels complémentaires</h3>
 <blockquote>
-<p>En parallèle des trois dimensions visuelles ci-dessus (position, taille, durée), les travaux de recherche associés à Radar+ développent des <strong>indicateurs textuels</strong> plus fins, calculés à partir du contenu des manchettes et articles : <strong>la durée de vie</strong> (life span — combien de temps un sujet persiste dans la couverture), <strong>le ton</strong> (tone — orientation positive, neutre ou négative du traitement) et <strong>l’intensité</strong> (intensity — densité de couverture sur une période donnée). Ces indicateurs alimentent les analyses scientifiques approfondies (voir §10) et seront progressivement intégrés à l’interface publique. Ils ne remplacent pas les dimensions visuelles, mais les complètent : les unes mesurent ce que le média <strong>affiche</strong>, les autres ce que la couverture <strong>dit</strong>.</p>
+<p>En parallèle de ces mesures, les travaux de recherche associés à Radar+ développent des <strong>indicateurs textuels</strong> plus fins, calculés à partir du contenu des manchettes et articles : <strong>la durée de vie</strong> (life span — combien de temps un sujet persiste dans la couverture), <strong>le ton</strong> (tone — orientation positive, neutre ou négative du traitement) et <strong>l’intensité</strong> (intensity — densité de couverture sur une période donnée). Ces indicateurs alimentent les analyses scientifiques approfondies (voir §10) et seront progressivement intégrés à l’interface publique. Ils ne remplacent pas ces mesures, mais les complètent : les unes mesurent ce que le média <strong>affiche</strong>, les autres ce que la couverture <strong>dit</strong>.</p>
 </blockquote>
 <hr />
 <h2 id="calcul-des-indices">5. Calcul des indices</h2>
-<p>L’unité de base du calcul est le <strong>bloc de 4 heures (UTC)</strong>. La journée est divisée en six blocs (00–04, 04–08, 08–12, 12–16, 16–20, 20–24); pour chaque bloc, pour chaque pays, pour chaque objet identifié, un indice absolu est calculé. Ce bloc de 4 heures est suffisamment fin pour suivre l’actualité en quasi-temps réel, et suffisamment large pour absorber la variabilité éditoriale entre les médias.</p>
+<p>L’unité de base du calcul est le <strong>bloc de 4 heures</strong>. Depuis le 15 juillet 2026, la journée est découpée sur l’heure de Montréal en six blocs (23 h–3 h, 3 h–7 h, 7 h–11 h, 11 h–15 h, 15 h–19 h, 19 h–23 h); avant cette date, les blocs suivaient l’heure universelle (0 h–4 h, 4 h–8 h, etc.); pour chaque bloc, pour chaque pays, pour chaque objet identifié, un indice absolu est calculé. Ce bloc de 4 heures est suffisamment fin pour suivre l’actualité en quasi-temps réel, et suffisamment large pour absorber la variabilité éditoriale entre les médias.</p>
 <h3 id="pondération-par-média">5.1 Pondération par média</h3>
-<p>Tous les médias ne traitent pas leurs manchettes de la même manière. Certains laissent une nouvelle en Une plusieurs heures, d’autres font tourner leur page d’accueil rapidement. Pour rendre les comparaisons équitables, Radar+ calcule pour chaque média sa <strong>durée moyenne en Une</strong> (<code>mean_time</code>, en minutes) sur une fenêtre roulante de 3 mois.</p>
+<p>Tous les médias ne traitent pas leurs manchettes de la même manière. Certains laissent une nouvelle en Une plusieurs heures, d’autres font tourner leur page d’accueil rapidement. Pour rendre les comparaisons équitables, Radar+ calcule pour chaque média sa <strong>durée moyenne en Une</strong> (<code>mean_time</code>, en minutes) estimée une fois sur environ trois mois de données, puis fixée (elle n’est pas recalculée en continu). Ce temps moyen décrit un séjour complet en Une, alors que la durée comptée dans un bloc s’arrête à 4 heures : la facette Durée avantage donc un peu les médias aux Unes courtes. L’effet sur les classements reste faible — avec un temps moyen estimé sur les séjours tronqués, l’événement n° 1 d’un bloc ne change pas dans 90 à 95 % des cas.</p>
 <p>À titre indicatif, voici un instantané représentatif de ces durées moyennes :</p>
 <table>
 <thead>
@@ -643,7 +639,7 @@
 <li>Conceptual framework</li>
 <li>Collection architecture</li>
 <li>Identification of media objects</li>
-<li>Measuring saliency: three dimensions</li>
+<li>Measuring saliency: the front page, then three facets</li>
 <li>Index calculation</li>
 <li>Time windows</li>
 <li>Validation and reliability</li>
@@ -675,14 +671,13 @@
 <hr />
 <h2 id="en-architecture">2. Collection architecture</h2>
 <h3 id="en-capture-continue">2.1 Continuous capture</h3>
-<p>Radar+ development began in <strong>September 2018</strong> within CLESSN. The first public version was deployed in <strong>September 2019</strong> for the Canadian federal election, with a dedicated website and daily social media posts. Since then, an automated system photographs <strong>every 10 minutes</strong> the home page of every tracked outlet. For each capture, the system retains:</p>
+<p>Radar+ development began in <strong>September 2018</strong> within CLESSN; the first public collection was deployed in <strong>September 2019</strong> for the Canadian federal election, with a dedicated website and daily social media posts. Its collection has gone through four technical generations: one capture every <strong>5 minutes</strong> in 2019 and 2020, roughly every <strong>15 minutes</strong> from 2021 to fall 2022, then every <strong>10 minutes</strong> since <strong>17 April 2023</strong>. That date marks the start of the continuous series Radar+ relies on; collection stopped from November 2022 to April 2023, and earlier data are kept separately. For each capture, the system retains:</p>
 <ul>
-<li>the full <strong>HTML structure</strong> of the page;</li>
-<li>the <strong>relative position</strong> of each article (grid coordinates, hierarchical level);</li>
-<li>the associated <strong>visual elements</strong> (title, kicker, presence of a photo, block size);</li>
+<li>the <strong>full home page</strong>, as the outlet served it;</li>
+<li>the page’s <strong>front-page story</strong> — the highest and most visible editorial item —: its address, its headline and the article text;</li>
 <li>the precise <strong>timestamp</strong>.</li>
 </ul>
-<p>This 10-minute granularity is a compromise between fidelity to editorial dynamics (front pages can change several times in an hour during fast-moving events) and storage costs. Across nearly seven years, the archive accumulates more than <strong>5 million captures</strong>.</p>
+<p>Because the whole page is archived, the position and size of every headline remain measurable after the fact; they are not computed yet (see §4.1). The 10-minute granularity is a compromise between fidelity to editorial dynamics (a front page can change several times an hour during fast-moving events) and storage costs. Since May 2024, the archive holds more than <strong>1.6 million home pages</strong> (as of 11 July 2026). Collection suffers outages, like any system of this kind: each one, with its duration and how it was handled, is documented live on the <a href="sonar.html">Sonar</a> page.</p>
 <h3 id="en-medias-suivis">2.2 Tracked outlets</h3>
 <p>At the time of the public site’s release, Radar+ collects the home pages of <strong>15 active outlets</strong> distributed as follows:</p>
 <ul>
@@ -713,32 +708,29 @@
 <li><strong>Places</strong>: (e.g., <em>Ottawa</em>, <em>Kyiv</em>, <em>Gaza</em>).</li>
 </ul>
 <h3 id="en-pipeline">3.2 Extraction pipeline</h3>
-<p>For each capture, two AI models running <strong>entirely locally</strong> (no calls to external APIs, neither OpenAI nor Anthropic) process headlines and article leads:</p>
-<ol type="1">
-<li><p><strong>Named entity recognition</strong> — <strong>GLiNER</strong> (<em>Generalist and Lightweight Model for Named Entity Recognition</em>), an open zero-shot NER model, identifies all entities in each headline without relying on a closed dictionary. This approach detects emerging objects — a new political actor, an unexpected crisis, a portmanteau specific to an event — that no researcher would have thought to include in advance.</p></li>
-<li><p><strong>Bilingual normalization</strong> — <strong>Gemma 3</strong>, an open-weight language model from Google DeepMind run locally, harmonizes variants of the same object (<em>Donald J. Trump</em>, <em>Trump</em>, <em>the U.S. president</em>) and resolves French–English correspondences (<em>Cour suprême</em> / <em>Supreme Court</em>; <em>changements climatiques</em> / <em>climate change</em>). This step is crucial to rigorously compare the saliency of the same object across outlets in different languages.</p></li>
-</ol>
-<p>Local execution guarantees data sovereignty, the absence of commercial dependency, scientific reproducibility, and full control over processing costs.</p>
+<p>Every 4 hours, the headline and text of each front-page story are analyzed by a <strong>large language model</strong>, which extracts the salient objects (people, issues, institutions, places) without relying on a closed list — so a new actor or an unexpected crisis can be detected. The same model harmonizes the variants of an object (<em>Donald J. Trump</em>, <em>Trump</em>, <em>the U.S. president</em>) and its French–English correspondences (<em>Cour suprême</em> / <em>Supreme Court</em>), an essential step to compare outlets in different languages. Since May 2025, this model is <strong>GPT-4o</strong> (OpenAI).</p>
+<p>Grouping front pages into <strong>events</strong> (articles from several outlets covering the same story) is done by <strong>Claude Sonnet 5</strong> (Anthropic) since late August 2026. The event series since May 2025 was recomputed with the same model, except for 23 July to 26 August 2026, grouped by GPT-4o.</p>
+<p>A second, <strong>fully local</strong> chain analyzes the same front pages in parallel: <strong>GLiNER</strong>, an open named-entity recognition model, then <strong>Gemma 3</strong> (Google DeepMind), run on our own servers, for bilingual normalization. It is currently used for tone analysis. The team’s goal is to entrust it with object extraction as well, for data sovereignty, commercial independence and reproducibility; this is not the case yet, as its validation is not finished.</p>
 <h3 id="en-validation">3.3 Human validation</h3>
-<p>The models are subject to <strong>continuous human validation</strong>. A benchmark of about <strong>1,500 manually annotated sentences</strong> is used to calibrate model prediction thresholds, measure their level of agreement with human judgment, and guide successive adjustments during updates.</p>
+<p>Object extraction is compared with a <strong>human reference annotation</strong> (about 300 articles annotated by the team). This benchmark is used to choose models and to measure their gap with human judgment; its results and limits are detailed in the scientific article associated with Radar+, in preparation.</p>
 <hr />
-<h2 id="en-mesure-saillance">4. Measuring saliency: three dimensions</h2>
-<p>For each object identified on a given capture, three dimensions are measured.</p>
-<h3 id="en-position">4.1 Position</h3>
-<p>The <strong>position</strong> indicates where the object appears on the home page. It is computed from the coordinates of the corresponding HTML element and ranked according to the outlet’s editorial logic (top zone, main block, secondary columns, bottom of page). An object at the top of the page receives a higher weighting than one at the bottom. This dimension corresponds directly to the <strong>vertical saliency</strong> postulate (§1.2).</p>
-<h3 id="en-taille">4.2 Size</h3>
-<p>The <strong>size</strong> measures the space the object occupies: title length, presence and size of an associated photo, dimension of the HTML block. A <em>banner headline</em> with a main image does not weigh the same as a simple blurb in a column.</p>
+<h2 id="en-mesure-saillance">4. Measuring saliency: the front page, then three facets</h2>
+<p>An object’s saliency is measured in two steps: Radar+ only looks at each outlet’s <strong>front-page story</strong>, then three facets describe the place the object holds there — its <strong>diffusion</strong> across outlets, its <strong>volume</strong> of articles and its <strong>duration</strong> on the front page.</p>
+<h3 id="en-position">4.1 Prominence: the front page only</h3>
+<p>For each outlet and each capture, Radar+ keeps only the front-page story: the highest and most visible editorial item on the page, whatever the order of the HTML code. Prominence is therefore built in — every measured object was at the top of the page — but it is not graded: an object in second position or at the bottom of the page is not counted. This definition matches the <strong>vertical saliency</strong> postulate (§1.2) in its strictest form. Special cases are settled by written rules and checked on archived pages: a thematic block placed at the top (for instance “Election campaign”) has its lead card as the front-page story; a live feed at the top (election live blog, game) has its most recent post at capture time as the front-page story.</p>
+<h3 id="en-taille">4.2 Diffusion and volume</h3>
+<p><strong>Diffusion</strong> counts how many outlets of the same region carry the object on their front page during the same 4-hour block; <strong>volume</strong>, how many distinct articles mention it, at most three per outlet, so that an outlet multiplying stories on a topic does not weigh more. Their exact calculation is given in §5.2.</p>
 <h3 id="en-duree">4.3 Duration</h3>
-<p>The <strong>duration</strong> captures the object’s persistence over time. Since captures occur every 10 minutes, we can precisely track how long an object remains on the home page — a few minutes, several hours, full days — and reconstruct its complete <strong>trajectory</strong>. Concretely, each headline is assigned a number of front-page minutes (<code>headline_minutes</code>), which then becomes the raw material for index calculation (§5).</p>
+<p>The <strong>duration</strong> captures the object’s persistence over time. Since captures occur every 10 minutes, we can precisely track how long an object remains on the home page — a few minutes, several hours, full days — and reconstruct its complete <strong>trajectory</strong>. Concretely, each front-page story is assigned a number of front-page minutes within the block, which then becomes the raw material for index calculation (§5). Known limit: an article that leaves the front page and comes back within the same block is counted continuously, which overstates total front-page time by about 1%.</p>
 <h3 id="en-textuels">4.4 For researchers: complementary textual indicators</h3>
 <blockquote>
-<p>Alongside the three visual dimensions above (position, size, duration), the research work associated with Radar+ develops finer <strong>textual indicators</strong>, computed from the content of headlines and articles: <strong>life span</strong> (how long a topic persists in coverage), <strong>tone</strong> (positive, neutral or negative orientation of treatment), and <strong>intensity</strong> (density of coverage over a given period). These indicators feed in-depth scientific analyses (see §10) and will progressively be integrated into the public interface. They do not replace the visual dimensions but complement them: the former measure what the outlet <strong>displays</strong>, the latter what the coverage <strong>says</strong>.</p>
+<p>Alongside these measures, the research work associated with Radar+ develops finer <strong>textual indicators</strong>, computed from the content of headlines and articles: <strong>life span</strong> (how long a topic persists in coverage), <strong>tone</strong> (positive, neutral or negative orientation of treatment), and <strong>intensity</strong> (density of coverage over a given period). These indicators feed in-depth scientific analyses (see §10) and will progressively be integrated into the public interface. They do not replace these measures but complement them: the former measure what the outlet <strong>displays</strong>, the latter what the coverage <strong>says</strong>.</p>
 </blockquote>
 <hr />
 <h2 id="en-calcul-indices">5. Index calculation</h2>
-<p>The base unit of calculation is the <strong>4-hour block (UTC)</strong>. The day is divided into six blocks (00–04, 04–08, 08–12, 12–16, 16–20, 20–24); for each block, for each country, for each identified object, an absolute index is calculated. This 4-hour block is fine-grained enough to follow the news in near real-time, and broad enough to absorb editorial variability across outlets.</p>
+<p>The base unit of calculation is the <strong>4-hour block</strong>. Since 15 July 2026, the day is divided on Montreal time into six blocks (11 pm–3 am, 3–7 am, 7–11 am, 11 am–3 pm, 3–7 pm, 7–11 pm); before that date, blocks followed universal time (0–4, 4–8, etc.); for each block, for each country, for each identified object, an absolute index is calculated. This 4-hour block is fine-grained enough to follow the news in near real-time, and broad enough to absorb editorial variability across outlets.</p>
 <h3 id="en-ponderation">5.1 Outlet weighting</h3>
-<p>Not all outlets treat their headlines the same way. Some leave a story on the front for several hours, others rotate their home page rapidly. To make comparisons fair, Radar+ computes for each outlet its <strong>average front-page duration</strong> (<code>mean_time</code>, in minutes) over a rolling 3-month window.</p>
+<p>Not all outlets treat their headlines the same way. Some leave a story on the front for several hours, others rotate their home page rapidly. To make comparisons fair, Radar+ computes for each outlet its <strong>average front-page duration</strong> (<code>mean_time</code>, in minutes) estimated once on about three months of data, then fixed (it is not recomputed continuously). This average describes a complete stay on the front page, whereas the duration counted within a block stops at 4 hours: the Duration facet therefore slightly favours outlets with short-lived front pages. The effect on rankings stays small — with an average estimated on truncated stays, the top event of a block is unchanged in 90 to 95% of cases.</p>
 <p>As an indicative snapshot, here are these average durations:</p>
 <table>
 <thead>
