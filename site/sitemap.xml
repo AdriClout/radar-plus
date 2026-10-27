@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Pages publiques de Radar+ (celles du menu, plus la présentation).
+     Adresses sans « .html » : Pages redirige /page.html vers /page. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://radarplus.org/</loc></url>
+  <url><loc>https://radarplus.org/evolution</loc></url>
+  <url><loc>https://radarplus.org/constellation</loc></url>
+  <url><loc>https://radarplus.org/alertes</loc></url>
+  <url><loc>https://radarplus.org/unes</loc></url>
+  <url><loc>https://radarplus.org/statistiques</loc></url>
+  <url><loc>https://radarplus.org/sonar</loc></url>
+  <url><loc>https://radarplus.org/methodologie</loc></url>
+  <url><loc>https://radarplus.org/radarplus</loc></url>
+  <url><loc>https://radarplus.org/presentation</loc></url>
+  <url><loc>https://radarplus.org/acces-donnees</loc></url>
+  <url><loc>https://radarplus.org/partenaires</loc></url>
+</urlset>
