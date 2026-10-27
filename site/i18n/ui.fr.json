@@ -61,7 +61,7 @@
     "error": "Échec de l'envoi. Réessaie dans quelques instants.",
     "context_prefix": "Contexte: ",
     "default_section": "Navigation Radar+",
-    "token_missing": "Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l'envoi."
+    "token_missing": "Le signalement est momentanément hors ligne. Merci de réessayer plus tard."
   },
   "common": {
     "loading": "Chargement…",
