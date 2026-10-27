@@ -5,7 +5,8 @@
 # - Exclut les JSON générés (ils vivent dans R2, #52) et un éventuel CNAME (reliquat GitHub Pages).
 # - N'injecte AUCUN secret : tout ce qui est déployé est lu par n'importe quel
 #   visiteur (un jeton GitHub y a été publié du 16 mai au 27 oct. 2026).
-# - En dev : _headers avec X-Robots-Tag: noindex (site de travail, pas indexé).
+# - Garde les en-têtes de sécurité de site/_headers ; en dev, y ajoute
+#   X-Robots-Tag: noindex (site de travail, pas indexé).
 set -euo pipefail
 
 env="${1:?usage: preparer-site.sh <dev|prod> <dossier>}"
@@ -36,8 +37,15 @@ find "${out}" -maxdepth 1 -name '*.html' -print0 | xargs -0 sed -i.bak -E \
 find "${out}" -name '*.html.bak' -delete
 echo "Ressources versionnées : ?v=${version}"
 
+# En-têtes de sécurité : site/_headers (CSP, HSTS, cadres interdits…), servis
+# par Pages dans les deux environnements. En dev, on ajoute noindex à la règle /*.
+if ! grep -q '^  Content-Security-Policy:' "${out}/_headers" 2>/dev/null; then
+  echo "::error::_headers absent ou sans Content-Security-Policy : le site partirait sans ses en-têtes de sécurité" >&2
+  exit 1
+fi
 if [ "${env}" = "dev" ]; then
-  printf '/*\n  X-Robots-Tag: noindex\n' > "${out}/_headers"
+  awk '{ print } $0 == "/*" { print "  X-Robots-Tag: noindex" }' "${out}/_headers" > "${out}/_headers.tmp"
+  mv "${out}/_headers.tmp" "${out}/_headers"
 fi
 
 # Garde-fous : jamais de JSON générés ni de CNAME dans un déploiement Pages.

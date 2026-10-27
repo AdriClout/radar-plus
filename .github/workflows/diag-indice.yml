@@ -11,6 +11,9 @@ on:
       - pipeline/fetch_data.py
       - .github/workflows/diag-indice.yml
 
+permissions:
+  contents: read
+
 jobs:
   diag:
     runs-on: ubuntu-latest
