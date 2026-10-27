@@ -61,7 +61,7 @@
     "error": "Sending failed. Please try again in a moment.",
     "context_prefix": "Context: ",
     "default_section": "Radar+ navigation",
-    "token_missing": "Offline reporting: configure RADAR_REPORT_DISPATCH_TOKEN to enable submissions."
+    "token_missing": "Reporting is temporarily offline. Please try again later."
   },
   "common": {
     "loading": "Loading…",

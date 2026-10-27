@@ -35,8 +35,6 @@ jobs:
           node-version: 22
 
       - name: Préparer le site (dev)
-        env:
-          RADAR_REPORT_DISPATCH_TOKEN: ${{ secrets.RADAR_REPORT_DISPATCH_TOKEN }}
         run: bash .github/scripts/preparer-site.sh dev dist
 
       - name: Déployer sur Cloudflare Pages
