@@ -1,0 +1,28 @@
+# En-têtes HTTP servis par Cloudflare Pages (dev et prod), lus au déploiement.
+# preparer-site.sh y ajoute X-Robots-Tag: noindex pour dev.radarplus.org.
+#
+# Content-Security-Policy : liste fermée de ce que les pages ont le droit de
+# charger (inventaire du 27 oct. 2026). Ajouter un service externe = l'ajouter
+# ici, sinon le navigateur le bloque (erreur visible dans la console).
+#   - données : data.radarplus.org (JSON et illustrations des histoires) ;
+#   - polices : Google Fonts ;
+#   - mesure de fréquentation : balise Cloudflare Web Analytics (injectée par
+#     Cloudflare) et Google Analytics 4 (shared-menu.js).
+# 'unsafe-inline' reste nécessaire tant que chaque page porte son script en
+# ligne et que des gabarits HTML posent des onload/onerror.
+/*
+  Strict-Transport-Security: max-age=31536000
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://data.radarplus.org https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://data.radarplus.org https://cloudflareinsights.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# Adresses techniques de Pages (radar-plus.pages.dev, radar-plus-dev.pages.dev
+# et leurs aperçus) : jamais indexées, seul le domaine radarplus.org compte.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

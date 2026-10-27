@@ -8,8 +8,10 @@
 (function () {
   var base = 'https://data.radarplus.org';
   // Dev : ?data_base=http://localhost:8000/pipeline/out_r2 (mémorisé dans localStorage ;
-  // ?data_base=reset pour revenir à l'adresse publique).
-  try {
+  // ?data_base=reset pour revenir à l'adresse publique). En local seulement : sur le
+  // site en ligne, un lien piégé pourrait sinon faire lire des données d'ailleurs.
+  var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+  if (local) try {
     var q = new URLSearchParams(window.location.search).get('data_base');
     if (q === 'reset') { localStorage.removeItem('RADAR_DATA_BASE'); }
     else if (q) { localStorage.setItem('RADAR_DATA_BASE', q); }
