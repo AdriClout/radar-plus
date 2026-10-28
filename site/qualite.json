@@ -234,6 +234,12 @@
      "cause": "Unes de juin non exploitables après la bascule de l'extracteur — reconstruction depuis la Wayback Machine à faire"
     },
     {
+     "debut": "2026-07-01",
+     "fin": "2026-07-22",
+     "jours": 22,
+     "cause": "Collecte quasi vide : 10 à 26 captures par jour pour 144 attendues (mesure du 28 octobre 2026 sur le brut de production) — à reconstruire avec juin, juillet et août (aws-refiners#338)"
+    },
+    {
      "debut": "2026-06-03",
      "fin": "2026-06-08",
      "jours": 6,
