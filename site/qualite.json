@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-26T18:01:00+00:00",
+ "genere_le": "2026-10-28T22:11:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -148,9 +148,9 @@
      "debut": "2026-08-14",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte dégradée en août 2026 (environ la moitié des captures), revenue à la cadence normale au 12 septembre (136 à 143 captures par jour mesurées dans le brut) ; la fenêtre dégradée reste à rejouer depuis les pages d'accueil archivées avant d'être validée ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme TVA et TTS — les trois extracteurs qui passent par un navigateur et un proxy ; cause en enquête",
+     "resume": "Collecte dégradée en août 2026 (environ la moitié des captures), revenue à la cadence normale au 12 septembre (136 à 143 captures par jour mesurées dans le brut) ; de nouveau dégradée en octobre 2026 : 23 à 98 captures par jour du 9 au 17 octobre, puis 28 à 75 du 23 au 27 octobre, pour 144 attendues (mesure du 28 octobre sur le brut de production) ; la fenêtre dégradée reste à rejouer depuis les pages d'accueil archivées avant d'être validée ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme TVA et TTS — les trois extracteurs qui passent par un navigateur et un proxy —, et de nouveau le 15 octobre (23 à 25 captures dans la journée pour chacun des trois) ; cause en enquête",
      "preuve": {
-      "reference": "aws-infra#484 · aws-refiners#337 · mesure du 2026-09-12 sur le brut de production · validation du 2026-09-14"
+      "reference": "aws-infra#484 · aws-refiners#337 · mesure du 2026-09-12 sur le brut de production · validation du 2026-09-14 · mesure du 2026-10-28 sur le brut de production"
      }
     }
    ],
@@ -208,9 +208,9 @@
      "debut": "2026-06-03",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TTS — les trois extracteurs qui passent par un navigateur et un proxy ; cause en enquête",
+     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités ; volume de nouveau en baisse du 23 au 27 octobre 2026 (72 à 117 captures par jour, pour 144 attendues ; mesure du 28 octobre sur le brut de production) ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TTS — les trois extracteurs qui passent par un navigateur et un proxy —, et de nouveau le 15 octobre (23 à 25 captures dans la journée pour chacun des trois) ; cause en enquête",
      "preuve": {
-      "reference": "aws-infra#484 (collecte) · aws-refiners#335 (inventaire) · mesure du 2026-09-12 · validation du 2026-09-14"
+      "reference": "aws-infra#484 (collecte) · aws-refiners#335 (inventaire) · mesure du 2026-09-12 · validation du 2026-09-14 · mesure du 2026-10-28 sur le brut de production"
      }
     }
    ],
@@ -232,6 +232,12 @@
      "fin": "2026-06-30",
      "jours": 30,
      "cause": "Unes de juin non exploitables après la bascule de l'extracteur — reconstruction depuis la Wayback Machine à faire"
+    },
+    {
+     "debut": "2026-07-01",
+     "fin": "2026-07-22",
+     "jours": 22,
+     "cause": "Collecte quasi vide : 10 à 26 captures par jour pour 144 attendues (mesure du 28 octobre 2026 sur le brut de production) — à reconstruire avec juin, juillet et août (aws-refiners#338)"
     },
     {
      "debut": "2026-06-03",
@@ -616,7 +622,7 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un proxy ; cause en enquête",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un proxy —, et de nouveau le 15 octobre (23 à 25 captures dans la journée pour chacun des trois) ; cause en enquête",
      "preuve": {
       "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14"
      }
@@ -865,8 +871,8 @@
     {
      "debut": "2026-10-21",
      "fin": null,
-     "jours": 5,
-     "cause": "Panne totale en cours : aucune Une captée depuis le 21 octobre 2026 à 9 h 57 UTC (constat du 25 octobre). L'indice américain ne repose plus que sur Fox News et sa facette Visibilité tombe à zéro ; hors de la série gelée de l'article (qui s'arrête au 18 octobre)."
+     "jours": 8,
+     "cause": "Panne totale en cours : aucune Une captée depuis le 21 octobre 2026 à 9 h 57 UTC (constat du 25 octobre ; toujours aucune capture le 28 octobre, mesuré dans le brut de production). L'indice américain ne repose plus que sur Fox News et sa facette Visibilité tombe à zéro ; hors de la série gelée de l'article (qui s'arrête au 18 octobre)."
     }
    ],
    "concordance": {
