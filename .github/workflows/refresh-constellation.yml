@@ -125,7 +125,7 @@ jobs:
 
       - name: Archiver les sorties v2 (lancement manuel seulement)
         if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: out_r2
           path: pipeline/out_r2
