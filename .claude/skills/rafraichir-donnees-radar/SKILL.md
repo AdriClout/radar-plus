@@ -24,7 +24,7 @@ ligne, relancer le **workflow**, pas commiter.
 | Sortie | Où | Qui la lit |
 |---|---|---|
 | **v2 découpé** : `index.json`, `latest.json`, `periods/{AAAA}`, `days/{pays}/{date}`, `articles/{pays}/{date}`, `series/{pays}/{AAAA}`, `episodes/{pays}/{AAAA}` | `pipeline/out_r2/v2/` → R2 `v2/` via `pipeline/publish_r2.py` (fichiers modifiés seulement) | toutes les pages, via `site/assets/js/radar-data.js` |
-| anciens `graph.json`, `timeseries.json`, `articles.json` | `site/` (gitignoré) → racine du bucket via `wrangler r2 object put` | plus personne depuis la tranche 3 (#59) ; retrait prévu (tranche 4) |
+| anciens `graph.json`, `timeseries.json`, `articles.json` | plus produits depuis le 29 oct. 2026 (#59, tranche 4) ; copies figées à la racine du bucket | plus personne |
 | `monitor_input.json` | idem | `monitoring.html` |
 
 Contrat v2 détaillé : `pipeline/README.md`. `build_ticker.R` produit `ticker.json`

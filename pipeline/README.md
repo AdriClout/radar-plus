@@ -43,7 +43,8 @@ S3 de R2 : secrets `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY`). Le site les
 charge à la demande avec `site/assets/js/radar-data.js`, qui sait recomposer
 l'ancienne forme (`timeseries` / `graph` / `articles`) pour migrer les pages une
 à une. Les anciens fichiers (`graph.json`, `timeseries.json`, `articles.json`)
-restent publiés tant qu'une page les lit encore.
+ne sont plus produits depuis le 29 oct. 2026 (tranche 4) ; leurs dernières
+copies restent à la racine du bucket, figées, et ne sont plus lues.
 
 | Fichier | Contenu | Taille typique |
 |---|---|---|
