@@ -1,0 +1,74 @@
+# Garde-fou : la méthodologie publique de Radar+ ne doit jamais être périmée
+# (règle 5 d'AGENTS.md, modèle : garde-metho de la Vitrine).
+# Si la PR touche des fichiers qui peuvent changer ce que la métho décrit
+# (calcul, seuil, horaire, collecte, modèle, représentation), son corps doit
+# contenir la section « Impact méthodologie » du gabarit avec UNE case cochée.
+# Le check se relance quand le corps de la PR est édité (type `edited`).
+# Exemptés : les promotions develop → main (chaque PR vers develop a déjà
+# déclaré son impact) et les PR de Dependabot (versions d'actions).
+name: garde-metho
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: garde-metho-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  impact-methodologie:
+    name: garde-metho
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier la déclaration d'impact méthodologie
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" = "develop" ]; then
+            echo "Promotion develop → main : l'impact a été déclaré dans chaque PR vers develop."
+            exit 0
+          fi
+          if [ "$PR_AUTHOR" = "dependabot[bot]" ]; then
+            echo "PR Dependabot (versions d'actions) : rien à déclarer."
+            exit 0
+          fi
+          if ! files=$(gh api "repos/$REPO/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename'); then
+            echo "::error::Impossible de lister les fichiers de la PR (gh api a échoué) — check en échec par prudence plutôt que de laisser passer."
+            exit 1
+          fi
+          echo "Fichiers modifiés :"
+          echo "$files"
+          # Chemins sensibles : le calcul (pipeline/), les représentations
+          # (scripts des pages, pages, libellés), les textes de la métho et
+          # leurs copies, et les deux workflows qui fixent la cadence de
+          # rafraîchissement. Les autres workflows (déploiement, CI) n'y sont
+          # pas : les élargir ferait déclencher le garde sur du CI sans rapport.
+          # Chaînes passées par <<< plutôt que par un tube : sous pipefail (défaut
+          # de GitHub Actions), `echo … | grep -q` peut échouer à tort quand grep
+          # ferme le tube tôt, et le garde laisserait passer.
+          if ! grep -qE '^(pipeline/|site/assets/js/|site/[^/]+\.html$|site/i18n/|radarplus_textes/|\.github/workflows/refresh-(constellation|ticker)\.yml$)' <<<"$files"; then
+            echo "Aucun fichier sensible métho — rien à déclarer."
+            exit 0
+          fi
+          checked=$(grep -cE -- '- \[[xX]\] (Aucun impact métho|Métho mise à jour|PR métho séparée)' <<<"$PR_BODY" || true)
+          if grep -q "Impact méthodologie" <<<"$PR_BODY" && [ "$checked" -eq 1 ]; then
+            echo "Déclaration d'impact métho présente (1 case cochée) — OK."
+            exit 0
+          fi
+          if [ "$checked" -gt 1 ]; then
+            echo "::error::Section « Impact méthodologie » : $checked cases cochées — les 3 options s'excluent, n'en cochez qu'UNE."
+            exit 1
+          fi
+          echo "::error::Cette PR touche des fichiers qui peuvent rendre la méthodologie publique fausse (site/methodologie.html, site/radarplus.html, site/presentation.html, info-bulle de site/index.html, copies radarplus_textes/*.md). Chemins surveillés : pipeline/, site/assets/js/, site/*.html, site/i18n/, radarplus_textes/, .github/workflows/refresh-constellation.yml et refresh-ticker.yml. Ajoutez la section « Impact méthodologie » du gabarit au corps de la PR et cochez UNE des 3 cases (le check se relance à l'édition du corps). Guide : .claude/skills/synchro-methodologie-radar/SKILL.md"
+          exit 1

@@ -3,6 +3,7 @@
 <head>
   <script src="./assets/js/config.js"></script>
   <script src="./assets/js/radar-data.js"></script>
+  <script src="./assets/js/evolution-events.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Évolution</title>
@@ -15,11 +16,22 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #00000f; font-family: 'Space Mono', 'SF Mono', monospace; overflow: hidden; height: 100vh; width: 100vw; }
     #graph { display: none; }
+    /* Barre de filtres propre à la page, sous le menu du site (Pays · Période · dates) */
+    :root { --filter-bar-h: 52px; }
+    #filter-bar {
+      position: absolute; top: 0; left: 0; right: 0; height: var(--filter-bar-h);
+      display: flex; align-items: center; gap: 28px; padding: 0 22px;
+      background: rgba(3,6,24,0.92); border-bottom: 1px solid rgba(80,130,255,0.18);
+      z-index: 21; pointer-events: all; overflow: hidden;
+    }
+    .fbar-group { display: flex; align-items: center; gap: 10px; }
+    .fbar-label { font-size: 9px; letter-spacing: 1.6px; text-transform: uppercase; color: rgba(100,140,200,0.55); white-space: nowrap; }
+    #filter-bar #period-nav-row { margin-left: auto; }
     #left-panel {
       position: absolute; top: 0; left: 0; bottom: calc(var(--ticker-height, 44px) + 12px);
       width: 280px;
       display: flex; flex-direction: column; gap: 0;
-      padding: 18px 14px 14px;
+      padding: 16px 14px 14px;
       background: linear-gradient(to right, rgba(0,0,15,0.96) 80%, transparent);
       z-index: 20; pointer-events: all;
       overflow: hidden;
@@ -88,8 +100,7 @@
     }
     #slider-row { display: flex; align-items: center; gap: 10px; }
     #period-nav-row {
-      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-      display: flex; align-items: center; gap: 16px; z-index: 20; pointer-events: all;
+      display: flex; align-items: center; gap: 12px; pointer-events: all;
     }
     #prev-btn, #next-btn {
       background: none; border: 1px solid rgba(100,150,255,0.3); border-radius: 3px;
@@ -100,7 +111,7 @@
     #period-nav-label {
       font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1px;
       color: rgba(175,208,255,0.92); text-align: center;
-      width: 240px; white-space: normal; line-height: 1.35;
+      min-width: 200px; white-space: nowrap; line-height: 1.35;
     }
     #timeline {
       flex: 1; -webkit-appearance: none; height: 2px;
@@ -245,6 +256,11 @@
     @media (max-width: 1500px) {
       .menu-discover-hint { display: none; }
     }
+    @media (max-width: 1100px) {
+      :root { --filter-bar-h: 96px; }
+      #filter-bar { flex-wrap: wrap; gap: 8px 22px; padding: 8px 14px; height: auto; min-height: var(--filter-bar-h); }
+      #filter-bar #period-nav-row { margin-left: 0; }
+    }
     @media (max-width: 900px) {
       #left-panel { width: 160px; padding: 12px 10px 10px; }
       #evo-titlebar { gap: 8px; margin-bottom: 14px; }
@@ -274,6 +290,22 @@
     #mode-tabs-row { display: flex; flex-direction: column; gap: 4px; }
     .mode-tab { padding: 7px 10px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: left; width: 100%; }
     .mode-tab:hover { border-color: rgba(100,150,255,0.6); color: #a0c0ff; }
+    .mode-tab[data-mode="events"].active { background: rgba(120,70,20,0.35); border-color: rgba(255,170,80,0.7); color: #ffe0b8; box-shadow: 0 0 10px rgba(255,160,60,0.22); }
+    /* Mode Événements : légende des grandes histoires dans le panneau de gauche */
+    #left-events-section { display: none; flex-direction: column; gap: 6px; min-height: 0; overflow: auto; pointer-events: all; }
+    body.view-events #left-events-section { display: flex; }
+    body.view-events #left-hot10-section { display: none !important; }
+    #events-legend-list { display: flex; flex-direction: column; gap: 5px; }
+    .evt-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border: 1px solid rgba(90,130,250,0.18); border-radius: 5px; background: rgba(8,18,48,0.5); cursor: pointer; transition: border-color 0.15s, background 0.15s, opacity 0.15s; }
+    .evt-row:hover, .evt-row.focused { border-color: rgba(140,180,255,0.6); background: rgba(14,28,70,0.7); }
+    .evt-row.dimmed { opacity: 0.45; }
+    .evt-rank { flex: 0 0 18px; height: 18px; border-radius: 50%; color: #00000f; font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .evt-main { flex: 1; min-width: 0; }
+    .evt-title { font-size: 11px; line-height: 1.3; color: rgba(225,235,255,0.95); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .evt-meta { font-size: 9px; color: rgba(130,165,220,0.7); margin-top: 2px; }
+    .evt-link { flex: 0 0 auto; color: rgba(140,180,255,0.7); text-decoration: none; font-size: 12px; padding: 0 2px; }
+    .evt-link:hover { color: #fff; }
+    .evt-empty { font-size: 11px; color: rgba(140,170,220,0.65); padding: 10px 4px; font-style: italic; }
     .mode-tab[data-mode="ranked"].active { background: rgba(40,80,180,0.35); border-color: rgba(120,180,255,0.7); color: #d0e8ff; box-shadow: 0 0 10px rgba(80,130,255,0.25); }
     .mode-tab[data-mode="tracking"].active { background: rgba(20,72,52,0.38); border-color: rgba(80,200,140,0.65); color: rgba(140,230,185,0.95); box-shadow: 0 0 10px rgba(60,180,110,0.22); }
     /* Track button (panneau articles) */
@@ -310,8 +342,8 @@
     /* ── Sélecteur de fenêtre temporelle (dans #left-panel) ─────────────────── */
     /* Flex-wrap pour que le 5e bouton (Total) s'étire automatiquement
        à 100% quand il est seul sur sa ligne. */
-    #window-row { display: flex; flex-wrap: wrap; gap: 5px; }
-    #window-row .win-btn { flex: 1 1 calc(50% - 3px); min-width: 0; }
+    #window-row { display: flex; flex-wrap: nowrap; gap: 5px; }
+    #window-row .win-btn { width: auto; padding: 5px 12px; }
     #window-section { display: none; }
     #window-section.visible { display: flex; }
     .win-btn {
@@ -585,7 +617,7 @@
     body.mode-ranked .rleg-check { display: none; }
   </style>
 </head>
-<body>
+<body class="has-filter-bar">
   <div id="loading"><div id="loading-text">initialisation · évolution</div></div>
   <div id="evolution-view">
     <canvas id="evo-canvas"></canvas>
@@ -595,42 +627,43 @@
     <div id="evo-tooltip-period"></div>
     <div id="evo-tooltip-items"></div>
   </div>
-  <div id="left-panel">
-    <div id="evo-titlebar">
-      <a id="evo-logo" href="./" data-i18n-aria-label="nav.home_logo_aria" aria-label="Retour à l'accueil Radar+">
-        <svg viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g transform="translate(0,700) scale(0.1,-0.1)" stroke="none">
-            <path class="rp-r" d="M262 3666 l3 -2051 338 0 c292 0 340 2 346 15 4 8 6 385 6 838 -1 821 -1 823 20 827 11 2 274 3 585 2 505 -3 572 -5 630 -21 94 -25 178 -70 235 -124 65 -60 98 -111 126 -192 24 -70 23 -50 33 -715 3 -265 5 -285 30 -380 15 -55 43 -134 63 -175 l36 -75 356 2 c196 0 366 1 379 2 22 1 22 3 -17 73 -59 108 -110 232 -136 333 -23 86 -24 105 -25 460 -1 204 -3 381 -5 395 -15 113 -25 159 -51 239 -62 187 -206 360 -361 436 -46 22 -83 43 -83 47 0 3 17 16 38 29 57 35 171 128 231 188 186 192 291 453 286 716 -4 164 -43 323 -120 481 -122 251 -309 434 -580 566 -127 62 -251 99 -420 124 -27 4 -476 8 -998 9 l-947 1 2 -2050z m1682 1463 c123 -1 174 -5 228 -20 271 -75 448 -306 451 -589 1 -101 -7 -159 -32 -231 -63 -182 -198 -310 -401 -381 -64 -22 -73 -22 -651 -26 l-585 -3 0 623 c-1 343 3 625 7 628 6 4 471 4 983 -1z"/>
-            <path class="rp-plus" d="M5000 4840 l-55 -5 1 -590 c0 -324 -1 -595 -3 -600 -2 -7 -214 -10 -618 -10 -405 0 -616 -3 -618 -10 -3 -9 -1 -493 2 -505 0 -3 279 -5 619 -5 l617 0 1 -590 c1 -325 2 -597 3 -605 1 -14 39 -16 294 -16 l293 0 -1 599 c0 389 4 601 10 605 6 4 287 7 625 7 l615 0 0 257 c1 171 -3 259 -10 261 -5 2 -286 3 -622 3 -401 -1 -614 2 -616 9 -1 5 -2 275 -2 599 1 405 -2 589 -9 592 -17 6 -464 10 -526 4z"/>
-          </g>
-        </svg>
-      </a>
-      <div id="evo-title" data-i18n="evolution.title">Évolution</div>
+  <div id="filter-bar" role="toolbar" aria-label="Filtres">
+  <div class="fbar-group">
+    <span class="fbar-label" data-i18n="evolution.country_label">Pays</span>
+    <div id="country-tabs" role="tablist" aria-label="Sélection du pays">
+      <button class="tab active" data-country="QC" role="tab" aria-label="Québec">QC</button>
+      <button class="tab" data-country="CAN" role="tab" aria-label="Canada">CAN</button>
+      <button class="tab" data-country="USA" role="tab" aria-label="États-Unis">USA</button>
     </div>
-    <div class="lpanel-section">
-      <div class="lpanel-label" data-i18n="evolution.country_label">Pays</div>
-      <div id="country-tabs" role="tablist" aria-label="Sélection du pays">
-        <button class="tab active" data-country="QC" role="tab" aria-label="Québec">QC</button>
-        <button class="tab" data-country="CAN" role="tab" aria-label="Canada">CAN</button>
-        <button class="tab" data-country="USA" role="tab" aria-label="États-Unis">USA</button>
-      </div>
+  </div>
+  <div class="fbar-group" id="window-section">
+    <span class="fbar-label" data-i18n="period.label">Période</span>
+    <div id="window-row">
+      <button class="win-btn active" data-gran="day" type="button" data-i18n="period.day">Jour</button>
+      <button class="win-btn" data-gran="week" type="button" data-i18n="period.week">Semaine</button>
+      <button class="win-btn" data-gran="month" type="button" data-i18n="period.month">Mois</button>
+      <button class="win-btn" data-gran="year" type="button" data-i18n="period.year">Année</button>
+      <button class="win-btn" data-gran="total" type="button" data-i18n="period.total">Total</button>
     </div>
-    <div class="lpanel-section" id="window-section">
-      <div class="lpanel-label" data-i18n="period.label">Période</div>
-      <div id="window-row">
-        <button class="win-btn active" data-gran="day" type="button" data-i18n="period.day">Jour</button>
-        <button class="win-btn" data-gran="week" type="button" data-i18n="period.week">Semaine</button>
-        <button class="win-btn" data-gran="month" type="button" data-i18n="period.month">Mois</button>
-        <button class="win-btn" data-gran="year" type="button" data-i18n="period.year">Année</button>
-        <button class="win-btn" data-gran="total" type="button" data-i18n="period.total">Total</button>
-      </div>
-      <div id="window-granularity"></div>
-    </div>
+    <div id="window-granularity" hidden></div>
+  </div>
+  <div id="period-nav-row">
+    <button id="prev-btn" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Période précédente">‹</button>
+    <span id="period-nav-label"></span>
+    <button id="next-btn" data-i18n-aria-label="evolution.next_period_aria" aria-label="Période suivante">›</button>
+  </div>
+</div>
+<div id="left-panel">
     <div id="mode-tabs" class="lpanel-section">
       <div id="mode-tabs-row">
+        <button class="mode-tab" data-mode="events" type="button" data-i18n="evolution.mode_events">ÉVÉNEMENTS</button>
         <button class="mode-tab" data-mode="ranked" type="button" data-i18n="evolution.mode_hot10">HOT 10</button>
         <button class="mode-tab" data-mode="tracking" type="button" data-i18n="evolution.mode_search">Recherche</button>
       </div>
+    </div>
+    <div id="left-events-section">
+      <div id="events-legend-head" class="lpanel-label"></div>
+      <div id="events-legend-list"></div>
     </div>
     <div id="left-hot10-section">
       <div id="ranked-search-wrap">
@@ -650,11 +683,6 @@
   <div id="object-overlay"></div>
   <div id="object-panel"></div>
   <div id="tooltip"></div>
-  <div id="period-nav-row">
-    <button id="prev-btn" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Période précédente">‹</button>
-    <span id="period-nav-label"></span>
-    <button id="next-btn" data-i18n-aria-label="evolution.next_period_aria" aria-label="Période suivante">›</button>
-  </div>
   <div id="controls">
     <div id="slider-row">
       <input type="range" id="timeline" min="0" value="0" step="1" />
@@ -1127,6 +1155,7 @@
   const trackColorMap = new Map();
   let trackColorSeq = 0;
   let currentMode = 'ranked';
+  let rankedView = 'events'; // sous-vue du mode classement : 'events' (défaut) ou 'objects'
   let evoMaxVal = 1;
   let rankedHoverIdx = null;
   let selectedPeriodIdx = null;
@@ -1156,7 +1185,40 @@
   const FR_MONTHS         = new Proxy({}, { get(_, k) { return getMonths()[k]; } });
   const FR_MONTHS_SHORT   = new Proxy({}, { get(_, k) { return getMonthsShort()[k]; } });
   const FR_WEEKDAYS_SHORT = new Proxy({}, { get(_, k) { return getWeekdaysShort()[k]; } });
-  const LOCAL_UTC_OFFSET_HOURS = 4; // EDT, cohérent avec le pipeline actuel
+  // Décalage UTC → Montréal du moment (EDT = 4, EST = 5), lu via Intl.
+  const LOCAL_UTC_OFFSET_HOURS = (() => {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Montreal', timeZoneName: 'longOffset' }).formatToParts(new Date());
+      const tz = (parts.find(x => x.type === 'timeZoneName') || {}).value || 'GMT-04:00';
+      const m = tz.match(/GMT([+-])(\d{1,2})/);
+      return m ? (m[1] === '-' ? 1 : -1) * Number(m[2]) : 4;
+    } catch (e) { return 4; }
+  })();
+  // Grille des blocs de 4h en heure locale, DÉRIVÉE des clés de périodes (les blocs du
+  // pipeline sont UTC 03-07, 07-11, … soit 23h, 3h, 7h, 11h, 15h, 19h à Montréal en EDT).
+  // Un jour local = les blocs étiquetés à sa date (le bloc de 23h appartient au jour où il commence).
+  // La grille a changé au fil du temps (avant : UTC 04-08 = 0h local). On lit donc la
+  // grille RÉCENTE (6 derniers blocs) pour aujourd'hui, et chaque jour passé garde la
+  // sienne (gridOfPeriods sur ses propres blocs). ACTIVE_DAY_STARTS = grille du jour affiché.
+  let DAY_BLOCK_STARTS = [3, 7, 11, 15, 19, 23];
+  let ACTIVE_DAY_STARTS = DAY_BLOCK_STARTS;
+  function gridOfPeriods(list) {
+    const set = new Set();
+    (list || []).forEach(p => { const ls = localBlockStartFromPeriodKey(p.key); if (Number.isFinite(ls)) set.add(ls); });
+    return set.size ? [...set].sort((a, b) => a - b) : null;
+  }
+  function computeDayBlockStarts(sourcePeriods) {
+    const g = gridOfPeriods((sourcePeriods || []).slice(-6));
+    if (g && g.length === 6) DAY_BLOCK_STARTS = g;
+    ACTIVE_DAY_STARTS = DAY_BLOCK_STARTS;
+  }
+  // Début du bloc courant dans cette grille (-1 si aucun bloc du jour n'est encore commencé).
+  function currentLocalBlockStart(now) {
+    const h = now.getHours();
+    let cur = -1;
+    ACTIVE_DAY_STARTS.forEach(st => { if (st <= h) cur = st; });
+    return cur;
+  }
   const EN_MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
 
   function periodKeyToDate(key) {
@@ -1209,6 +1271,7 @@
   }
 
   function buildRankedSlots(sourcePeriods = periods) {
+    computeDayBlockStarts(sourcePeriods); // grille réelle des blocs (après la déclaration des constantes)
     if (!sourcePeriods.length) {
       rankedSlots = [];
       rankedSlotIdx = 0;
@@ -1256,7 +1319,7 @@
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
-      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
+      const currentBlockStart = currentLocalBlockStart(now);
 
       const eligibleKeys = slot.periodKeys.filter(key => {
         if (!isToday) return true;
@@ -1300,9 +1363,11 @@
       const now = new Date();
       const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       const isToday = slot.key === todayKey;
-      const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
-      // All 6 blocks of the day including Minuit-4h (UTC 04-08 = local 00-04)
-      const starts = [0, 4, 8, 12, 16, 20];
+      const currentBlockStart = currentLocalBlockStart(now);
+      // Les 6 blocs du jour : grille récente pour aujourd'hui, sinon celle des blocs du jour.
+      const ownGrid = isToday ? null : gridOfPeriods(slot.periods);
+      ACTIVE_DAY_STARTS = (ownGrid && ownGrid.length === 6) ? ownGrid : DAY_BLOCK_STARTS;
+      const starts = ACTIVE_DAY_STARTS;
       const byStart = new Map();
       slot.periods.forEach(p => {
         const localStart = localBlockStartFromPeriodKey(p.key);
@@ -1348,7 +1413,7 @@
     // Semaine / Mois / Année : agréger par JOUR (pas par bloc 4h)
     const now = new Date();
     const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const currentBlockStart = Math.floor(now.getHours() / 4) * 4;
+    const currentBlockStart = currentLocalBlockStart(now);
 
     const dayMap = new Map();
     for (const p of slot.periods) {
@@ -1450,8 +1515,12 @@
     if (nextBtn) nextBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx >= rankedSlots.length - 1 : currentIdx >= periods.length - 1;
   }
 
-  const FR_BLOCK_LONG  = { 0: 'Minuit–4h', 4: '4h–8h', 8: '8h–Midi', 12: 'Midi–16h', 16: '16h–20h', 20: '20h–Minuit' };
-  const FR_BLOCK_SHORT = { 0: 'Minuit',    4: '4h',    8: '8h',     12: 'Midi',     16: '16h',     20: '20h'    };
+  const FR_BLOCK_SHORT = {}, FR_BLOCK_LONG = {};
+  for (let h = 0; h < 24; h++) {
+    const shortOf = x => (x === 0 ? 'Minuit' : x === 12 ? 'Midi' : x + 'h');
+    FR_BLOCK_SHORT[h] = shortOf(h);
+    FR_BLOCK_LONG[h] = shortOf(h) + '–' + shortOf((h + 4) % 24);
+  }
 
   function blockStartFromPeriod(period) {
     const ex = Number(period?.blockStart);
@@ -1740,6 +1809,7 @@
   }
 
   function renderRankedLegend(series, hoverIdx) {
+    if (currentMode === 'ranked' && rankedView === 'events') return;
     const list = document.getElementById('ranked-legend-list');
     const periodEl = document.getElementById('ranked-legend-period');
     if (!list) return;
@@ -2159,9 +2229,9 @@
   function dayBlockHour(p) {
     if (!p || p.isVeille) return 0;
     const s = blockStartFromPeriod(p);
-    // End-of-block positioning: Minuit-4h→h=4, 4h-8h→h=8, etc.
-    // Veille stays at h=0; each block appears where its 4h window closes.
-    return Number.isFinite(s) ? s + 4 : 0;
+    // Chaque bloc est placé à la fin de sa fenêtre de 4h, en heures comptées depuis le
+    // début du premier bloc du jour (grille réelle) ; la veille reste à 0.
+    return Number.isFinite(s) ? s + 4 - (ACTIVE_DAY_STARTS[0] || 0) : 0;
   }
 
   function renderDayModeChart(gd, hoverIdx = null, skipLegend = false) {
@@ -2197,7 +2267,9 @@
     const todayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const slot = rankedSlots[rankedSlotIdx];
     const isToday = slot?.key === todayKey;
-    const liveHour = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+    // Heure « en direct » dans l'axe du graphique : heures comptées depuis le début du
+    // premier bloc du jour (grille réelle), comme dayBlockHour.
+    const liveHour = ((now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600) - (ACTIVE_DAY_STARTS[0] || 0) + 24) % 24;
 
     const allVals = series.flatMap(s => s.data.filter(v => v !== null));
     const maxVal = allVals.length ? Math.max(...allVals, 0.1) : 1;
@@ -2263,14 +2335,10 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
-    const DAY_LABELS = [
-      { h: 0, label: 'Hier', align: 'left' },
-      { h: 4, label: '4h', align: 'center' },
-      { h: 8, label: '8h', align: 'center' },
-      { h: 12, label: 'Midi', align: 'center' },
-      { h: 16, label: '16h', align: 'center' },
-      { h: 20, label: '20h', align: 'center' },
-    ];
+    // Étiquettes à la FIN de chaque bloc de la grille réelle (7h, 11h, 15h, 19h, 23h, 3h en EDT).
+    const DAY_LABELS = [{ h: 0, label: 'Hier', align: 'left' }].concat(
+      ACTIVE_DAY_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[(st + 4) % 24], align: i === ACTIVE_DAY_STARTS.length - 1 ? 'right' : 'center' }))
+    );
     DAY_LABELS.forEach(({ h, label, align }) => {
       const x = xOfHour(h);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
@@ -2466,7 +2534,31 @@
     return { major: label, minor: '' };
   }
 
+  // Fenêtre de la vue, en blocs, pour le module événements (veille exclue ; blocs
+  // futurs du jour gardés pour l'axe ; semaine+ = tous les blocs des jours).
+  function eventsWindowPeriods() {
+    if (rankedGranularity === 'total') return periods.map(p => ({ key: p.key, future: false }));
+    const out = [];
+    getRankedWindowPeriods().forEach(p => {
+      if (p.isVeille) return;
+      if (p.isDay && Array.isArray(p.periodKeys)) p.periodKeys.forEach(k => out.push({ key: k, future: false }));
+      else out.push({ key: p.key, future: !!p.isFuture, blockStart: p.blockStart });
+    });
+    return out;
+  }
+  function renderEventsView() {
+    const canvas = document.getElementById('evo-canvas');
+    if (!canvas || !window.radarEvents) return;
+    const rect = canvas.getBoundingClientRect();
+    const slot = rankedSlots[rankedSlotIdx];
+    window.radarEvents.render({
+      canvas, country: currentCountry, gran: rankedGranularity,
+      periods: eventsWindowPeriods(), slotLabel: slot?.label || '',
+      layout: getRankedChartLayout(rect), stars: STARS
+    });
+  }
   function renderRankedChart(gd, hoverIdx = null, skipLegend = false) {
+    if (currentMode === 'ranked' && rankedView === 'events') { renderEventsView(); return; }
     if (rankedGranularity === 'day') { renderDayModeChart(gd, hoverIdx, skipLegend); return; }
     const canvas = document.getElementById('evo-canvas');
     if (!canvas) return;
@@ -2895,7 +2987,7 @@
         bottomPad = Math.max(bottomPad, rect.height - controlsTop + 38);
       }
     }
-    const PAD = { top: compact ? 112 : 94, right: panelW, bottom: bottomPad, left: leftPad };
+    const PAD = { top: compact ? 76 : 60, right: panelW, bottom: bottomPad, left: leftPad }; // la navigation de dates vit dans la barre de filtres
     const chartW = Math.max(100, rect.width - PAD.left - PAD.right);
     const chartH = Math.max(80, rect.height - PAD.top - PAD.bottom);
     return { PAD, panelW, chartW, chartH };
@@ -3135,6 +3227,13 @@
   }
 
   function setMode(mode) {
+    // 'events' et 'ranked' partagent la navigation du classement ; seule la vue change.
+    if (mode === 'events' || mode === 'ranked') {
+      rankedView = mode === 'events' ? 'events' : 'objects';
+      mode = 'ranked';
+      if (window.radarEvents) window.radarEvents.reset();
+    }
+    document.body.classList.toggle('view-events', mode === 'ranked' && rankedView === 'events');
     // Sauvegarder l'index courant avant de changer de mode
     if (currentMode === 'ranked') graphIdx = currentIdx;
     else tsIdx = currentIdx;
@@ -3146,7 +3245,8 @@
     clearRankedSeriesCache();
     document.body.classList.toggle('mode-ranked', mode === 'ranked');
     document.body.classList.toggle('mode-tracking', mode === 'tracking');
-    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    const activeTab = mode === 'ranked' ? (rankedView === 'events' ? 'events' : 'ranked') : mode;
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === activeTab));
 
     // Swapper les données + slider selon le mode
     if (mode === 'tracking') {
@@ -3224,10 +3324,12 @@
   // Evolution canvas events
   const evoCanvas = document.getElementById('evo-canvas');
   evoCanvas.addEventListener('mousemove', e => {
+    if (currentMode === 'ranked' && rankedView === 'events') { window.radarEvents && window.radarEvents.hover(e.clientX, e.clientY); return; }
     if (currentMode === 'tracking') evoChartHoverAt(e.clientX, e.clientY);
     else rankedChartHoverAt(e.clientX, e.clientY);
   });
   evoCanvas.addEventListener('mouseleave', () => {
+    if (currentMode === 'ranked' && rankedView === 'events') { window.radarEvents && window.radarEvents.hover(null); document.getElementById('evo-tooltip').style.display = 'none'; return; }
     if (currentMode === 'tracking') renderEvolutionChart(null);
     else {
       rankedHoverIdx = null;
@@ -3238,6 +3340,7 @@
     document.getElementById('evo-tooltip').style.display = 'none';
   });
   evoCanvas.addEventListener('click', e => {
+    if (currentMode === 'ranked' && rankedView === 'events') { window.radarEvents && window.radarEvents.click(e.clientX, e.clientY); return; }
     if (currentMode === 'ranked') {
       const period = periods[currentIdx];
       const gd = getGD(currentCountry, period?.key);
@@ -3530,8 +3633,8 @@
   applyTimelineHeat(currentCountry);
   loadPeriod(currentCountry, currentIdx);
 
-  // Mode par défaut: classement évolutif
-  setMode('ranked');
+  // Mode par défaut : Événements (les grandes histoires) ; ?mode=objets pour le HOT 10
+  setMode((new URLSearchParams(window.location.search).get('mode') || '').toLowerCase() === 'objets' ? 'ranked' : 'events');
   renderTrackedList();
 
   // ── Timer live : EN DIRECT avance chaque 30s ─────────────────────────────

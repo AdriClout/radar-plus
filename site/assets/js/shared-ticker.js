@@ -22,7 +22,7 @@
       minute: '2-digit'
     }).format(dt);
 
-    return 'Les Unes de ' + hhmm;
+    return 'Les Unes de ' + window.radarTypo(hhmm);
   }
 
   function initSharedTicker() {

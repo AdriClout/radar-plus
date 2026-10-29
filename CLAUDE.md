@@ -22,5 +22,6 @@
 - **Les crons sont en heure de Montréal** (EDT/EST), pas UTC.
 - **Aucun secret ni donnée brute dans le repo** — le `quality-gate` les bloque.
 - **`main` est protégée** : passer par une PR, `quality-gate` requis.
+- **La méthodologie publique n'est jamais périmée** : toute PR qui change un calcul, un seuil, un horaire, la collecte, un modèle ou un affichage remplit la section « Impact méthodologie » (check `garde-metho`) ; skills `synchro-methodologie-radar` (quoi, quand) et `redaction-methodologie` (comment).
 
 Détail et rationale complets : [`AGENTS.md`](./AGENTS.md).

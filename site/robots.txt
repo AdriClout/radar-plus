@@ -1,0 +1,7 @@
+# Radar+ — https://radarplus.org
+# Toutes les pages publiques sont ouvertes aux moteurs de recherche.
+# dev.radarplus.org et les adresses *.pages.dev envoient en plus « noindex » (site/_headers).
+User-agent: *
+Allow: /
+
+Sitemap: https://radarplus.org/sitemap.xml

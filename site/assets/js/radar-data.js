@@ -282,8 +282,15 @@
     return { data: data, has: has, ensure: ensure, keysBefore: keysBefore };
   }
 
+  // Événements saillants (chantier 2, #49) : v2/events/…
+  function eventsIndex() { return fetchJson('events/index.json', { noStore: true, bust: true }); }
+  function eventsLatest() { return fetchJson('events/latest.json', { noStore: true, bust: true }); }
+  function eventsDay(region, date) { return fetchJson('events/' + region + '/' + date + '.json'); }
+  function eventsStorylines(region, year) { return fetchJson('events/storylines/' + region + '/' + year + '.json'); }
+
   window.radarData = {
     base: base,
+    eventsIndex: eventsIndex, eventsLatest: eventsLatest, eventsDay: eventsDay, eventsStorylines: eventsStorylines,
     index: index, latest: latest, periods: periods,
     day: day, articlesDay: articlesDay, series: series, episodes: episodes,
     timeseries: timeseries, graph: graph, articles: articles, latestAsGraph: latestAsGraph,

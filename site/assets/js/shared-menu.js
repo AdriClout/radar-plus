@@ -10,9 +10,13 @@
   var GA_MEASUREMENT_ID = 'G-Y2X19DCWGZ';
   var REPORT_REPO = 'AdriClout/radar-plus';
   var REPORT_EVENT_TYPE = 'radar-report-issue';
-  var REPORT_TOKEN = (window.RADAR_REPORT_DISPATCH_TOKEN || '__RADAR_REPORT_DISPATCH_TOKEN__').trim();
-  if (REPORT_TOKEN === '__RADAR_REPORT_DISPATCH_TOKEN__') REPORT_TOKEN = '';
-  var REPORT_ENABLED = REPORT_TOKEN.length > 0;
+  // Signalements : JAMAIS de jeton dans le navigateur. Jusqu'au 27 oct. 2026, un
+  // jeton GitHub était injecté ici au déploiement et appelait l'API GitHub depuis
+  // la page : n'importe quel visiteur pouvait le lire. L'envoi passe désormais par
+  // un relais côté serveur (qui garde le jeton) ; tant qu'aucun relais n'est
+  // configuré, le formulaire reste hors ligne.
+  var REPORT_RELAY_URL = '';
+  var REPORT_ENABLED = REPORT_RELAY_URL.length > 0;
   (function loadGtag() {
     if (window.gtag || !GA_MEASUREMENT_ID) return;
     window.dataLayer = window.dataLayer || [];
@@ -43,7 +47,7 @@
     '</svg>';
 
   function injectHomeLogo() {
-    var page = window.location.pathname.split('/').pop() || 'index.html';
+    var page = currentPage();
     // Skip sur l'accueil (où le logo serait redondant) et sur les pages
     // qui ont déjà leur propre logo intégré dans un panneau gauche
     // (evolution.html: #evo-logo, constellation.html: #cst-logo).
@@ -60,10 +64,111 @@
     document.body.insertBefore(a, document.body.firstChild);
   }
 
+  // Bandeau de menu en haut de page (décision d'Adrien, 24 oct. 2026) : robot +
+  // RADAR+ à gauche, pages principales au centre, FR/EN et bouton du tiroir à
+  // droite. En flux (sticky), donc il ne recouvre rien. Pas sur les deux outils
+  // plein écran (évolution, constellation), qui gardent leur panneau gauche.
+  // Page courante : sur Cloudflare Pages, /alertes.html est servi comme /alertes ;
+  // on ramène toujours au nom de fichier pour marquer le lien actif.
+  function currentPage() {
+    var last = window.location.pathname.split('/').pop() || '';
+    if (!last) return 'index.html';
+    return /\.html$/.test(last) ? last : last + '.html';
+  }
+
+  var NO_BAR_PAGES = {}; // bandeau sur toutes les pages (décision du 24 oct. au soir)
+  function injectSiteBar() {
+    var page = currentPage();
+    if (NO_BAR_PAGES[page] || document.getElementById('site-bar')) return null;
+    var bar = document.createElement('header');
+    bar.id = 'site-bar';
+    bar.className = 'site-bar';
+    bar.innerHTML =
+      '<a class="site-bar-brand" href="./index.html" data-i18n-aria-label="nav.home_logo_aria" aria-label="Retour à l’accueil Radar+">' +
+        '<span class="site-bar-robot" aria-hidden="true"></span>' +
+        '<span class="site-bar-word">RADAR<span class="site-bar-plus">+</span></span>' +
+        '<span class="site-bar-beta" aria-hidden="true">BETA</span>' +
+      '</a>' +
+      '<nav class="site-bar-nav" data-i18n-aria-label="nav.main_nav_aria" aria-label="Navigation principale">' +
+        '<div class="site-bar-dropdown site-bar-home hoverable">' +
+          '<a href="./index.html" data-page="index.html" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.home">Accueil</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</a>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./index.html#aune" data-i18n="nav.home_une">La Une des Unes</a>' +
+            '<a href="./index.html#hot20" data-i18n="nav.home_hot20">Hot 20</a>' +
+          '</div>' +
+        '</div>' +
+        '<a href="./evolution.html" data-page="evolution.html" data-i18n="nav.evolution">Évolution</a>' +
+        '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
+        '<a href="./alertes.html" data-page="alertes.html" data-i18n="nav.alertes">Alertes</a>' +
+        '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
+        '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
+        '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>' +
+        '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>' +
+        // Tout ce qui restait dans l'ancien tiroir : menu déroulant vers le bas.
+        '<div class="site-bar-dropdown">' +
+          '<button type="button" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.section_about">À propos</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</button>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./radarplus.html" data-page="radarplus.html" data-i18n="nav.radarplus">Radar+</a>' +
+            '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>' +
+            '<a href="./acces-donnees.html" data-page="acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>' +
+            '<a href="https://www.clessn.com/radar/index.html" target="_blank" rel="noopener" data-i18n="nav.analyses">Analyses</a>' +
+            '<a href="#" class="site-bar-report-link" data-i18n="nav.report_issue">Signaler un problème</a>' +
+            '<a href="https://github.com/adriclout/radar-plus" target="_blank" rel="noopener">GitHub</a>' +
+          '</div>' +
+        '</div>' +
+      '</nav>' +
+      '<div class="site-bar-right">' +
+        '<div class="lang-switch site-bar-lang" role="group" aria-label="Language">' +
+          '<button type="button" class="lang-btn" data-lang="fr" aria-label="Français">FR</button>' +
+          '<button type="button" class="lang-btn" data-lang="en" aria-label="English">EN</button>' +
+        '</div>' +
+      '</div>';
+    document.body.insertBefore(bar, document.body.firstChild);
+    document.body.classList.add('has-site-bar');
+    var current = bar.querySelector('.site-bar-nav a[data-page="' + page + '"]');
+    if (current) {
+      current.classList.add('current');
+      var dd = current.closest('.site-bar-dropdown');
+      if (dd) dd.classList.add('current');
+    }
+    // Menus déroulants : « À propos » s'ouvre au clic ; « Accueil » s'ouvre au survol
+    // (hoverable, CSS) et son bouton reste un lien vers l'accueil. Les deux se ferment
+    // au clic ailleurs et à Échap.
+    var ddWraps = Array.prototype.slice.call(bar.querySelectorAll('.site-bar-dropdown'));
+    function setDropdown(wrap, open) {
+      wrap.classList.toggle('open', open);
+      var b = wrap.querySelector('.site-bar-dropdown-btn');
+      if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    ddWraps.forEach(function(wrap) {
+      var b = wrap.querySelector('.site-bar-dropdown-btn');
+      if (!b || wrap.classList.contains('hoverable')) return;
+      b.addEventListener('click', function(e) { e.stopPropagation(); setDropdown(wrap, !wrap.classList.contains('open')); });
+    });
+    document.addEventListener('click', function(e) { ddWraps.forEach(function(w) { if (!w.contains(e.target)) setDropdown(w, false); }); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') ddWraps.forEach(function(w) { setDropdown(w, false); }); });
+    // Au clavier, le menu Accueil s'ouvre quand un de ses éléments a le focus.
+    ddWraps.filter(function(w) { return w.classList.contains('hoverable'); }).forEach(function(w) {
+      w.addEventListener('focusin', function() { setDropdown(w, true); });
+      w.addEventListener('focusout', function() { setTimeout(function() { if (!w.contains(document.activeElement)) setDropdown(w, false); }, 0); });
+    });
+    function setDropdownAll(open) { ddWraps.forEach(function(w) { setDropdown(w, open); }); }
+    var rep = bar.querySelector('.site-bar-report-link');
+    if (rep) rep.addEventListener('click', function(e) {
+      e.preventDefault(); setDropdownAll(false);
+      if (typeof window.__radarIssueReporterOpen === 'function') window.__radarIssueReporterOpen();
+    });
+    return bar;
+  }
+
   function setupSharedMenu() {
     if (document.querySelector('.side-nav')) return;
 
-    injectHomeLogo();
+    var siteBar = injectSiteBar();
     document.body.classList.add('has-shared-menu');
 
     var navToggle = document.createElement('button');
@@ -81,8 +186,9 @@
     menuHint.setAttribute('aria-label', 'Ouvrir le menu');
     menuHint.innerHTML = '<span data-i18n="nav.menu_open_hint">Ouvrir menu</span> <span class="menu-discover-arrow"></span>';
 
+    // Panneau de menu : descend sous le bandeau, pleine largeur (plus de tiroir à droite).
     var sideNav = document.createElement('nav');
-    sideNav.className = 'side-nav';
+    sideNav.className = 'side-nav site-menu-panel';
     sideNav.id = 'sideNav';
     sideNav.setAttribute('data-i18n-aria-label', 'nav.main_nav_aria');
     sideNav.setAttribute('aria-label', 'Navigation principale');
@@ -93,8 +199,8 @@
       '</div>',
       '<h3 data-i18n="nav.section_navigation">Navigation</h3>',
       '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>',
-      '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
       '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
+      '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
       '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_qualite">QUALITÉ</span></a>',
@@ -115,10 +221,10 @@
     ].join('');
 
     document.body.insertBefore(sideNav, document.body.firstChild);
-    document.body.insertBefore(menuHint, sideNav);
-    document.body.insertBefore(navToggle, menuHint);
+    // Le bouton du menu vit dans le bandeau ; plus d'indice « Ouvrir menu ».
+    siteBar.querySelector('.site-bar-right').appendChild(navToggle);
 
-    var current = window.location.pathname.split('/').pop() || 'index.html';
+    var current = currentPage();
     var currentLink = sideNav.querySelector('a[data-page="' + current + '"]');
     if (currentLink) currentLink.classList.add('current');
 
@@ -159,11 +265,11 @@
     // Toggle FR/EN: handler + état actif synchronisé avec __i18n.
     function refreshLangButtons() {
       var lang = (window.__i18n && window.__i18n.currentLang && window.__i18n.currentLang()) || 'fr';
-      sideNav.querySelectorAll('.lang-btn').forEach(function (b) {
+      document.querySelectorAll('.lang-btn').forEach(function (b) {
         b.classList.toggle('active', b.dataset.lang === lang);
       });
     }
-    sideNav.querySelectorAll('.lang-btn').forEach(function (btn) {
+    document.querySelectorAll('.lang-btn').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         if (window.__i18n && window.__i18n.setLang) {
@@ -268,7 +374,7 @@
     function applyReportTexts() {
       if (!note) return;
       if (!REPORT_ENABLED) {
-        note.textContent = reportText('report.token_missing', 'Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l\'envoi.');
+        note.textContent = reportText('report.token_missing', 'Le signalement est momentanément hors ligne. Merci de réessayer plus tard.');
       }
     }
 
@@ -281,7 +387,7 @@
       modal.classList.remove('open');
       if (nameInput) nameInput.value = '';
       if (textarea) textarea.value = '';
-      if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Signalement hors ligne: configurer RADAR_REPORT_DISPATCH_TOKEN pour activer l\'envoi.');
+      if (note) note.textContent = REPORT_ENABLED ? '' : reportText('report.token_missing', 'Le signalement est momentanément hors ligne. Merci de réessayer plus tard.');
       uiState = 'idle';
     }
 
@@ -357,11 +463,9 @@
           }
         };
 
-        var res = await fetch('https://api.github.com/repos/' + REPORT_REPO + '/dispatches', {
+        var res = await fetch(REPORT_RELAY_URL, {
           method: 'POST',
           headers: {
-            Accept: 'application/vnd.github+json',
-            Authorization: 'Bearer ' + REPORT_TOKEN,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(payload)
@@ -526,202 +630,127 @@
     document.body.classList.add('has-alert-bar');
   }
 
-  function buildBarItems(alerts) {
-    return alerts.map(function(a) {
-      var lbl = alertBarLabel(a.level);
-      var sc  = a.score !== null ? ' \u00b7\u00a0z\u00a0' + a.score.toFixed(1) + '\u00d7' : '';
-      var href = './evolution.html?country=' + encodeURIComponent(a.country) +
-                 '&node=' + encodeURIComponent(a.id) +
-                 '&mode=tracking&gran=week';
+  // ─── Bandeau d'alertes = ÉVÉNEMENTS saillants (règle d'Adrien, 24 oct. 2026) ───
+  // Source : v2/events/latest.json → événements du dernier bloc, par région,
+  // dont la bande est au moins « Élevée ». Un après l'autre, chacun avec son
+  // niveau, suivi des médias qui l'ont couvert (chips cliquables vers l'article).
+  // Clic sur l'événement : un des médias au hasard (comme la Vitrine).
+  // Vitesse constante et lisible ; seule la couleur du bandeau change (niveau
+  // le plus élevé parmi les événements affichés).
+  var EVENT_BAND_TO_LEVEL = { elevee: 'eleve', tres_elevee: 'tres_eleve', extreme: 'extreme' };
+  var EVENT_BAR_PX_PER_SEC = 40;
+  var EVENT_BAR_MAX_MEDIA = 6;
 
-      var lvlCss = levelCss(a.level);
-      if (a.isEvent && a.memberNames && a.memberNames.length) {
-        var membersList = a.memberNames.map(function(n) {
-          return '<span class="alert-bar-event-member">' + escHtml(n) + '</span>';
-        }).join('<span class="alert-bar-event-sep" aria-hidden="true"> \u00b7 </span>');
-        return '<a class="alert-bar-item is-event level-' + escHtml(lvlCss) + '" href="' + escHtml(href) + '">' +
-          '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
-          '<span class="alert-bar-event-tag" aria-hidden="true">\u25c6</span>' +
-          '<span class="alert-bar-event-pivot">' + escHtml(a.id) + '</span>' +
-          '<span class="alert-bar-event-link" aria-hidden="true">\u2014</span>' +
-          '<span class="alert-bar-event-members">' + membersList + '</span>' +
-          (sc ? '<span class="alert-bar-item-score">' + escHtml(sc) + '</span>' : '') +
-          '<span class="alert-bar-item-country">' + escHtml(a.country) + '</span>' +
-          '</a>' +
-          '<span class="alert-bar-sep" aria-hidden="true">\u2022</span>';
-      }
+  function eventBarItems(latest) {
+    var items = [];
+    var regions = (latest && latest.by_region) ? Object.keys(latest.by_region) : [];
+    regions.forEach(function(region) {
+      var evs = (latest.by_region[region] && latest.by_region[region].events) || [];
+      evs.forEach(function(ev) {
+        var level = EVENT_BAND_TO_LEVEL[ev.band];
+        if (!level) return;
+        var arts = Array.isArray(ev.articles) ? ev.articles.filter(function(a) { return a && a.url; }) : [];
+        var byMedia = {}; var media = [];
+        arts.forEach(function(a) {
+          var m = a.media_id || '';
+          if (!m || byMedia[m]) return;
+          byMedia[m] = true; media.push({ media_id: m, url: a.url, title: a.title || '' });
+        });
+        if (!media.length && ev.url) media.push({ media_id: ev.media || '', url: ev.url, title: ev.title || '' });
+        items.push({ id: ev.id, title: ev.title || '', level: level, region: region, index: Number(ev.index) || 0,
+                     urls: arts.map(function(a) { return a.url; }), media: media.slice(0, EVENT_BAR_MAX_MEDIA) });
+      });
+    });
+    var rank = { extreme: 0, tres_eleve: 1, eleve: 2 };
+    items.sort(function(a, b) { return (rank[a.level] - rank[b.level]) || (b.index - a.index); });
+    return items;
+  }
 
-      return '<a class="alert-bar-item level-' + escHtml(lvlCss) + '" href="' + escHtml(href) + '">' +
-        '<span class="alert-bar-item-badge">' + escHtml(lbl) + '</span>' +
-        '<span class="alert-bar-item-name">'  + escHtml(a.id)  + '</span>' +
-        (sc ? '<span class="alert-bar-item-score">' + escHtml(sc) + '</span>' : '') +
-        '<span class="alert-bar-item-country">' + escHtml(a.country) + '</span>' +
+  function buildEventBarItems(items) {
+    return items.map(function(it) {
+      var lvlCss = levelCss(it.level);
+      var urls = it.urls.length ? it.urls : it.media.map(function(m) { return m.url; });
+      var chips = it.media.map(function(m) {
+        return '<a class="alert-bar-media-chip" href="' + escHtml(m.url) + '" target="_blank" rel="noopener" title="' + escHtml(m.title) + '">' + escHtml(m.media_id) + '</a>';
+      }).join('');
+      return '<span class="alert-bar-item is-event level-' + escHtml(lvlCss) + '">' +
+        '<a class="alert-bar-event-main" href="' + escHtml(urls[0] || '#') + '" target="_blank" rel="noopener" data-urls="' + escHtml(JSON.stringify(urls)) + '">' +
+          '<span class="alert-bar-item-badge" data-level="' + escHtml(it.level) + '">' + escHtml(alertBarLabel(it.level)) + '</span>' +
+          '<span class="alert-bar-item-name">' + escHtml(it.title) + '</span>' +
+          '<span class="alert-bar-item-country">' + escHtml(it.region) + '</span>' +
         '</a>' +
-        '<span class="alert-bar-sep" aria-hidden="true">\u2022</span>';
+        (chips ? '<span class="alert-bar-media">' + chips + '</span>' : '') +
+      '</span>' +
+      '<span class="alert-bar-sep" aria-hidden="true">•</span>';
     }).join('');
   }
 
-  function populateAlertBar(graphData) {
+  function populateAlertBar(latest) {
     var strip    = document.getElementById('alert-bar-strip');
     var bar      = document.getElementById('global-alert-bar');
     var navBadge = document.getElementById('nav-alert-badge');
     if (!strip || !bar) return;
 
-    var periods   = (graphData.meta && graphData.meta.periods) ? graphData.meta.periods : [];
-    var countries = Object.keys(graphData.graphs || {});
-    var alerts    = [];
-    var seen      = {};
-
-    // Uniquement la période la plus récente: évite d'afficher des alertes déjà terminées.
-    var latestPeriod = periods.length ? periods[periods.length - 1] : null;
-    var pKey = latestPeriod && latestPeriod.key;
-    for (var ci = 0; ci < countries.length; ci++) {
-      var country = countries[ci];
-      var gd = graphData.graphs[country] && graphData.graphs[country][pKey];
-      if (!gd) continue;
-
-      // 1) Indexer les events: les membres seront masqués au profit du pivot.
-      // Le pivot lui-même est aussi indexé — sinon il serait émis 2× (une
-      // fois comme tête d'event, une fois comme alerte individuelle) depuis
-      // qu'on force le pivot à être lui-même alerté.
-      var events = Array.isArray(gd.events) ? gd.events : [];
-      var memberIds = {};
-      for (var ei = 0; ei < events.length; ei++) {
-        var ev = events[ei];
-        if (!ev) continue;
-        if (ev.pivot && ev.pivot.id) memberIds[ev.pivot.id] = true;
-        if (!Array.isArray(ev.members)) continue;
-        for (var mi = 0; mi < ev.members.length; mi++) memberIds[ev.members[mi].id] = true;
-      }
-
-      // 2) Émettre les pivots d'événements en premier (level effectif = max parmi membres+pivot)
-      for (var ei2 = 0; ei2 < events.length; ei2++) {
-        var ev2 = events[ei2];
-        if (!ev2 || !ev2.pivot || !Array.isArray(ev2.members) || !ev2.members.length) continue;
-        var lvls = ev2.members.map(function(m){ return m.alert_level; });
-        if (ev2.pivot.alert_active) lvls.push(ev2.pivot.alert_level);
-        var topLvl = null;
-        for (var li = 0; li < ALERT_BAR_LEVELS.length; li++) {
-          if (lvls.indexOf(ALERT_BAR_LEVELS[li]) !== -1) { topLvl = ALERT_BAR_LEVELS[li]; break; }
-        }
-        if (!topLvl) continue;  // bandeau ne montre que les 4 tiers principaux
-        var key2 = country + ':event:' + ev2.pivot.id;
-        if (seen[key2]) continue;
-        seen[key2] = true;
-        // Score représentatif = max alert_score parmi pivot+membres
-        var topScore = ev2.pivot.alert_active && typeof ev2.pivot.alert_score === 'number' ? ev2.pivot.alert_score : 0;
-        ev2.members.forEach(function(m){
-          if (typeof m.alert_score === 'number' && m.alert_score > topScore) topScore = m.alert_score;
-        });
-        // Trier les noms de membres par niveau d'alerte pour afficher
-        // les plus saillants en premier dans le défilement.
-        var levelRank = { extreme: 0, tres_eleve: 1, eleve: 2 };
-        var sortedMembers = ev2.members.slice().sort(function(a, b) {
-          var la = levelRank[a.alert_level] !== undefined ? levelRank[a.alert_level] : 9;
-          var lb = levelRank[b.alert_level] !== undefined ? levelRank[b.alert_level] : 9;
-          if (la !== lb) return la - lb;
-          return (b.containment || 0) - (a.containment || 0);
-        });
-        alerts.push({
-          id: ev2.pivot.id,
-          level: topLvl,
-          score: isFinite(topScore) && topScore > 0 ? topScore : null,
-          country: country,
-          isEvent: true,
-          memberCount: ev2.members.length,
-          memberNames: sortedMembers.map(function(m){ return m.id; })
-        });
-      }
-
-      // 3) Émettre les alertes individuelles non couvertes par un event
-      var nodes = gd.nodes || [];
-      for (var ni = 0; ni < nodes.length; ni++) {
-        var node = nodes[ni];
-        if (ALERT_BAR_LEVELS.indexOf(node.alert_level) === -1) continue;
-        if (!node.alert_active) continue;
-        if (memberIds[node.id]) continue;  // masqué (membre d'un event)
-        var key = country + ':' + node.id;
-        if (seen[key]) continue;
-        seen[key] = true;
-        var score = Number(node.alert_score);
-        alerts.push({ id: node.id, level: node.alert_level, score: isFinite(score) ? score : null, country: country });
-      }
-    }
-
-    // Trier: extreme > tres_eleve > eleve, puis score desc
-    var BAR_LEVEL_RANK = { extreme: 0, tres_eleve: 1, eleve: 2 };
-    alerts.sort(function(a, b) {
-      var la = BAR_LEVEL_RANK[a.level] !== undefined ? BAR_LEVEL_RANK[a.level] : 9;
-      var lb = BAR_LEVEL_RANK[b.level] !== undefined ? BAR_LEVEL_RANK[b.level] : 9;
-      if (la !== lb) return la - lb;
-      return (b.score || 0) - (a.score || 0);
-    });
-
-    // Badge compteur dans le menu
+    var items = eventBarItems(latest);
     if (navBadge) {
-      if (alerts.length) { navBadge.textContent = String(alerts.length); navBadge.classList.add('active'); }
+      if (items.length) { navBadge.textContent = String(items.length); navBadge.classList.add('active'); }
       else { navBadge.style.display = 'none'; }
     }
-
-    if (!alerts.length) {
+    if (!items.length) {
       bar.style.display = 'none';
       document.body.classList.remove('has-alert-bar');
       return;
     }
-
     bar.classList.remove('bar-extreme', 'bar-tres-eleve', 'bar-eleve');
-    bar.classList.add('bar-' + levelCss(alerts[0].level));
+    bar.classList.add('bar-' + levelCss(items[0].level));
 
-    // Toujours partir d'une seule copie de itemsHtml comme référence
-    // de mesure. La logique du multiplicateur ci-dessous calcule
-    // combien de copies sont nécessaires pour remplir la piste, puis
-    // pose le strip final avec un nombre PAIR de copies (pour que
-    // translateX(-50%) reste un loop continu).
-    //
-    // Token de synchro: si populateAlertBar est rappelé rapidement
-    // (ex: changement de langue après le fetch initial), seule la
-    // dernière rAF s'exécute. Sinon les rAF se chevauchent et
-    // multiplient la largeur déjà multipliée → strip 4x/8x trop large
-    // → vitesse perçue ultra-lente.
-    var itemsHtml = buildBarItems(alerts);
-    strip.innerHTML = itemsHtml; // une seule copie initiale, on multipliera dans rAF
+    // Une seule copie comme référence de mesure, puis un nombre PAIR de copies
+    // pour que translateX(-50%) boucle sans couture (rAF : mesure après rendu).
+    var itemsHtml = buildEventBarItems(items);
+    strip.innerHTML = itemsHtml;
+    // Le bandeau est en display:none tant qu'il n'est pas « ready » : il faut le
+    // rendre (invisible) AVANT de mesurer, sinon la largeur vaut ~0, les copies
+    // explosent et le ruban file à toute vitesse (vécu le 24 oct. au soir).
+    bar.classList.add('measuring');
     var token = (_alertBarRenderToken = (_alertBarRenderToken || 0) + 1);
-
-    window.requestAnimationFrame(function() {
-      if (token !== _alertBarRenderToken) return; // appel obsolète
+    window.requestAnimationFrame(function() { window.requestAnimationFrame(function() {
+      if (token !== _alertBarRenderToken) return;
       var track = document.getElementById('alert-bar-track');
       var trackW = track ? track.clientWidth : 800;
-      // Largeur d'UNE copie (la référence stable, pas la version multipliée)
-      var oneW = strip.scrollWidth || 1;
-      // On veut au moins 2 copies (pour le loop) et assez pour que
-      // 1 demi-strip dépasse la piste avec une marge de 40px.
+      var oneW = Math.max(strip.scrollWidth, 1);
       var copies = Math.max(2, Math.ceil((trackW + 40) / oneW) * 2);
+      if (copies > 20) copies = 20;
       var multi = '';
       for (var i = 0; i < copies; i++) multi += itemsHtml;
       strip.innerHTML = multi;
       var halfW = strip.scrollWidth / 2 || oneW;
-
-      // Vitesse uniforme ~1.5 px/s (très lent, lecture très posée).
-      // Plancher 360s. Indépendant du nombre d'alertes/copies.
-      var pxPerSec = 1.5;
-      var dur = Math.max(360, Math.round(halfW / pxPerSec));
+      // Vitesse constante et lisible (px/s) ; plancher 30 s.
+      var dur = Math.max(30, Math.round(halfW / EVENT_BAR_PX_PER_SEC));
       strip.style.setProperty('--alert-strip-dur', dur + 's');
+      bar.classList.remove('measuring');
       bar.classList.add('ready');
-    });
+    }); });
   }
+
+  // Clic sur l'événement : un des articles au hasard.
+  document.addEventListener('click', function(e) {
+    var a = e.target.closest && e.target.closest('.alert-bar-event-main[data-urls]');
+    if (!a) return;
+    var urls = [];
+    try { urls = JSON.parse(a.getAttribute('data-urls') || '[]'); } catch (err) { urls = []; }
+    if (urls.length > 1) {
+      e.preventDefault();
+      window.open(urls[Math.floor(Math.random() * urls.length)], '_blank', 'noopener');
+    }
+  });
   var _alertBarRenderToken = 0;
 
   var _lastAlertGraphData = null;
   function initAlertBar() {
     injectAlertBar();
-    // Données découpées (#59) : latest.json ne porte que la dernière période par
-    // pays (~100 ko) au lieu de graph.json entier (9 Mo). Repli sur graph.json
-    // si le chargeur n'est pas disponible.
-    var load = (window.radarData && window.radarData.latestAsGraph)
-      ? window.radarData.latestAsGraph()
-      : fetch(radarDataUrl('graph.json'), { cache: 'no-store' })
-          .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); });
-    load
+    // Source : événements saillants du dernier bloc (v2/events/latest.json, ~15 ko).
+    if (!(window.radarData && window.radarData.eventsLatest)) return;
+    window.radarData.eventsLatest()
       .then(function(data) {
         _lastAlertGraphData = data;
         populateAlertBar(data);
@@ -741,11 +770,10 @@
   document.addEventListener('i18n:applied', function () {
     var strip = document.getElementById('alert-bar-strip');
     if (!strip) return;
-    strip.querySelectorAll('.alert-bar-item').forEach(function (item) {
-      var cls = item.className.match(/level-(\w+)/);
-      if (!cls) return;
-      var badge = item.querySelector('.alert-bar-item-badge');
-      if (badge) badge.textContent = alertBarLabel(cls[1]);
+    // Les libellés sont calculés au rendu ; si i18n arrive après (ou change de
+    // langue), on les recalcule depuis data-level (clé avec underscore).
+    strip.querySelectorAll('.alert-bar-item-badge[data-level]').forEach(function (badge) {
+      badge.textContent = alertBarLabel(badge.getAttribute('data-level'));
     });
   });
 

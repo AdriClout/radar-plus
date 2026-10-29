@@ -118,6 +118,18 @@ df_index <- df_index |>
   dplyr::mutate(indice = salience_index * 100)
 cat("  →", n_total, "lignes chargées,", nrow(df_index), "avec salience_index (spec v1) ; première date :",
     as.character(min(df_index$date_utc)), "\n")
+# Un bloc peut être publié deux fois par le raffineur (vu les 26-27 août 2026 :
+# 2 697 objets en copie identique) : chaque objet serait compté deux fois dans
+# les séries. Une ligne par (pays, date, bloc, objet), la plus forte si deux
+# copies différaient — même règle que build_events.R pour les événements.
+n_avant_dedup <- nrow(df_index)
+df_index <- df_index |>
+  dplyr::mutate(.ordre = dplyr::row_number()) |>
+  dplyr::arrange(dplyr::desc(salience_index)) |>
+  dplyr::distinct(country_id, date_utc, time_interval_utc, extracted_objects, .keep_all = TRUE) |>
+  dplyr::arrange(.ordre) |>
+  dplyr::select(-.ordre)
+cat("  →", n_avant_dedup - nrow(df_index), "lignes en double retirées (même pays, bloc et objet)\n")
 
 cat("Lecture de salient_headlines_objects (médias)...\n")
 df_objects <- readr::read_csv(file.path(OUT_DIR, "salient_objects.csv"),
@@ -752,6 +764,22 @@ url_to_media <- {
     dplyr::select(url, media_id)
   setNames(as.character(lkp$media_id), lkp$url)
 }
+# Par URL : fin du passage en Une (dernière observation, UTC) et minutes en Une —
+# le site affiche « en Une jusqu'à 17h20 · 3h50 » dans le panneau d'articles.
+url_to_until <- {
+  lkp <- df_objects |>
+    dplyr::filter(!is.na(url) & url != "", !is.na(headline_stop_utc)) |>
+    dplyr::arrange(dplyr::desc(headline_stop_utc)) |>
+    dplyr::distinct(url, .keep_all = TRUE)
+  setNames(format(as.POSIXct(as.character(lkp$headline_stop_utc), tz = "UTC"), "%Y-%m-%dT%H:%M:%SZ"), lkp$url)
+}
+url_to_minutes <- if ("headline_minutes" %in% names(df_objects)) {
+  lkp <- df_objects |>
+    dplyr::filter(!is.na(url) & url != "", !is.na(headline_minutes)) |>
+    dplyr::arrange(dplyr::desc(headline_stop_utc)) |>
+    dplyr::distinct(url, .keep_all = TRUE)
+  setNames(as.numeric(lkp$headline_minutes), lkp$url)
+} else setNames(numeric(0), character(0))
 
 build_articles <- function(urls_json, titles_json, max_articles = 15) {
   urls <- parse_json_chr(urls_json)
@@ -767,10 +795,14 @@ build_articles <- function(urls_json, titles_json, max_articles = 15) {
     seen <- c(seen, u)
     title_i <- trimws(titles[i])
     media_i <- url_to_media[u]
+    until_i <- url_to_until[u]
+    min_i   <- url_to_minutes[u]
     out[[length(out) + 1]] <- list(
       title    = if (nzchar(title_i)) title_i else u,
       url      = u,
-      media_id = if (!is.na(media_i)) unname(media_i) else NULL
+      media_id = if (!is.na(media_i)) unname(media_i) else NULL,
+      until    = if (!is.na(until_i)) unname(until_i) else NULL,
+      minutes  = if (length(min_i) && !is.na(min_i)) unname(min_i) else NULL
     )
     if (length(out) >= max_articles) break
   }

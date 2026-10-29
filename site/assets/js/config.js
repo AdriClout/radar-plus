@@ -8,8 +8,10 @@
 (function () {
   var base = 'https://data.radarplus.org';
   // Dev : ?data_base=http://localhost:8000/pipeline/out_r2 (mémorisé dans localStorage ;
-  // ?data_base=reset pour revenir à l'adresse publique).
-  try {
+  // ?data_base=reset pour revenir à l'adresse publique). En local seulement : sur le
+  // site en ligne, un lien piégé pourrait sinon faire lire des données d'ailleurs.
+  var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+  if (local) try {
     var q = new URLSearchParams(window.location.search).get('data_base');
     if (q === 'reset') { localStorage.removeItem('RADAR_DATA_BASE'); }
     else if (q) { localStorage.setItem('RADAR_DATA_BASE', q); }
@@ -21,3 +23,11 @@
     return base.replace(/\/+$/, '') + '/' + String(name).replace(/^\/+/, '');
   };
 })();
+
+// Typographie des heures (règle Vitrine, Adrien 24 oct. 2026) : « 17h57 », « 24h »,
+// jamais d'espace avant le h. À appliquer aux sorties des formateurs de date.
+window.radarTypo = function (s) {
+  return String(s == null ? '' : s)
+    .replace(/(\d{1,2})\s*h\s*(\d{2})/g, '$1h$2')
+    .replace(/(\d{1,2})\s+h\b/g, '$1h');
+};

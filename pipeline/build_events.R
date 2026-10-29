@@ -243,7 +243,16 @@ for (rk in c("QC", "ROC")) {
     group_by(sid) |>
     summarise(
       label      = first(na.omit(c(na_if(event_label, ""), NA_character_))),
+      # Trois titres par histoire (le raffineur en écrit un par bloc) :
+      #   title_last  = dernière apparition (bloc le plus récent) — aussi `title`, rétrocompatible ;
+      #   title_peak  = bloc du pic (indice le plus fort) ;
+      #   title_first = première apparition. Le site montre le pic dans les vues
+      #   cumulatives (semaine/mois/année) et la dernière apparition dans les vues 24h.
       title      = first(titre),
+      title_last = first(titre),
+      title_peak = titre[which.max(index)],
+      title_first = titre[which.min(block_ts)],
+      peak_key   = period_key[which.max(index)],
       issue_fr   = first(na.omit(c(main_issue_text_fr, NA_character_))),
       issue_en   = first(na.omit(c(main_issue_text_en, NA_character_))),
       first_key  = min(period_key),
@@ -254,9 +263,14 @@ for (rk in c("QC", "ROC")) {
       .groups = "drop"
     )
   series_df <- by_bs |> arrange(block_ts)
+  # Manchette représentative la plus récente par storyline (pour les lignes cliquables).
+  last_rows <- d |> arrange(desc(block_ts), desc(index)) |> group_by(sid) |>
+    summarise(url = first(representative_url), media = first(representative_media_id),
+              last_event_id = first(event_id), .groups = "drop")
   stories_by_year <- list()
   for (j in seq_len(nrow(meta_story))) {
     s <- meta_story$sid[j]
+    lr <- last_rows[last_rows$sid == s, ]
     ser <- series_df |> filter(sid == s)
     cum <- sum24h[[s]]
     last_cum <- if (!is.null(cum) && length(cum)) cum[[length(cum)]] else NULL
@@ -264,6 +278,10 @@ for (rk in c("QC", "ROC")) {
     stories_by_year[[yr]][[s]] <- list(
       label      = if (!is.na(meta_story$label[j])) meta_story$label[j] else NULL,
       title      = meta_story$title[j],
+      title_last = meta_story$title_last[j],
+      title_peak = meta_story$title_peak[j],
+      title_first = meta_story$title_first[j],
+      peak_key   = meta_story$peak_key[j],
       issue_fr   = if (!is.na(meta_story$issue_fr[j])) meta_story$issue_fr[j] else NULL,
       issue_en   = if (!is.na(meta_story$issue_en[j])) meta_story$issue_en[j] else NULL,
       first_key  = meta_story$first_key[j],
@@ -271,6 +289,9 @@ for (rk in c("QC", "ROC")) {
       peak       = round(meta_story$peak[j], 3),
       n_blocks   = meta_story$n_blocks[j],
       first_seen = if (!is.na(meta_story$first_seen[j])) meta_story$first_seen[j] else NULL,
+      url        = if (nrow(lr) && !is.na(lr$url[1])) lr$url[1] else NULL,
+      media      = if (nrow(lr) && !is.na(lr$media[1])) lr$media[1] else NULL,
+      last_event_id = if (nrow(lr)) lr$last_event_id[1] else NULL,
       series     = as.list(setNames(round(ser$sumVal, 3), ser$period_key)),
       sum24h     = if (!is.null(cum)) cum else setNames(list(), character(0)),
       band24h    = if (!is.null(last_cum)) band_of(last_cum, TH_SUM[[reg]]) else "aucune"
@@ -289,9 +310,14 @@ for (rk in c("QC", "ROC")) {
     cum <- sum24h[[s]]
     if (!length(cum) || names(cum)[length(cum)] != last_pk) next
     st <- meta_story[meta_story$sid == s, ]
+    last_row <- d |> filter(sid == s) |> arrange(desc(block_ts), desc(index)) |> slice(1)
     current[[length(current) + 1]] <- list(
       storyline = s,
       title     = st$title[1],
+      last_key  = last_row$period_key[1],
+      last_event_id = last_row$event_id[1],
+      url       = if (!is.na(last_row$representative_url[1])) last_row$representative_url[1] else NULL,
+      media     = if (!is.na(last_row$representative_media_id[1])) last_row$representative_media_id[1] else NULL,
       label     = if (!is.na(st$label[1])) st$label[1] else NULL,
       issue_fr  = if (!is.na(st$issue_fr[1])) st$issue_fr[1] else NULL,
       issue_en  = if (!is.na(st$issue_en[1])) st$issue_en[1] else NULL,

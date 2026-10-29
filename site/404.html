@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <!-- Servie par Pages pour toute adresse inexistante, avec le code 404.
+       Sans ce fichier, Pages renvoyait l'accueil en 200 (même pour /robots.txt).
+       Chemins absolus : la page peut être servie à n'importe quelle profondeur. -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Page introuvable | Radar+</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #00000f;
+      --text: rgba(216, 232, 255, 0.97);
+      --muted: rgba(155, 184, 228, 0.9);
+      --line: rgba(104, 151, 255, 0.32);
+      --accent: #8fb7ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px;
+      background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace;
+    }
+    main { max-width: 34rem; text-align: center; }
+    h1 { font-family: 'Orbitron', 'Space Mono', monospace; font-size: 2.4rem; margin: 0 0 0.4rem; color: var(--accent); }
+    p { color: var(--muted); line-height: 1.6; margin: 0.4rem 0; }
+    a { color: var(--accent); }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 1.4rem 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>404</h1>
+    <p>Cette page n'existe pas sur Radar+.</p>
+    <p><a href="/">Retour à l'accueil</a></p>
+    <hr />
+    <p lang="en">This page does not exist on Radar+. <a href="/">Back to the home page</a></p>
+  </main>
+</body>
+</html>

@@ -33,7 +33,9 @@
     "badge_object": "OBJECT",
     "badge_monitoring": "QUALITY",
     "badge_archive": "ARCHIVE",
-    "alert_marker": "!"
+    "alert_marker": "!",
+    "home_une": "La Une des Unes",
+    "home_hot20": "Hot 20"
   },
   "alertbar": {
     "label": "ALERT",
@@ -42,9 +44,9 @@
     "event_tag": "Event",
     "event_members": "{n} related entities",
     "level": {
-      "extreme": "Extreme",
-      "tres_eleve": "Very high",
-      "eleve": "High"
+      "extreme": "Extreme salience",
+      "tres_eleve": "Very high salience",
+      "eleve": "High salience"
     }
   },
   "report": {
@@ -59,7 +61,7 @@
     "error": "Sending failed. Please try again in a moment.",
     "context_prefix": "Context: ",
     "default_section": "Radar+ navigation",
-    "token_missing": "Offline reporting: configure RADAR_REPORT_DISPATCH_TOKEN to enable submissions."
+    "token_missing": "Reporting is temporarily offline. Please try again later."
   },
   "common": {
     "loading": "Loading…",
@@ -117,7 +119,7 @@
   },
   "period": {
     "label": "Period",
-    "4h": "4 h",
+    "4h": "4h",
     "day": "Day",
     "week": "Week",
     "month": "Month",
@@ -154,7 +156,7 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explore",
-    "scroll_aria": "Go to HOT 20"
+    "scroll_aria": "Explore the modules"
   },
   "hot20": {
     "title": "HOT",
@@ -181,7 +183,7 @@
     "streak_tip": "Present in the Top 20 for {n} consecutive {grans}.",
     "score_tip": "Saliency cumulated since the beginning of data collection (all periods combined).",
     "share_label": "of the radar",
-    "points_label": "pts",
+    "points_label": "points",
     "no_data_period": "No data for this {label}",
     "no_data": "No data available",
     "media_tip": "Media involved: {list}",
@@ -224,7 +226,14 @@
     "following": "✓ Following",
     "previously_section": "Previously featured",
     "object_unavailable": "Object unavailable",
-    "no_articles_found": "No article found for this object."
+    "no_articles_found": "No article found for this object.",
+    "mode_events": "EVENTS",
+    "events_head": "The big stories · {label}",
+    "events_usa": "No salient events for the United States (two-outlet panel). Choose QC or CAN.",
+    "events_empty": "No salient event in this period.",
+    "events_peak": "peak {v} pts · {when}",
+    "events_cumul": "{v} pts in total",
+    "events_open": "Open the representative article"
   },
   "alertes": {
     "title": "Media",
@@ -236,9 +245,9 @@
     "level_tres_eleve": "Very high",
     "level_eleve": "High",
     "level_short": {
-      "extreme": "Extr.",
-      "tres_eleve": "V. high",
-      "eleve": "High"
+      "extreme": "Extreme salience",
+      "tres_eleve": "Very high salience",
+      "eleve": "High salience"
     },
     "level_tip_extreme": "Peak above the extreme threshold (p99 of the country).",
     "level_tip_tres_eleve": "Peak between p95 and p99 country thresholds.",
@@ -314,7 +323,7 @@
     "links_aria": "Radar+ links"
   },
   "object_panel": {
-    "saliency_score": "{score} pts · {mentions} mentions · {articles} article(s)",
+    "saliency_score": "{score} points · {mentions} mentions · {articles} article(s)",
     "view_in_evolution": "View in Evolution →",
     "no_articles_period": "No article associated in this slot.",
     "previous_section": "Previously",
@@ -355,7 +364,7 @@
     "streak_suffix_many": "{n} consecutive {grans}",
     "no_data_for": "No data for {label}",
     "no_data_4h": "No data for this 4h block",
-    "wl_until_24h": "24 h view",
+    "wl_until_24h": "24h view",
     "wl_label_day": "Day",
     "wl_label_week": "Week",
     "wl_label_month": "Month",
@@ -451,5 +460,71 @@
     "concordance": "Concordance rate",
     "pages_rejouees": "pages replayed, last 12 months",
     "col_taux": "Concordance"
+  },
+  "aune": {
+    "title": "La Une",
+    "title_accent": "des Unes",
+    "subtitle": "The events dominating front pages over the last 24h",
+    "updated": "latest block: {label}",
+    "usa": "No salient events for the United States: the US panel has only two outlets, too few to measure a front page of front pages. Choose Québec or Canada.",
+    "empty": "No salient event over the last 24 hours.",
+    "meta": "{hours}h on front pages · 24h index: {sum} points",
+    "headlines": "Headlines from the latest block",
+    "note": "Objects and events are ranked by the same salience index — minutes spent on front pages, outlet by outlet. Event data since July 23, 2026.",
+    "note_link": "Methodology →",
+    "band": {
+      "aucune": "—",
+      "faible": "Low salience",
+      "moderee": "Moderate salience",
+      "elevee": "High salience",
+      "tres_elevee": "Very high salience",
+      "extreme": "Extreme salience"
+    },
+    "art_credit": "AI-generated illustration · art direction Mathieu Fortin (Anorak Studio) · Vitrine démocratique",
+    "range": {
+      "today": "Today",
+      "24h": "Last hours",
+      "week": "This week",
+      "month": "This month",
+      "year": "This year"
+    },
+    "range_sub": {
+      "today": "The 3 most salient front pages of the last 24 hours (24h index)",
+      "24h": "Top 10 of the last 24 hours (24h index)",
+      "week": "Top 10 since Monday",
+      "month": "Top 10 of the month",
+      "year": "Top 10 of the year"
+    },
+    "meta_range": "{blocks} blocks on front pages · {points} points",
+    "blocks": "{blocks} blocks",
+    "points": "points",
+    "meta_24h": "{blocks} blocks on front pages · 24h index: {points} points",
+    "index24h_label": "24h index",
+    "index24h_tip": "The Vitrine's index: mean of the indices of the last six 4-hour blocks, weighted towards the most recent (10h half-life). It picks the front page of front pages.",
+    "band24h_tip": "Level of the 24h index (Vitrine thresholds).",
+    "peak_label": "peak: {points} points",
+    "peak_prefix": "Peak ·",
+    "peak_tip": "The story's best 4-hour block in the period: the index of its strongest moment.",
+    "score_tip": "Cumulative index of this story since its first front page (sum of all its 4-hour blocks).",
+    "gain_tip": {
+      "week": "Points gained since Monday",
+      "month": "Points gained this month",
+      "year": "Points gained this year"
+    },
+    "open_random": "Open one of the outlets that covered this front page (at random)",
+    "title_from": {
+      "peak": "The title shown is the one from that block ({label}).",
+      "last": "The title shown is the one from the latest appearance ({label})."
+    },
+    "header_index24h": "24h index",
+    "trend_up_tip": "Up {n} rank(s): {prev} in the previous period, {now} now",
+    "trend_down_tip": "Down {n} rank(s): {prev} in the previous period, {now} now",
+    "trend_stable_tip": "Same rank as in the previous period ({now})",
+    "trend_new_tip": "New story: absent from the previous period's top 10",
+    "trend_return_tip": "Back: a story seen before, absent from the previous period's top 10"
+  },
+  "article_panel": {
+    "current": "Current period",
+    "until": "on the front page until {time}"
   }
 }
