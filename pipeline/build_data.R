@@ -1,11 +1,11 @@
 ################################################################################
 # Constellation des Objets — Génération des données
 #
-# Produit deux fichiers JSON :
-#   graph.json       — GRAPH_DAYS derniers jours, nœuds + articles + liens
-#                      → Mode Constellation
-#   timeseries.json  — HISTORY_DAYS derniers jours, nœuds + articles, sans liens
-#                      → Mode Évolution
+# Produit les sorties v2 découpées (out_r2/v2/, publiées dans R2) et
+# monitor_input.json. Les anciens graph.json, timeseries.json et articles.json
+# ne sont plus écrits (#59, tranche 4) : leur forme est recomposée côté client
+# par site/assets/js/radar-data.js. Les assemblages en mémoire (fenêtre
+# GRAPH_DAYS pour les liens, HISTORY_DAYS pour la série) restent : v2 s'en sert.
 #
 # Usage :
 #   source("constellation/build_data.R")
@@ -91,9 +91,6 @@ OUT_DIR <- tryCatch({
 
 SITE_DIR <- file.path(dirname(OUT_DIR), "site")
 
-GRAPH_FILE <- file.path(SITE_DIR, "graph.json")
-TS_FILE    <- file.path(SITE_DIR, "timeseries.json")
-ARTICLES_FILE <- file.path(SITE_DIR, "articles.json")
 MONITOR_INPUT_FILE <- file.path(SITE_DIR, "monitor_input.json")
 
 # ─── Lecture des CSV produits par fetch_data.py ────────────────────────────────
@@ -1116,9 +1113,6 @@ result_graph <- list(
   graphs = graphs_graph
 )
 
-jsonlite::write_json(result_graph, GRAPH_FILE, auto_unbox = TRUE, pretty = FALSE)
-cat("✓ graph.json      :", round(file.size(GRAPH_FILE) / 1024 / 1024, 2), "Mo —",
-    nrow(periods_graph), "périodes\n")
 
 # ─── timeseries.json ───────────────────────────────────────────────────────────
 
@@ -1201,22 +1195,7 @@ result_ts <- list(
   graphs = graphs_ts
 )
 
-jsonlite::write_json(result_ts, TS_FILE, auto_unbox = TRUE, pretty = FALSE)
-cat("✓ timeseries.json :", round(file.size(TS_FILE) / 1024 / 1024, 2), "Mo —",
-    nrow(periods_ts), "périodes\n")
 
-# ─── articles.json (lazy-loadé côté client) ───────────────────────────────────
-
-result_articles <- list(
-  meta = list(
-    generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
-    history_days = HISTORY_DAYS
-  ),
-  articles = articles_ts
-)
-jsonlite::write_json(result_articles, ARTICLES_FILE, auto_unbox = TRUE, pretty = FALSE)
-cat("✓ articles.json   :", round(file.size(ARTICLES_FILE) / 1024 / 1024, 2), "Mo —",
-    nrow(periods_ts), "périodes\n")
 
 # ─── monitor_input.json (tops entrée complets) ───────────────────────────────
 
