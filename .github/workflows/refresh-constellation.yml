@@ -83,28 +83,30 @@ jobs:
       - name: Vérifier les JSON produits
         run: |
           set -euo pipefail
-          for f in graph timeseries articles monitor_input; do
-            test -s "site/${f}.json"
-            jq -e '.meta.generated_at' "site/${f}.json" >/dev/null
+          test -s site/monitor_input.json
+          jq -e '.meta.generated_at' site/monitor_input.json >/dev/null
+          for f in index latest; do
+            test -s "pipeline/out_r2/v2/${f}.json"
+            jq -e '.generated_at' "pipeline/out_r2/v2/${f}.json" >/dev/null
           done
 
       # Les JSON générés ne vivent plus dans git (chantier 5, #52) : ils sont
       # publiés dans le bucket R2 « radar-plus-data » et le site les lit à
       # l'adresse RADAR_DATA_BASE (site/assets/js/config.js). Aucun commit,
       # aucun déploiement : rafraîchir les données ne touche pas au code.
-      - name: Publier les JSON dans R2
+      # graph.json, timeseries.json et articles.json ne sont plus produits
+      # (#59, tranche 4) : seul monitor_input.json passe encore par ici.
+      - name: Publier monitor_input.json dans R2
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          for f in graph timeseries articles monitor_input; do
-            npx --yes wrangler@4 r2 object put "radar-plus-data/${f}.json" \
-              --file "site/${f}.json" \
-              --content-type application/json \
-              --cache-control "public, max-age=300" \
-              --remote
-          done
+          npx --yes wrangler@4 r2 object put "radar-plus-data/monitor_input.json" \
+            --file site/monitor_input.json \
+            --content-type application/json \
+            --cache-control "public, max-age=300" \
+            --remote
 
       # Sorties v2 découpées (chantier 7, #59) : synchronisation des fichiers
       # modifiés seulement, via l'API S3 de R2. Sautée tant que les secrets
@@ -138,22 +140,17 @@ jobs:
           # Collation bytewise déterministe pour la comparaison lexicale ISO 8601 (revue Copilot)
           export LC_ALL=C
 
-          expected_graph="$(jq -r '.meta.generated_at' site/graph.json)"
-          expected_timeseries="$(jq -r '.meta.generated_at' site/timeseries.json)"
-
-          echo "Expected graph.json meta.generated_at: ${expected_graph}"
-          echo "Expected timeseries.json meta.generated_at: ${expected_timeseries}"
+          expected="$(jq -r '.generated_at' pipeline/out_r2/v2/latest.json)"
+          echo "Expected v2/latest.json generated_at: ${expected}"
 
           for attempt in $(seq 1 30); do
-            live_graph="$(curl -fsS --connect-timeout 5 --max-time 15 "${RADAR_DATA_BASE}/graph.json?v=${attempt}-$(date +%s)" | jq -r '.meta.generated_at // empty' || true)"
-            live_timeseries="$(curl -fsS --connect-timeout 5 --max-time 15 "${RADAR_DATA_BASE}/timeseries.json?v=${attempt}-$(date +%s)" | jq -r '.meta.generated_at // empty' || true)"
+            live="$(curl -fsS --connect-timeout 5 --max-time 15 "${RADAR_DATA_BASE}/v2/latest.json?v=${attempt}-$(date +%s)" | jq -r '.generated_at // empty' || true)"
 
-            echo "Attempt ${attempt}/30 -> graph: ${live_graph:-<indisponible>} | timeseries: ${live_timeseries:-<indisponible>}"
+            echo "Attempt ${attempt}/30 -> v2/latest: ${live:-<indisponible>}"
 
             # Un run concurrent peut avoir publié une version PLUS RÉCENTE : live >= attendu suffit
             # (comparaison lexicale ISO 8601). Le ?v= contourne le cache CDN.
-            if [ -n "${live_graph}" ] && [ ! "${live_graph}" \< "${expected_graph}" ] \
-               && [ -n "${live_timeseries}" ] && [ ! "${live_timeseries}" \< "${expected_timeseries}" ]; then
+            if [ -n "${live}" ] && [ ! "${live}" \< "${expected}" ]; then
               echo "Live site data is in sync (>= expected)."
               exit 0
             fi
