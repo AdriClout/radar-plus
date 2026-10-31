@@ -40,12 +40,10 @@
     .cl-type button.active { background: rgba(85,136,255,0.22); color: #fff; }
     .cl-type button.soon { cursor: not-allowed; opacity: 0.6; }
     .cl-type button.soon small { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 6px; padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; }
-    .cl-toolbar { display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; margin: 14px 0 12px; }
-    .cl-toolbar .country-tabs, .cl-toolbar .aune-tabs { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); }
-    .cl-toolbar .country-tab, .cl-toolbar .aune-tab { font-family: var(--grotesk); font-size: 12px; padding: 5px 11px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; box-shadow: none; letter-spacing: 0; text-transform: none; }
-    .cl-toolbar .country-tab.active, .cl-toolbar .aune-tab.active { background: rgba(85,136,255,0.22); color: #fff; }
+    .aune-head > div:first-child { flex: 1 1 300px; min-width: 0; }
+    .cl-toolbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 4px 0 12px; }
     .cl-search {
-      flex: 1 1 220px; max-width: 360px; margin-left: auto; font-family: var(--grotesk); font-size: 14px; color: #e8f0ff;
+      flex: 1 1 220px; max-width: 360px; font-family: var(--grotesk); font-size: 14px; color: #e8f0ff;
       background: rgba(10,18,50,0.7); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; outline: none;
     }
     .cl-search:focus { border-color: var(--accent); }
@@ -62,8 +60,7 @@
       <h1 class="aune-title"><span data-i18n="classement.title">Classement</span> <span class="accent" data-i18n="classement.title_accent">des événements</span></h1>
       <p class="aune-lede" id="aune-subtitle"></p>
     </div>
-  </div>
-  <div class="cl-toolbar">
+    <div class="aune-controls">
     <div class="cl-type" role="tablist" aria-label="Type">
         <button type="button" class="active" data-i18n="classement.type_events">Événements</button>
         <button type="button" class="soon" disabled data-i18n-title="classement.soon_tip" title="Le classement des objets (sujets, acteurs, lieux) arrive ; d'ici là, le Hot 20 de l'accueil et l'Évolution."><span data-i18n="classement.type_objects">Objets</span><small data-i18n="classement.soon">bientôt</small></button>
@@ -79,6 +76,9 @@
         <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
         <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
       </div>
+    </div>
+  </div>
+  <div class="cl-toolbar">
     <input class="cl-search" id="cl-search" type="search" data-i18n-placeholder="classement.search_placeholder" placeholder="Filtrer : un mot du titre ou du thème" autocomplete="off">
     <span class="cl-count" id="cl-count"></span>
   </div>
