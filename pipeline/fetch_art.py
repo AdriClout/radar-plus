@@ -87,18 +87,32 @@ def main() -> int:
 
     latest = json.load(open(latest_path, encoding="utf-8"))
     v_title = hero.get("title") or ""
+    v_sum = hero.get("sum_qc")  # indice 24h QC de la Une de la Vitrine
+    v_block = hero.get("latest_block") or {}
+    v_block_key = (f"{v_block.get('date_utc')}_{v_block.get('time_interval_utc')}"
+                   if v_block.get("date_utc") and v_block.get("time_interval_utc") else None)
 
-    def same_story(storyline, event_id, title):
+    def same_story(storyline, event_id, title, sum24h=None, last_key=None):
         # Même storyline ou même event_id : certain. Sinon, même famille de
-        # storyline (« story-<slug>-<hash> » : le slug est le sujet) ET titres
-        # très proches (Jaccard des mots ≥ 0,5) : la Vitrine et Radar+ lisent la
-        # même table mais peuvent porter des identifiants différents pour la
-        # même histoire (vu le 24 oct. 2026 : story-france-26a66a62 / -44245166).
+        # storyline (« story-<slug>-<hash> » : le slug est le sujet) ET, soit des
+        # titres très proches (Jaccard des mots ≥ 0,5), soit exactement le même
+        # indice 24h au même bloc (la mesure est la même des deux côtés) : la
+        # Vitrine et Radar+ lisent la même table mais peuvent porter des
+        # identifiants ET des titres différents pour la même histoire (vu le
+        # 24 oct. 2026 : story-france-26a66a62 / -44245166 ; le 31 oct. 2026 :
+        # story-cyclist-68d345cd / -4da0e5ff, titres à 0,44 de Jaccard, même
+        # indice 23,14 — l'illustration manquait sur Radar+).
         if v_story and storyline == v_story:
             return True
         if v_event and event_id == v_event:
             return True
-        if v_story and storyline and family(storyline) == family(v_story) and jaccard(title, v_title) >= 0.5:
+        if not (v_story and storyline and family(storyline) == family(v_story)):
+            return False
+        if jaccard(title, v_title) >= 0.5:
+            return True
+        if (isinstance(v_sum, (int, float)) and isinstance(sum24h, (int, float))
+                and abs(float(sum24h) - float(v_sum)) < 0.02
+                and (v_block_key is None or last_key == v_block_key)):
             return True
         return False
 
@@ -108,7 +122,8 @@ def main() -> int:
             if same_story(ev.get("storyline"), ev.get("id"), ev.get("title") or ""):
                 keys.add(ev.get("storyline"))
         for cur in data.get("current") or []:
-            if same_story(cur.get("storyline"), cur.get("last_event_id"), cur.get("title") or ""):
+            if same_story(cur.get("storyline"), cur.get("last_event_id"), cur.get("title") or "",
+                          cur.get("sum24h"), cur.get("last_key")):
                 keys.add(cur.get("storyline"))
     keys.discard(None)
     keys.add(v_key)  # clé de la Vitrine, toujours archivée
