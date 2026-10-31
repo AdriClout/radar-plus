@@ -19,7 +19,7 @@
     "alertes": "Alerts",
     "statistiques": "Statistics",
     "sonar": "Sonar",
-    "hot20": "Hot 20",
+    "hot20": "Hot 10",
     "unes": "On the radar",
     "analyses": "Analyses",
     "radarplus": "Radar+",
@@ -35,7 +35,7 @@
     "badge_archive": "ARCHIVE",
     "alert_marker": "!",
     "home_une": "La Une des Unes",
-    "home_hot20": "Hot 20",
+    "home_hot20": "Hot 10",
     "classement": "Ranking"
   },
   "alertbar": {
@@ -160,8 +160,8 @@
     "scroll_aria": "Explore the modules"
   },
   "hot20": {
-    "title": "HOT",
-    "title_number": "20",
+    "title": "Hot",
+    "title_number": "10",
     "header_rank": "Rank",
     "header_movement": "Movement",
     "header_subject": "Subject",
@@ -176,8 +176,8 @@
     "next_week_aria": "Next period",
     "trend_new": "New",
     "trend_return": "Return",
-    "trend_new_tip": "New entry in the Top 20 for this {gran}.",
-    "trend_return_tip": "Returning to the Top 20 after at least 2 {grans} of absence.",
+    "trend_new_tip": "New entry in the Hot 10 for this {gran}.",
+    "trend_return_tip": "Back in the Hot 10 after at least 2 {grans} away.",
     "trend_up_tip": "Up {n} rank(s) compared to the previous {gran} (from {prev} to {now}).",
     "trend_down_tip": "Down {n} rank(s) compared to the previous {gran} (from {prev} to {now}).",
     "trend_stable_tip": "Unchanged position: rank {now} as in the previous {gran}.",
@@ -189,7 +189,8 @@
     "no_data": "No data available",
     "media_tip": "Media involved: {list}",
     "media_tip_none": "No identified media outlet.",
-    "articles_tip": "{count} associated article(s)"
+    "articles_tip": "{count} associated article(s)",
+    "see_more": "See more →"
   },
   "constellation": {
     "title": "Constellation",

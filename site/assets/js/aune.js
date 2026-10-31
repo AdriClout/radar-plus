@@ -113,11 +113,12 @@ function auneDayDates() {
   return [d, new Date(t - 86400e3).toISOString().slice(0, 10)];
 }
 function auneArticlesByStory(region) {
-  var out = {}, since = Date.now() - 24 * 3600e3;
+  // Tous les blocs des fichiers du jour et de la veille (pas seulement 24 h) : un média qui a
+  // porté l'histoire hier soir reste affiché tant qu'elle est dans le radar (Adrien, 31 oct.).
+  var out = {};
   auneDayDates().forEach(function(date) {
     var f = auneStore.storylines['day:' + region + ':' + date]; if (!f || !f.periods) return;
     Object.keys(f.periods).sort().reverse().forEach(function(key) {
-      if (periodStartUtc(key) < since) return;
       (f.periods[key] || []).forEach(function(ev) {
         if (!ev || !ev.storyline) return;
         var o = out[ev.storyline] || (out[ev.storyline] = { articles: [], seen: {} });
@@ -227,9 +228,9 @@ function auneTrendHtml(c, i, region, range, prevRanks, prevStart, T) {
   // Absente du classement précédent : « Retour » si l'histoire existait déjà avant la période précédente, sinon « Nouveau ».
   var fk = auneFirstKey(region, c.storyline);
   if (fk && prevStart !== null && periodStartUtc(fk) < prevStart) {
-    return '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('aune.trend_return_tip' + sfx)) + '">&#128260; ' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
+    return '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('aune.trend_return_tip' + sfx)) + '">' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
   }
-  return '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('aune.trend_new_tip' + sfx)) + '">&#128293; ' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
+  return '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('aune.trend_new_tip' + sfx)) + '">' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
 }
 // Variation 4h (vue Dernières heures) : indice 24h courant moins celui de l'édition
 // précédente, affichée à côté de l'indice comme la hausse du Hot 20.
@@ -360,10 +361,10 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   var shareHtml = '<span class="unit hot20-hint" data-tip="' + escapeHtml(T('aune.share_tip')) + '">' + escapeHtml(T('aune.share_label', { pct: Math.round(c.sharePct || 0) })) + '</span>';
   var scoreHtml = c.is24h
     // Dernières heures : indice 24h de la Vitrine + variation depuis l'édition précédente
-    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + '</span>' + shareHtml + auneDeltaHtml(c, T)
+    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + '</span>' + auneDeltaHtml(c, T)
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
-    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + '</span>' + shareHtml;
+    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + '</span>';
   var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T) : '';
   var cls = 'aune-row rank-' + (i + 1) + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
@@ -376,7 +377,7 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
       titleHtml + metaHtml +
     '</div>' +
     '<div class="aune-row-score">' + scoreHtml +
-      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + (c.barPct || 2) + '%"></div></div>' +
+      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + (c.barPct || 2) + '%"></div></div>' + shareHtml +
     '</div>' +
   '</li>';
 }
@@ -435,14 +436,9 @@ function renderALaUne() {
   }
   var prevStart = is24h ? aunePrevEditionStart(latest) : aunePrevWindow(cfg.range)[0];
   if (proportional) {
-    // Hauteur de chaque rang proportionnelle à sa mesure (flex-grow) ; un rang qui
-    // n'aurait pas la place d'une troisième ligne (détails) ne l'affiche pas.
-    var sum = items.reduce(function(m, it) { return m + it.points; }, 0) || 1;
-    var avail = Math.max(0, grid.clientHeight - 34 - 18); // moins l'en-tête et la marge du rang 1
-    items.forEach(function(it) {
-      it.grow = Math.max(it.points, 0.01).toFixed(3);
-      it.size = avail && avail * it.points / sum < 72 ? 's' : 'm';
-    });
+    // Hauteur de chaque rang proportionnelle à sa mesure (flex-grow), avec un plancher
+    // (CSS) qui garde toujours les trois lignes : badge, titre, détails et médias.
+    items.forEach(function(it) { it.grow = Math.max(it.points, 0.01).toFixed(3); });
   }
   if (is24h) {
     var prev24h = aunePrevEdition24h(region, latest);

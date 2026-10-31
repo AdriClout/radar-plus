@@ -950,6 +950,45 @@
       .hot20-row-score { min-width: 78px; }
       .hot20-row-pct strong { font-size: 12px; }
     }
+    /* ===== HOT 10 simplifié (Adrien, 31 oct. 2026) : lignes plutôt que cartes, contrôles en
+       pastilles comme La Une des Unes, liens en texte, plus d'emoji. Ces règles l'emportent
+       sur les anciennes (même sélecteur, plus bas dans la feuille). ===== */
+    .hot20-section { max-width: 1120px; padding: 0 28px 80px; margin-top: 120px; }
+    .hot20-header { margin-bottom: 18px; }
+    .hot20-title { font-size: clamp(27px, 3.6vw, 41px); }
+    .hot20-title .hot20-subtitle { font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 400; margin-top: 8px; }
+    .hot20-evolution-cta, .hot20-evolution-cta:hover { padding: 0; background: none; border: 0; box-shadow: none; transform: none; font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 600; color: #9dbcff; }
+    .hot20-evolution-cta:hover { color: #fff; }
+    .hot20-controls { grid-template-columns: 1fr auto; align-items: center; }
+    .controls-left { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+    #country-tabs, .granularity-tabs { gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); }
+    #country-tabs .country-tab, .granularity-tab { font-family: var(--grotesk); font-size: 12px; letter-spacing: 0; text-transform: none; padding: 5px 11px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); box-shadow: none; }
+    #country-tabs .country-tab:hover, .granularity-tab:hover { color: #fff; background: transparent; }
+    #country-tabs .country-tab.active, .granularity-tab.active { background: rgba(85,136,255,0.22); color: #fff; }
+    .week-label, .week-label-date, .week-label-interval, .week-label-countdown { font-family: var(--grotesk); letter-spacing: 0; text-transform: none; }
+    .week-label-date { font-size: 14px; font-weight: 600; }
+    .week-label-interval, .week-label-countdown { font-size: 12px; }
+    .week-btn { font-family: var(--grotesk); border-radius: 6px; }
+    .hot20-search { margin: 14px 0 10px; }
+    .hot20-search input { font-family: var(--grotesk); font-size: 14px; padding: 9px 12px; border-radius: 8px; letter-spacing: 0; }
+    .hot20-list { border: 0; border-radius: 0; }
+    .hot20-list-header { background: transparent; padding: 0 14px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; border-bottom: 1px solid var(--border); }
+    .hot20-row { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+    .hot20-row:last-child { border-bottom: 1px solid var(--border); }
+    .hot20-row.rank-1, .hot20-row.rank-2, .hot20-row.rank-3 { border-left: 0; background: transparent; }
+    .hot20-row.rank-1:hover, .hot20-row:hover { background: rgba(40,70,160,0.14); }
+    .hot20-row.alert-eleve, .hot20-row.alert-tres-eleve, .hot20-row.alert-extreme { background: transparent; box-shadow: none; }
+    .hot20-row.alert-eleve:hover, .hot20-row.alert-tres-eleve:hover, .hot20-row.alert-extreme:hover { background: rgba(40,70,160,0.14); }
+    .hot20-row-rank { font-family: var(--mono); font-size: 20px; color: rgba(120,165,255,0.75); }
+    .hot20-row-name { font-size: 15.5px; font-weight: 600; }
+    .hot20-row-streak { font-family: var(--grotesk); font-size: 11.5px; margin-top: 2px; }
+    .hot20-row-pct strong { font-size: 18px; }
+    .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
+    .hot20-row-media { font-size: 11px; }
+    .hot20-more { margin-top: 14px; text-align: right; }
+    .hot20-more a { font-family: var(--grotesk); font-size: 13.5px; font-weight: 700; color: #fff; text-decoration: none; }
+    .hot20-more a:hover { text-decoration: underline; }
+    @media (max-width: 760px) { .hot20-section { margin-top: 48px; padding: 0 16px 60px; } }
   </style>
 </head>
 <body>
@@ -990,7 +1029,7 @@
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
     <div class="hot20-title-row">
-      <h2 class="hot20-title"><span data-i18n="hot20.title">HOT</span> <span class="accent" data-i18n="hot20.title_number">20</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
+      <h2 class="hot20-title"><span data-i18n="hot20.title">Hot</span> <span class="accent" data-i18n="hot20.title_number">10</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
       <a class="hot20-evolution-cta" id="hot20-evolution-cta" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta" aria-label="Voir l'évolution dans le temps">
         <span data-i18n="alertes.evo_cta">Voir l&rsquo;évolution dans le temps</span>
         <span class="cta-arrow" aria-hidden="true">↗</span>
@@ -1024,13 +1063,13 @@
     </div>
   </div>
   <div class="hot20-search">
-    <span class="hot20-search-icon">&#128269;</span>
     <input type="text" id="hot20-search-input" data-i18n-placeholder="common.search_radar_placeholder" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
   </div>
   <div class="hot20-search-result" id="search-result"></div>
   <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
   </div>
+  <div class="hot20-more"><a href="./classement.html" data-i18n="hot20.see_more">Voir plus →</a></div>
 </section>
 
 <!-- ========== MODULES ========== -->
@@ -1804,7 +1843,7 @@ function renderHot20() {
     }
   }
 
-  var nodes = allNodes.slice(0, 20);
+  var nodes = allNodes.slice(0, 10); // Hot 10 sur l'accueil (Adrien, 31 oct. 2026) ; la suite dans Classement
   var totalSize = allNodes.reduce(function(acc, n) { return acc + (n.size || 0); }, 0) || 1;
 
   /* Trend: compare with previous slot */
@@ -1971,9 +2010,9 @@ function renderHot20() {
       if (currentSlotIdx > 0) {
         var prevRank = prevRanks[node.id];
         if (!prevRank && comebacks[node.id]) {
-          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('hot20.trend_return_tip', { gran: gl, grans: glp })) + '">&#128260; ' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('hot20.trend_return_tip', { gran: gl, grans: glp })) + '">' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
         } else if (!prevRank) {
-          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('hot20.trend_new_tip', { gran: gl, grans: glp })) + '">&#128293; ' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('hot20.trend_new_tip', { gran: gl, grans: glp })) + '">' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
         } else {
           var diff = prevRank - (i + 1);
           if (diff > 0) {
@@ -1991,7 +2030,7 @@ function renderHot20() {
       var streakHtml = '';
       if (streak > 1) {
         var streakKey = streak > 1 ? 'homepage.streak_suffix_many' : 'homepage.streak_suffix_one';
-        streakHtml = '<div class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">&#128204; ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</div>';
+        streakHtml = '<div class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</div>';
       }
 
       /* Rank class */
