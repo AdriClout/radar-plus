@@ -989,6 +989,18 @@
     .hot20-more a { font-family: var(--grotesk); font-size: 13.5px; font-weight: 700; color: #fff; text-decoration: none; }
     .hot20-more a:hover { text-decoration: underline; }
     @media (max-width: 760px) { .hot20-section { margin-top: 48px; padding: 0 16px 60px; } }
+    @media (max-width: 700px) {
+      .hot20-controls { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+      .controls-left { flex-direction: row; }
+      .week-nav { width: 100%; }
+      .hot20-row { grid-template-columns: 32px minmax(0, 1fr) 132px; gap: 8px; }
+      .hot20-row-score { min-width: 0; padding: 0; }
+      .hot20-row-pct { gap: 6px; }
+      .hot20-row-pct strong { font-size: 14px; }
+      .hot20-row-increase { font-size: 11px; }
+      .hot20-row-name { font-size: 14.5px; }
+      .hot20-more { text-align: left; }
+    }
   </style>
 </head>
 <body>
