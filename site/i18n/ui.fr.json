@@ -35,7 +35,8 @@
     "badge_archive": "ARCHIVE",
     "alert_marker": "!",
     "home_une": "La Une des Unes",
-    "home_hot20": "Hot 20"
+    "home_hot20": "Hot 20",
+    "classement": "Classement"
   },
   "alertbar": {
     "label": "ALERTE",
@@ -540,10 +541,30 @@
     "share_label": "{pct} % du radar",
     "share_tip": "Indice relatif : la part de cet événement dans la saillance totale de tous les événements de la période. La barre dessine cette part : pleine, l'événement est seul dans l'actualité ; à moitié, d'autres compétitionnent.",
     "since_label": "dans le radar depuis {when}",
-    "since_tip": "Première Une captée pour cette histoire : {label} (heure de Montréal)."
+    "since_tip": "Première Une captée pour cette histoire : {label} (heure de Montréal).",
+    "count_one": "{n} histoire",
+    "count_many": "{n} histoires",
+    "see_all": "Voir tout le classement →",
+    "count_shown": "{shown} premières histoires sur {n}"
   },
   "article_panel": {
     "current": "Période courante",
     "until": "en Une jusqu'à {time}"
+  },
+  "classement": {
+    "title": "Classement",
+    "title_accent": "des événements",
+    "type_events": "Événements",
+    "type_objects": "Objets",
+    "soon": "bientôt",
+    "soon_tip": "Le classement des objets (sujets, acteurs, lieux) arrive ; d'ici là, le Hot 20 de l'accueil et l'Évolution.",
+    "search_placeholder": "Filtrer : un mot du titre ou du thème",
+    "range_sub": {
+      "24h": "Toutes les histoires qui ont fait les Unes des 24 dernières heures, classées par l'indice 24h.",
+      "today": "Toutes les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition de 4h.",
+      "week": "Toutes les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition de 4h.",
+      "month": "Toutes les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition de 4h.",
+      "year": "Toutes les histoires qui ont fait les Unes cette année, classées par points cumulés par édition de 4h."
+    }
   }
 }

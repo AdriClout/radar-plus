@@ -35,7 +35,8 @@
     "badge_archive": "ARCHIVE",
     "alert_marker": "!",
     "home_une": "La Une des Unes",
-    "home_hot20": "Hot 20"
+    "home_hot20": "Hot 20",
+    "classement": "Ranking"
   },
   "alertbar": {
     "label": "ALERT",
@@ -540,10 +541,30 @@
     "share_label": "{pct}% of the radar",
     "share_tip": "Relative index: this event's share of the total salience of all events in the period. The bar draws that share: full, the event is alone in the news; half, others are competing.",
     "since_label": "on the radar since {when}",
-    "since_tip": "First front page captured for this story: {label} (Montreal time)."
+    "since_tip": "First front page captured for this story: {label} (Montreal time).",
+    "count_one": "{n} story",
+    "count_many": "{n} stories",
+    "see_all": "See the full ranking →",
+    "count_shown": "first {shown} stories of {n}"
   },
   "article_panel": {
     "current": "Current period",
     "until": "on the front page until {time}"
+  },
+  "classement": {
+    "title": "Ranking",
+    "title_accent": "of events",
+    "type_events": "Events",
+    "type_objects": "Objects",
+    "soon": "soon",
+    "soon_tip": "The ranking of objects (topics, actors, places) is coming; until then, the home page's Hot 20 and the Evolution page.",
+    "search_placeholder": "Filter: a word from the title or the theme",
+    "range_sub": {
+      "24h": "Every story that made the front pages over the last 24 hours, ranked by the 24h index.",
+      "today": "Every story that made the front pages since midnight, ranked by points summed by 4-hour edition.",
+      "week": "Every story that made the front pages since Monday, ranked by points summed by 4-hour edition.",
+      "month": "Every story that made the front pages this month, ranked by points summed by 4-hour edition.",
+      "year": "Every story that made the front pages this year, ranked by points summed by 4-hour edition."
+    }
   }
 }

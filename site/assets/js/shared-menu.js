@@ -107,6 +107,7 @@
             '<a href="./index.html#hot20" data-i18n="nav.home_hot20">Hot 20</a>' +
           '</div>' +
         '</div>' +
+        '<a href="./classement.html" data-page="classement.html" data-i18n="nav.classement">Classement</a>' +
         '<a href="./evolution.html" data-page="evolution.html" data-i18n="nav.evolution">Évolution</a>' +
         '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
         '<a href="./alertes.html" data-page="alertes.html" data-i18n="nav.alertes">Alertes</a>' +
@@ -207,6 +208,7 @@
       '</div>',
       '<h3 data-i18n="nav.section_navigation">Navigation</h3>',
       '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>',
+      '<a href="./classement.html" data-page="classement.html" data-i18n="nav.classement">Classement</a>',
       '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
       '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
       '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
