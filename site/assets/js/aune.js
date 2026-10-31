@@ -330,16 +330,19 @@ function auneChipsHtml(arts) {
 // Illustration de la Vitrine pour CETTE histoire, si elle a été archivée (fetch_art.py) ;
 // l'image ne s'affiche (classe has-art sur le rang) qu'une fois chargée. Pas de
 // chargement différé : un <figure> masqué ne serait jamais demandé.
-function auneArtHtml(c, rnd, urls, T) {
+function auneArtHtml(c, rnd, urls, T, latest) {
   if (!c.storyline) return '';
+  // L'adresse porte la clé de la dernière édition : une image absente à une édition (404 gardé
+  // en cache par le navigateur ou Cloudflare) est redemandée à l'édition suivante.
+  var v = auneLatestKey(latest) ? '?v=' + encodeURIComponent(auneLatestKey(latest)) : '';
   return '<figure class="aune-row-art' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' +
-    '<img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp') + '" alt=""' +
+    '<img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp' + v) + '" alt=""' +
     ' onload="this.closest(\'.aune-row\').classList.add(\'has-art\')" onerror="this.parentNode.remove()">' +
     '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>';
 }
 // Un rang, à l'image du Hot 20 : rang, mouvement, [illustration], badge de saillance
 // puis titre puis détails, et à droite la mesure de la vue avec sa variation et sa barre.
-function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense) {
+function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense, latest) {
   var issue = auneIssue(c, lang);
   var ev = byStory && byStory[c.storyline];
   var urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
@@ -371,7 +374,7 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
     : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + '</span>';
-  var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T) : '';
+  var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T, latest) : '';
   var cls = 'aune-row rank-' + (i + 1) + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
   return '<li class="' + cls + '"' + style + '>' +
@@ -461,7 +464,7 @@ function renderALaUne() {
     '<span class="right">' + escapeHtml(T(is24h ? 'aune.header_score24h' : 'aune.header_points')) + '</span>' +
   '</li>';
   grid.innerHTML = '<ol class="aune-list' + (proportional ? ' proportional' : ' dense') + '">' + header +
-    items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks, prevStart, !proportional); }).join('') + '</ol>';
+    items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks, prevStart, !proportional, latest); }).join('') + '</ol>';
 }
 function init(opts) {
   Object.keys(opts || {}).forEach(function(k) { cfg[k] = opts[k]; });
