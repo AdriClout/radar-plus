@@ -989,7 +989,9 @@
     .hot20-row-streak { font-family: var(--grotesk); font-size: 11.5px; margin-top: 2px; }
     .hot20-row-pct strong { font-size: 17px; }
     .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
-    .hot20-row-media { font-size: 11px; }
+    /* Colonne « articles » retirée de l'accueil (Adrien, 31 oct.) ; le compte reste dans l'info-bulle du sujet. */
+    .hot20-row-media, .hot20-list-header span:last-child { display: none; }
+    .hot20-list-header, .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 210px; }
     .hot20-more { margin-top: 22px; text-align: center; }
     .hot20-more a, .aune-foot-links a:first-child { display: inline-block; font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
     .hot20-more a:hover, .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
