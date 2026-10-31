@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-10-28T22:11:00+00:00",
+ "genere_le": "2026-10-31T22:30:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -556,21 +556,50 @@
     },
     {
      "debut": "2024-05-28",
-     "fin": "2026-06-01",
+     "fin": "2024-12-01",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Corps d'articles complets (médiane de 4 800 à 12 000 caractères)",
      "preuve": {
       "precision_pct": 100.0,
       "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
      }
     },
     {
-     "debut": "2026-06-01",
+     "debut": "2024-12-01",
+     "fin": "2025-10-01",
+     "statut": "valide",
+     "resume": "Unes exactes (même campagne de verdicts), mais corps d'articles absent pendant dix mois : une centaine de caractères au lieu de 4 800 à 12 000, sur 97 à 100 % des captures, et environ 3 000 captures par mois au lieu de 4 300. Les objets de ces Unes sont extraits du titre et de l'amorce seulement. Mesuré dans le brut le 31 octobre 2026, jamais signalé à l'époque",
+     "preuve": {
+      "precision_pct": 100.0,
+      "reference": "aws-infra#486 · mesure du 2026-10-31 (aws-refiners#207, bloc B)"
+     }
+    },
+    {
+     "debut": "2025-10-01",
+     "fin": "2026-05-18",
+     "statut": "valide",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Corps d'articles complets (médiane de 4 500 à 5 100 caractères)",
+     "preuve": {
+      "precision_pct": 100.0,
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+     }
+    },
+    {
+     "debut": "2026-05-18",
+     "fin": "2026-09-21",
+     "statut": "surveillance",
+     "resume": "Unes exactes (concordance 100 % sur deux ans) mais corps des articles absent : une centaine de caractères au lieu de 4 500 à 5 000, dès la semaine du 18 mai 2026 (62 % des captures), puis 100 % jusqu'au correctif du sélecteur de texte (aws-infra#593, en production le 20 septembre 2026)",
+     "preuve": {
+      "reference": "aws-infra#486 · aws-infra#593 · release aws-infra#627 · mesure du 2026-10-31"
+     }
+    },
+    {
+     "debut": "2026-09-21",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Unes exactes (concordance 100 % sur deux ans) mais le corps des articles n'est plus extrait depuis juin 2026 : une centaine de caractères au lieu de 3 000 à 5 000, encore vrai le 12 septembre — correctif du sélecteur d'article à faire ; correctif du sélecteur de texte en relecture : aws-infra#593",
+     "resume": "Collecte courante avec le sélecteur de texte corrigé : le corps revient, mais court (650 à 850 caractères en médiane, contre 4 500 à 5 000 avant mai 2026) — le sélecteur ne prend probablement que l'amorce ; à corriger. Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline",
      "preuve": {
-      "reference": "aws-infra#486 · mesure du 2026-09-12 · aws-infra#593"
+      "reference": "aws-infra#486 · mesure du 2026-10-31"
      }
     }
    ],
@@ -622,9 +651,9 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un proxy —, et de nouveau le 15 octobre (23 à 25 captures dans la journée pour chacun des trois) ; cause en enquête",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un proxy —, et de nouveau le 15 octobre (23 à 25 captures dans la journée pour chacun des trois) ; cause en enquête ; les 19-20 et 26-27 octobre, trois Unes « en direct » (référendum albertain, élection torontoise) portent des corps de 60 000 à 180 000 caractères : pages de direct, pas une panne, mais un texte hors norme pour l'extraction",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14 · mesure du 2026-10-31"
      }
     }
    ],
