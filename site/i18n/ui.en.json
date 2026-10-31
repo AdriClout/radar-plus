@@ -502,9 +502,9 @@
     "index24h_label": "24h index",
     "index24h_tip": "The Vitrine's index: mean of the indices of the last six 4-hour blocks, weighted towards the most recent (10h half-life). It picks the front page of front pages.",
     "band24h_tip": "Level of the 24h index (Vitrine thresholds).",
-    "peak_label": "peak: {points} points",
+    "peak_label": "peak {when}: {points}",
     "peak_prefix": "Peak ·",
-    "peak_tip": "The story's best 4-hour block in the period: the index of its strongest moment.",
+    "peak_tip": "Peak: the story's best 4-hour block in the period, the index of its strongest moment",
     "score_tip": "Cumulative index of this story since its first front page (sum of all its 4-hour blocks).",
     "gain_tip": {
       "week": "Points gained since Monday: sum of the index over 4-hour editions.",
@@ -538,7 +538,9 @@
     "total_label": "total {points}",
     "how": "How the index is calculated →",
     "share_label": "{pct}% of the radar",
-    "share_tip": "Relative index: this event's share of the total salience of all events in the period. The bar draws that share: full, the event is alone in the news; half, others are competing."
+    "share_tip": "Relative index: this event's share of the total salience of all events in the period. The bar draws that share: full, the event is alone in the news; half, others are competing.",
+    "since_label": "on the radar since {when}",
+    "since_tip": "First front page captured for this story: {label} (Montreal time)."
   },
   "article_panel": {
     "current": "Current period",

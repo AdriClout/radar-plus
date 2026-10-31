@@ -1892,7 +1892,7 @@ function auneRanking24h(latest, limit) {
   var cur = (latest && latest.current) || [];
   return cur.slice().sort(function(a, b) { return (b.sum24h || 0) - (a.sum24h || 0); }).slice(0, limit).map(function(c) {
     return { storyline: c.storyline, title: c.title || '', issue_fr: c.issue_fr, issue_en: c.issue_en, url: c.url, media: c.media,
-             points: Number(c.sum24h) || 0, blocks: c.n_blocks || 0, band: c.band24h || 'aucune', lastKey: c.last_key, is24h: true };
+             points: Number(c.sum24h) || 0, blocks: c.n_blocks || 0, band: c.band24h || 'aucune', lastKey: c.last_key, first_key: c.first_key, is24h: true };
   });
 }
 function auneRanking(region, range, limit, win) {
@@ -1928,6 +1928,17 @@ function auneBlockLabel(key, lang) {
   var day = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(start));
   var hour = function(t) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(new Date(t)).replace(/^24$/, '0') + 'h'; };
   return day + ' · ' + hour(start) + '–' + hour(end);
+}
+// Moment d'un bloc, en heure de Montréal et en court : « 11h » si c'est aujourd'hui,
+// « jeu. 19h » dans les six derniers jours, « 27 oct. » avant.
+function auneWhen(key, lang) {
+  if (!key) return '';
+  var t = periodStartUtc(key), d = new Date(t), now = new Date(), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+  var hour = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(d).replace(/^24$/, '0').replace(/^0(\d)$/, '$1') + 'h';
+  var a = mtlParts(d), b = mtlParts(now);
+  if (a.y === b.y && a.m === b.m && a.d === b.d) return hour;
+  if (now.getTime() - t < 6 * 86400e3) return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', weekday: 'short' }).format(d) + ' ' + hour;
+  return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(d);
 }
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
 function auneHeadlines(c, ev, max) {
@@ -1982,8 +1993,10 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   var tagHtml = '<span class="aune-band band-' + escapeHtml(band) + ' hot20-hint" data-tip="' + escapeHtml(bandTip) + '">' + escapeHtml(bandLabel) + '</span>';
   var arts = auneHeadlines(c, ev, 12);
   var metaHtml = '<div class="aune-row-meta">' +
-      '<span>' + escapeHtml(T('aune.blocks', { blocks: c.blocks })) + '</span>' +
-      '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>' +
+      // « Dans le radar depuis … » (première Une captée) et « sommet … » (meilleur bloc de la
+      // période, avec son moment) plutôt que des comptes de blocs (Adrien, 31 oct. 2026).
+      (c.firstKey ? '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.since_tip', { label: auneBlockLabel(c.firstKey, lang) })) + '">' + escapeHtml(T('aune.since_label', { when: auneWhen(c.firstKey, lang) })) + '</span>' : '') +
+      '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + (c.peakKey ? ' (' + auneBlockLabel(c.peakKey, lang) + ')' : '') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneWhen(c.peakKey, lang), points: (c.peak || 0).toFixed(1) })) + '</span>' +
       (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '">' + escapeHtml(T('aune.total_label', { points: (c.total || 0).toFixed(1) })) + '</span>') +
       '<span>' + escapeHtml(T(arts.length === 1 ? 'aune.medias_one' : 'aune.medias_many', { n: arts.length })) + '</span>' +
       auneChipsHtml(arts) +
@@ -2043,7 +2056,8 @@ function renderALaUne() {
   var sums = auneSums(region, auneRange);
   items.forEach(function(it) {
     var o = sums[it.storyline] || { total: 0, gain: 0, peak: 0 };
-    it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakBand = auneBand(region, o.peak);
+    it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakKey = o.peakKey; it.peakBand = auneBand(region, o.peak);
+    it.firstKey = it.first_key || auneFirstKey(region, it.storyline);
   });
   // Barre et libellé = part de l'événement dans la saillance totale de TOUS les
   // événements de la période (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026) :
