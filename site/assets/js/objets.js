@@ -86,13 +86,13 @@ function render() {
     '<span>' + esc(T('classement.header_object')) + '</span><span class="right">' + esc(T('aune.header_points')) + '</span></li>';
   var rows = items.map(function(it, i) {
     var band = LEVEL_BAND[it.level] || 'aucune';
-    var bandLabel = band === 'aucune' ? T('aune.band.aucune') : T('alertes.level_short.' + it.level);
+    var bandLabel = band === 'aucune' ? '' : T('alertes.level_short.' + it.level);
     var share = 100 * it.points / total;
     return '<li class="aune-row rank-' + (i + 1) + ' band-' + band + '">' +
       '<span class="aune-row-rank">' + (i + 1) + '</span>' +
       '<span class="aune-row-trend">' + trendHtml(prevRanks[it.id], i + 1, limit, T, esc) + '</span>' +
       '<div class="aune-row-main">' +
-        '<div class="aune-row-top"><span class="aune-band band-' + band + ' hot20-hint" data-tip="' + esc(T('classement.obj_band_tip')) + '">' + esc(bandLabel) + '</span></div>' +
+        (band === 'aucune' ? '' : '<div class="aune-row-top"><span class="aune-band band-' + band + ' hot20-hint" data-tip="' + esc(T('classement.obj_band_tip')) + '">' + esc(bandLabel) + '</span></div>') +
         '<h3 class="aune-row-title obj"><a href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' + esc(it.id) + '</a></h3>' +
         '<div class="aune-row-meta"><span>' + esc(T(it.blocks === 1 ? 'classement.obj_editions_one' : 'classement.obj_editions_many', { n: it.blocks })) + '</span></div>' +
       '</div>' +
