@@ -536,7 +536,9 @@
     "medias_one": "{n} média",
     "medias_many": "{n} médias",
     "total_label": "total {points}",
-    "how": "Comment l'indice est calculé →"
+    "how": "Comment l'indice est calculé →",
+    "share_label": "{pct} % du radar",
+    "share_tip": "Indice relatif : la part de cet événement dans la saillance totale de tous les événements de la période. La barre dessine cette part : pleine, l'événement est seul dans l'actualité ; à moitié, d'autres compétitionnent."
   },
   "article_panel": {
     "current": "Période courante",

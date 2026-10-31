@@ -234,6 +234,19 @@
     .aune-band.band-tres_elevee { background: #ff9f43; }
     .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
     .aune-band.band-aucune { background: transparent; border: 1px solid rgba(127,147,184,0.45); color: #9fb0cf; }
+    /* Les badges pulsent doucement pour qu'on voie VITE le niveau (Adrien, 31 oct. 2026) ;
+       halo de la couleur du niveau, plus fort à partir d'Élevée. Pas de « Sous le radar ». */
+    @keyframes aune-pulse {
+      0%, 100% { filter: brightness(1); box-shadow: 0 0 0 rgba(0,0,0,0); }
+      50% { filter: brightness(1.18); box-shadow: 0 0 var(--pulse-r, 10px) var(--pulse, rgba(127,147,184,0.55)); }
+    }
+    .aune-band:not(.band-aucune) { animation: aune-pulse 2.2s ease-in-out infinite; }
+    .aune-band.band-faible { --pulse: rgba(127,147,184,0.55); }
+    .aune-band.band-moderee { --pulse: rgba(95,168,255,0.7); }
+    .aune-band.band-elevee { --pulse: rgba(242,201,76,0.8); --pulse-r: 14px; }
+    .aune-band.band-tres_elevee { --pulse: rgba(255,159,67,0.85); --pulse-r: 16px; }
+    .aune-band.band-extreme { --pulse: rgba(255,77,77,0.9); --pulse-r: 18px; animation-duration: 1.4s; }
+    @media (prefers-reduced-motion: reduce) { .aune-band { animation: none; } }
     .aune-row-title { font-size: 16.5px; line-height: 1.3; font-weight: 600; color: #f1f5ff; margin: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
     .aune-row.rank-1 .aune-row-title { font-size: clamp(20px, 2vw, 26px); line-height: 1.2; -webkit-line-clamp: 3; }
     .aune-row.rank-2 .aune-row-title { font-size: 19px; }
@@ -249,8 +262,8 @@
     /* Score comme le Hot 20 : chiffre, unité, variation, barre */
     .aune-row-score { justify-self: end; width: 210px; display: grid; grid-template-columns: auto 1fr auto; column-gap: 8px; align-items: baseline; }
     .aune-row-score .num { font-family: var(--mono); font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
-    .aune-row.rank-1 .aune-row-score .num { font-size: 34px; }
-    .aune-row-score .unit { font-size: 11.5px; color: var(--muted); }
+    .aune-row.rank-1 .aune-row-score .num { font-size: 30px; }
+    .aune-row-score .unit { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
     .aune-row-score .inc { font-family: var(--mono); font-size: 13px; font-weight: 700; white-space: nowrap; }
     .aune-row.rank-1 .aune-row-score .inc { font-size: 15px; }
     .aune-row-score .inc.up { color: #4ade80; }
@@ -1975,14 +1988,15 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
       '<span>' + escapeHtml(T(arts.length === 1 ? 'aune.medias_one' : 'aune.medias_many', { n: arts.length })) + '</span>' +
       auneChipsHtml(arts) +
     '</div>';
+  // La mesure de la vue (l'en-tête la nomme : indice 24h ou points) et, à côté, la part
+  // de l'événement dans l'actualité de la période (indice relatif), que la barre dessine.
+  var shareHtml = '<span class="unit hot20-hint" data-tip="' + escapeHtml(T('aune.share_tip')) + '">' + escapeHtml(T('aune.share_label', { pct: Math.round(c.sharePct || 0) })) + '</span>';
   var scoreHtml = c.is24h
     // Dernières heures : indice 24h de la Vitrine + variation depuis l'édition précédente
-    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + '</span>' +
-      '<span class="unit">' + escapeHtml(T('aune.index24h_label')) + '</span>' + auneDeltaHtml(c, T)
+    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + '</span>' + shareHtml + auneDeltaHtml(c, T)
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
-    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + auneRange)) + '">' + c.points.toFixed(1) + '</span>' +
-      '<span class="unit">' + escapeHtml(T('aune.points')) + '</span>';
+    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + auneRange)) + '">' + c.points.toFixed(1) + '</span>' + shareHtml;
   var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T) : '';
   var cls = 'aune-row rank-' + (i + 1) + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
@@ -2031,9 +2045,13 @@ function renderALaUne() {
     var o = sums[it.storyline] || { total: 0, gain: 0, peak: 0 };
     it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakBand = auneBand(region, o.peak);
   });
-  // Barre = mesure de classement de la vue, relative au 1er (comme le Hot 20)
-  var top = items.reduce(function(m, it) { return Math.max(m, it.points); }, 0) || 1;
-  items.forEach(function(it) { it.barPct = Math.max(2, Math.round(100 * it.points / top)); });
+  // Barre et libellé = part de l'événement dans la saillance totale de TOUS les
+  // événements de la période (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026) :
+  // une barre pleine au rang 1 = seul dans l'actualité ; à moitié = d'autres compétitionnent.
+  var all = is24h ? ((latest && latest.current) || []).map(function(c) { return Number(c.sum24h) || 0; })
+                  : auneRanking(region, auneRange, 1e9).map(function(it) { return it.points; });
+  var total = all.reduce(function(m, v) { return m + v; }, 0) || 1;
+  items.forEach(function(it) { it.sharePct = 100 * it.points / total; it.barPct = Math.max(1, Math.round(it.sharePct)); });
   if (!items.length) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
     return;

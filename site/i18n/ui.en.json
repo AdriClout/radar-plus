@@ -536,7 +536,9 @@
     "medias_one": "{n} outlet",
     "medias_many": "{n} outlets",
     "total_label": "total {points}",
-    "how": "How the index is calculated →"
+    "how": "How the index is calculated →",
+    "share_label": "{pct}% of the radar",
+    "share_tip": "Relative index: this event's share of the total salience of all events in the period. The bar draws that share: full, the event is alone in the news; half, others are competing."
   },
   "article_panel": {
     "current": "Current period",
