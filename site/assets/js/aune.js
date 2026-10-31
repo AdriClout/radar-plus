@@ -502,11 +502,11 @@ function renderALaUne() {
   var q = auneQuery();
   if (q) items = items.filter(function(it) { return auneNorm(it.title + ' ' + auneIssue(it, lang)).indexOf(q) !== -1; });
   var countEl = cfg.countId ? document.getElementById(cfg.countId) : null;
-  var nAll = items.length;
-  items = items.slice(0, limit);
+  var full = items, nAll = full.length; // liste complète filtrée : affichage coupé à `limit`, export CSV entier
+  items = full.slice(0, limit);
   if (countEl) countEl.textContent = nAll > items.length ? T('aune.count_shown', { shown: items.length, n: nAll }) : T(nAll === 1 ? 'aune.count_one' : 'aune.count_many', { n: nAll });
   var sums = auneSums(region, cfg.range);
-  items.forEach(function(it) {
+  full.forEach(function(it) {
     var o = sums[it.storyline] || { total: 0, gain: 0, peak: 0 };
     it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakKey = o.peakKey; it.peakBand = auneBand(region, o.peak);
     it.firstKey = it.first_key || auneFirstKey(region, it.storyline);
@@ -518,7 +518,7 @@ function renderALaUne() {
           : is24h ? ((latest && latest.current) || []).map(function(c) { return Number(c.sum24h) || 0; })
                   : auneRanking(region, cfg.range, 1e9).map(function(it) { return it.points; });
   var total = all.reduce(function(m, v) { return m + v; }, 0) || 1;
-  items.forEach(function(it) { it.sharePct = 100 * it.points / total; it.barPct = Math.max(1, Math.round(it.sharePct)); });
+  full.forEach(function(it) { it.sharePct = 100 * it.points / total; it.barPct = Math.max(1, Math.round(it.sharePct)); });
   if (!items.length) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
     return;
@@ -531,12 +531,13 @@ function renderALaUne() {
   }
   if (is24h) {
     var prev24h = aunePrevEdition24h(region);
-    items.forEach(function(it) { it.prev24h = typeof prev24h[it.storyline] === 'number' ? prev24h[it.storyline] : 0; });
+    full.forEach(function(it) { it.prev24h = typeof prev24h[it.storyline] === 'number' ? prev24h[it.storyline] : 0; });
   }
   // Manchettes : les blocs des 24 dernières heures (fichiers du jour), sinon le dernier bloc.
   var byStory = auneArticlesByStory(region);
   ((latest && latest.events) || []).forEach(function(e) { if (e && e.storyline && !byStory[e.storyline]) byStory[e.storyline] = e; });
   var prevRanks = aunePrevRanks(region, cfg.range);
+  lastExport = { rows: full, prevRanks: prevRanks, byStory: byStory, is24h: is24h, region: region, lang: lang };
   var header = '<li class="aune-list-header">' +
     '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
     '<span class="center">' + escapeHtml(T('hot20.header_movement')) + '</span>' +
@@ -545,6 +546,52 @@ function renderALaUne() {
   '</li>';
   grid.innerHTML = '<ol class="aune-list' + (proportional ? ' proportional' : ' dense') + '">' + header +
     items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks, prevStart, !proportional, latest); }).join('') + '</ol>';
+}
+var lastExport = null;
+// ── Export CSV du classement affiché (filtres compris, liste entière) ──────────
+// Français : point-virgule et virgule décimale (Excel FR) ; anglais : virgule et point.
+function csvFile(headers, rows, filename, lang, T) {
+  var sep = lang === 'en' ? ',' : ';';
+  var cell = function(v) {
+    if (typeof v === 'number') { var n = Number.isInteger(v) ? String(v) : v.toFixed(1); return lang === 'en' ? n : n.replace('.', ','); }
+    var s = v == null ? '' : String(v);
+    return /[";,\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  var lines = [headers.map(cell).join(sep)].concat(rows.map(function(r) { return r.map(cell).join(sep); }));
+  var date = new Intl.DateTimeFormat(lang === 'en' ? 'en-CA' : 'fr-CA', { timeZone: 'America/Montreal', dateStyle: 'long', timeStyle: 'short' }).format(new Date());
+  lines.push(cell(T('csv.footer', { date: date, url: 'https://radarplus.org/methodologie.html' })));
+  var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 1000);
+}
+// Morceau de nom de fichier pour la période affichée : edition-2026-10-31-16h, jour-2026-10-31,
+// semaine-44-2026, mois-2026-10, annee-2026.
+function periodSlug(range, offset) {
+  var w = auneWindow(range, offset), q = mtlParts(new Date(w[0] + 12 * 3600e3));
+  var p = function(n) { return (n < 10 ? '0' : '') + n; };
+  if (range === '24h') { var t = auneEditionStart(offset); if (t === null) return 'edition'; var e = auneEditionTime(auneKeyAt(t)), d = mtlParts(new Date(e)); return 'edition-' + d.y + '-' + p(d.m) + '-' + p(d.d) + '-' + auneHourMtl(e); }
+  if (range === 'today') return 'jour-' + q.y + '-' + p(q.m) + '-' + p(q.d);
+  if (range === 'week') return 'semaine-' + p(auneIsoWeek(w[0] + 12 * 3600e3)) + '-' + mtlParts(new Date(w[1] - 12 * 3600e3)).y;
+  if (range === 'month') return 'mois-' + q.y + '-' + p(q.m);
+  return 'annee-' + q.y;
+}
+function downloadCsv() {
+  if (cfg.type === 'objets') { if (window.RadarObjets) window.RadarObjets.download(); return; }
+  if (!lastExport) return;
+  var T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang;
+  var period = auneNavLabel(cfg.range, cfg.offset, lang, T);
+  var headers = [T('csv.rank'), T('csv.title'), T('csv.theme'), x.is24h ? T('csv.index24h') : T('csv.points')]
+    .concat(x.is24h ? [T('csv.delta4h')] : [T('csv.total')])
+    .concat([T('csv.share'), T('csv.prev_rank'), T('csv.since'), T('csv.peak_points'), T('csv.peak_when'), T('csv.media'), T('csv.region'), T('csv.period')]);
+  var rows = x.rows.map(function(c, i) {
+    var arts = auneHeadlines(c, x.byStory && x.byStory[c.storyline], 50).map(function(a) { return a.media_id || ''; }).filter(Boolean).join(' ');
+    var prev = x.prevRanks[c.storyline] || '';
+    return [i + 1, c.title, auneIssue(c, lang), c.points]
+      .concat(x.is24h ? [c.points - (c.prev24h || 0)] : [c.total || 0])
+      .concat([c.sharePct || 0, prev, c.firstKey ? auneBlockLabel(c.firstKey, lang) : '', c.peak || 0, c.peakKey ? auneBlockLabel(c.peakKey, lang) : '', arts, x.region, period]);
+  });
+  csvFile(headers, rows, 'radarplus_evenements_' + x.region + '_' + periodSlug(cfg.range, cfg.offset) + '.csv', lang, T);
 }
 function init(opts) {
   Object.keys(opts || {}).forEach(function(k) { cfg[k] = opts[k]; });
@@ -592,7 +639,7 @@ function init(opts) {
       .catch(function(e) { console.warn('La Une des Unes : événements indisponibles', e); renderALaUne(); });
   }
 }
-window.RadarAune = { init: init, render: renderALaUne, cfg: cfg,
+window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { window: auneWindow, navLabel: auneNavLabel, csvFile: csvFile, periodSlug: periodSlug, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();

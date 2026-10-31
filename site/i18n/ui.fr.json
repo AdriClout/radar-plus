@@ -581,6 +581,29 @@
       "week": "Le Hot 20 officiel de la semaine : tous les sujets, acteurs et lieux en Une, classés par points cumulés par édition.",
       "month": "Tous les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
       "year": "Tous les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition."
-    }
+    },
+    "download": "Télécharger (CSV)",
+    "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel"
+  },
+  "csv": {
+    "rank": "rang",
+    "title": "titre",
+    "object": "objet",
+    "theme": "thème",
+    "index24h": "indice 24h",
+    "points": "points",
+    "delta4h": "variation 4h",
+    "total": "total depuis la première Une",
+    "share": "part du radar (%)",
+    "prev_rank": "rang à la période précédente",
+    "since": "en Une depuis",
+    "peak_points": "sommet (points)",
+    "peak_when": "sommet (édition)",
+    "media": "médias",
+    "editions": "éditions en Une",
+    "level": "palier d'alerte",
+    "region": "région",
+    "period": "période",
+    "footer": "Généré le {date} par radarplus.org · indice de saillance, méthodologie : {url}"
   }
 }

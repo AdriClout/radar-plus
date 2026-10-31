@@ -5,7 +5,7 @@
    navigateur de période, filtre) et rend dans la même grille, avec le même style de rangs. */
 (function() {
 'use strict';
-var data = null, loading = null;
+var data = null, loading = null, lastExport = null;
 var LEVEL_BAND = { eleve: 'elevee', tres_eleve: 'tres_elevee', extreme: 'extreme' };
 var LEVEL_RANK = { none: 0, eleve: 1, tres_eleve: 2, extreme: 3 };
 
@@ -76,11 +76,12 @@ function render() {
   var q = u.query();
   if (q) items = items.filter(function(it) { return u.norm(it.id).indexOf(q) !== -1; });
   var total = items.reduce(function(m, it) { return m + it.points; }, 0) || 1;
-  var nAll = items.length; items = items.slice(0, limit);
+  var full = items, nAll = full.length; items = full.slice(0, limit);
   var countEl = cfg.countId ? document.getElementById(cfg.countId) : null;
   if (countEl) countEl.textContent = nAll > items.length ? T('classement.obj_count_shown', { shown: items.length, n: nAll }) : T(nAll === 1 ? 'classement.obj_count_one' : 'classement.obj_count_many', { n: nAll });
   if (!items.length) { grid.innerHTML = '<div class="aune-empty">' + esc(T('aune.empty')) + '</div>'; return; }
   var prevRanks = {}; ranked(graphs, prevKeys).forEach(function(it, i) { prevRanks[it.id] = i + 1; });
+  lastExport = { rows: full, prevRanks: prevRanks, total: total, country: country, lang: lang };
   var header = '<li class="aune-list-header">' +
     '<span>' + esc(T('hot20.header_rank')) + '</span><span class="center">' + esc(T('hot20.header_movement')) + '</span>' +
     '<span>' + esc(T('classement.header_object')) + '</span><span class="right">' + esc(T('aune.header_points')) + '</span></li>';
@@ -103,5 +104,15 @@ function render() {
   }).join('');
   grid.innerHTML = '<ol class="aune-list dense">' + header + rows + '</ol>';
 }
-window.RadarObjets = { render: render, load: load };
+function download() {
+  if (!lastExport) return;
+  var A = window.RadarAune, cfg = A.cfg, u = A.util, T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang;
+  var period = u.navLabel(cfg.range, cfg.offset, lang, T);
+  var headers = [T('csv.rank'), T('csv.object'), T('csv.points'), T('csv.share'), T('csv.editions'), T('csv.level'), T('csv.prev_rank'), T('csv.region'), T('csv.period')];
+  var rows = x.rows.map(function(it, i) {
+    return [i + 1, it.id, it.points, 100 * it.points / x.total, it.blocks, it.level === 'none' ? '' : T('alertes.level_short.' + it.level), x.prevRanks[it.id] || '', x.country, period];
+  });
+  u.csvFile(headers, rows, 'radarplus_objets_' + x.country + '_' + u.periodSlug(cfg.range, cfg.offset) + '.csv', lang, T);
+}
+window.RadarObjets = { render: render, load: load, download: download };
 })();
