@@ -38,9 +38,14 @@
     .cl-type { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); }
     .cl-type button { font-family: var(--grotesk); font-size: 12.5px; padding: 6px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
     .cl-type button.active { background: rgba(85,136,255,0.22); color: #fff; }
-    .cl-type button.soon { cursor: not-allowed; opacity: 0.6; }
-    .cl-type button.soon small { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-left: 6px; padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; }
+    body:not(.type-objets) .country-tab.obj-only { display: none; } /* pas d'événements pour les États-Unis */
     .aune-head > div:first-child { flex: 1 1 300px; min-width: 0; }
+    /* Remonter dans le temps : ‹ Semaine 44 · 26 oct. – 1 nov. 2026 › */
+    .cl-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 10px 0 4px; }
+    .cl-nav button { font-family: var(--grotesk); font-size: 18px; line-height: 1; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: rgba(10,18,50,0.7); color: #e8f0ff; cursor: pointer; }
+    .cl-nav button:hover { border-color: var(--accent); }
+    .cl-nav button:disabled { opacity: 0.3; cursor: default; }
+    .cl-nav-label { font-family: var(--grotesk); font-size: 16px; font-weight: 600; color: #f1f5ff; min-width: 220px; text-align: center; }
     .cl-toolbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 4px 0 12px; }
     .cl-search {
       flex: 1 1 220px; max-width: 360px; font-family: var(--grotesk); font-size: 14px; color: #e8f0ff;
@@ -57,17 +62,18 @@
 <section class="aune-section" id="aune" hidden>
   <div class="aune-head">
     <div>
-      <h1 class="aune-title"><span data-i18n="classement.title">Classement</span> <span class="accent" data-i18n="classement.title_accent">des événements</span></h1>
+      <h1 class="aune-title"><span data-i18n="classement.title">Classement</span> <span class="accent" id="cl-title-accent" data-i18n="classement.title_accent">des événements</span></h1>
       <p class="aune-lede" id="aune-subtitle"></p>
     </div>
     <div class="aune-controls">
     <div class="cl-type" role="tablist" aria-label="Type">
-        <button type="button" class="active" data-i18n="classement.type_events">Événements</button>
-        <button type="button" class="soon" disabled data-i18n-title="classement.soon_tip" title="Le classement des objets (sujets, acteurs, lieux) arrive ; d'ici là, le Hot 20 de l'accueil et l'Évolution."><span data-i18n="classement.type_objects">Objets</span><small data-i18n="classement.soon">bientôt</small></button>
+        <button type="button" class="active" data-type="evenements" data-i18n="classement.type_events">Événements</button>
+        <button type="button" data-type="objets" data-i18n="classement.type_objects">Objets</button>
       </div>
       <div class="country-tabs" id="aune-country-tabs">
         <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
         <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
+        <button type="button" class="country-tab obj-only" data-country="USA" data-i18n="country.USA">États-Unis</button>
       </div>
       <div class="aune-tabs" id="aune-tabs" role="tablist">
         <button type="button" class="aune-tab active" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
@@ -77,6 +83,11 @@
         <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
       </div>
     </div>
+  </div>
+  <div class="cl-nav" id="cl-nav">
+    <button type="button" id="cl-nav-prev" data-i18n-title="homepage.previous_period_btn_title" title="Période précédente">&#8249;</button>
+    <span class="cl-nav-label" id="cl-nav-label"></span>
+    <button type="button" id="cl-nav-next" data-i18n-title="homepage.next_period_btn_title" title="Période suivante" disabled>&#8250;</button>
   </div>
   <div class="cl-toolbar">
     <input class="cl-search" id="cl-search" type="search" data-i18n-placeholder="classement.search_placeholder" placeholder="Filtrer : un mot du titre ou du thème" autocomplete="off">
@@ -102,25 +113,44 @@
 <script src="./assets/js/shared-menu.js"></script>
 <script src="./assets/js/shared-ticker.js"></script>
 <script src="./assets/js/aune.js"></script>
+<script src="./assets/js/objets.js"></script>
 <script>
 (function() {
   // Vue et région depuis l'adresse (liens « Voir tout » de l'accueil) : ?range=week&country=CAN
   var q = new URLSearchParams(window.location.search);
-  var range = q.get('range'), country = q.get('country');
+  var range = q.get('range'), country = q.get('country'), type = q.get('type') === 'objets' ? 'objets' : 'evenements';
   var tabs = document.getElementById('aune-tabs'), countries = document.getElementById('aune-country-tabs');
   if (range && tabs.querySelector('[data-range="' + range + '"]')) {
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.range === range); });
   } else range = '24h';
+  if (country === 'USA' && type !== 'objets') country = null;
   if (country && countries.querySelector('[data-country="' + country + '"]')) {
     countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.country === country); });
   } else country = 'QC';
   window.RadarAune.init({
     limits: { '24h': 50, today: 50, week: 50, month: 50, year: 50 },
     proportionalMax: 0, // jamais de hauteur proportionnelle ni d'illustration : liste serrée
-    searchId: 'cl-search', countId: 'cl-count',
+    searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav',
     subtitleKeys: 'classement.range_sub.',
-    range: range, country: country
+    range: range, country: country, type: type
   });
+  // Événements ou objets : même grille, même navigateur, même filtre ; le titre et la
+  // région (États-Unis seulement pour les objets) suivent.
+  var typeBtns = document.querySelectorAll('.cl-type button'), accent = document.getElementById('cl-title-accent');
+  function applyType(t) {
+    var cfg = window.RadarAune.cfg; cfg.type = t;
+    document.body.classList.toggle('type-objets', t === 'objets');
+    typeBtns.forEach(function(b) { b.classList.toggle('active', b.dataset.type === t); });
+    if (accent) { accent.setAttribute('data-i18n', t === 'objets' ? 'classement.title_accent_objects' : 'classement.title_accent'); accent.textContent = (window.t ? window.t(accent.getAttribute('data-i18n')) : accent.textContent); }
+    if (t !== 'objets' && cfg.country === 'USA') {
+      cfg.country = 'QC';
+      countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.country === 'QC'); });
+    }
+    window.RadarAune.render();
+  }
+  typeBtns.forEach(function(b) { b.addEventListener('click', function() { applyType(b.dataset.type); }); });
+  if (type === 'objets') applyType('objets');
+  document.addEventListener('i18n:applied', function() { if (accent) accent.textContent = window.t(accent.getAttribute('data-i18n')); });
 })();
 </script>
 </body>

@@ -35,7 +35,10 @@ var cfg = {
   proportionalMax: 5,   // au plus N rangs : hauteur proportionnelle, illustration au rang 1
   range: '24h', country: 'QC', // sélecteur propre au module, indépendant de celui du Hot 20
   loadLatest: true,     // le module charge lui-même events/latest.json
-  subtitleKeys: 'aune.range_sub.' // préfixe i18n de la phrase sous le titre, par vue
+  subtitleKeys: 'aune.range_sub.', // préfixe i18n de la phrase sous le titre, par vue
+  navId: null,          // page Classement : navigateur de période (‹ libellé ›), ids navId-prev/-label/-next
+  offset: 0,            // 0 = période courante ; −1 = la précédente (édition, jour, semaine, mois, année)…
+  type: 'evenements'    // page Classement : 'evenements' (ce module) ou 'objets' (assets/js/objets.js)
 };
 var eventsLatestData = null;
 var AUNE_LIMIT = cfg.limits;
@@ -60,34 +63,56 @@ function mtlParts(d) {
 function mtlMidnightUtc(y, m, d) {
   return Date.UTC(y, m - 1, d) - mtlOffsetMs(new Date(Date.UTC(y, m - 1, d, 12)));
 }
-function auneWindowStart(range) {
-  var now = new Date(), p = mtlParts(now);
-  if (range === '24h') return now.getTime() - 24 * 3600e3;
-  if (range === 'today') return mtlMidnightUtc(p.y, p.m, p.d); // depuis minuit (Montréal)
+// Minuit (Montréal) du jour qui contient l'instant t.
+function auneDayStart(t) { var q = mtlParts(new Date(t)); return mtlMidnightUtc(q.y, q.m, q.d); }
+// Fenêtre [début, fin[ en ms UTC d'une vue, décalée de `offset` périodes (0 = courante,
+// −1 = précédente…). Les bornes suivent l'heure de Montréal (jour, lundi, 1er du mois).
+function auneWindow(range, offset) {
+  offset = offset || 0;
+  var now = Date.now(), p = mtlParts(new Date(now)), s, e;
+  if (range === 'today') { s = auneDayStart(auneDayStart(now) + offset * 86400e3 + 12 * 3600e3); e = auneDayStart(s + 36 * 3600e3); return [s, e]; }
   if (range === 'week') {
     var back = (p.wd + 6) % 7; // lundi = 0
-    var q = mtlParts(new Date(mtlMidnightUtc(p.y, p.m, p.d) - back * 86400e3 + 12 * 3600e3));
-    return mtlMidnightUtc(q.y, q.m, q.d);
+    var monday = auneDayStart(auneDayStart(now) - back * 86400e3 + 12 * 3600e3);
+    s = auneDayStart(monday + offset * 7 * 86400e3 + 12 * 3600e3); e = auneDayStart(s + 7 * 86400e3 + 12 * 3600e3); return [s, e];
   }
-  if (range === 'month') return mtlMidnightUtc(p.y, p.m, 1);
-  if (range === 'year') return mtlMidnightUtc(p.y, 1, 1);
-  return 0;
+  if (range === 'month') {
+    var m = p.m - 1 + offset, y = p.y + Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+    s = mtlMidnightUtc(y, m + 1, 1); e = m === 11 ? mtlMidnightUtc(y + 1, 1, 1) : mtlMidnightUtc(y, m + 2, 1); return [s, e];
+  }
+  if (range === 'year') return [mtlMidnightUtc(p.y + offset, 1, 1), mtlMidnightUtc(p.y + offset + 1, 1, 1)];
+  // Dernières heures : la fenêtre des 6 éditions de l'indice 24h de l'édition choisie
+  var t0 = auneEditionStart(offset); if (t0 === null) return [now - 24 * 3600e3, now];
+  return [t0 - 5 * AUNE_BLOCK_MS, t0 + AUNE_BLOCK_MS];
 }
+function auneWindowStart(range) { return auneWindow(range, cfg.offset)[0]; }
 // Fenêtre précédente de même nature (jour, semaine, mois, année) : [début, fin[ en ms UTC.
-function aunePrevWindow(range) {
-  var start = auneWindowStart(range), p = mtlParts(new Date(start + 12 * 3600e3));
-  if (range === 'today') return [start - 86400e3, start];
-  if (range === 'week') return [start - 7 * 86400e3, start];
-  if (range === 'month') { var m = p.m === 1 ? 12 : p.m - 1, y = p.m === 1 ? p.y - 1 : p.y; return [mtlMidnightUtc(y, m, 1), start]; }
-  if (range === 'year') return [mtlMidnightUtc(p.y - 1, 1, 1), start];
-  return [0, start];
-}
+// Fenêtre précédente de même nature : [début, fin[ en ms UTC.
+function aunePrevWindow(range) { return auneWindow(range, cfg.offset - 1); }
 function periodStartUtc(key) { // 'AAAA-MM-JJ_HH-HH' (UTC)
   return Date.UTC(+key.slice(0, 4), +key.slice(5, 7) - 1, +key.slice(8, 10), parseInt(key.slice(11, 13), 10) || 0);
 }
 // Dernier bloc publié (clé 'AAAA-MM-JJ_HH-HH') et début, en ms UTC, de l'édition précédente.
 function auneLatestKey(latest) { return latest && latest.period && latest.period.key ? latest.period.key : null; }
-function aunePrevEditionStart(latest) { var k = auneLatestKey(latest); return k ? periodStartUtc(k) - AUNE_BLOCK_MS : null; }
+// Début (ms UTC) du bloc de l'édition choisie (offset 0 = la dernière publiée) et de la précédente.
+function auneEditionStart(offset) {
+  var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[cfg.country] : null;
+  var k = auneLatestKey(latest); return k ? periodStartUtc(k) + (offset || 0) * AUNE_BLOCK_MS : null;
+}
+function aunePrevEditionStart() { var t = auneEditionStart(cfg.offset); return t === null ? null : t - AUNE_BLOCK_MS; }
+// Clé 'AAAA-MM-JJ_HH-HH' (UTC) du bloc qui commence à t.
+function auneKeyAt(t) {
+  var d = new Date(t), h = d.getUTCHours(), p = function(n) { return (n < 10 ? '0' : '') + n; };
+  return d.toISOString().slice(0, 10) + '_' + p(h) + '-' + p((h + 4) % 24);
+}
+// Niveau de l'indice 24h (seuils sum24h de events/index.json), pour une édition passée.
+function auneBand24h(region, value) {
+  var th = auneStore.index && auneStore.index.thresholds && auneStore.index.thresholds[region] && auneStore.index.thresholds[region].sum24h;
+  if (!th) return 'aucune';
+  var band = 'aucune';
+  AUNE_BANDS.forEach(function(b) { if (typeof th[b] === 'number' && value >= th[b]) band = b; });
+  return band;
+}
 function auneBand(region, value) {
   var th = auneStore.index && auneStore.index.thresholds && auneStore.index.thresholds[region] && auneStore.index.thresholds[region].block;
   if (!th) return 'aucune';
@@ -106,11 +131,17 @@ function auneReady(region, range) {
   if (!auneDayDates().every(function(d) { return !!auneStore.storylines['day:' + region + ':' + d]; })) return false;
   return auneYears().every(function(y) { return !!auneStore.storylines[region + '/' + y]; });
 }
+// Dates (UTC, nom des fichiers du jour) à charger pour les manchettes : celles de la fenêtre
+// courante quand elle est courte (édition, jour, semaine), sinon aujourd'hui et hier.
 function auneDayDates() {
   var d = eventsLatestData && eventsLatestData.by_region && eventsLatestData.by_region.QC && eventsLatestData.by_region.QC.period
     ? eventsLatestData.by_region.QC.period.date : new Date().toISOString().slice(0, 10);
   var t = Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
-  return [d, new Date(t - 86400e3).toISOString().slice(0, 10)];
+  var out = [d, new Date(t - 86400e3).toISOString().slice(0, 10)];
+  if (cfg.range === 'month' || cfg.range === 'year') return out;
+  var w = auneWindow(cfg.range, cfg.offset), from = w[0] - 86400e3, to = Math.min(w[1], Date.now());
+  for (var x = from; x <= to && out.length < 12; x += 86400e3) { var k = new Date(x).toISOString().slice(0, 10); if (out.indexOf(k) === -1) out.push(k); }
+  return out;
 }
 function auneArticlesByStory(region) {
   // Tous les blocs des fichiers du jour et de la veille (pas seulement 24 h) : un média qui a
@@ -170,7 +201,7 @@ function auneStoryline(region, sid) {
 //   gain  = somme des blocs dans la fenêtre choisie ;
 //   peak  = meilleur bloc de 4h dans la fenêtre (indice du moment le plus fort).
 function auneSums(region, range) {
-  var start = auneWindowStart(range), now = Date.now(), out = {};
+  var win = auneWindow(range, cfg.offset), start = win[0], now = win[1], out = {};
   auneYears().forEach(function(y) {
     var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
     Object.keys(f.storylines).forEach(function(sid) {
@@ -187,26 +218,42 @@ function auneSums(region, range) {
 }
 // Indice 24h de chaque histoire à l'édition précédente (bloc de 4h avant le dernier),
 // lu dans les fiches : sert au mouvement ET à la colonne « Variation 4h ».
-function aunePrevEdition24h(region, latest) {
-  var prevT = aunePrevEditionStart(latest), out = {};
-  if (prevT === null) return out;
+// Indice 24h de chaque histoire au bloc qui commence à t (ms UTC), lu dans les fiches :
+// sert aux éditions passées, au mouvement et à la colonne « Variation 4h ».
+function auneSum24hAt(region, t) {
+  var out = {};
+  if (t === null || t === undefined) return out;
+  var key = auneKeyAt(t);
   auneYears().forEach(function(y) {
     var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
     Object.keys(f.storylines).forEach(function(sid) {
       var cum = f.storylines[sid].sum24h || {};
-      Object.keys(cum).forEach(function(k) {
-        if (periodStartUtc(k) === prevT) out[sid] = Number(cum[k]) || 0;
-      });
+      if (typeof cum[key] === 'number') out[sid] = cum[key];
     });
   });
   return out;
 }
+function aunePrevEdition24h(region) { return auneSum24hAt(region, aunePrevEditionStart()); }
+// Classement par indice 24h à une édition passée (fiches), même forme que auneRanking24h.
+function auneRanking24hAt(region, t, limit) {
+  var vals = auneSum24hAt(region, t), key = auneKeyAt(t);
+  var list = Object.keys(vals).map(function(sid) {
+    var st = auneStoryline(region, sid) || {};
+    var ttl = (st.peak_key && st.peak_key <= key && st.title_peak) ? st.title_peak : (st.title_last || st.title || '');
+    return { storyline: sid, title: ttl, issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media,
+             points: Number(vals[sid]) || 0, blocks: 0, band: auneBand24h(region, Number(vals[sid]) || 0), lastKey: key, first_key: st.first_key, is24h: true };
+  }).filter(function(it) { return it.points > 0; });
+  list.sort(function(a, b) { return b.points - a.points; });
+  return list.slice(0, limit);
+}
 // Rang de chaque histoire dans la période précédente (même mesure que la vue) :
 // l'édition précédente pour Dernières heures, la fenêtre précédente sinon.
-function aunePrevRanks(region, range, latest) {
+// Rang de chaque histoire dans la période précédente (même mesure que la vue) :
+// l'édition précédente pour Dernières heures, la fenêtre précédente sinon.
+function aunePrevRanks(region, range) {
   var ranks = {}, list = [];
   if (auneIs24h(range)) {
-    var prev = aunePrevEdition24h(region, latest);
+    var prev = aunePrevEdition24h(region);
     list = Object.keys(prev).map(function(sid) { return { storyline: sid, points: prev[sid] }; });
   } else {
     list = auneRanking(region, range, 1e9, aunePrevWindow(range)).map(function(it) { return { storyline: it.storyline, points: it.points }; });
@@ -249,7 +296,9 @@ function auneRanking24h(latest, limit) {
   });
 }
 function auneRanking(region, range, limit, win) {
-  var start = win ? win[0] : auneWindowStart(range), now = win ? win[1] : Date.now(), acc = {};
+  // Sans fenêtre explicite : celle de la vue et de la période choisie (fin incluse, pas « maintenant »).
+  win = win || auneWindow(range, cfg.offset);
+  var start = win[0], now = win[1], acc = {};
   auneYears().forEach(function(y) {
     var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
     Object.keys(f.storylines).forEach(function(sid) {
@@ -300,7 +349,28 @@ function auneBlockLabel(key, lang) {
   return (lang === 'en' ? auneHourMtl(t) + ' edition, ' : 'édition de ' + auneHourMtl(t) + ', ') + day;
 }
 // Filtre de recherche (page Classement) : sans accents ni casse.
-function auneNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+// Libellé de la période affichée : « édition de 16h, 31 oct. », « samedi 31 octobre 2026 »,
+// « Semaine 44 · 26 oct. – 1 nov. 2026 », « octobre 2026 », « 2026 ».
+function auneIsoWeek(t) {
+  var q = mtlParts(new Date(t)), d = new Date(Date.UTC(q.y, q.m - 1, q.d));
+  var day = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - day);
+  var y0 = Date.UTC(d.getUTCFullYear(), 0, 1);
+  return Math.ceil(((d - y0) / 86400e3 + 1) / 7);
+}
+function auneNavLabel(range, offset, lang, T) {
+  var loc = lang === 'en' ? 'en-CA' : 'fr-CA', w = auneWindow(range, offset);
+  var fmt = function(t, o) { return new Intl.DateTimeFormat(loc, Object.assign({ timeZone: 'America/Montreal' }, o)).format(new Date(t)); };
+  if (range === '24h') { var t0 = auneEditionStart(offset); return t0 === null ? '' : auneBlockLabel(auneKeyAt(t0), lang); }
+  if (range === 'today') return fmt(w[0] + 12 * 3600e3, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  if (range === 'week') {
+    var a = w[0] + 12 * 3600e3, b = w[1] - 12 * 3600e3;
+    return T('aune.week_label', { n: auneIsoWeek(a) }) + ' · ' + fmt(a, { day: 'numeric', month: 'short' }) + ' – ' + fmt(b, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  if (range === 'month') return fmt(w[0] + 12 * 3600e3, { month: 'long', year: 'numeric' });
+  if (range === 'year') return fmt(w[0] + 12 * 3600e3, { year: 'numeric' });
+  return '';
+}
+function auneNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 function auneQuery() { var el = cfg.searchId ? document.getElementById(cfg.searchId) : null; return el ? auneNorm(el.value.trim()) : ''; }
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
 function auneHeadlines(c, ev, max) {
@@ -391,6 +461,7 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   '</li>';
 }
 function renderALaUne() {
+  if (cfg.type === 'objets' && window.RadarObjets) { window.RadarObjets.render(); return; }
   var sec = document.getElementById(cfg.sectionId);
   var grid = document.getElementById(cfg.gridId);
   var sub = document.getElementById(cfg.subtitleId);
@@ -418,7 +489,15 @@ function renderALaUne() {
     return;
   }
   var is24h = auneIs24h(cfg.range), limit = AUNE_LIMIT[cfg.range] || 10, proportional = limit <= cfg.proportionalMax;
-  var items = is24h ? auneRanking24h(latest, 1e9) : auneRanking(region, cfg.range, 1e9);
+  // Navigateur de période (page Classement) : libellé et bouton « suivant » bloqué sur la période courante.
+  if (cfg.navId) {
+    var lbl = document.getElementById(cfg.navId + '-label'), nxt = document.getElementById(cfg.navId + '-next');
+    if (lbl) lbl.textContent = auneNavLabel(cfg.range, cfg.offset, lang, T);
+    if (nxt) nxt.disabled = cfg.offset >= 0;
+  }
+  var past24h = is24h && cfg.offset < 0;
+  var items = past24h ? auneRanking24hAt(region, auneEditionStart(cfg.offset), 1e9)
+            : is24h ? auneRanking24h(latest, 1e9) : auneRanking(region, cfg.range, 1e9);
   // Filtre de recherche (page Classement) : titre ou thème, sans accents ni casse.
   var q = auneQuery();
   if (q) items = items.filter(function(it) { return auneNorm(it.title + ' ' + auneIssue(it, lang)).indexOf(q) !== -1; });
@@ -435,7 +514,8 @@ function renderALaUne() {
   // Barre et libellé = part de l'événement dans la saillance totale de TOUS les
   // événements de la période (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026) :
   // une barre pleine au rang 1 = seul dans l'actualité ; à moitié = d'autres compétitionnent.
-  var all = is24h ? ((latest && latest.current) || []).map(function(c) { return Number(c.sum24h) || 0; })
+  var all = past24h ? Object.keys(auneSum24hAt(region, auneEditionStart(cfg.offset))).map(function(sid) { return auneSum24hAt(region, auneEditionStart(cfg.offset))[sid]; })
+          : is24h ? ((latest && latest.current) || []).map(function(c) { return Number(c.sum24h) || 0; })
                   : auneRanking(region, cfg.range, 1e9).map(function(it) { return it.points; });
   var total = all.reduce(function(m, v) { return m + v; }, 0) || 1;
   items.forEach(function(it) { it.sharePct = 100 * it.points / total; it.barPct = Math.max(1, Math.round(it.sharePct)); });
@@ -443,20 +523,20 @@ function renderALaUne() {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
     return;
   }
-  var prevStart = is24h ? aunePrevEditionStart(latest) : aunePrevWindow(cfg.range)[0];
+  var prevStart = is24h ? aunePrevEditionStart() : aunePrevWindow(cfg.range)[0];
   if (proportional) {
     // Hauteur de chaque rang proportionnelle à sa mesure (flex-grow), avec un plancher
     // (CSS) qui garde toujours les trois lignes : badge, titre, détails et médias.
     items.forEach(function(it) { it.grow = Math.max(it.points, 0.01).toFixed(3); });
   }
   if (is24h) {
-    var prev24h = aunePrevEdition24h(region, latest);
+    var prev24h = aunePrevEdition24h(region);
     items.forEach(function(it) { it.prev24h = typeof prev24h[it.storyline] === 'number' ? prev24h[it.storyline] : 0; });
   }
   // Manchettes : les blocs des 24 dernières heures (fichiers du jour), sinon le dernier bloc.
   var byStory = auneArticlesByStory(region);
   ((latest && latest.events) || []).forEach(function(e) { if (e && e.storyline && !byStory[e.storyline]) byStory[e.storyline] = e; });
-  var prevRanks = aunePrevRanks(region, cfg.range, latest);
+  var prevRanks = aunePrevRanks(region, cfg.range);
   var header = '<li class="aune-list-header">' +
     '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
     '<span class="center">' + escapeHtml(T('hot20.header_movement')) + '</span>' +
@@ -486,7 +566,7 @@ function init(opts) {
     if (!btn) return;
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    cfg.range = btn.dataset.range;
+    cfg.range = btn.dataset.range; cfg.offset = 0;
     renderALaUne();
   });
   if (countries) countries.addEventListener('click', function(e) {
@@ -497,6 +577,11 @@ function init(opts) {
     cfg.country = btn.dataset.country;
     renderALaUne();
   });
+  if (cfg.navId) {
+    var prevBtn = document.getElementById(cfg.navId + '-prev'), nextBtn = document.getElementById(cfg.navId + '-next');
+    if (prevBtn) prevBtn.addEventListener('click', function() { cfg.offset -= 1; renderALaUne(); });
+    if (nextBtn) nextBtn.addEventListener('click', function() { if (cfg.offset < 0) { cfg.offset += 1; renderALaUne(); } });
+  }
   var search = cfg.searchId ? document.getElementById(cfg.searchId) : null;
   if (search) search.addEventListener('input', function() { renderALaUne(); });
   document.addEventListener('i18n:applied', function() { renderALaUne(); });
@@ -507,5 +592,7 @@ function init(opts) {
       .catch(function(e) { console.warn('La Une des Unes : événements indisponibles', e); renderALaUne(); });
   }
 }
-window.RadarAune = { init: init, render: renderALaUne, cfg: cfg };
+window.RadarAune = { init: init, render: renderALaUne, cfg: cfg,
+  // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
+  util: { window: auneWindow, navLabel: auneNavLabel, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();

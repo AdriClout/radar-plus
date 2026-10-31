@@ -546,7 +546,8 @@
     "count_one": "{n} story",
     "count_many": "{n} stories",
     "see_all": "See the full ranking →",
-    "count_shown": "first {shown} stories of {n}"
+    "count_shown": "first {shown} stories of {n}",
+    "week_label": "Week {n}"
   },
   "article_panel": {
     "current": "Current period",
@@ -557,8 +558,6 @@
     "title_accent": "of events",
     "type_events": "Events",
     "type_objects": "Objects",
-    "soon": "soon",
-    "soon_tip": "The ranking of objects (topics, actors, places) is coming; until then, the home page's Hot 20 and the Evolution page.",
     "search_placeholder": "Filter: a word from the title or the theme",
     "range_sub": {
       "24h": "Every story that made the front pages over the last 24 hours, ranked by the 24h index.",
@@ -566,6 +565,22 @@
       "week": "Every story that made the front pages since Monday, ranked by points summed by edition.",
       "month": "Every story that made the front pages this month, ranked by points summed by edition.",
       "year": "Every story that made the front pages this year, ranked by points summed by edition."
+    },
+    "title_accent_objects": "of objects",
+    "header_object": "Object",
+    "obj_count_one": "{n} object",
+    "obj_count_many": "{n} objects",
+    "obj_count_shown": "first {shown} objects of {n}",
+    "obj_editions_one": "{n} edition on front pages",
+    "obj_editions_many": "{n} editions on front pages",
+    "obj_points_tip": "Sum of the object's salience index over the period's editions (the Hot 20 calculation).",
+    "obj_band_tip": "Highest alert tier reached by the object in the period (tiers calibrated by country).",
+    "obj_sub": {
+      "24h": "Every topic, actor and place on the front pages at the latest edition, ranked by salience index.",
+      "today": "Every topic, actor and place on the front pages since midnight, ranked by points summed by edition.",
+      "week": "The official Hot 20 of the week: every topic, actor and place on the front pages, ranked by points summed by edition.",
+      "month": "Every topic, actor and place on the front pages this month, ranked by points summed by edition.",
+      "year": "Every topic, actor and place on the front pages this year, ranked by points summed by edition."
     }
   }
 }

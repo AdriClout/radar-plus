@@ -546,7 +546,8 @@
     "count_one": "{n} histoire",
     "count_many": "{n} histoires",
     "see_all": "Voir le classement complet →",
-    "count_shown": "{shown} premières histoires sur {n}"
+    "count_shown": "{shown} premières histoires sur {n}",
+    "week_label": "Semaine {n}"
   },
   "article_panel": {
     "current": "Période courante",
@@ -557,8 +558,6 @@
     "title_accent": "des événements",
     "type_events": "Événements",
     "type_objects": "Objets",
-    "soon": "bientôt",
-    "soon_tip": "Le classement des objets (sujets, acteurs, lieux) arrive ; d'ici là, le Hot 20 de l'accueil et l'Évolution.",
     "search_placeholder": "Filtrer : un mot du titre ou du thème",
     "range_sub": {
       "24h": "Toutes les histoires qui ont fait les Unes des 24 dernières heures, classées par l'indice 24h.",
@@ -566,6 +565,22 @@
       "week": "Toutes les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
       "month": "Toutes les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
       "year": "Toutes les histoires qui ont fait les Unes cette année, classées par points cumulés par édition."
+    },
+    "title_accent_objects": "des objets",
+    "header_object": "Objet",
+    "obj_count_one": "{n} objet",
+    "obj_count_many": "{n} objets",
+    "obj_count_shown": "{shown} premiers objets sur {n}",
+    "obj_editions_one": "{n} édition en Une",
+    "obj_editions_many": "{n} éditions en Une",
+    "obj_points_tip": "Somme de l'indice de saillance de l'objet sur les éditions de la période (le calcul du Hot 20).",
+    "obj_band_tip": "Plus haut palier d'alerte atteint par l'objet dans la période (paliers calibrés par pays).",
+    "obj_sub": {
+      "24h": "Tous les sujets, acteurs et lieux en Une à la dernière édition, classés par indice de saillance.",
+      "today": "Tous les sujets, acteurs et lieux en Une depuis minuit, classés par points cumulés par édition.",
+      "week": "Le Hot 20 officiel de la semaine : tous les sujets, acteurs et lieux en Une, classés par points cumulés par édition.",
+      "month": "Tous les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
+      "year": "Tous les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition."
     }
   }
 }
