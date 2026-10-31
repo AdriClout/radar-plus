@@ -482,15 +482,13 @@
     },
     "art_credit": "Illustration générée par intelligence artificielle · direction artistique Mathieu Fortin (Anorak Studio) · Vitrine démocratique",
     "range": {
-      "today": "Aujourd'hui",
       "24h": "Dernières heures",
       "week": "Cette semaine",
       "month": "Ce mois-ci",
       "year": "Cette année"
     },
     "range_sub": {
-      "today": "Les 3 Unes les plus saillantes des 24 dernières heures (indice 24h)",
-      "24h": "Le top 10 des 24 dernières heures (indice 24h)",
+      "24h": "Le top 5 des 24 dernières heures (indice 24h)",
       "week": "Le top 10 depuis lundi",
       "month": "Le top 10 du mois",
       "year": "Le top 10 de l'année"
@@ -521,7 +519,14 @@
     "trend_down_tip": "Perd {n} rang(s) : {prev}e à la période précédente, {now}e maintenant",
     "trend_stable_tip": "Même rang qu'à la période précédente ({now}e)",
     "trend_new_tip": "Nouvelle histoire : absente du top 10 de la période précédente",
-    "trend_return_tip": "De retour : histoire déjà vue, absente du top 10 de la période précédente"
+    "trend_return_tip": "De retour : histoire déjà vue, absente du top 10 de la période précédente",
+    "header_delta": "Variation 4h",
+    "delta_tip": "Variation de l'indice 24h depuis l'édition précédente (le bloc de 4h d'avant) : {prev} points → {now} points.",
+    "trend_up_tip_24h": "Gagne {n} rang(s) : {prev}e à l'édition précédente (4h plus tôt), {now}e maintenant",
+    "trend_down_tip_24h": "Perd {n} rang(s) : {prev}e à l'édition précédente (4h plus tôt), {now}e maintenant",
+    "trend_stable_tip_24h": "Même rang qu'à l'édition précédente, 4h plus tôt ({now}e)",
+    "trend_new_tip_24h": "Nouvelle histoire : absente du top 5 de l'édition précédente (4h plus tôt)",
+    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top 5 de l'édition précédente (4h plus tôt)"
   },
   "article_panel": {
     "current": "Période courante",

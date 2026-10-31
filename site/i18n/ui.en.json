@@ -482,15 +482,13 @@
     },
     "art_credit": "AI-generated illustration · art direction Mathieu Fortin (Anorak Studio) · Vitrine démocratique",
     "range": {
-      "today": "Today",
       "24h": "Last hours",
       "week": "This week",
       "month": "This month",
       "year": "This year"
     },
     "range_sub": {
-      "today": "The 3 most salient front pages of the last 24 hours (24h index)",
-      "24h": "Top 10 of the last 24 hours (24h index)",
+      "24h": "Top 5 of the last 24 hours (24h index)",
       "week": "Top 10 since Monday",
       "month": "Top 10 of the month",
       "year": "Top 10 of the year"
@@ -521,7 +519,14 @@
     "trend_down_tip": "Down {n} rank(s): {prev} in the previous period, {now} now",
     "trend_stable_tip": "Same rank as in the previous period ({now})",
     "trend_new_tip": "New story: absent from the previous period's top 10",
-    "trend_return_tip": "Back: a story seen before, absent from the previous period's top 10"
+    "trend_return_tip": "Back: a story seen before, absent from the previous period's top 10",
+    "header_delta": "4h change",
+    "delta_tip": "Change in the 24h index since the previous edition (the 4-hour block before): {prev} points → {now} points.",
+    "trend_up_tip_24h": "Up {n} rank(s): {prev} in the previous edition (4h earlier), {now} now",
+    "trend_down_tip_24h": "Down {n} rank(s): {prev} in the previous edition (4h earlier), {now} now",
+    "trend_stable_tip_24h": "Same rank as in the previous edition, 4h earlier ({now})",
+    "trend_new_tip_24h": "New story: absent from the previous edition's top 5 (4h earlier)",
+    "trend_return_tip_24h": "Back: a story seen before, absent from the previous edition's top 5 (4h earlier)"
   },
   "article_panel": {
     "current": "Current period",
