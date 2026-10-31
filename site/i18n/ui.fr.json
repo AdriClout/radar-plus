@@ -473,7 +473,7 @@
     "note": "Objets et événements sont classés par le même indice de saillance — les minutes passées en Une, média par média. Données d'événements depuis le 23 juillet 2026.",
     "note_link": "Méthodologie →",
     "band": {
-      "aucune": "—",
+      "aucune": "Sous le radar",
       "faible": "Saillance faible",
       "moderee": "Saillance modérée",
       "elevee": "Saillance élevée",
@@ -485,13 +485,15 @@
       "24h": "Dernières heures",
       "week": "Cette semaine",
       "month": "Ce mois-ci",
-      "year": "Cette année"
+      "year": "Cette année",
+      "today": "Aujourd'hui"
     },
     "range_sub": {
-      "24h": "Le top 5 des 24 dernières heures (indice 24h)",
-      "week": "Le top 10 depuis lundi",
-      "month": "Le top 10 du mois",
-      "year": "Le top 10 de l'année"
+      "24h": "Les cinq histoires qui dominent les Unes des 24 dernières heures.",
+      "week": "Le top 10 depuis lundi (points cumulés par édition de 4h).",
+      "month": "Le top 10 du mois (points cumulés par édition de 4h).",
+      "year": "Le top 10 de l'année (points cumulés par édition de 4h).",
+      "today": "Les cinq histoires qui dominent les Unes depuis minuit (points cumulés par édition de 4h)."
     },
     "meta_range": "{blocks} blocs en Une · {points} points",
     "blocks": "{blocks} blocs",
@@ -505,9 +507,10 @@
     "peak_tip": "Meilleur bloc de 4h de l'histoire dans la période : l'indice de son moment le plus fort.",
     "score_tip": "Cumul de l'indice de cette histoire depuis sa première Une (somme de tous ses blocs de 4h).",
     "gain_tip": {
-      "week": "Points gagnés depuis lundi",
-      "month": "Points gagnés ce mois-ci",
-      "year": "Points gagnés cette année"
+      "week": "Points gagnés depuis lundi : somme de l'indice des éditions de 4h.",
+      "month": "Points gagnés ce mois-ci : somme de l'indice des éditions de 4h.",
+      "year": "Points gagnés cette année : somme de l'indice des éditions de 4h.",
+      "today": "Points gagnés depuis minuit : somme de l'indice des éditions de 4h de la journée."
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
     "title_from": {
@@ -518,15 +521,22 @@
     "trend_up_tip": "Gagne {n} rang(s) : {prev}e à la période précédente, {now}e maintenant",
     "trend_down_tip": "Perd {n} rang(s) : {prev}e à la période précédente, {now}e maintenant",
     "trend_stable_tip": "Même rang qu'à la période précédente ({now}e)",
-    "trend_new_tip": "Nouvelle histoire : absente du top 10 de la période précédente",
-    "trend_return_tip": "De retour : histoire déjà vue, absente du top 10 de la période précédente",
+    "trend_new_tip": "Nouvelle histoire : absente du classement de la période précédente",
+    "trend_return_tip": "De retour : histoire déjà vue, absente du classement de la période précédente",
     "header_delta": "Variation 4h",
     "delta_tip": "Variation de l'indice 24h depuis l'édition précédente (le bloc de 4h d'avant) : {prev} points → {now} points.",
     "trend_up_tip_24h": "Gagne {n} rang(s) : {prev}e à l'édition précédente (4h plus tôt), {now}e maintenant",
     "trend_down_tip_24h": "Perd {n} rang(s) : {prev}e à l'édition précédente (4h plus tôt), {now}e maintenant",
     "trend_stable_tip_24h": "Même rang qu'à l'édition précédente, 4h plus tôt ({now}e)",
     "trend_new_tip_24h": "Nouvelle histoire : absente du top 5 de l'édition précédente (4h plus tôt)",
-    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top 5 de l'édition précédente (4h plus tôt)"
+    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top 5 de l'édition précédente (4h plus tôt)",
+    "header_subject": "Saillance · sujet",
+    "header_score24h": "Indice 24h · variation 4h",
+    "header_points": "Points",
+    "medias_one": "{n} média",
+    "medias_many": "{n} médias",
+    "total_label": "total {points}",
+    "how": "Comment l'indice est calculé →"
   },
   "article_panel": {
     "current": "Période courante",

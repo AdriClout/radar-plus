@@ -80,6 +80,14 @@
   function injectSiteBar() {
     var page = currentPage();
     if (NO_BAR_PAGES[page] || document.getElementById('site-bar')) return null;
+    // Police du bandeau (Space Grotesk, 31 oct. 2026) : chargée ici pour que toutes les
+    // pages l'aient, même celles qui ne la demandent pas encore dans leur <head>.
+    if (!document.querySelector('link[href*="Space+Grotesk"]')) {
+      var font = document.createElement('link');
+      font.rel = 'stylesheet';
+      font.href = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap';
+      (document.head || document.documentElement).appendChild(font);
+    }
     var bar = document.createElement('header');
     bar.id = 'site-bar';
     bar.className = 'site-bar';

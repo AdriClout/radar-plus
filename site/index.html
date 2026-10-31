@@ -8,7 +8,7 @@
   <title>RADAR+ • Analyse de Saillance Médiatique</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared-menu.css" />
   <style>
     :root {
@@ -20,14 +20,18 @@
       --card-bg: rgba(10,18,50,0.7);
       --border: rgba(90,140,255,0.22);
       --ticker-height: 44px;
-      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      /* Typographie (Adrien, 31 oct. 2026) : Space Grotesk pour le texte et les titres,
+         Space Mono pour les chiffres. Orbitron (science-fiction) est retirée. La variable
+         --orbitron est gardée pour ne pas réécrire toutes les règles : elle pointe sur Grotesk. */
+      --grotesk: 'Space Grotesk', 'Space Mono', sans-serif;
+      --orbitron: 'Space Grotesk', 'Space Mono', sans-serif;
       --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     /* Pas de défilement latéral sur mobile : iOS Safari ignore overflow-x sur body
        seul, il faut aussi html ; « clip » ne crée pas de conteneur de défilement. */
     html { scroll-behavior: smooth; overflow-x: hidden; overflow-x: clip; }
-    body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; overflow-x: clip; }
+    body { background: var(--bg); color: var(--text); font-family: var(--grotesk); font-size: 15px; font-variant-numeric: tabular-nums; overflow-x: hidden; overflow-x: clip; }
 
     /* ========== STARFIELD ========== */
     #stars-canvas {
@@ -156,120 +160,133 @@
 
     /* ========== HOT 20 SECTION ========== */
     /* ========== LA UNE DES UNES (événements saillants) ========== */
+    /* ========== LA UNE DES UNES (mise en page D2, Adrien 31 oct. 2026) ========== */
+    /* Le module tient dans le premier écran : la liste prend la hauteur qui reste
+       et chaque rang a une hauteur proportionnelle à sa mesure (flex-grow). */
     .aune-section {
       position: relative; z-index: 1;
-      padding: 84px 40px 220px; /* 1re section : dégage le menu ; grand espace avant le Hot 20, comme avant le robot */
-      max-width: 1000px; margin: 0 auto;
+      max-width: 1120px; margin: 0 auto;
+      padding: 24px 28px 16px;
+      display: flex; flex-direction: column;
+      /* Hauteur = l'écran moins le bandeau d'alertes (fixé, 32 px de marge du body), le menu
+         (collant, en flux) et le bandeau « Dans le radar » fixé en bas. Plancher 640 px : en
+         dessous, la page défile un peu plutôt que d'écraser les rangs. */
+      height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 640px);
     }
-    .aune-controls { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 0 0 16px; }
-    .aune-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .aune-tab {
-      font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
-      color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 6px;
-      padding: 7px 14px; cursor: pointer; transition: color 0.2s, background 0.2s, border-color 0.2s;
+    .aune-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
+    .aune-title { font-family: var(--grotesk); font-size: clamp(30px, 4vw, 46px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #f1f5ff; }
+    .aune-title .accent { color: var(--accent); }
+    .aune-lede { font-size: 14.5px; color: var(--muted); margin-top: 8px; max-width: 600px; line-height: 1.45; min-height: 1.45em; }
+    .aune-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .aune-controls .country-tabs, .aune-tabs { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); margin: 0; }
+    .aune-controls .country-tab, .aune-tab {
+      font-family: var(--grotesk); font-size: 12.5px; letter-spacing: 0; text-transform: none;
+      padding: 6px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted);
+      cursor: pointer; box-shadow: none; transition: color 0.2s, background 0.2s;
     }
-    .aune-tab:hover { color: var(--text); border-color: rgba(90,140,255,0.45); }
-    .aune-tab.active { color: #fff; background: rgba(40,70,160,0.55); border-color: var(--accent); box-shadow: 0 0 12px rgba(80,130,255,0.25); }
-    /* Le module garde TOUJOURS la même hauteur (règle d'Adrien) : chaque vue est un classement qui s'y tient. */
-    .aune-grid { --aune-h: 600px; display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .aune-controls .country-tab:hover, .aune-tab:hover { color: #fff; background: transparent; border: 0; }
+    .aune-controls .country-tab.active, .aune-tab.active { background: rgba(85,136,255,0.22); color: #fff; border: 0; box-shadow: none; }
+    .aune-grid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+    .aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+    .aune-list-header {
+      display: grid; grid-template-columns: 48px 72px minmax(0, 1fr) 210px; gap: 16px; flex: 0 0 auto;
+      padding: 0 14px 8px 17px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border);
+    }
+    .aune-list-header .center { text-align: center; }
+    .aune-list-header .right { text-align: right; }
+    .aune-row {
+      display: grid; grid-template-columns: 48px 72px minmax(0, 1fr) 210px; gap: 16px; align-items: center;
+      padding: 10px 14px; min-height: 54px; overflow: hidden;
+      border-bottom: 1px solid var(--border); border-left: 3px solid transparent;
+      flex: var(--grow, 1) 1 0px;
+    }
+    .aune-row.has-art { grid-template-columns: 48px 72px minmax(160px, 22%) minmax(0, 1fr) 210px; }
+    .aune-row.rank-1 { background: var(--card-bg); border: 1px solid rgba(120,170,255,0.35); border-left-width: 3px; border-radius: 10px; margin: 10px 0 8px; padding: 12px 16px; }
+    /* Filet de gauche = niveau de saillance (mêmes couleurs que le badge) */
+    .aune-row.band-faible { border-left-color: #7f93b8; }
+    .aune-row.band-moderee { border-left-color: #5fa8ff; }
+    .aune-row.band-elevee { border-left-color: #f2c94c; }
+    .aune-row.band-tres_elevee { border-left-color: #ff9f43; }
+    .aune-row.band-extreme { border-left-color: #ff4d4d; }
+    .aune-row.band-aucune { border-left-color: rgba(127,147,184,0.3); }
+    /* Illustration de la Vitrine (events/art/<histoire>.webp), rang 1, seulement si elle existe */
+    .aune-row-art { display: none; position: relative; align-self: stretch; min-height: 0; margin: 0; border-radius: 6px; overflow: hidden; background: rgba(20,40,110,0.3); }
+    .aune-row.has-art .aune-row-art { display: block; }
+    .aune-row-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .aune-row-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.3px; padding: 3px 6px; background: rgba(2,0,16,0.6); color: #cfe1ff; }
+    .aune-row-rank { font-family: var(--mono); font-size: 22px; font-weight: 700; color: rgba(120,165,255,0.75); }
+    .aune-row.rank-1 .aune-row-rank { font-size: 36px; color: #ffc857; text-shadow: 0 0 18px rgba(255,200,87,0.45); }
+    .aune-row.rank-2 .aune-row-rank { font-size: 26px; color: #d9e2f5; }
+    .aune-row.rank-3 .aune-row-rank { font-size: 24px; color: #d9a86c; }
+    .aune-row-trend { display: flex; justify-content: center; font-family: var(--mono); }
+    .aune-row-trend .hot20-trend { font-size: 14px; }
+    .aune-row-main { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+    .aune-row-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
     .aune-band {
-      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 4px; color: #060d22; background: #6b7fa8; white-space: nowrap;
+      font-family: var(--grotesk); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 4px; color: #060d22; background: #6b7fa8; white-space: nowrap;
     }
+    .aune-row.rank-1 .aune-band { font-size: 14px; padding: 5px 12px; }
     .aune-band.band-faible { background: #7f93b8; }
     .aune-band.band-moderee { background: #5fa8ff; }
     .aune-band.band-elevee { background: #f2c94c; }
     .aune-band.band-tres_elevee { background: #ff9f43; }
     .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
-    .aune-clickable { cursor: pointer; }
-    .aune-row-title.aune-clickable:hover { color: #fff; text-decoration: underline; }
-    .aune-row-art.aune-clickable:hover img { filter: brightness(1.08); }
-    /* Classement, à l'image du Hot 20. Dernières heures : 5 rangs dont la hauteur est
-       proportionnelle à l'indice 24h (flex-grow = indice), avec la colonne « Variation 4h »
-       et l'illustration de la Vitrine quand l'histoire en a une ; autres vues : 10 rangs égaux. */
-    .aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; height: 100%; overflow: hidden; }
-    .aune-row {
-      display: grid; grid-template-columns: 36px 96px minmax(0, 1fr) auto; gap: 12px; align-items: center;
-      padding: 7px 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; min-height: 0; overflow: hidden;
-    }
-    .aune-row-rank { font-family: var(--orbitron); font-size: 15px; color: rgba(80,130,255,0.55); }
-    .aune-row-trend { display: flex; justify-content: center; }
-    .aune-row-trend .hot20-trend { font-size: 11px; }
-    .aune-row-delta { display: flex; justify-content: center; font-family: var(--mono); font-size: 12px; font-weight: 700; white-space: nowrap; }
-    .aune-row-delta.up { color: #4ade80; }
-    .aune-row-delta.down { color: #f87171; }
-    .aune-row-delta.stable { color: var(--muted); }
-    .aune-list-header {
-      display: grid; grid-template-columns: 36px 96px minmax(0, 1fr) 170px; gap: 12px;
-      padding: 2px 14px 8px; font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--muted); border-bottom: 1px solid rgba(80,130,255,0.2);
-    }
-    .aune-list-header .center { text-align: center; }
-    .aune-list.with-delta .aune-row, .aune-list.with-delta .aune-list-header { grid-template-columns: 36px 96px 92px minmax(0, 1fr) auto; }
-    .aune-list.with-delta .aune-list-header { grid-template-columns: 36px 96px 92px minmax(0, 1fr) 170px; }
-    .aune-list.with-delta .aune-row.has-art { grid-template-columns: 36px 96px 92px clamp(72px, 20%, 220px) minmax(0, 1fr) auto; }
-    /* Illustration de la Vitrine (events/art/<histoire>.webp) : affichée seulement si elle existe. */
-    .aune-row-art { display: none; position: relative; align-self: stretch; min-height: 0; margin: 0; border-radius: 6px; overflow: hidden; background: rgba(20,40,110,0.25); }
-    .aune-row.has-art .aune-row-art { display: block; }
-    .aune-row-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-    .aune-row-art figcaption { display: none; position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 8px; line-height: 1.25; letter-spacing: 0.3px; color: rgba(220,230,255,0.85); background: rgba(2,0,16,0.6); padding: 3px 6px; }
-    .aune-row.size-xl .aune-row-art figcaption { display: block; }
-    @media (min-width: 760px) {
-      .aune-grid.view-list { height: var(--aune-h); }
-      .aune-list.proportional .aune-row { flex: var(--grow, 1) 1 0px; min-height: 54px; }
-    }
-    /* Mobile : le rang tient sur deux lignes (rang, mouvement, variation, indice ; puis le sujet
-       sur toute la largeur) ; pas d'illustration, pas de hauteur proportionnelle. */
-    @media (max-width: 700px) {
-      .aune-list-header { display: none; }
-      .aune-row, .aune-list.with-delta .aune-row, .aune-list.with-delta .aune-row.has-art {
-        grid-template-columns: 26px 48px 60px minmax(0, 1fr); gap: 4px 6px; padding: 8px 12px;
-      }
-      .aune-row .aune-row-main { grid-column: 1 / -1; grid-row: 2; }
-      .aune-row .aune-row-delta-cell { grid-column: 3; grid-row: 1; }
-      .aune-row .aune-row-score { grid-column: 4; grid-row: 1; justify-self: end; width: auto; min-width: 0; max-width: 100%; }
-      .aune-row .aune-row-score .hot20-row-pct { white-space: nowrap; }
-      .aune-row.has-art .aune-row-art { display: none; }
-    }
-    @media (max-width: 380px) { .aune-score-label { display: none; } }
-    /* Top 3 mis en évidence : or, argent, bronze, comme le Hot 20 */
-    .aune-row.rank-1, .aune-row.rank-2, .aune-row.rank-3 { background: rgba(14,24,64,0.85); }
-    .aune-row.rank-1 { border-color: rgba(255,200,60,0.55); box-shadow: 0 0 14px rgba(255,200,60,0.12); }
-    .aune-row.rank-2 { border-color: rgba(200,210,230,0.45); }
-    .aune-row.rank-3 { border-color: rgba(200,150,80,0.5); }
-    .aune-row.rank-1 .aune-row-rank { color: rgba(255,200,60,0.95); font-size: 18px; }
-    .aune-row.rank-2 .aune-row-rank { color: rgba(200,210,230,0.85); font-size: 17px; }
-    .aune-row.rank-3 .aune-row-rank { color: rgba(200,150,80,0.9); font-size: 16px; }
-    .aune-row.rank-1 .aune-row-title { font-size: 15px; }
-    .aune-row-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-    .aune-row-title { font-size: 13.5px; font-weight: 700; color: #e8f0ff; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .aune-row-meta { display: flex; gap: 10px; align-items: center; font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; }
-    .aune-row-meta .aune-band { font-size: 8px; padding: 2px 6px; }
-    /* Tailles des rangs (Dernières heures) : d'après la hauteur que l'indice leur donne. */
-    .aune-row.size-xl .aune-row-title, .aune-row.size-l .aune-row-title, .aune-row.size-m .aune-row-title {
-      white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; line-height: 1.3;
-    }
-    .aune-row.size-xl .aune-row-title { font-size: 20px; -webkit-line-clamp: 3; }
-    .aune-row.size-l .aune-row-title { font-size: 16px; -webkit-line-clamp: 2; }
-    .aune-row.size-m .aune-row-title { font-size: 14px; -webkit-line-clamp: 2; }
-    .aune-row.size-xl .aune-row-rank { font-size: 28px; }
-    .aune-row.size-l .aune-row-rank { font-size: 22px; }
-    .aune-row.size-xl .aune-row-meta { font-size: 11px; }
-    .aune-row.size-xl .aune-row-meta .aune-band { font-size: 9px; padding: 3px 8px; }
-    /* Puces des médias qui ont couvert (un par média) : seulement quand le rang a la place. */
-    .aune-row-chips { display: none; padding-top: 6px; flex-wrap: wrap; gap: 6px; }
-    .aune-row.size-xl .aune-row-chips, .aune-row.size-l .aune-row-chips { display: flex; }
+    .aune-band.band-aucune { background: transparent; border: 1px solid rgba(127,147,184,0.45); color: #9fb0cf; }
+    .aune-row-title { font-size: 16.5px; line-height: 1.3; font-weight: 600; color: #f1f5ff; margin: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+    .aune-row.rank-1 .aune-row-title { font-size: clamp(20px, 2vw, 26px); line-height: 1.2; -webkit-line-clamp: 3; }
+    .aune-row.rank-2 .aune-row-title { font-size: 19px; }
+    .aune-row-meta { display: flex; flex-wrap: wrap; gap: 3px 12px; align-items: center; font-size: 12px; color: var(--muted); }
+    .aune-row.size-s .aune-row-meta { display: none; } /* rang trop bas pour une troisième ligne */
+    .aune-chips { display: inline-flex; gap: 6px; flex-wrap: wrap; }
     .aune-media-chip {
-      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1px; text-decoration: none;
-      padding: 4px 9px; border: 1px solid rgba(90,140,255,0.4); border-radius: 4px; color: #cfe1ff;
-      background: rgba(20,40,110,0.35); transition: background 0.15s, border-color 0.15s, color 0.15s;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-decoration: none;
+      padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; color: #cfe1ff;
+      background: rgba(20,40,110,0.3); transition: border-color 0.15s, color 0.15s;
     }
-    .aune-media-chip:hover { background: rgba(40,70,160,0.6); border-color: var(--accent); color: #fff; }
-    .aune-row-score { width: 170px; }
-    .aune-row-score .hot20-row-pct { margin-bottom: 4px; }
+    .aune-media-chip:hover { border-color: var(--accent); color: #fff; }
+    /* Score comme le Hot 20 : chiffre, unité, variation, barre */
+    .aune-row-score { justify-self: end; width: 210px; display: grid; grid-template-columns: auto 1fr auto; column-gap: 8px; align-items: baseline; }
+    .aune-row-score .num { font-family: var(--mono); font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+    .aune-row.rank-1 .aune-row-score .num { font-size: 34px; }
+    .aune-row-score .unit { font-size: 11.5px; color: var(--muted); }
+    .aune-row-score .inc { font-family: var(--mono); font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .aune-row.rank-1 .aune-row-score .inc { font-size: 15px; }
+    .aune-row-score .inc.up { color: #4ade80; }
+    .aune-row-score .inc.down { color: #f87171; }
+    .aune-row-score .inc.stable { color: var(--muted); font-weight: 400; }
+    .aune-row-score .hot20-bar-track { grid-column: 1 / -1; margin-top: 5px; }
+    /* Vues à 10 rangs (semaine, mois, année) : rangs égaux et serrés, deux lignes
+       (badge + thème, titre), pas de panneau ni d'illustration au rang 1. */
+    .aune-list.dense .aune-row-meta { display: none; }
+    .aune-list.dense .aune-row-title, .aune-list.dense .aune-row.rank-1 .aune-row-title { font-size: 15.5px; -webkit-line-clamp: 1; }
+    .aune-list.dense .aune-row.rank-1 { background: transparent; border-top: 0; border-right: 0; border-bottom: 1px solid var(--border); border-radius: 0; margin: 0; padding: 10px 14px; }
+    .aune-list.dense .aune-row.rank-1 .aune-band { font-size: 12px; padding: 3px 10px; }
+    .aune-list.dense .aune-row.rank-1 .aune-row-rank { font-size: 26px; }
+    .aune-list.dense .aune-row.rank-1 .aune-row-score .num { font-size: 24px; }
+    .aune-clickable { cursor: pointer; }
+    .aune-row-title.aune-clickable:hover { color: #fff; text-decoration: underline; text-decoration-color: var(--accent); }
+    .aune-row-art.aune-clickable:hover img { filter: brightness(1.08); }
     .aune-empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
-    .aune-foot { margin-top: 8px; text-align: right; font-family: var(--mono); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); min-height: 14px; }
-    @media (max-width: 700px) { .aune-section { padding: 76px 16px 120px; } .aune-grid { --aune-h: auto; } }
+    .aune-foot { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px; color: var(--muted); min-height: 14px; }
+    .aune-foot a { color: #9dbcff; }
+    @media (max-width: 760px) {
+      .aune-section { height: auto; padding: 16px 16px 24px; }
+      .aune-head { flex-direction: column; align-items: flex-start; }
+      .aune-controls { align-items: flex-start; }
+      .aune-tabs { flex-wrap: wrap; }
+      .aune-list-header { display: none; }
+      .aune-row, .aune-row.has-art, .aune-row.rank-1 {
+        flex: 0 0 auto; grid-template-columns: 36px 60px minmax(0, 1fr); grid-template-rows: auto auto;
+        gap: 4px 8px; padding: 10px 12px;
+      }
+      .aune-row-main { grid-column: 1 / -1; }
+      .aune-row-score { grid-column: 3; grid-row: 1; width: auto; }
+      .aune-row.has-art .aune-row-art { display: none; }
+      .aune-row.rank-1 .aune-row-score .num { font-size: 28px; }
+      .aune-row.size-s .aune-row-meta { display: flex; }
+    }
 
     .hot20-section {
       position: relative; z-index: 1;
@@ -284,8 +301,8 @@
     }
 
     .hot20-title {
-      font-family: var(--orbitron); font-size: clamp(20px, 3vw, 32px);
-      letter-spacing: 2px; color: #e0ecff;
+      font-family: var(--grotesk); font-size: clamp(26px, 3vw, 36px);
+      letter-spacing: -0.02em; font-weight: 700; color: #e0ecff;
       line-height: 1.05;
     }
     .hot20-title .accent { color: var(--accent); }
@@ -1070,26 +1087,30 @@
 <!-- ========== HERO ========== -->
 <!-- ========== LA UNE DES UNES (événements saillants, cumul 24 h) ========== -->
 <section class="aune-section" id="aune" hidden>
-  <div class="hot20-title-row">
-    <h2 class="hot20-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span><span class="hot20-subtitle" id="aune-subtitle"></span></h2>
-  </div>
-  <div class="aune-controls">
-    <div class="country-tabs" id="aune-country-tabs">
-      <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
-      <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
-      <!-- Pas d'États-Unis : la table d'événements de la Vitrine ne couvre que QC et
-           reste du Canada (panel américain de 2 médias). Un panel américain est prévu
-           au postdoc d'Adrien (avec Soroka). -->
+  <div class="aune-head">
+    <div>
+      <h2 class="aune-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span></h2>
+      <p class="aune-lede" id="aune-subtitle"></p>
     </div>
-  <div class="aune-tabs" id="aune-tabs" role="tablist">
-    <button type="button" class="aune-tab active" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
-    <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
-    <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
-    <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
-  </div>
+    <div class="aune-controls">
+      <div class="country-tabs" id="aune-country-tabs">
+        <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
+        <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
+        <!-- Pas d'États-Unis : la table d'événements de la Vitrine ne couvre que QC et
+             reste du Canada (panel américain de 2 médias). Un panel américain est prévu
+             au postdoc d'Adrien (avec Soroka). -->
+      </div>
+      <div class="aune-tabs" id="aune-tabs" role="tablist">
+        <button type="button" class="aune-tab active" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
+        <button type="button" class="aune-tab" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
+        <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
+        <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
+        <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
+      </div>
+    </div>
   </div>
   <div class="aune-grid view-list" id="aune-grid"></div>
-  <div class="aune-foot" id="aune-foot"></div>
+  <div class="aune-foot"><span id="aune-foot"></span><a href="./methodologie.html" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
 
 <!-- ========== HOT 20 ========== -->
@@ -1512,7 +1533,7 @@
 
       // — Label (only visible when NOT hovered — tooltip replaces it) —
       ctx.save();
-      ctx.font = (cst.name === 'Radar+' ? '600 12px Orbitron, monospace' : '500 11px Orbitron, monospace');
+      ctx.font = (cst.name === 'Radar+' ? '600 12px "Space Grotesk", sans-serif' : '500 11px "Space Grotesk", sans-serif');
       ctx.textBaseline = 'top';
       // Compute label position: below centre of constellation
       let cx = 0, cy = 0;
@@ -1640,7 +1661,8 @@ var currentCountry = 'QC';
 //   la hauteur de chaque rang est proportionnelle à son indice 24h ; la colonne
 //   « Variation 4h » = indice 24h courant moins celui de l'édition précédente (le
 //   bloc de 4h d'avant) ; le mouvement = rang à cette même édition précédente.
-//   Cette semaine (depuis lundi 0h), Ce mois-ci, Cette année = top 10 ;
+//   Aujourd'hui (depuis minuit, top 5, décision d'Adrien du 31 oct.), Cette semaine
+//   (depuis lundi 0h), Ce mois-ci, Cette année (top 10) = points cumulés par édition ;
 //   classement = somme de l'indice des blocs de la fenêtre ; tag = bande du
 //   meilleur bloc (seuils Vitrine) ; mouvement = rang dans la fenêtre précédente.
 // L'illustration (events/art/<histoire>.webp, générée par la Vitrine pour SA Une)
@@ -1652,7 +1674,7 @@ var currentCountry = 'QC';
 var eventsLatestData = null;
 var auneRange = '24h';
 var auneCountry = 'QC'; // sélecteur propre au module, indépendant de celui du Hot 20
-var AUNE_LIMIT = { '24h': 5, week: 10, month: 10, year: 10 };
+var AUNE_LIMIT = { '24h': 5, today: 5, week: 10, month: 10, year: 10 }; // 5 rangs = hauteur proportionnelle
 var AUNE_BLOCK_MS = 4 * 3600e3;
 var AUNE_HEIGHT = 600; // hauteur du module (--aune-h), pour calibrer la taille des rangs
 var auneStore = { index: null, storylines: {}, loading: {} };
@@ -1676,6 +1698,7 @@ function mtlMidnightUtc(y, m, d) {
 function auneWindowStart(range) {
   var now = new Date(), p = mtlParts(now);
   if (range === '24h') return now.getTime() - 24 * 3600e3;
+  if (range === 'today') return mtlMidnightUtc(p.y, p.m, p.d); // depuis minuit (Montréal)
   if (range === 'week') {
     var back = (p.wd + 6) % 7; // lundi = 0
     var q = mtlParts(new Date(mtlMidnightUtc(p.y, p.m, p.d) - back * 86400e3 + 12 * 3600e3));
@@ -1685,9 +1708,10 @@ function auneWindowStart(range) {
   if (range === 'year') return mtlMidnightUtc(p.y, 1, 1);
   return 0;
 }
-// Fenêtre précédente de même nature (semaine, mois, année) : [début, fin[ en ms UTC.
+// Fenêtre précédente de même nature (jour, semaine, mois, année) : [début, fin[ en ms UTC.
 function aunePrevWindow(range) {
   var start = auneWindowStart(range), p = mtlParts(new Date(start + 12 * 3600e3));
+  if (range === 'today') return [start - 86400e3, start];
   if (range === 'week') return [start - 7 * 86400e3, start];
   if (range === 'month') { var m = p.m === 1 ? 12 : p.m - 1, y = p.m === 1 ? p.y - 1 : p.y; return [mtlMidnightUtc(y, m, 1), start]; }
   if (range === 'year') return [mtlMidnightUtc(p.y - 1, 1, 1), start];
@@ -1842,14 +1866,14 @@ function auneTrendHtml(c, i, region, range, prevRanks, prevStart, T) {
   }
   return '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('aune.trend_new_tip' + sfx)) + '">&#128293; ' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
 }
-// Colonne « Variation 4h » : indice 24h courant moins celui de l'édition précédente.
+// Variation 4h (vue Dernières heures) : indice 24h courant moins celui de l'édition
+// précédente, affichée à côté de l'indice comme la hausse du Hot 20.
 function auneDeltaHtml(c, T) {
   var prev = typeof c.prev24h === 'number' ? c.prev24h : 0, d = c.points - prev;
   var cls = d >= 0.05 ? 'up' : d <= -0.05 ? 'down' : 'stable';
-  var arrow = cls === 'up' ? '&#9650;' : cls === 'down' ? '&#9660;' : '&mdash;';
   var txt = cls === 'stable' ? '0.0' : (d > 0 ? '+' : '&minus;') + Math.abs(d).toFixed(1);
   var tip = T('aune.delta_tip', { prev: prev.toFixed(1), now: c.points.toFixed(1) });
-  return '<span class="aune-row-delta ' + cls + ' hot20-hint" data-tip="' + escapeHtml(tip) + '">' + arrow + '&nbsp;' + txt + '</span>';
+  return '<span class="inc ' + cls + ' hot20-hint" data-tip="' + escapeHtml(tip) + '">' + txt + '</span>';
 }
 function auneRanking24h(latest, limit) {
   var cur = (latest && latest.current) || [];
@@ -1911,15 +1935,15 @@ function auneRandomAttr(urls, T) {
   return ' data-urls="' + escapeHtml(JSON.stringify(urls)).replace(/"/g, '&quot;') + '" title="' + escapeHtml(T('aune.open_random')).replace(/"/g, '&quot;') + '"';
 }
 // Puces des médias qui ont couvert (un par média, dernier article scrapé), pas de titres.
-function auneChipsHtml(c, ev) {
-  var arts = auneHeadlines(c, ev, 12);
+function auneChipsHtml(arts) {
   if (!arts.length) return '';
-  return '<div class="aune-row-chips">' + arts.map(function(a) {
+  return '<span class="aune-chips">' + arts.map(function(a) {
     return '<a class="aune-media-chip" href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener" title="' + escapeHtml(a.title || '').replace(/"/g, '&quot;') + '">' + escapeHtml(a.media_id || '') + '</a>';
-  }).join('') + '</div>';
+  }).join('') + '</span>';
 }
 // Illustration de la Vitrine pour CETTE histoire, si elle a été archivée (fetch_art.py) ;
-// l'image ne s'affiche (classe has-art sur le rang) qu'une fois chargée.
+// l'image ne s'affiche (classe has-art sur le rang) qu'une fois chargée. Pas de
+// chargement différé : un <figure> masqué ne serait jamais demandé.
 function auneArtHtml(c, rnd, urls, T) {
   if (!c.storyline) return '';
   return '<figure class="aune-row-art' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' +
@@ -1927,48 +1951,48 @@ function auneArtHtml(c, rnd, urls, T) {
     ' onload="this.closest(\'.aune-row\').classList.add(\'has-art\')" onerror="this.parentNode.remove()">' +
     '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>';
 }
-function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart) {
+// Un rang, à l'image du Hot 20 : rang, mouvement, [illustration], badge de saillance
+// puis titre puis détails, et à droite la mesure de la vue avec sa variation et sa barre.
+function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense) {
   var issue = auneIssue(c, lang);
-  var title = escapeHtml(c.title);
   var ev = byStory && byStory[c.storyline];
   var urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
-  var titleHtml = urls.length ? '<span class="aune-row-title aune-clickable"' + rnd + '>' + title + '</span>'
-                              : '<span class="aune-row-title">' + title + '</span>';
-  var issueHtml = issue ? '<span>' + escapeHtml(issue) + '</span>' : '';
+  var titleHtml = '<h3 class="aune-row-title' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' + escapeHtml(c.title) + '</h3>';
   var titleTip = c.titleFrom && c.titleKey
     ? ' ' + T('aune.title_from.' + c.titleFrom, { label: auneBlockLabel(c.titleKey, lang) })
     : '';
-  var peakHtml = '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>';
-  var tagHtml, scoreHtml, deltaHtml = '', artHtml = '', chipsHtml = '';
-  if (c.is24h) {
-    // Dernières heures : la mesure est l'indice 24h de la Vitrine ; le tag est SON niveau.
-    tagHtml = '<span class="aune-band band-' + escapeHtml(c.band) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.band24h_tip')) + '">' + escapeHtml(T('aune.band.' + c.band)) + '</span>';
-    scoreHtml = '<div class="hot20-row-pct">' +
-        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '"><strong>' + c.points.toFixed(1) + '</strong> <span class="aune-score-label">' + escapeHtml(T('aune.index24h_label')) + '</span></span>' +
-      '</div>';
-    deltaHtml = '<span class="aune-row-delta-cell">' + auneDeltaHtml(c, T) + '</span>';
-    artHtml = auneArtHtml(c, rnd, urls, T);
-    chipsHtml = auneChipsHtml(c, ev);
-  } else {
-    // Semaine / mois / année : la mesure est un cumul de points (pas de niveau défini
-    // pour un cumul) ; le tag est le PIC, dit explicitement. Score = total depuis la
-    // première Une + hausse dans la période, comme le Hot 20.
-    tagHtml = '<span class="aune-band band-' + escapeHtml(c.peakBand) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_prefix')) + ' ' + escapeHtml(T('aune.band.' + c.peakBand)) + '</span>';
-    scoreHtml = '<div class="hot20-row-pct">' +
-        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '"><strong>' + (c.total || 0).toFixed(1) + '</strong> <span class="aune-score-label">' + escapeHtml(T('aune.points')) + '</span></span>' +
-        '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + auneRange)) + '">+' + (c.gain || 0).toFixed(1) + '</span>' +
-      '</div>';
-  }
-  var cls = 'aune-row' + (i < 3 ? ' rank-' + (i + 1) : '') + (c.size ? ' size-' + c.size : '');
+  // Badge : niveau de l'indice 24h (Dernières heures) ou du pic de la fenêtre (cumuls).
+  // Sous le premier palier : « Sous le radar » (Adrien, 31 oct. 2026).
+  var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
+  var bandLabel = (!c.is24h && band !== 'aucune') ? T('aune.peak_prefix') + ' ' + T('aune.band.' + band) : T('aune.band.' + band);
+  var bandTip = c.is24h ? T('aune.band24h_tip') : T('aune.peak_tip');
+  var tagHtml = '<span class="aune-band band-' + escapeHtml(band) + ' hot20-hint" data-tip="' + escapeHtml(bandTip) + '">' + escapeHtml(bandLabel) + '</span>';
+  var arts = auneHeadlines(c, ev, 12);
+  var metaHtml = '<div class="aune-row-meta">' +
+      '<span>' + escapeHtml(T('aune.blocks', { blocks: c.blocks })) + '</span>' +
+      '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>' +
+      (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '">' + escapeHtml(T('aune.total_label', { points: (c.total || 0).toFixed(1) })) + '</span>') +
+      '<span>' + escapeHtml(T(arts.length === 1 ? 'aune.medias_one' : 'aune.medias_many', { n: arts.length })) + '</span>' +
+      auneChipsHtml(arts) +
+    '</div>';
+  var scoreHtml = c.is24h
+    // Dernières heures : indice 24h de la Vitrine + variation depuis l'édition précédente
+    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + '</span>' +
+      '<span class="unit">' + escapeHtml(T('aune.index24h_label')) + '</span>' + auneDeltaHtml(c, T)
+    // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
+    // première Une dans les détails.
+    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + auneRange)) + '">' + c.points.toFixed(1) + '</span>' +
+      '<span class="unit">' + escapeHtml(T('aune.points')) + '</span>';
+  var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T) : '';
+  var cls = 'aune-row rank-' + (i + 1) + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
   return '<li class="' + cls + '"' + style + '>' +
     '<span class="aune-row-rank">' + (i + 1) + '</span>' +
     '<span class="aune-row-trend">' + auneTrendHtml(c, i, region, auneRange, prevRanks || {}, prevStart, T) + '</span>' +
-    deltaHtml + artHtml +
-    '<div class="aune-row-main">' + titleHtml +
-      '<div class="aune-row-meta">' + tagHtml + issueHtml +
-        '<span>' + escapeHtml(T('aune.blocks', { blocks: c.blocks })) + '</span>' + peakHtml +
-      '</div>' + chipsHtml +
+    art +
+    '<div class="aune-row-main">' +
+      '<div class="aune-row-top">' + tagHtml + (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') + '</div>' +
+      titleHtml + metaHtml +
     '</div>' +
     '<div class="aune-row-score">' + scoreHtml +
       '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + (c.barPct || 2) + '%"></div></div>' +
@@ -1984,7 +2008,6 @@ function renderALaUne() {
   var lang = (document.documentElement.lang || 'fr').slice(0, 2);
   sec.hidden = false;
   var region = auneCountry;
-  grid.className = 'aune-grid view-list';
   if (region !== 'QC' && region !== 'CAN') {
     sub.textContent = T('aune.subtitle');
     var f0 = document.getElementById('aune-foot'); if (f0) f0.textContent = '';
@@ -2001,7 +2024,7 @@ function renderALaUne() {
     auneLoad(c, r).then(function() { if (auneRange === r && auneCountry === c) renderALaUne(); });
     return;
   }
-  var is24h = auneIs24h(auneRange), limit = AUNE_LIMIT[auneRange] || 10;
+  var is24h = auneIs24h(auneRange), limit = AUNE_LIMIT[auneRange] || 10, proportional = limit <= 5;
   var items = is24h ? auneRanking24h(latest, limit) : auneRanking(region, auneRange, limit);
   var sums = auneSums(region, auneRange);
   items.forEach(function(it) {
@@ -2009,26 +2032,26 @@ function renderALaUne() {
     it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakBand = auneBand(region, o.peak);
   });
   // Barre = mesure de classement de la vue, relative au 1er (comme le Hot 20)
-  var key = is24h ? 'points' : 'gain';
-  var top = items.reduce(function(m, it) { return Math.max(m, it[key]); }, 0) || 1;
-  items.forEach(function(it) { it.barPct = Math.max(2, Math.round(100 * it[key] / top)); });
+  var top = items.reduce(function(m, it) { return Math.max(m, it.points); }, 0) || 1;
+  items.forEach(function(it) { it.barPct = Math.max(2, Math.round(100 * it.points / top)); });
   if (!items.length) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
     return;
   }
   var prevStart = is24h ? aunePrevEditionStart(latest) : aunePrevWindow(auneRange)[0];
-  if (is24h) {
-    // Hauteur de chaque rang proportionnelle à son indice 24h (flex-grow), et taille
-    // du rang (titre, puces, illustration) d'après la hauteur que cela lui donne.
-    var prev24h = aunePrevEdition24h(region, latest);
+  if (proportional) {
+    // Hauteur de chaque rang proportionnelle à sa mesure (flex-grow) ; un rang qui
+    // n'aurait pas la place d'une troisième ligne (détails) ne l'affiche pas.
     var sum = items.reduce(function(m, it) { return m + it.points; }, 0) || 1;
-    var avail = AUNE_HEIGHT - 32 - 6 * items.length; // moins l'en-tête et les espaces
+    var avail = Math.max(0, grid.clientHeight - 34 - 18); // moins l'en-tête et la marge du rang 1
     items.forEach(function(it) {
-      it.prev24h = typeof prev24h[it.storyline] === 'number' ? prev24h[it.storyline] : 0;
       it.grow = Math.max(it.points, 0.01).toFixed(3);
-      var h = avail * it.points / sum;
-      it.size = h >= 150 ? 'xl' : h >= 100 ? 'l' : h >= 72 ? 'm' : 's';
+      it.size = avail && avail * it.points / sum < 72 ? 's' : 'm';
     });
+  }
+  if (is24h) {
+    var prev24h = aunePrevEdition24h(region, latest);
+    items.forEach(function(it) { it.prev24h = typeof prev24h[it.storyline] === 'number' ? prev24h[it.storyline] : 0; });
   }
   // Manchettes : les blocs des 24 dernières heures (fichiers du jour), sinon le dernier bloc.
   var byStory = auneArticlesByStory(region);
@@ -2037,12 +2060,11 @@ function renderALaUne() {
   var header = '<li class="aune-list-header">' +
     '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
     '<span class="center">' + escapeHtml(T('hot20.header_movement')) + '</span>' +
-    (is24h ? '<span class="center">' + escapeHtml(T('aune.header_delta')) + '</span>' : '') +
-    '<span>' + escapeHtml(T('hot20.header_subject')) + '</span>' +
-    '<span>' + escapeHtml(T(is24h ? 'aune.header_index24h' : 'hot20.header_score_increase')) + '</span>' +
+    '<span>' + escapeHtml(T('aune.header_subject')) + '</span>' +
+    '<span class="right">' + escapeHtml(T(is24h ? 'aune.header_score24h' : 'aune.header_points')) + '</span>' +
   '</li>';
-  grid.innerHTML = '<ol class="aune-list' + (is24h ? ' proportional with-delta' : '') + '">' + header +
-    items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks, prevStart); }).join('') + '</ol>';
+  grid.innerHTML = '<ol class="aune-list' + (proportional ? ' proportional' : ' dense') + '">' + header +
+    items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks, prevStart, !proportional); }).join('') + '</ol>';
 }
 (function() {
   var grid = document.getElementById('aune-grid');

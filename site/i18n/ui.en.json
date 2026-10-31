@@ -473,7 +473,7 @@
     "note": "Objects and events are ranked by the same salience index — minutes spent on front pages, outlet by outlet. Event data since July 23, 2026.",
     "note_link": "Methodology →",
     "band": {
-      "aucune": "—",
+      "aucune": "Under the radar",
       "faible": "Low salience",
       "moderee": "Moderate salience",
       "elevee": "High salience",
@@ -485,13 +485,15 @@
       "24h": "Last hours",
       "week": "This week",
       "month": "This month",
-      "year": "This year"
+      "year": "This year",
+      "today": "Today"
     },
     "range_sub": {
-      "24h": "Top 5 of the last 24 hours (24h index)",
-      "week": "Top 10 since Monday",
-      "month": "Top 10 of the month",
-      "year": "Top 10 of the year"
+      "24h": "The five stories dominating the front pages over the last 24 hours.",
+      "week": "Top 10 since Monday (points summed by 4-hour edition).",
+      "month": "Top 10 of the month (points summed by 4-hour edition).",
+      "year": "Top 10 of the year (points summed by 4-hour edition).",
+      "today": "The five stories dominating the front pages since midnight (points summed by 4-hour edition)."
     },
     "meta_range": "{blocks} blocks on front pages · {points} points",
     "blocks": "{blocks} blocks",
@@ -505,9 +507,10 @@
     "peak_tip": "The story's best 4-hour block in the period: the index of its strongest moment.",
     "score_tip": "Cumulative index of this story since its first front page (sum of all its 4-hour blocks).",
     "gain_tip": {
-      "week": "Points gained since Monday",
-      "month": "Points gained this month",
-      "year": "Points gained this year"
+      "week": "Points gained since Monday: sum of the index over 4-hour editions.",
+      "month": "Points gained this month: sum of the index over 4-hour editions.",
+      "year": "Points gained this year: sum of the index over 4-hour editions.",
+      "today": "Points gained since midnight: sum of the index over the day's 4-hour editions."
     },
     "open_random": "Open one of the outlets that covered this front page (at random)",
     "title_from": {
@@ -518,15 +521,22 @@
     "trend_up_tip": "Up {n} rank(s): {prev} in the previous period, {now} now",
     "trend_down_tip": "Down {n} rank(s): {prev} in the previous period, {now} now",
     "trend_stable_tip": "Same rank as in the previous period ({now})",
-    "trend_new_tip": "New story: absent from the previous period's top 10",
-    "trend_return_tip": "Back: a story seen before, absent from the previous period's top 10",
+    "trend_new_tip": "New story: absent from the previous period's ranking",
+    "trend_return_tip": "Back: a story seen before, absent from the previous period's ranking",
     "header_delta": "4h change",
     "delta_tip": "Change in the 24h index since the previous edition (the 4-hour block before): {prev} points → {now} points.",
     "trend_up_tip_24h": "Up {n} rank(s): {prev} in the previous edition (4h earlier), {now} now",
     "trend_down_tip_24h": "Down {n} rank(s): {prev} in the previous edition (4h earlier), {now} now",
     "trend_stable_tip_24h": "Same rank as in the previous edition, 4h earlier ({now})",
     "trend_new_tip_24h": "New story: absent from the previous edition's top 5 (4h earlier)",
-    "trend_return_tip_24h": "Back: a story seen before, absent from the previous edition's top 5 (4h earlier)"
+    "trend_return_tip_24h": "Back: a story seen before, absent from the previous edition's top 5 (4h earlier)",
+    "header_subject": "Salience · subject",
+    "header_score24h": "24h index · 4h change",
+    "header_points": "Points",
+    "medias_one": "{n} outlet",
+    "medias_many": "{n} outlets",
+    "total_label": "total {points}",
+    "how": "How the index is calculated →"
   },
   "article_panel": {
     "current": "Current period",
