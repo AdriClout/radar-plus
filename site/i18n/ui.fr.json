@@ -190,7 +190,7 @@
     "media_tip": "Médias en cause: {list}",
     "media_tip_none": "Aucun média identifié.",
     "articles_tip": "{count} article(s) associé(s)",
-    "see_more": "Voir plus →"
+    "see_more": "Voir le classement complet →"
   },
   "constellation": {
     "title": "Constellation",
@@ -492,27 +492,27 @@
     },
     "range_sub": {
       "24h": "Les cinq histoires qui dominent les Unes des 24 dernières heures.",
-      "week": "Le top 10 depuis lundi (points cumulés par édition de 4h).",
-      "month": "Le top 10 du mois (points cumulés par édition de 4h).",
-      "year": "Le top 10 de l'année (points cumulés par édition de 4h).",
-      "today": "Les cinq histoires qui dominent les Unes depuis minuit (points cumulés par édition de 4h)."
+      "week": "Le top 10 depuis lundi (points cumulés par édition).",
+      "month": "Le top 10 du mois (points cumulés par édition).",
+      "year": "Le top 10 de l'année (points cumulés par édition).",
+      "today": "Les cinq histoires qui dominent les Unes depuis minuit (points cumulés par édition)."
     },
     "meta_range": "{blocks} blocs en Une · {points} points",
     "blocks": "{blocks} blocs",
     "points": "points",
     "meta_24h": "{blocks} blocs en Une · indice 24h : {points} points",
     "index24h_label": "indice 24h",
-    "index24h_tip": "Indice de la Vitrine : moyenne des indices des 6 derniers blocs de 4h, pondérée vers le plus récent (demi-vie 10h). C'est lui qui choisit La Une des Unes.",
-    "band24h_tip": "Niveau de l'indice 24h (seuils de la Vitrine).",
-    "peak_label": "sommet {when} : {points}",
+    "index24h_tip": "Indice 24h : moyenne de l'indice des 6 dernières éditions, les plus récentes comptant davantage.",
+    "band24h_tip": "Niveau de l'indice 24h.",
+    "peak_label": "Sommet : {points} points ({when})",
     "peak_prefix": "Pic ·",
-    "peak_tip": "Sommet : le meilleur bloc de 4h de l'histoire dans la période, l'indice de son moment le plus fort",
-    "score_tip": "Cumul de l'indice de cette histoire depuis sa première Une (somme de tous ses blocs de 4h).",
+    "peak_tip": "L'édition où l'histoire a eu son indice le plus élevé dans la période.",
+    "score_tip": "Total des points depuis la première Une de l'histoire.",
     "gain_tip": {
-      "week": "Points gagnés depuis lundi : somme de l'indice des éditions de 4h.",
-      "month": "Points gagnés ce mois-ci : somme de l'indice des éditions de 4h.",
-      "year": "Points gagnés cette année : somme de l'indice des éditions de 4h.",
-      "today": "Points gagnés depuis minuit : somme de l'indice des éditions de 4h de la journée."
+      "week": "Points gagnés depuis lundi (somme des éditions).",
+      "month": "Points gagnés ce mois-ci (somme des éditions).",
+      "year": "Points gagnés cette année (somme des éditions).",
+      "today": "Points gagnés depuis minuit (somme des éditions)."
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
     "title_from": {
@@ -526,12 +526,12 @@
     "trend_new_tip": "Nouvelle histoire : absente du classement de la période précédente",
     "trend_return_tip": "De retour : histoire déjà vue, absente du classement de la période précédente",
     "header_delta": "Variation 4h",
-    "delta_tip": "Variation de l'indice 24h depuis l'édition précédente (le bloc de 4h d'avant) : {prev} points → {now} points.",
-    "trend_up_tip_24h": "Gagne {n} rang(s) : {prev}e à l'édition précédente (4h plus tôt), {now}e maintenant",
-    "trend_down_tip_24h": "Perd {n} rang(s) : {prev}e à l'édition précédente (4h plus tôt), {now}e maintenant",
-    "trend_stable_tip_24h": "Même rang qu'à l'édition précédente, 4h plus tôt ({now}e)",
-    "trend_new_tip_24h": "Nouvelle histoire : absente du top 5 de l'édition précédente (4h plus tôt)",
-    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top 5 de l'édition précédente (4h plus tôt)",
+    "delta_tip": "Indice 24h à l'édition précédente : {prev} → {now} points.",
+    "trend_up_tip_24h": "Gagne {n} rang(s) : {prev}e à l'édition précédente, {now}e maintenant",
+    "trend_down_tip_24h": "Perd {n} rang(s) : {prev}e à l'édition précédente, {now}e maintenant",
+    "trend_stable_tip_24h": "Même rang qu'à l'édition précédente ({now}e)",
+    "trend_new_tip_24h": "Nouvelle histoire : absente du top 5 de l'édition précédente",
+    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top 5 de l'édition précédente",
     "header_subject": "Saillance · sujet",
     "header_score24h": "Indice 24h · variation 4h",
     "header_points": "Points",
@@ -540,12 +540,12 @@
     "total_label": "total {points}",
     "how": "Comment l'indice est calculé →",
     "share_label": "{pct} % du radar",
-    "share_tip": "Indice relatif : la part de cet événement dans la saillance totale de tous les événements de la période. La barre dessine cette part : pleine, l'événement est seul dans l'actualité ; à moitié, d'autres compétitionnent.",
-    "since_label": "dans le radar depuis {when}",
-    "since_tip": "Première Une captée pour cette histoire : {label} (heure de Montréal).",
+    "share_tip": "Part de cet événement dans la saillance de tous les événements de la période. La barre la dessine : pleine, il est seul dans l'actualité.",
+    "since_label": "Depuis {when}",
+    "since_tip": "Première édition où cette histoire est en Une ({label}).",
     "count_one": "{n} histoire",
     "count_many": "{n} histoires",
-    "see_all": "Voir tout le classement →",
+    "see_all": "Voir le classement complet →",
     "count_shown": "{shown} premières histoires sur {n}"
   },
   "article_panel": {
@@ -562,10 +562,10 @@
     "search_placeholder": "Filtrer : un mot du titre ou du thème",
     "range_sub": {
       "24h": "Toutes les histoires qui ont fait les Unes des 24 dernières heures, classées par l'indice 24h.",
-      "today": "Toutes les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition de 4h.",
-      "week": "Toutes les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition de 4h.",
-      "month": "Toutes les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition de 4h.",
-      "year": "Toutes les histoires qui ont fait les Unes cette année, classées par points cumulés par édition de 4h."
+      "today": "Toutes les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition.",
+      "week": "Toutes les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
+      "month": "Toutes les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
+      "year": "Toutes les histoires qui ont fait les Unes cette année, classées par points cumulés par édition."
     }
   }
 }

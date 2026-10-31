@@ -953,9 +953,14 @@
     /* ===== HOT 10 simplifié (Adrien, 31 oct. 2026) : lignes plutôt que cartes, contrôles en
        pastilles comme La Une des Unes, liens en texte, plus d'emoji. Ces règles l'emportent
        sur les anciennes (même sélecteur, plus bas dans la feuille). ===== */
-    .hot20-section { max-width: 1120px; padding: 0 28px 80px; margin-top: 120px; }
-    .hot20-header { margin-bottom: 18px; }
-    .hot20-title { font-size: clamp(27px, 3.6vw, 41px); }
+    .hot20-section { max-width: 1040px; padding: 0 28px 80px; margin-top: 120px; }
+    .hot20-header { margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
+    .hot20-title-row { width: auto; margin: 0; }
+    .hot20-evolution-cta { display: none; } /* l'Évolution est dans le menu ; le lien sous le module mène au Classement */
+    .hot20-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; width: auto; }
+    .controls-left { flex-direction: column; align-items: flex-end; gap: 8px; width: auto; }
+    .week-nav { display: none; } /* remonter dans le temps : sur la page Classement, pas sur l'accueil (Adrien, 31 oct.) */
+    .hot20-title { font-size: clamp(24px, 3.2vw, 37px); }
     .hot20-title .hot20-subtitle { font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 400; margin-top: 8px; }
     .hot20-evolution-cta, .hot20-evolution-cta:hover { padding: 0; background: none; border: 0; box-shadow: none; transform: none; font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 600; color: #9dbcff; }
     .hot20-evolution-cta:hover { color: #fff; }
@@ -969,7 +974,7 @@
     .week-label-date { font-size: 14px; font-weight: 600; }
     .week-label-interval, .week-label-countdown { font-size: 12px; }
     .week-btn { font-family: var(--grotesk); border-radius: 6px; }
-    .hot20-search { margin: 14px 0 10px; }
+    .hot20-search { margin: 18px 0 10px; }
     .hot20-search input { font-family: var(--grotesk); font-size: 14px; padding: 9px 12px; border-radius: 8px; letter-spacing: 0; }
     .hot20-list { border: 0; border-radius: 0; }
     .hot20-list-header { background: transparent; padding: 0 14px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; border-bottom: 1px solid var(--border); }
@@ -979,27 +984,25 @@
     .hot20-row.rank-1:hover, .hot20-row:hover { background: rgba(40,70,160,0.14); }
     .hot20-row.alert-eleve, .hot20-row.alert-tres-eleve, .hot20-row.alert-extreme { background: transparent; box-shadow: none; }
     .hot20-row.alert-eleve:hover, .hot20-row.alert-tres-eleve:hover, .hot20-row.alert-extreme:hover { background: rgba(40,70,160,0.14); }
-    .hot20-row-rank { font-family: var(--mono); font-size: 20px; color: rgba(120,165,255,0.75); }
-    .hot20-row-name { font-size: 15.5px; font-weight: 600; }
+    .hot20-row-rank { font-family: var(--mono); font-size: 18px; color: rgba(120,165,255,0.75); }
+    .hot20-row-name { font-size: 14.5px; font-weight: 600; }
     .hot20-row-streak { font-family: var(--grotesk); font-size: 11.5px; margin-top: 2px; }
-    .hot20-row-pct strong { font-size: 18px; }
+    .hot20-row-pct strong { font-size: 17px; }
     .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
     .hot20-row-media { font-size: 11px; }
-    .hot20-more { margin-top: 14px; text-align: right; }
-    .hot20-more a { font-family: var(--grotesk); font-size: 13.5px; font-weight: 700; color: #fff; text-decoration: none; }
-    .hot20-more a:hover { text-decoration: underline; }
+    .hot20-more { margin-top: 22px; text-align: center; }
+    .hot20-more a, .aune-foot-links a:first-child { display: inline-block; font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
+    .hot20-more a:hover, .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     @media (max-width: 760px) { .hot20-section { margin-top: 48px; padding: 0 16px 60px; } }
     @media (max-width: 700px) {
-      .hot20-controls { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
-      .controls-left { flex-direction: row; }
-      .week-nav { width: 100%; }
+      .hot20-header { flex-direction: column; align-items: flex-start; }
+      .hot20-controls, .controls-left { align-items: flex-start; }
       .hot20-row { grid-template-columns: 32px minmax(0, 1fr) 132px; gap: 8px; }
       .hot20-row-score { min-width: 0; padding: 0; }
       .hot20-row-pct { gap: 6px; }
       .hot20-row-pct strong { font-size: 14px; }
       .hot20-row-increase { font-size: 11px; }
       .hot20-row-name { font-size: 14.5px; }
-      .hot20-more { text-align: left; }
     }
   </style>
 </head>

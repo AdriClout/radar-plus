@@ -275,25 +275,32 @@ function auneRanking(region, range, limit, win) {
   list.sort(function(a, b) { return b.points - a.points; });
   return list.slice(0, limit);
 }
-function auneBlockLabel(key, lang) {
-  var start = periodStartUtc(key), end = start + 4 * 3600e3;
-  var loc = lang === 'en' ? 'en-CA' : 'fr-CA';
-  var day = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(start));
-  var hour = function(t) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(new Date(t)).replace(/^24$/, '0') + 'h'; };
-  return day + ' · ' + hour(start) + '–' + hour(end);
+// Heure d'ÉDITION d'un bloc, en heure de Montréal : une édition (0h, 4h, 8h, 12h, 16h, 20h
+// l'été) publie le bloc de 4h qui s'est terminé une heure plus tôt, donc début du bloc + 5h.
+// C'est l'heure que la Vitrine affiche ; les blocs eux-mêmes (clés UTC) ne sont jamais montrés.
+function auneEditionTime(key) { return periodStartUtc(key) + AUNE_BLOCK_MS + 3600e3; }
+function auneHourMtl(t) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(new Date(t)).replace(/^24$/, '0').replace(/^0(\d)$/, '$1') + 'h';
 }
-// Moment d'un bloc, en heure de Montréal et en court : « 11h » si c'est aujourd'hui,
-// « jeu. 19h » dans les six derniers jours, « 27 oct. » avant.
+// Moment d'une édition, en court : « 16h » si c'est aujourd'hui, « mardi 16h » dans les six
+// derniers jours, « 27 oct. 16h » avant.
 function auneWhen(key, lang) {
   if (!key) return '';
-  var t = periodStartUtc(key), d = new Date(t), now = new Date(), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
-  var hour = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(d).replace(/^24$/, '0').replace(/^0(\d)$/, '$1') + 'h';
+  var t = auneEditionTime(key), d = new Date(t), now = new Date(), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+  var hour = auneHourMtl(t);
   var a = mtlParts(d), b = mtlParts(now);
   if (a.y === b.y && a.m === b.m && a.d === b.d) return hour;
-  if (now.getTime() - t < 6 * 86400e3) return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', weekday: 'short' }).format(d) + ' ' + hour;
-  return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(d);
+  if (now.getTime() - t < 6 * 86400e3) return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', weekday: 'long' }).format(d) + ' ' + hour;
+  return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(d) + ' ' + hour;
 }
-function auneNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+// Moment complet d'une édition pour les info-bulles : « édition de 16h, 31 oct. »
+function auneBlockLabel(key, lang) {
+  var t = auneEditionTime(key), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+  var day = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(t));
+  return (lang === 'en' ? auneHourMtl(t) + ' edition, ' : 'édition de ' + auneHourMtl(t) + ', ') + day;
+}
+// Filtre de recherche (page Classement) : sans accents ni casse.
+function auneNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
 function auneQuery() { var el = cfg.searchId ? document.getElementById(cfg.searchId) : null; return el ? auneNorm(el.value.trim()) : ''; }
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
 function auneHeadlines(c, ev, max) {
@@ -351,9 +358,8 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
       // « Dans le radar depuis … » (première Une captée) et « sommet … » (meilleur bloc de la
       // période, avec son moment) plutôt que des comptes de blocs (Adrien, 31 oct. 2026).
       (c.firstKey ? '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.since_tip', { label: auneBlockLabel(c.firstKey, lang) })) + '">' + escapeHtml(T('aune.since_label', { when: auneWhen(c.firstKey, lang) })) + '</span>' : '') +
-      '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + (c.peakKey ? ' (' + auneBlockLabel(c.peakKey, lang) + ')' : '') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneWhen(c.peakKey, lang), points: (c.peak || 0).toFixed(1) })) + '</span>' +
+      '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneWhen(c.peakKey, lang), points: (c.peak || 0).toFixed(1) })) + '</span>' +
       (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '">' + escapeHtml(T('aune.total_label', { points: (c.total || 0).toFixed(1) })) + '</span>') +
-      '<span>' + escapeHtml(T(arts.length === 1 ? 'aune.medias_one' : 'aune.medias_many', { n: arts.length })) + '</span>' +
       auneChipsHtml(arts) +
     '</div>';
   // La mesure de la vue (l'en-tête la nomme : indice 24h ou points) et, à côté, la part
@@ -401,7 +407,7 @@ function renderALaUne() {
   var seeAll = document.getElementById('aune-see-all');
   if (seeAll) seeAll.href = './classement.html?range=' + encodeURIComponent(cfg.range) + '&country=' + encodeURIComponent(region);
   var foot = document.getElementById(cfg.footId);
-  if (foot) foot.textContent = auneLatestKey(latest) ? T('aune.updated', { label: auneBlockLabel(auneLatestKey(latest), lang) }) : '';
+  if (foot) foot.textContent = '';
   if (!auneReady(region, cfg.range)) {
     grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
     var r = cfg.range, c = region;
