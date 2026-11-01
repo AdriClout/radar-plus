@@ -618,12 +618,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
   color: rgba(255,170,170,0.3);
 }
 
-.alert-bar-item-country {
-  font-size: 7px;
-  letter-spacing: 1px;
-  color: rgba(255,170,170,0.45);
-  text-transform: uppercase;
-}
+.alert-bar-item-country { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,230,200,0.95); margin-right: 8px; white-space: nowrap; }
 
 .alert-bar-sep {
   color: rgba(242,205,80,0.28);

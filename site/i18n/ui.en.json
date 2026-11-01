@@ -51,6 +51,11 @@
       "extreme": "Extreme salience",
       "tres_eleve": "Very high salience",
       "eleve": "High salience"
+    },
+    "region": {
+      "QC": "Quebec",
+      "CAN": "Canada (excl. Quebec)",
+      "USA": "United States"
     }
   },
   "report": {

@@ -722,6 +722,32 @@
     return items;
   }
 
+  // États-Unis : pas d'événements (panel de deux médias) ; les objets de la dernière édition qui
+  // dépassent le palier très élevé ou extrême du pays font l'alerte (Adrien, 31 oct. 2026).
+  function objectBarItems(graph, countries) {
+    var items = [], tiersAll = graph && graph.meta && graph.meta.salience_tiers;
+    (countries || []).forEach(function(country) {
+      var per = graph && graph.graphs && graph.graphs[country], tiers = tiersAll && tiersAll[country];
+      if (!per || !tiers) return;
+      Object.keys(per).forEach(function(k) {
+        (per[k].nodes || []).forEach(function(n) {
+          var size = Number(n.size) || 0, level = size >= tiers.extreme ? 'extreme' : size >= tiers.very_high ? 'tres_eleve' : null;
+          if (!level) return;
+          var arts = (n.articles || []).filter(function(a) { return a && a.url; }), byMedia = {}, media = [];
+          arts.forEach(function(a) { var m = a.media_id || ''; if (!m || byMedia[m]) return; byMedia[m] = true; media.push({ media_id: m, url: a.url, title: a.title || '' }); });
+          var name = String(n.id || '').replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+          items.push({ id: country + ':' + n.id, title: name, level: level, region: country, index: size,
+                       urls: arts.map(function(a) { return a.url; }), media: media.slice(0, EVENT_BAR_MAX_MEDIA) });
+        });
+      });
+    });
+    return items;
+  }
+  // Région en toutes lettres, au début : « Québec », « Canada (hors Québec) », « États-Unis ».
+  function regionName(code) {
+    var T = window.t || function(k) { return k; }, v = T('alertbar.region.' + code);
+    return v && v !== 'alertbar.region.' + code ? v : ({ QC: 'Québec', CAN: 'Canada (hors Québec)', USA: 'États-Unis' })[code] || code;
+  }
   function buildEventBarItems(items) {
     return items.map(function(it) {
       var lvlCss = levelCss(it.level);
@@ -731,9 +757,9 @@
       }).join('');
       return '<span class="alert-bar-item is-event level-' + escHtml(lvlCss) + '">' +
         '<a class="alert-bar-event-main" href="' + escHtml(urls[0] || '#') + '" target="_blank" rel="noopener" data-urls="' + escHtml(JSON.stringify(urls)) + '">' +
+          '<span class="alert-bar-item-country" data-region="' + escHtml(it.region) + '">' + escHtml(regionName(it.region)) + '</span>' +
           '<span class="alert-bar-item-badge" data-level="' + escHtml(it.level) + '">' + escHtml(alertBarLabel(it.level)) + '</span>' +
           '<span class="alert-bar-item-name">' + escHtml(it.title) + '</span>' +
-          '<span class="alert-bar-item-country">' + escHtml(it.region) + '</span>' +
         '</a>' +
         (chips ? '<span class="alert-bar-media">' + chips + '</span>' : '') +
       '</span>' +
@@ -741,13 +767,15 @@
     }).join('');
   }
 
-  function populateAlertBar(latest) {
+  function populateAlertBar(latest, graph) {
     var strip    = document.getElementById('alert-bar-strip');
     var bar      = document.getElementById('global-alert-bar');
     var navBadge = document.getElementById('nav-alert-badge');
     if (!strip || !bar) return;
 
-    var items = eventBarItems(latest);
+    var items = eventBarItems(latest).concat(objectBarItems(graph, ['USA']));
+    var rank = { extreme: 0, tres_eleve: 1 }, order = { QC: 0, CAN: 1, USA: 2 };
+    items.sort(function(a, b) { return (rank[a.level] - rank[b.level]) || (order[a.region] - order[b.region]) || (b.index - a.index); });
     if (navBadge) {
       if (items.length) { navBadge.textContent = String(items.length); navBadge.classList.add('active'); }
       else { navBadge.style.display = 'none'; }
@@ -806,10 +834,11 @@
     injectAlertBar();
     // Source : événements saillants du dernier bloc (v2/events/latest.json, ~15 ko).
     if (!(window.radarData && window.radarData.eventsLatest)) return;
-    window.radarData.eventsLatest()
-      .then(function(data) {
-        _lastAlertGraphData = data;
-        populateAlertBar(data);
+    // Événements du Québec et du reste du Canada ; objets en alerte pour les États-Unis.
+    Promise.all([window.radarData.eventsLatest(), window.radarData.latestAsGraph ? window.radarData.latestAsGraph().catch(function() { return null; }) : null])
+      .then(function(res) {
+        _lastAlertGraphData = res[0];
+        populateAlertBar(res[0], res[1]);
       })
       .catch(function() {
         var bar = document.getElementById('global-alert-bar');
@@ -831,6 +860,7 @@
     strip.querySelectorAll('.alert-bar-item-badge[data-level]').forEach(function (badge) {
       badge.textContent = alertBarLabel(badge.getAttribute('data-level'));
     });
+    strip.querySelectorAll('.alert-bar-item-country[data-region]').forEach(function (el) { el.textContent = regionName(el.getAttribute('data-region')); });
   });
 
   if (document.readyState === 'loading') {

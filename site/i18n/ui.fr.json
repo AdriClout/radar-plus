@@ -51,6 +51,11 @@
       "extreme": "Saillance extrême",
       "tres_eleve": "Saillance très élevée",
       "eleve": "Saillance élevée"
+    },
+    "region": {
+      "QC": "Québec",
+      "CAN": "Canada (hors Québec)",
+      "USA": "États-Unis"
     }
   },
   "report": {
