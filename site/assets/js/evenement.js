@@ -6,8 +6,8 @@
 (function() {
 'use strict';
 var params = new URLSearchParams(window.location.search);
-var sid = params.get('evenement'); if (!sid) return;
-var region = (params.get('region') || 'QC').toUpperCase(); if (region !== 'CAN') region = 'QC';
+var sid = params.get('evenement') || null;
+var region = (params.get('region') || '').toUpperCase(); if (region !== 'CAN') region = 'QC';
 var FIRST_YEAR = 2026, BLOCK_MS = 4 * 3600e3, BANDS = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
 
 function T(k, v) { var t = window.t ? window.t(k, v) : null; return (t && t !== k) ? t : (FALLBACK[k] || k).replace(/\{(\w+)\}/g, function(m, n) { return v && v[n] != null ? v[n] : m; }); }
@@ -20,7 +20,11 @@ var FALLBACK = {
   'fiche.editions_list': "Toutes les éditions", 'fiche.col_edition': "Édition", 'fiche.col_index': "Indice", 'fiche.col_index24h': "Indice 24h", 'fiche.col_title': "Titre à cette édition",
   'fiche.title_peak': "Titre au sommet", 'fiche.in_ranking': "Voir dans le classement →", 'fiche.not_found': "Événement introuvable dans les données publiées.",
   'fiche.band_aucune': "Sous le radar", 'fiche.band_faible': "Saillance faible", 'fiche.band_moderee': "Saillance modérée", 'fiche.band_elevee': "Saillance élevée", 'fiche.band_tres_elevee': "Saillance très élevée", 'fiche.band_extreme': "Saillance extrême",
-  'fiche.region_QC': "Québec", 'fiche.region_CAN': "Canada", 'fiche.loading': "Chargement…"
+  'fiche.region_QC': "Québec", 'fiche.region_CAN': "Canada", 'fiche.loading': "Chargement…",
+  'fiche.type_objects': "Objets", 'fiche.type_events': "Événements", 'fiche.search_placeholder': "Rechercher un événement (un mot du titre ou du thème)…",
+  'fiche.search_empty': "Recherchez un événement pour afficher sa fiche.", 'fiche.search_none': "Aucun événement ne correspond.", 'fiche.search_hint': "Exemples : cycliste, Carney, budget, grève.",
+  'fiche.page_title_events': "Statistiques par événement", 'fiche.page_lead_events': "Recherchez un événement pour afficher sa fiche : indice par édition, sommet, Unes et médias.",
+  'fiche.no_usa': "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada."
 };
 var u = window.RadarAune && window.RadarAune.util;
 function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
@@ -29,19 +33,92 @@ function band(th, v) { var b = 'aucune'; if (!th) return b; BANDS.forEach(functi
 function years() { var out = [], y1 = new Date().getUTCFullYear(); for (var y = FIRST_YEAR; y <= y1; y++) out.push(y); return out; }
 function fmt1(v) { return (Number(v) || 0).toFixed(1); }
 
-function mount() {
-  var main = document.querySelector('main.wrap'); if (!main) return null;
-  Array.from(main.children).forEach(function(el) { if (el.tagName !== 'HEADER') el.style.display = 'none'; });
-  var h1 = main.querySelector('h1.title'), lead = main.querySelector('p.lead'), eyebrow = main.querySelector('.eyebrow');
-  if (h1) { h1.textContent = T('fiche.title'); h1.removeAttribute('data-i18n'); }
-  if (lead) lead.textContent = T('fiche.lead');
-  if (eyebrow) eyebrow.textContent = 'Radar+';
-  var sec = document.createElement('section'); sec.id = 'evenement-fiche'; sec.className = 'ev-fiche';
-  sec.innerHTML = '<div class="ev-loading">' + esc(T('fiche.loading')) + '</div>';
-  main.insertBefore(sec, main.children[1] || null);
-  return sec;
+var storyCache = {}, ficheSec = null, mode = 'objets', pageTitle = null, pageLead = null;
+function mainEl() { return document.querySelector('main.wrap'); }
+function ficheSection() {
+  if (ficheSec) return ficheSec;
+  var main = mainEl(); if (!main) return null;
+  ficheSec = document.createElement('section'); ficheSec.id = 'evenement-fiche'; ficheSec.className = 'ev-fiche'; ficheSec.style.display = 'none';
+  var panel = main.querySelector('section.panel');
+  main.insertBefore(ficheSec, panel ? panel.nextSibling : null);
+  return ficheSec;
 }
-
+// Objets ou événements : le panneau de recherche reste, le reste de la page suit le mode.
+function setMode(m) {
+  mode = m;
+  var main = mainEl(); if (!main) return;
+  Array.from(main.children).forEach(function(el) {
+    if (el.tagName === 'HEADER' || el.classList.contains('panel')) return;
+    if (el.id === 'evenement-fiche') el.style.display = m === 'evenements' ? '' : 'none';
+    else el.style.display = m === 'evenements' ? 'none' : '';
+  });
+  var box = main.querySelector('.search-box'), res = document.getElementById('search-results'), status = document.getElementById('status'), hint = main.querySelector('p.hint');
+  [box, res, status, hint].forEach(function(el) { if (el) el.style.display = m === 'evenements' ? 'none' : ''; });
+  var evBox = document.getElementById('ev-search-box'); if (evBox) evBox.style.display = m === 'evenements' ? '' : 'none';
+  document.querySelectorAll('.ev-type button').forEach(function(b) { b.classList.toggle('active', b.dataset.type === m); });
+  var h1 = main.querySelector('h1.title'), lead = main.querySelector('p.lead');
+  if (h1) { if (pageTitle === null) pageTitle = h1.textContent; h1.textContent = m === 'evenements' ? T('fiche.page_title_events') : pageTitle; }
+  if (lead) { if (pageLead === null) pageLead = lead.textContent; lead.textContent = m === 'evenements' ? T('fiche.page_lead_events') : pageLead; }
+  if (m === 'evenements') { var sec = ficheSection(); if (sec && !sec.innerHTML) sec.innerHTML = '<div class="ev-empty">' + esc(T('fiche.search_empty')) + '</div>'; }
+}
+function pageRegion() {
+  var t = document.querySelector('#country-tabs .country-tab.active');
+  var c = t ? t.textContent.trim().toUpperCase() : 'QC';
+  return c === 'CAN' ? 'CAN' : (c === 'QC' ? 'QC' : null); // USA : pas d'événements
+}
+function mountSearch() {
+  var main = mainEl(); if (!main) return;
+  var title = main.querySelector('section.panel .panel-title');
+  if (title && !document.querySelector('.ev-type')) {
+    var tog = document.createElement('div'); tog.className = 'ev-type';
+    tog.innerHTML = '<button type="button" data-type="objets" class="active">' + esc(T('fiche.type_objects')) + '</button><button type="button" data-type="evenements">' + esc(T('fiche.type_events')) + '</button>';
+    title.appendChild(tog);
+    tog.addEventListener('click', function(e) { var b = e.target.closest('button'); if (b) setMode(b.dataset.type); });
+  }
+  var stack = main.querySelector('.search-stack > div');
+  if (stack && !document.getElementById('ev-search-box')) {
+    var box = document.createElement('div'); box.id = 'ev-search-box'; box.style.display = 'none';
+    box.innerHTML = '<div class="search-box"><input id="ev-search" class="search-input" type="text" autocomplete="off" spellcheck="false" placeholder="' + esc(T('fiche.search_placeholder')) + '"></div><div id="ev-results" class="ev-results"></div><p class="hint">' + esc(T('fiche.search_hint')) + '</p>';
+    stack.appendChild(box);
+    document.getElementById('ev-search').addEventListener('input', function() { suggest(this.value); });
+  }
+  var tabs = document.getElementById('country-tabs');
+  if (tabs) tabs.addEventListener('click', function() { if (mode === 'evenements') { var q = document.getElementById('ev-search'); setTimeout(function() { suggest(q ? q.value : ''); }, 0); } });
+}
+function norm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+function storylines(reg) {
+  if (storyCache[reg]) return storyCache[reg];
+  storyCache[reg] = Promise.all(years().map(function(y) { return window.radarData.eventsStorylines(reg, y).catch(function() { return null; }); }))
+    .then(function(files) { var all = {}; files.forEach(function(f) { if (f && f.storylines) Object.keys(f.storylines).forEach(function(k) { all[k] = f.storylines[k]; }); }); return all; });
+  return storyCache[reg];
+}
+function suggest(q) {
+  var out = document.getElementById('ev-results'); if (!out) return;
+  var reg = pageRegion();
+  if (!reg) { out.innerHTML = '<div class="ev-empty">' + esc(T('fiche.no_usa')) + '</div>'; return; }
+  var nq = norm(q.trim()); if (nq.length < 2) { out.innerHTML = ''; return; }
+  storylines(reg).then(function(all) {
+    var L = lang();
+    var hits = Object.keys(all).map(function(id) { var st = all[id]; return { id: id, st: st, text: norm([st.title_last, st.title, st.title_peak, L === 'en' ? st.issue_en : st.issue_fr].join(' ')) }; })
+      .filter(function(h) { return h.text.indexOf(nq) !== -1; })
+      .sort(function(a, b) { return (b.st.peak || 0) - (a.st.peak || 0); }).slice(0, 12);
+    if (!hits.length) { out.innerHTML = '<div class="ev-empty">' + esc(T('fiche.search_none')) + '</div>'; return; }
+    out.innerHTML = hits.map(function(h) {
+      return '<button type="button" class="ev-result" data-id="' + esc(h.id) + '"><span class="ev-result-title">' + esc(h.st.title_last || h.st.title || h.id) + '</span><span class="ev-result-meta">' + esc(T('fiche.peak')) + ' ' + fmt1(h.st.peak) + ' · ' + esc(h.st.first_key ? u.when(h.st.first_key, L) : '') + '</span></button>';
+    }).join('');
+    out.querySelectorAll('.ev-result').forEach(function(b) { b.addEventListener('click', function() { select(b.dataset.id, reg); }); });
+  });
+}
+function select(id, reg) {
+  sid = id; region = reg;
+  var sec = ficheSection(); if (!sec) return;
+  setMode('evenements');
+  sec.innerHTML = '<div class="ev-loading">' + esc(T('fiche.loading')) + '</div>';
+  try { var url = new URL(window.location.href); url.searchParams.set('evenement', id); url.searchParams.set('region', reg); url.searchParams.delete('objet'); history.replaceState(null, '', url.toString()); } catch (e) { /* ignore */ }
+  load().then(function(data) { render(sec, data); lastData = data; }).catch(function(e) { console.warn('Fiche événement', e); sec.innerHTML = '<div class="ev-empty">' + esc(T('fiche.not_found')) + '</div>'; });
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+var lastData = null;
 function load() {
   var rd = window.radarData;
   return Promise.all([rd.eventsIndex().catch(function() { return null; })].concat(years().map(function(y) { return rd.eventsStorylines(region, y).catch(function() { return null; }); })))
@@ -116,8 +193,14 @@ function render(sec, data) {
   sec.innerHTML = html;
 }
 document.addEventListener('DOMContentLoaded', function() {
-  var sec = mount(); if (!sec || !u) return;
-  load().then(function(data) { render(sec, data); document.addEventListener('i18n:applied', function() { render(sec, data); }); })
-    .catch(function(e) { console.warn('Fiche événement', e); sec.innerHTML = '<div class="ev-empty">' + esc(T('fiche.not_found')) + '</div>'; });
+  if (!u) return;
+  mountSearch();
+  ficheSection();
+  if (sid) {
+    setMode('evenements');
+    var sec = ficheSection(); sec.innerHTML = '<div class="ev-loading">' + esc(T('fiche.loading')) + '</div>';
+    load().then(function(data) { render(sec, data); lastData = data; }).catch(function(e) { console.warn('Fiche événement', e); sec.innerHTML = '<div class="ev-empty">' + esc(T('fiche.not_found')) + '</div>'; });
+  }
+  document.addEventListener('i18n:applied', function() { if (lastData && mode === 'evenements') render(ficheSection(), lastData); });
 });
 })();

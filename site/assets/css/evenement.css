@@ -30,3 +30,13 @@
 .ev-table td { padding: 7px 10px; border-bottom: 1px solid rgba(95,140,255,0.12); } .ev-table th.num, .ev-table td.num { text-align: right; font-family: 'Space Mono', monospace; }
 .ev-table tr.peak td { color: #ffc857; }
 .ev-foot { margin: 24px 0 40px; } .ev-foot a { color: #9dbcff; font-weight: 600; text-decoration: none; }
+
+/* Objets | Événements dans le panneau de recherche, et les suggestions d'événements */
+.ev-type { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--line); margin-left: 14px; vertical-align: middle; }
+.ev-type button { font-family: 'Space Grotesk', sans-serif; font-size: 12px; padding: 5px 11px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.ev-type button.active { background: rgba(85,136,255,0.22); color: #fff; }
+.ev-results { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.ev-result { text-align: left; font-family: 'Space Grotesk', sans-serif; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; color: #e8f0ff; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.ev-result:hover { border-color: var(--accent); background: rgba(40,70,160,0.3); }
+.ev-result-title { font-size: 14px; font-weight: 600; } .ev-result-meta { font-size: 11.5px; color: var(--muted); }
+#ev-search-box .hint { margin-top: 10px; }

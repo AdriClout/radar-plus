@@ -667,6 +667,15 @@
     "band_extreme": "Saillance extrême",
     "region_QC": "Québec",
     "region_CAN": "Canada",
-    "loading": "Chargement…"
+    "loading": "Chargement…",
+    "type_objects": "Objets",
+    "type_events": "Événements",
+    "search_placeholder": "Rechercher un événement (un mot du titre ou du thème)…",
+    "search_empty": "Recherchez un événement pour afficher sa fiche.",
+    "search_none": "Aucun événement ne correspond.",
+    "search_hint": "Exemples : cycliste, Carney, budget, grève.",
+    "page_title_events": "Statistiques par événement",
+    "page_lead_events": "Recherchez un événement pour afficher sa fiche : indice par édition, sommet, Unes et médias.",
+    "no_usa": "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada."
   }
 }
