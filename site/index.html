@@ -905,8 +905,8 @@
              au postdoc d'Adrien (avec Soroka). -->
       </div>
       <div class="aune-tabs" id="aune-tabs" role="tablist">
-        <button type="button" class="aune-tab active" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
-        <button type="button" class="aune-tab" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
+        <button type="button" class="aune-tab" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
+        <button type="button" class="aune-tab active" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
         <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
         <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
         <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
@@ -1502,7 +1502,7 @@ function setMethodoAnchors() {
 document.addEventListener('i18n:applied', setMethodoAnchors);
 setMethodoAnchors();
 // La Une des Unes : module partagé assets/js/aune.js (réglages de l'accueil = ceux par défaut).
-if (window.RadarAune) window.RadarAune.init({});
+if (window.RadarAune) window.RadarAune.init({ range: 'today' }); // « Aujourd'hui » par défaut (Adrien, 31 oct. 2026)
 var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
@@ -2049,7 +2049,7 @@ function renderHot20() {
             (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
-          '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T('hot20.share_label', { pct: pct })) + '</div>' +
+          '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T(currentSlotIdx === aggregatedSlots.length - 1 ? 'hot20.share_label_gran.' + currentGranularity : 'hot20.share_label', { pct: pct })) + '</div>' +
         '</div>' +
         '<div class="hot20-row-media hot20-hint" data-tip="' + escapeHtml(articlesTip) + '">' + articleCount + ' ' + escapeHtml(articleLabel) + '</div>' +
       '</div>';

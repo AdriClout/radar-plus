@@ -31,7 +31,7 @@
 var cfg = {
   sectionId: 'aune', gridId: 'aune-grid', subtitleId: 'aune-subtitle', footId: 'aune-foot',
   tabsId: 'aune-tabs', countriesId: 'aune-country-tabs', searchId: null, countId: null,
-  limits: { '24h': 3, today: 3, week: 10, month: 10, year: 10 },
+  limits: { '24h': 3, today: 3, week: 3, month: 3, year: 3 }, // accueil : 3 histoires pour toutes les vues (Adrien, 31 oct. 2026)
   proportionalMax: 5,   // au plus N rangs : hauteur proportionnelle, illustration au rang 1
   range: '24h', country: 'QC', // sélecteur propre au module, indépendant de celui du Hot 20
   loadLatest: true,     // le module charge lui-même events/latest.json
@@ -111,6 +111,30 @@ function auneKeyAt(t) {
   return d.toISOString().slice(0, 10) + '_' + p(h) + '-' + p((h + 4) % 24);
 }
 // Niveau de l'indice 24h (seuils sum24h de events/index.json), pour une édition passée.
+// Clé de l'édition affichée : la dernière publiée (offset 0) ou une édition passée (Classement).
+function auneViewKey() {
+  var t = auneEditionStart(cfg.offset); return t === null ? null : auneKeyAt(t);
+}
+// Sommet de l'INDICE 24h d'une histoire jusqu'à l'édition `upto` : même échelle que le nombre affiché en
+// vue Dernières heures, pour que « Sommet » et « Actuellement » se comparent (Adrien, 31 oct. 2026).
+function auneSum24hPeak(region, sid, upto, current) {
+  var st = auneStoryline(region, sid), cum = (st && st.sum24h) || {}, best = { v: 0, key: null };
+  Object.keys(cum).forEach(function(k) { if ((!upto || k <= upto) && typeof cum[k] === 'number' && cum[k] > best.v) best = { v: cum[k], key: k }; });
+  if (typeof current === 'number' && current >= best.v - 1e-9) best = { v: current, key: upto };
+  return best;
+}
+// Moment d'une édition nommé comme tel : « édition de 16h », « édition de vendredi 16h »,
+// « édition du 27 oct., 16h » ; « maintenant » quand c'est l'édition en cours.
+function auneEditionWhen(key, lang, isNow) {
+  var T = window.t || function(k) { return k; };
+  if (isNow) return T('aune.when_now');
+  if (!key) return '';
+  var t = auneEditionTime(key), d = new Date(t), now = new Date(), loc = lang === 'en' ? 'en-CA' : 'fr-CA', hour = auneHourMtl(t);
+  var a = mtlParts(d), b = mtlParts(now);
+  if (a.y === b.y && a.m === b.m && a.d === b.d) return T('aune.edition_today', { hour: hour });
+  if (now.getTime() - t < 6 * 86400e3) return T('aune.edition_recent', { day: new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', weekday: 'long' }).format(d), hour: hour });
+  return T('aune.edition_date', { date: new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(d), hour: hour });
+}
 function auneBand24h(region, value) {
   var th = auneStore.index && auneStore.index.thresholds && auneStore.index.thresholds[region] && auneStore.index.thresholds[region].sum24h;
   if (!th) return 'aucune';
@@ -479,19 +503,19 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
       // « Dans le radar depuis … » (première Une captée) et « sommet … » (meilleur bloc de la
       // période, avec son moment) plutôt que des comptes de blocs (Adrien, 31 oct. 2026).
       (c.firstKey ? '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.since_tip', { label: auneBlockLabel(c.firstKey, lang) })) + '">' + escapeHtml(T('aune.since_label', { when: auneWhen(c.firstKey, lang) })) + '</span>' : '') +
-      '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneWhen(c.peakKey, lang), points: (c.peak || 0).toFixed(1) })) + '</span>' +
+      '<span class="hot20-hint" data-tip="' + escapeHtml(T(c.is24h ? 'aune.peak_tip_24h' : 'aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneEditionWhen(c.peakKey, lang, c.peakNow), points: (c.peak || 0).toFixed(1) })) + '</span>' +
       (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '">' + escapeHtml(T('aune.total_label', { points: (c.total || 0).toFixed(1) })) + '</span>') +
       auneChipsHtml(arts) +
     '</div>';
   // La mesure de la vue (l'en-tête la nomme : indice 24h ou points) et, à côté, la part
   // de l'événement dans l'actualité de la période (indice relatif), que la barre dessine.
-  var shareHtml = '<span class="unit hot20-hint" data-tip="' + escapeHtml(T('aune.share_tip')) + '">' + escapeHtml(T('aune.share_label', { pct: Math.round(c.sharePct || 0) })) + '</span>';
+  var shareHtml = '<span class="unit hot20-hint" data-tip="' + escapeHtml(T('aune.share_tip')) + '">' + escapeHtml(T(cfg.offset === 0 ? 'aune.share_label_range.' + cfg.range : 'aune.share_label', { pct: Math.round(c.sharePct || 0) })) + '</span>';
   var scoreHtml = c.is24h
     // Dernières heures : indice 24h de la Vitrine + variation depuis l'édition précédente
     ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points')) + '</span>' + '</span>' + auneDeltaHtml(c, T)
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
-    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points')) + '</span>' + '</span>';
+    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points_cumul')) + '</span>' + '</span>';
   var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T, latest) : '';
   var rank = c.rank || (i + 1);
   var cls = 'aune-row rank-' + rank + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
@@ -538,7 +562,7 @@ function salBadgeHtml(c, region, T) {
     '<a class="sal-level" href="./indices.html#etiquettes">' + escapeHtml(T('aune.band.' + band)) + '</a>' +
   '</span>';
 }
-function salCurveSvg(value, t, band, markerLabel, T) {
+function salCurveSvg(value, t, band, markerLabel, T, peakVal) {
   var W = 320, PH = 56, TOP = 14, BOT = 16, H = TOP + PH + BOT;
   var l10 = function(v) { return Math.log10(Math.max(v, 0.5)); };
   var x0 = l10(t[0] / 2), x1 = l10(t[4] * 2), px = function(v) { return (l10(v) - x0) / (x1 - x0) * W; };
@@ -552,10 +576,15 @@ function salCurveSvg(value, t, band, markerLabel, T) {
   var mx = (typeof value === 'number' && value > 0) ? Math.min(W - 1, Math.max(1, px(value))) : null;
   var my = mx != null ? (PH - 2 - g(l10(value)) * (PH - 10)) : null;
   var lab = mx != null ? Math.min(W - 42, Math.max(42, mx)) : null;
+  // Second repère : le sommet de l'indice 24h, quand l'histoire est redescendue depuis.
+  var px2 = (typeof peakVal === 'number' && peakVal > 0) ? Math.min(W - 1, Math.max(1, px(peakVal))) : null;
+  var py2 = px2 != null ? (PH - 2 - g(l10(peakVal)) * (PH - 10)) : null;
   return '<svg class="sal-curve" viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' + escapeHtml(markerLabel) + '">' +
     '<g transform="translate(0,' + TOP + ')">' + zones + '<polyline class="sal-line" points="' + pts.join(' ') + '"/>' +
+    (px2 != null ? '<line class="sal-marker sal-peak" x1="' + px2.toFixed(1) + '" y1="0" x2="' + px2.toFixed(1) + '" y2="' + PH + '"/><circle class="sal-dot sal-peak" cx="' + px2.toFixed(1) + '" cy="' + py2.toFixed(1) + '" r="2.8"/>' : '') +
     (mx != null ? '<line class="sal-marker" x1="' + mx.toFixed(1) + '" y1="0" x2="' + mx.toFixed(1) + '" y2="' + PH + '"/><circle class="sal-dot" cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="3.2"/>' : '') +
     '</g>' +
+    (px2 != null ? '<text class="sal-marker-label sal-peak" x="' + Math.min(W - 30, Math.max(30, px2)).toFixed(1) + '" y="' + (TOP + PH + 11) + '" text-anchor="middle">' + escapeHtml(T('aune.sal.curve_peak')) + '</text>' : '') +
     (mx != null ? '<text class="sal-marker-label" x="' + lab.toFixed(1) + '" y="' + (TOP - 4) + '" text-anchor="middle">' + escapeHtml(markerLabel) + '</text>' : '') +
     '<text class="sal-axis" x="2" y="' + (H - 4) + '">' + escapeHtml(T('aune.sal.axis_less')) + '</text>' +
     '<text class="sal-axis" x="' + (W - 2) + '" y="' + (H - 4) + '" text-anchor="end">' + escapeHtml(T('aune.sal.axis_more')) + '</text>' +
@@ -566,16 +595,16 @@ function salPopHtml(sid, lang, T) {
   var c = row.c, region = row.region, adj = T('aune.sal.adj.' + region);
   var scale = c.is24h ? 'sum24h' : 'block', t = salThresholds(region, scale);
   var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
-  var peakBand = c.peakBand || salBandOf(c.peak || 0, salThresholds(region, 'block'));
+  var peakBand = c.peakBand || salBandOf(c.peak || 0, salThresholds(region, c.is24h ? 'sum24h' : 'block'));
   var html = '';
   if (c.is24h) html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.now_prefix')) + ' ' + salPill(band, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.points_100', { points: (c.points || 0).toFixed(1) })) + '</span></p>';
-  html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.peak_prefix')) + ' ' + salPill(peakBand, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.peak_at', { points: (c.peak || 0).toFixed(1), when: auneWhen(c.peakKey, lang) })) + '</span></p>';
+  html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.peak_prefix')) + ' ' + salPill(peakBand, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.peak_at', { points: (c.peak || 0).toFixed(1), when: auneEditionWhen(c.peakKey, lang, c.peakNow) })) + '</span></p>';
   if (!c.is24h) html += '<p class="sal-note sal-sub">' + escapeHtml(T('aune.sal.cumul', { points: (c.points || 0).toFixed(1) })) + '</p>';
   // Une histoire présente dans moins de six éditions a un indice 24h encore partiel : « 13.1 » à côté
   // d'un sommet d'édition à « 43.9 » se lit comme une erreur si on ne le dit pas (Adrien, 31 oct. 2026).
   if (c.is24h && c.blocks > 0 && c.blocks < 6) html += '<p class="sal-note sal-partial">' + escapeHtml(T(c.blocks === 1 ? 'aune.sal.partial_one' : 'aune.sal.partial_many', { n: c.blocks })) + '</p>';
   html += '<p class="sal-lede">' + escapeHtml(T('aune.sal.micro.' + band, { adj: adj })) + '</p>';
-  if (t) html += salCurveSvg(c.is24h ? c.points : c.peak, t, band, T(c.is24h ? 'aune.sal.curve_now' : 'aune.sal.curve_peak'), T) +
+  if (t) html += salCurveSvg(c.is24h ? c.points : c.peak, t, band, T(c.is24h ? 'aune.sal.curve_now' : 'aune.sal.curve_peak'), T, (c.is24h && c.peak > c.points + 0.05) ? c.peak : null) +
     '<p class="sal-scale">' + escapeHtml(T(c.is24h ? 'aune.sal.scale_24h' : 'aune.sal.scale_block', { adj: adj })) + '</p>';
   html += '<p class="sal-def">' + escapeHtml(T('aune.sal.def')) + '</p>' +
     '<a class="sal-more" href="./indices.html">' + escapeHtml(T('aune.sal.more')) + '</a>';
@@ -723,6 +752,15 @@ function renderALaUne() {
     it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakKey = o.peakKey; it.peakBand = auneBand(region, o.peak);
     it.firstKey = it.first_key || auneFirstKey(region, it.storyline);
   });
+  // Dernières heures : le sommet est le plus haut INDICE 24h de l'histoire (même échelle que le nombre
+  // affiché), pas sa meilleure édition ; une histoire à sa première édition a un sommet égal à sa valeur.
+  if (is24h) {
+    var vk = auneViewKey();
+    full.forEach(function(it) {
+      var pk = auneSum24hPeak(region, it.storyline, vk, it.points);
+      it.peak = pk.v; it.peakKey = pk.key; it.peakBand = auneBand24h(region, pk.v); it.peakNow = cfg.offset === 0 && pk.key === vk;
+    });
+  }
   // Barre et libellé = part de l'événement dans la saillance totale de TOUS les
   // événements de la période (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026) :
   // une barre pleine au rang 1 = seul dans l'actualité ; à moitié = d'autres compétitionnent.

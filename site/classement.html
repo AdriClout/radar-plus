@@ -28,6 +28,8 @@
     #wrap { max-width: 1440px; margin: 0 auto; padding: 24px 28px calc(var(--ticker-height) + 60px); }
     /* Page longue : le classement n'est pas contraint à l'écran, chaque rang garde sa hauteur. */
     .aune-section { height: auto; min-height: 0; padding: 0; display: block; }
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #wrap { position: relative; z-index: 1; }
     .aune-grid { display: block; margin-top: 36px; }
     .aune-list { overflow: visible; display: block; }
     .aune-row, .aune-list.dense .aune-row, .aune-list.dense .aune-row.rank-1 { flex: 0 0 auto; min-height: 0; }
@@ -71,6 +73,7 @@
   </style>
 </head>
 <body>
+<canvas id="stars" aria-hidden="true"></canvas>
 <div id="wrap">
 <section class="aune-section" id="aune" hidden>
   <div class="aune-head">
@@ -130,6 +133,24 @@
 <script src="./assets/js/shared-ticker.js"></script>
 <script src="./assets/js/aune.js"></script>
 <script src="./assets/js/objets.js"></script>
+  <script>
+    // Ciel étoilé, comme Méthodologie et la page des indices (Adrien, 31 oct. 2026).
+    (function() {
+      var canvas = document.getElementById('stars'); if (!canvas) return;
+      var ctx = canvas.getContext('2d'), stars = [], tick = 0;
+      function resize() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        var count = Math.floor((canvas.width * canvas.height) / 3200);
+        stars = Array.from({ length: count }, function() { return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.1 + 0.25, a: Math.random() * 0.5 + 0.18, s: Math.random() * 0.03 + 0.004, p: Math.random() * Math.PI * 2 }; });
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); tick += 0.016;
+        for (var i = 0; i < stars.length; i++) { var st = stars[i], a = st.a + Math.sin(tick * st.s + st.p) * 0.14; ctx.fillStyle = 'rgba(180, 205, 255, ' + Math.max(0, a) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill(); }
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize); resize(); draw();
+    })();
+  </script>
   <script src="./assets/js/vendor/qrcode.js"></script>
   <script src="./assets/js/classement-png.js"></script>
 <script>

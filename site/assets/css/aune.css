@@ -184,6 +184,8 @@
 .sal-zone.band-elevee { fill: #f2c94c; } .sal-zone.band-tres_elevee { fill: #ff9f43; } .sal-zone.band-extreme { fill: #ff4d4d; }
 .sal-line { fill: none; stroke: #fff; stroke-opacity: 0.8; stroke-width: 1.4; }
 .sal-marker { stroke: #fff; stroke-width: 1.6; } .sal-dot { fill: #fff; }
+.sal-marker.sal-peak { stroke-dasharray: 3 2; stroke-opacity: 0.7; } .sal-dot.sal-peak { fill: #050a1e; stroke: #fff; stroke-width: 1.2; }
+.sal-marker-label.sal-peak { fill: #cfe1ff; opacity: 0.85; }
 .sal-marker-label { font-family: var(--mono); font-size: 9px; fill: #fff; letter-spacing: 0.6px; text-transform: uppercase; }
 .sal-axis { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
 .sal-scale { font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: 0.3px; }

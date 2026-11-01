@@ -212,7 +212,15 @@
     "sub_edition": "Saliency gained during this 4-hour edition",
     "sub_data_start": "start of the loaded data",
     "sub_days": "{n} days of data",
-    "sub_today": "Saliency summed since midnight · {n} editions"
+    "sub_today": "Saliency summed since midnight · {n} editions",
+    "share_label_gran": {
+      "4h": "{pct}% of the radar this edition",
+      "day": "{pct}% of the radar today",
+      "week": "{pct}% of the radar this week",
+      "month": "{pct}% of the radar this month",
+      "quarter": "{pct}% of the radar this year",
+      "total": "{pct}% of the radar since the start"
+    }
   },
   "constellation": {
     "title": "Constellation",
@@ -520,9 +528,9 @@
     },
     "range_sub": {
       "24h": "The three stories dominating the front pages over the last 24 hours.",
-      "week": "Top 10 since Monday (points summed by edition).",
-      "month": "Top 10 of the month (points summed by edition).",
-      "year": "Top 10 of the year (points summed by edition).",
+      "week": "The three stories dominating the front pages since Monday (points summed by edition).",
+      "month": "The three stories dominating the front pages this month (points summed by edition).",
+      "year": "The three stories dominating the front pages this year (points summed by edition).",
       "today": "The three stories dominating the front pages since midnight (points summed by edition)."
     },
     "meta_range": "{blocks} blocks on front pages · {points} points",
@@ -534,7 +542,7 @@
     "band24h_tip": "Level of the 24h index.",
     "peak_label": "Peak: {points} points ({when})",
     "peak_prefix": "Peak ·",
-    "peak_tip": "The edition where the story had its highest index in the period. This is the index of ONE edition (0 to 100), not the 24h index, which averages the last six editions.",
+    "peak_tip": "The edition where the story had its best index in the period (index of a single 4-hour edition).",
     "score_tip": "Total points since the story's first front page.",
     "gain_tip": {
       "week": "Points gained since Monday (sum of editions).",
@@ -562,7 +570,7 @@
     "trend_return_tip_24h": "Back: a story seen before, absent from the previous edition's top {n}",
     "header_subject": "Subject",
     "header_score24h": "24h index · 4h change",
-    "header_points": "Points",
+    "header_points": "Cumulative points",
     "medias_one": "{n} outlet",
     "medias_many": "{n} outlets",
     "total_label": "total: {points} points",
@@ -631,12 +639,25 @@
       "axis_more": "more attention →",
       "scale_24h": "Curve: 24h index of a year of {adj} front pages (log scale)",
       "scale_block": "Curve: single-edition (4 h) index of a year of {adj} front pages (log scale)",
-      "def": "The Radar+ saliency index measures the room a story takes on media front pages: how many outlets put it there, for how long and how intensely. Each 4-hour edition is scored from 0 to 100; the 24h index averages the last six editions, the most recent counting more. The label places the story among a full year of front pages.",
+      "def": "The Radar+ saliency index measures the room a story takes on media front pages: how many outlets put it there, for how long and how intensely. Each event is scored from 0 to 100 per 4-hour edition; a story adds up its events in the edition (almost always just one). The 24h index averages the last six editions, the most recent counting more. The label places the story among a full year of front pages.",
       "more": "Understanding the saliency indices →",
       "partial_one": "Appeared in the latest edition only: the 24h index so far counts one of the six editions it averages. It rises if the story stays on the front page.",
       "partial_many": "Present in {n} of the six editions averaged by the 24h index: it rises if the story stays on the front page.",
       "now_word": "Now",
       "peak_word": "Peak"
+    },
+    "points_cumul": "cumulative points",
+    "when_now": "now",
+    "edition_today": "{hour} edition",
+    "edition_recent": "{day} {hour} edition",
+    "edition_date": "{date}, {hour} edition",
+    "peak_tip_24h": "The highest 24h index the story has reached, on the same scale as the number shown.",
+    "share_label_range": {
+      "24h": "{pct}% of the radar right now",
+      "today": "{pct}% of the radar today",
+      "week": "{pct}% of the radar this week",
+      "month": "{pct}% of the radar this month",
+      "year": "{pct}% of the radar this year"
     }
   },
   "article_panel": {

@@ -212,7 +212,15 @@
     "sub_edition": "Saillance gagnée pendant cette édition de 4 heures",
     "sub_data_start": "début des données chargées",
     "sub_days": "{n} jours de données",
-    "sub_today": "Saillance cumulée depuis minuit · {n} éditions"
+    "sub_today": "Saillance cumulée depuis minuit · {n} éditions",
+    "share_label_gran": {
+      "4h": "{pct} % du radar à cette édition",
+      "day": "{pct} % du radar aujourd'hui",
+      "week": "{pct} % du radar cette semaine",
+      "month": "{pct} % du radar ce mois-ci",
+      "quarter": "{pct} % du radar cette année",
+      "total": "{pct} % du radar depuis le début"
+    }
   },
   "constellation": {
     "title": "Constellation",
@@ -520,9 +528,9 @@
     },
     "range_sub": {
       "24h": "Les trois histoires qui dominent les Unes des 24 dernières heures.",
-      "week": "Le top 10 depuis lundi (points cumulés par édition).",
-      "month": "Le top 10 du mois (points cumulés par édition).",
-      "year": "Le top 10 de l'année (points cumulés par édition).",
+      "week": "Les trois histoires qui dominent les Unes depuis lundi (points cumulés par édition).",
+      "month": "Les trois histoires qui dominent les Unes ce mois-ci (points cumulés par édition).",
+      "year": "Les trois histoires qui dominent les Unes cette année (points cumulés par édition).",
       "today": "Les trois histoires qui dominent les Unes depuis minuit (points cumulés par édition)."
     },
     "meta_range": "{blocks} blocs en Une · {points} points",
@@ -534,7 +542,7 @@
     "band24h_tip": "Niveau de l'indice 24h.",
     "peak_label": "Sommet : {points} points ({when})",
     "peak_prefix": "Pic ·",
-    "peak_tip": "L'édition où l'histoire a eu son indice le plus élevé dans la période. C'est l'indice d'UNE édition (0 à 100), pas l'indice 24h, qui moyenne les six dernières éditions.",
+    "peak_tip": "L'édition où l'histoire a eu son meilleur indice dans la période (indice d'une seule édition de 4 heures).",
     "score_tip": "Total des points depuis la première Une de l'histoire.",
     "gain_tip": {
       "week": "Points gagnés depuis lundi (somme des éditions).",
@@ -562,7 +570,7 @@
     "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top {n} de l'édition précédente",
     "header_subject": "Sujet",
     "header_score24h": "Indice 24h · variation 4h",
-    "header_points": "Points",
+    "header_points": "Points cumulés",
     "medias_one": "{n} média",
     "medias_many": "{n} médias",
     "total_label": "total : {points} points",
@@ -631,12 +639,25 @@
       "axis_more": "plus d'attention →",
       "scale_24h": "Courbe : indice 24h des Unes {adj} d'une année (échelle logarithmique)",
       "scale_block": "Courbe : indice d'une édition (4 h) des Unes {adj} d'une année (échelle logarithmique)",
-      "def": "L'indice de saillance Radar+ mesure la place qu'une nouvelle prend à la Une des médias : combien de médias l'y mettent, pendant combien de temps et avec quelle intensité. Chaque édition de 4 heures est notée de 0 à 100 ; l'indice 24h est la moyenne des six dernières éditions, les plus récentes comptant davantage. L'étiquette situe la nouvelle parmi les Unes d'une année entière.",
+      "def": "L'indice de saillance Radar+ mesure la place qu'une nouvelle prend à la Une des médias : combien de médias l'y mettent, pendant combien de temps et avec quelle intensité. Chaque événement est noté de 0 à 100 par édition de 4 heures ; une histoire additionne ses événements de l'édition (presque toujours un seul). L'indice 24h est la moyenne des six dernières éditions, les plus récentes comptant davantage. L'étiquette situe la nouvelle parmi les Unes d'une année entière.",
       "more": "Comprendre les indices de saillance →",
       "partial_one": "Apparue à la dernière édition seulement : l'indice 24h ne compte encore qu'une édition sur les six qu'il moyenne. Il monte si l'histoire reste en Une.",
       "partial_many": "Présente dans {n} des six éditions que moyenne l'indice 24h : il monte si l'histoire reste en Une.",
       "now_word": "Actuellement",
       "peak_word": "Sommet"
+    },
+    "points_cumul": "points cumulés",
+    "when_now": "maintenant",
+    "edition_today": "édition de {hour}",
+    "edition_recent": "édition de {day} {hour}",
+    "edition_date": "édition du {date}, {hour}",
+    "peak_tip_24h": "Le plus haut indice 24h atteint par l'histoire, sur la même échelle que le nombre affiché.",
+    "share_label_range": {
+      "24h": "{pct} % du radar en ce moment",
+      "today": "{pct} % du radar aujourd'hui",
+      "week": "{pct} % du radar cette semaine",
+      "month": "{pct} % du radar ce mois-ci",
+      "year": "{pct} % du radar cette année"
     }
   },
   "article_panel": {
