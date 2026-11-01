@@ -3,726 +3,192 @@
 <head>
   <script src="./assets/js/config.js"></script>
   <script src="./assets/js/radar-data.js"></script>
-  <!-- deployed: 2026-05-16T19:30:00Z -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RADAR+ · Alertes médiatiques</title>
+  <title>RADAR+ · Alertes de saillance</title>
+  <meta name="description" content="Les histoires qui ont atteint un niveau de saillance très élevé ou extrême dans les Unes du Québec et du Canada, et les sujets en alerte aux États-Unis." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared-menu.css" />
   <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
+  <link rel="stylesheet" href="./assets/css/aune.css" />
   <style>
+    /* Page des alertes refaite le 1er nov. 2026 sur le modèle du Classement : une alerte est une
+       HISTOIRE qui atteint « Saillance très élevée » ou « extrême » dans une édition (comme la barre
+       d'alerte du haut) ; aux États-Unis, un objet au-dessus du palier du pays. */
     :root {
-      --bg: #020010;
-      --text: #d0e0ff;
-      --muted: rgba(140,170,220,0.6);
-      --accent: #5588ff;
-      --card-bg: rgba(10,18,50,0.7);
-      --border: rgba(90,140,255,0.22);
-      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      --bg: #020010; --text: #d0e0ff; --muted: rgba(140,170,220,0.6); --accent: #5588ff;
+      --card-bg: rgba(10,18,50,0.7); --border: rgba(90,140,255,0.22); --ticker-height: 44px;
+      --grotesk: 'Space Grotesk', 'Space Mono', sans-serif;
+      --orbitron: 'Space Grotesk', 'Space Mono', sans-serif;
       --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
-
-      /* Palette 3 niveaux — dérivée du pic */
-      --extreme:      #ff5050;
-      --extreme-d:    #8a1d1d;
-      --tres-eleve:   #ffa050;
-      --tres-eleve-d: #8a4818;
-      --eleve:        #f2cd50;
-      --eleve-d:      #7a6420;
+      --tres: #ff9f43; --ext: #ff4d4d;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      min-height: 100vh;
-    }
+    html { overflow-x: clip; }
+    body { background: var(--bg); color: var(--text); font-family: var(--grotesk); font-size: 15px; font-variant-numeric: tabular-nums; min-height: 100vh; }
     a { color: inherit; text-decoration: none; }
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #wrap { position: relative; z-index: 1; max-width: 1440px; margin: 0 auto; padding: 24px 28px calc(var(--ticker-height) + 60px); }
+    .aune-section { height: auto; min-height: 0; padding: 0; display: block; }
+    .aune-head h1.aune-title { font-size: clamp(24px, 3.2vw, 37px); }
+    .aune-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
-    #wrap {
-      max-width: 1240px;
-      margin: 0 auto;
-      padding: 60px 24px 80px;
-    }
+    /* ── En ce moment : une carte par région ── */
+    .al-now { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 26px 0 8px; }
+    .al-now-card { text-align: left; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--card-bg); transition: border-color .15s, transform .15s; min-width: 0; }
+    .al-now-card:hover { border-color: rgba(140,180,255,0.6); transform: translateY(-1px); }
+    .al-now-card.active { box-shadow: 0 0 0 1px rgba(140,180,255,0.55) inset; }
+    .al-now-card.lvl-tres_elevee { border-color: rgba(255,159,67,0.55); background: linear-gradient(180deg, rgba(255,159,67,0.10), rgba(10,18,50,0.7)); }
+    .al-now-card.lvl-extreme { border-color: rgba(255,77,77,0.65); background: linear-gradient(180deg, rgba(255,77,77,0.13), rgba(10,18,50,0.7)); }
+    .al-now-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .al-now-region { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #e8f0ff; }
+    .al-now-state { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+    .al-now-state .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(120,200,150,0.75); }
+    .lvl-tres_elevee .al-now-state { color: var(--tres); } .lvl-tres_elevee .al-now-state .dot { background: var(--tres); animation: al-blink 1.6s ease-in-out infinite; }
+    .lvl-extreme .al-now-state { color: #ff7a7a; } .lvl-extreme .al-now-state .dot { background: var(--ext); animation: al-blink 1.1s ease-in-out infinite; }
+    @keyframes al-blink { 50% { opacity: .35; } }
+    @media (prefers-reduced-motion: reduce) { .al-now-state .dot { animation: none !important; } }
+    .al-now-items { display: flex; flex-direction: column; gap: 3px; min-height: 2.6em; }
+    .al-now-item { font-size: 14px; line-height: 1.3; color: #f1f5ff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .al-now-item b { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--muted); margin-left: 6px; white-space: nowrap; }
+    .al-now-calm { font-size: 14px; color: var(--muted); }
+    .al-now-when { font-size: 12px; color: var(--muted); }
 
-    /* ── Header ────────────────────────────────────────────── */
-    .page-header { margin-bottom: 22px; }
-    .page-title {
-      font-family: var(--orbitron);
-      font-size: clamp(22px, 4vw, 32px);
-      font-weight: 700;
-      letter-spacing: 2.4px;
-      text-transform: uppercase;
-      color: #e8f0ff;
-      margin-bottom: 6px;
-    }
-    .page-title span.accent { color: var(--accent); }
-    .page-subtitle {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.8px;
-      margin-bottom: 18px;
-    }
-    .page-methodo-link {
-      font-size: 10px;
-      letter-spacing: 0.8px;
-      color: rgba(150,190,240,0.78);
-      transition: color 0.15s;
-    }
-    .page-methodo-link:hover { color: rgba(220,235,255,1); }
+    /* ── Navigateur de période (celui du Classement) ── */
+    .cl-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 26px 0 10px; }
+    .cl-nav { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+    .cl-nav-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 260px; max-width: 460px; text-align: center; }
+    .cl-nav-status { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px; }
+    .cl-nav-status.final { color: #ffd98a; border: 1px solid rgba(255,200,87,0.5); }
+    .cl-nav-status.live { color: #9dd8ff; border: 1px solid rgba(95,168,255,0.5); }
+    .cl-nav-status.live::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #5fe08a; margin-right: 6px; vertical-align: middle; animation: al-blink 1.6s ease-in-out infinite; }
+    .cl-nav button { font-family: var(--grotesk); font-size: 18px; line-height: 1; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: rgba(10,18,50,0.7); color: #e8f0ff; cursor: pointer; }
+    .cl-nav button:hover { border-color: var(--accent); }
+    .cl-nav button:disabled { opacity: 0.3; cursor: default; }
+    .cl-nav-label { font-family: var(--grotesk); font-size: 15px; font-weight: 600; color: #f1f5ff; white-space: nowrap; }
+    .cl-count { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+    .al-sort { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); }
+    .al-sort button { font: 600 12px var(--grotesk); color: var(--muted); background: transparent; border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+    .al-sort button.active { background: rgba(85,136,255,0.22); color: #fff; }
+    .al-filter { display: none; align-items: center; gap: 8px; font-size: 12px; color: #e8f0ff; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(140,180,255,0.5); background: rgba(40,70,160,0.25); }
+    .al-filter.on { display: inline-flex; }
+    .al-filter button { font: inherit; color: var(--muted); background: none; border: 0; cursor: pointer; text-decoration: underline; }
 
-    /* ── Barre de filtres ─────────────────────────────────── */
-    .filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px 18px;
-      margin-bottom: 14px;
-    }
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .filter-bar > .filter-group:nth-child(2) {
-      flex-basis: 100%;
-      margin-top: 4px;
-    }
-    .filter-label-txt {
-      font-size: 9px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-right: 4px;
-    }
-    .pill-btn {
-      padding: 6px 12px;
-      font-family: var(--mono);
-      font-size: 10.5px;
-      letter-spacing: 0.6px;
-      color: rgba(180,210,255,0.78);
-      background: rgba(10,18,50,0.55);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
-      white-space: nowrap;
-    }
-    .pill-btn:hover {
-      color: rgba(230,240,255,0.95);
-      border-color: rgba(120,170,255,0.45);
-      background: rgba(20,32,72,0.75);
-    }
-    .pill-btn.is-active {
-      background: rgba(85,136,255,0.20);
-      border-color: var(--accent);
-      color: rgba(240,245,255,1);
-    }
-    .search-wrap {
-      position: relative;
-      flex: 1;
-      min-width: 180px;
-      max-width: 280px;
-    }
-    .search-input {
-      width: 100%;
-      padding: 7px 30px 7px 12px;
-      background: rgba(10,18,50,0.55);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.3px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    .search-input::placeholder { color: rgba(140,170,220,0.55); }
-    .search-input:focus { border-color: var(--accent); }
-    .search-clear {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 16px; height: 16px;
-      border: none;
-      background: transparent;
-      color: rgba(180,210,255,0.6);
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
-      display: none;
-    }
-    .search-clear:hover { color: rgba(255,200,200,0.95); }
-    .search-input.has-value + .search-clear { display: block; }
-    .methodo-link-wrap { margin-left: auto; }
+    /* ── Graphique et fil : mêmes colonnes, pour que les traits s'alignent sous les barres ── */
+    .al-grid { --c1: minmax(240px, 32%); --c3: 132px; }
+    .al-pulse, .al-row { display: grid; grid-template-columns: var(--c1) 1fr var(--c3); gap: 18px; align-items: center; }
+    .al-pulse { padding: 14px 16px 6px; border: 1px solid var(--border); border-radius: 12px; background: rgba(8,14,40,0.55); margin-bottom: 10px; }
+    .al-pulse-head { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .al-pulse-head strong { display: block; font-size: 14px; color: #e8f0ff; margin-bottom: 6px; }
+    .al-legend { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+    .al-legend span { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
+    .al-legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+    .al-pulse svg, .al-track svg { display: block; width: 100%; overflow: visible; }
+    .al-pulse .bar { cursor: pointer; transition: opacity .15s; }
+    .al-pulse .bin:hover .bg { fill: rgba(140,180,255,0.10); }
+    .al-pulse .bin.sel .bg { fill: rgba(140,180,255,0.18); }
+    .al-pulse .tick { font: 10px var(--mono); fill: rgba(150,180,230,0.7); }
+    .al-pulse .ylab { font: 10px var(--mono); fill: rgba(150,180,230,0.55); }
+    .al-pulse-max { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: right; }
+    .al-list { display: flex; flex-direction: column; }
+    .al-row { padding: 12px 16px; border-bottom: 1px solid rgba(90,140,255,0.14); border-left: 3px solid transparent; cursor: pointer; transition: background .15s; }
+    .al-row:hover { background: rgba(20,36,90,0.45); }
+    .al-row.band-tres_elevee { border-left-color: var(--tres); }
+    .al-row.band-extreme { border-left-color: var(--ext); }
+    .al-row.focused { background: rgba(40,70,160,0.30); box-shadow: 0 0 0 1px rgba(140,180,255,0.6) inset; }
+    .al-row-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .al-row-title { font-size: 15px; font-weight: 600; line-height: 1.3; color: #f1f5ff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .al-row-title a:hover { text-decoration: underline; }
+    .al-row-meta { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .al-row .aune-band { align-self: flex-start; font-size: 10px; padding: 2px 8px; }
+    .al-track { min-width: 0; }
+    .al-peak { text-align: right; }
+    .al-peak .num { font-family: var(--mono); font-size: 20px; font-weight: 700; color: #f1f5ff; }
+    .al-peak .pts { font-size: 11px; color: var(--muted); margin-left: 4px; }
+    .al-peak .when { display: block; font-size: 11px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+    .al-empty { padding: 34px 16px; text-align: center; color: var(--muted); font-size: 15px; border: 1px dashed var(--border); border-radius: 12px; }
+    .al-notice { margin: 0 0 10px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(140,180,255,0.45); background: rgba(40,70,160,0.22); font-size: 14px; }
+    .cl-more { text-align: center; margin: 22px 0 8px; }
+    .cl-more button { font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); cursor: pointer; }
+    .cl-more button:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
+    .al-tip { position: fixed; z-index: 50; pointer-events: none; display: none; max-width: 300px; padding: 8px 11px; border-radius: 8px; background: rgba(4,8,28,0.96); border: 1px solid rgba(120,170,255,0.45); font-size: 12px; line-height: 1.45; color: #e8f0ff; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+    .al-tip b { font-family: var(--mono); }
+    .al-tip .lv { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 
-    /* ── KPIs ───────────────────────────────────────────────── */
-    .kpi-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 6px;
-    }
-    @media (max-width: 700px) { .kpi-row { grid-template-columns: 1fr; } }
-    .kpi-hint {
-      font-size: 9.5px;
-      color: var(--muted);
-      letter-spacing: 0.4px;
-      margin: 0 0 18px;
-      text-align: center;
-    }
-    .kpi {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 18px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-      user-select: none;
-    }
-    .kpi:hover { background: rgba(20,32,72,0.85); border-color: rgba(120,170,255,0.55); transform: translateY(-1px); }
-    .kpi.is-active { border-color: var(--accent); background: rgba(85,136,255,0.10); }
-    .kpi.is-dim { opacity: 0.42; }
-    .kpi-mark {
-      width: 16px; height: 16px;
-      border-radius: 3px;
-      flex-shrink: 0;
-    }
-    .kpi-mark.lvl-extreme    { background: var(--extreme);    box-shadow: 0 0 10px rgba(255,80,80,0.55); }
-    .kpi-mark.lvl-tres-eleve { background: var(--tres-eleve); box-shadow: 0 0 8px rgba(255,160,80,0.45); }
-    .kpi-mark.lvl-eleve      { background: var(--eleve);      box-shadow: 0 0 6px rgba(242,205,80,0.35); }
-    .kpi-val {
-      font-family: var(--orbitron);
-      font-size: 24px;
-      font-weight: 700;
-      color: #e8f0ff;
-      line-height: 1;
-    }
-    .kpi-lbl {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      font-size: 10px;
-      letter-spacing: 0.7px;
-      text-transform: uppercase;
-      color: rgba(180,210,255,0.85);
-    }
-    .kpi-lbl-sub {
-      font-size: 8.5px;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-      text-transform: none;
-    }
+    /* ── Comment naît une alerte ── */
+    .al-how { margin-top: 40px; padding: 20px 22px; border: 1px solid var(--border); border-radius: 12px; background: rgba(8,14,40,0.55); max-width: 900px; }
+    .al-how h2 { font-size: 18px; font-weight: 700; color: #f1f5ff; margin-bottom: 10px; }
+    .al-how p { font-size: 14px; line-height: 1.6; color: rgba(200,215,245,0.9); margin-bottom: 8px; }
+    .al-how .chip { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 12px; font-weight: 700; color: #1a0d00; }
+    .al-how .chip.tres { background: var(--tres); } .al-how .chip.ext { background: var(--ext); color: #fff; }
+    .al-how .links { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+    .al-how .links a { color: #9dc0ff; font-weight: 600; }
+    .al-how .links a:hover { text-decoration: underline; }
+    .al-loading { padding: 40px 0; text-align: center; color: var(--muted); }
 
-    /* ── Section ─────────────────────────────────────────── */
-    .section { margin-bottom: 24px; }
-    .section-head {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+    @media (max-width: 960px) {
+      .al-now { grid-template-columns: 1fr; }
+      .al-pulse, .al-row { grid-template-columns: 1fr; gap: 8px; }
+      .al-peak { text-align: left; }
+      .al-pulse-max { display: none; }
     }
-    .section-title {
-      font-family: var(--orbitron);
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      color: #e8f0ff;
-    }
-    .section-sub {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.6px;
-    }
-    .section-empty {
-      padding: 26px 18px;
-      text-align: center;
-      font-size: 11px;
-      color: var(--muted);
-      border: 1px dashed var(--border);
-      border-radius: 6px;
-    }
-
-    /* ── Period nav ──────────────────────────────────────── */
-    .period-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 10px;
-    }
-    .period-nav.is-hidden { display: none; }
-    .period-nav-btn {
-      width: 32px;
-      height: 32px;
-      border: 1px solid var(--border);
-      background: var(--card-bg);
-      color: rgba(180,210,255,0.85);
-      border-radius: 6px;
-      font-size: 18px;
-      line-height: 1;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-    }
-    .period-nav-btn:hover:not(:disabled) {
-      border-color: var(--accent);
-      color: #fff;
-      background: rgba(20,32,72,0.85);
-    }
-    .period-nav-btn:disabled { opacity: 0.3; cursor: default; }
-    .period-nav-label {
-      font-family: var(--orbitron);
-      font-size: 13px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: #e8f0ff;
-      min-width: 220px;
-      text-align: center;
-    }
-
-    /* ── Heatmap ──────────────────────────────────────────── */
-    .heatmap-wrap {
-      position: relative;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 14px;
-      overflow-x: auto;
-    }
-    .heatmap-cell {
-      stroke: rgba(8,14,38,0.4);
-      stroke-width: 0.4;
-      cursor: pointer;
-      transition: stroke 0.12s, stroke-width 0.12s;
-    }
-    .heatmap-cell:hover {
-      stroke: rgba(255,255,255,0.92);
-      stroke-width: 1.4;
-    }
-    .heatmap-cell.is-selected {
-      stroke: #fff;
-      stroke-width: 1.8;
-    }
-    .heatmap-row-label {
-      font-family: var(--orbitron);
-      font-size: 10.5px;
-      fill: rgba(210,225,250,0.88);
-      letter-spacing: 0.4px;
-      cursor: pointer;
-    }
-    .heatmap-row-label:hover { fill: #fff; }
-    .heatmap-row-label.is-member {
-      fill: rgba(184,206,244,0.8);
-      font-size: 9.5px;
-    }
-    .heatmap-event-label {
-      font-family: var(--orbitron);
-      font-size: 10.5px;
-      font-weight: 700;
-      fill: rgba(236,242,255,0.98);
-      letter-spacing: 0.35px;
-    }
-    .heatmap-event-meta {
-      fill: rgba(140,170,220,0.72);
-      font-size: 9px;
-    }
-    .heatmap-event-line {
-      stroke: rgba(120,170,255,0.28);
-      stroke-width: 1;
-    }
-    .heatmap-solo-label {
-      font-family: var(--orbitron);
-      font-size: 10.5px;
-      font-weight: 700;
-      fill: rgba(236,242,255,0.98);
-      letter-spacing: 0.35px;
-      cursor: pointer;
-    }
-    .heatmap-solo-label:hover { fill: #fff; }
-    .heatmap-solo-line {
-      stroke: rgba(120,170,255,0.22);
-      stroke-width: 1;
-    }
-    .month-tick { stroke: rgba(90,140,255,0.18); stroke-width: 1; stroke-dasharray: 2,3; }
-    .month-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      fill: var(--muted);
-      letter-spacing: 0.4px;
-    }
-    .day-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      fill: rgba(160,190,235,0.7);
-      letter-spacing: 0.3px;
-    }
-    .now-line {
-      stroke: rgba(120,255,160,0.7);
-      stroke-width: 1.5;
-      stroke-dasharray: 3,3;
-    }
-    .now-label {
-      font-family: var(--mono);
-      font-size: 8px;
-      fill: rgba(140,255,180,0.9);
-      letter-spacing: 0.6px;
-    }
-
-    /* ── Tooltip ──────────────────────────────────────────── */
-    .ttip {
-      position: absolute;
-      pointer-events: none;
-      background: rgba(8,14,38,0.96);
-      border: 1px solid rgba(90,140,255,0.4);
-      border-radius: 4px;
-      padding: 6px 10px;
-      font-size: 10px;
-      color: rgba(220,235,255,0.95);
-      letter-spacing: 0.3px;
-      max-width: 280px;
-      display: none;
-      z-index: 100;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.5);
-    }
-    .ttip .tt-title {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      font-weight: 600;
-      color: #e8f0ff;
-      margin-bottom: 3px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-    .ttip .tt-meta { color: var(--muted); font-size: 9px; }
-
-    /* ── Side panel ──────────────────────────────────────── */
-    #panel-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,10,0.55);
-      z-index: 190;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-    }
-    #panel-overlay.is-open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #side-panel {
-      position: fixed;
-      top: 0; right: 0;
-      width: 420px;
-      max-width: 100vw;
-      height: 100vh;
-      background: rgba(6,12,32,0.98);
-      border-left: 1px solid var(--border);
-      transform: translateX(100%);
-      transition: transform 0.25s ease;
-      z-index: 200;
-      overflow-y: auto;
-      box-shadow: -8px 0 32px rgba(0,0,0,0.5);
-    }
-    #side-panel.is-open { transform: translateX(0); }
-    .panel-head {
-      position: sticky; top: 0;
-      background: rgba(6,12,32,0.98);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .panel-tier-badge {
-      font-family: var(--orbitron);
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 9px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      border-radius: 3px;
-    }
-    .panel-tier-badge.lvl-extreme    { background: rgba(138,29,29,0.6);  color: rgba(255,210,210,1); }
-    .panel-tier-badge.lvl-tres-eleve { background: rgba(138,72,24,0.55); color: rgba(255,210,170,1); }
-    .panel-tier-badge.lvl-eleve      { background: rgba(122,100,32,0.50); color: rgba(250,230,150,0.98); }
-    .panel-country {
-      font-size: 10px;
-      color: rgba(180,210,255,0.8);
-      letter-spacing: 0.8px;
-      padding: 2px 8px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-    }
-    .panel-close {
-      margin-left: auto;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: rgba(200,225,255,0.7);
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
-      transition: all 0.15s;
-    }
-    .panel-close:hover { color: #fff; border-color: rgba(200,225,255,0.7); background: rgba(200,225,255,0.08); }
-    .panel-body { padding: 16px 20px 32px; }
-    .panel-title {
-      font-family: var(--orbitron);
-      font-size: 17px;
-      font-weight: 700;
-      color: #e8f0ff;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-    .panel-period {
-      font-size: 10.5px;
-      color: rgba(200,225,255,0.78);
-      margin-bottom: 4px;
-    }
-    .panel-section { margin-top: 22px; }
-    .panel-section-title {
-      font-size: 9px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: rgba(180,210,255,0.65);
-      margin-bottom: 8px;
-    }
-    .panel-metrics {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 14px;
-      font-size: 11px;
-    }
-    .panel-metric { display: flex; flex-direction: column; gap: 2px; }
-    .panel-metric-val {
-      font-family: var(--orbitron);
-      font-size: 14px;
-      color: #e8f0ff;
-      font-weight: 600;
-    }
-    .panel-metric-lbl {
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.4px;
-    }
-    .panel-member {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
-      margin-bottom: 4px;
-      background: rgba(10,18,50,0.5);
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      font-size: 10.5px;
-    }
-    .panel-member-name {
-      font-family: var(--orbitron);
-      font-size: 10.5px;
-      letter-spacing: 0.4px;
-      color: rgba(230,240,255,0.92);
-      flex: 1;
-      min-width: 0;
-    }
-    .panel-member-meta { font-size: 9px; color: var(--muted); }
-    .panel-article {
-      display: block;
-      padding: 8px 10px;
-      margin-bottom: 6px;
-      background: rgba(10,18,50,0.5);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      text-decoration: none;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .panel-article:hover { border-color: var(--accent); background: rgba(20,32,72,0.85); }
-    .panel-article-media {
-      display: inline-block;
-      font-family: var(--orbitron);
-      font-size: 9px;
-      letter-spacing: 0.8px;
-      color: rgba(110,176,255,0.95);
-      margin-right: 8px;
-      text-transform: uppercase;
-    }
-    .panel-article-title {
-      font-size: 11.5px;
-      line-height: 1.4;
-      color: rgba(230,240,255,0.92);
-    }
-    .panel-empty {
-      padding: 14px;
-      text-align: center;
-      font-size: 11px;
-      color: var(--muted);
-      border: 1px dashed var(--border);
-      border-radius: 4px;
-    }
-    .panel-tier-mini {
-      font-size: 8px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      border-radius: 2px;
-      font-family: var(--orbitron);
-      font-weight: 600;
-    }
-    .panel-tier-mini.lvl-extreme    { color: rgba(255,210,210,1);   background: rgba(138,29,29,0.55); border: 1px solid rgba(255,90,90,0.6); }
-    .panel-tier-mini.lvl-tres-eleve { color: rgba(255,210,170,1);   background: rgba(138,72,24,0.55); border: 1px solid rgba(255,160,80,0.6); }
-    .panel-tier-mini.lvl-eleve      { color: rgba(250,230,150,0.98); background: rgba(122,100,32,0.50); border: 1px solid rgba(242,205,80,0.6); }
-    .panel-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-    .panel-link-btn {
-      padding: 8px 12px;
-      background: rgba(85,136,255,0.10);
-      border: 1px solid rgba(85,136,255,0.35);
-      border-radius: 3px;
-      font-size: 10px;
-      letter-spacing: 0.6px;
-      color: rgba(200,225,255,0.9);
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .panel-link-btn:hover {
-      background: rgba(85,136,255,0.22);
-      border-color: rgba(85,136,255,0.6);
-      color: #fff;
-    }
-
-    /* ── Légende ─────────────────────────────────────────── */
-    .legend-row {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      font-size: 9px;
-      color: var(--muted);
-      letter-spacing: 0.6px;
-    }
-    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
-    .legend-block {
-      display: inline-block;
-      width: 10px; height: 10px;
-      border-radius: 2px;
-    }
-    .legend-block.lvl-extreme    { background: var(--extreme); }
-    .legend-block.lvl-tres-eleve { background: var(--tres-eleve); }
-    .legend-block.lvl-eleve      { background: var(--eleve); }
-
-    /* ── Ticker restore badge ────────────────────────────── */
-    .ticker-restore {
-      display: none;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 9px;
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: rgba(200,225,255,0.85);
-      background: rgba(85,136,255,0.18);
-      border: 1px solid rgba(85,136,255,0.4);
-      border-radius: 999px;
-      cursor: pointer;
-      margin-left: 8px;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .ticker-restore.is-visible { display: inline-flex; }
-    .ticker-restore:hover { background: rgba(85,136,255,0.32); border-color: rgba(120,170,255,0.7); }
-
-    /* ── Responsive ──────────────────────────────────────── */
-    @media (max-width: 900px) {
-      #side-panel { width: 100vw; }
+    @media (max-width: 760px) {
+      #wrap { padding: 16px 16px calc(var(--ticker-height) + 40px); }
+      .aune-controls { align-items: stretch; width: 100%; }
+      .cl-nav { margin-right: 0; width: 100%; justify-content: space-between; }
+      .cl-nav-block { min-width: 0; } .cl-nav-label { white-space: normal; }
     }
   </style>
 </head>
 <body>
-
+<canvas id="stars" aria-hidden="true"></canvas>
 <div id="wrap">
-  <header class="page-header">
-    <h1 class="page-title">
-      <span class="page-sym" data-symbol="alertes"></span><span data-i18n="alertes.title">Alertes</span>
-      <span class="accent" data-i18n="alertes.title_accent">médiatiques</span>
-    </h1>
-    <p class="page-subtitle" data-i18n="alertes.subtitle_3lvl">
-      Deux niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours
-    </p>
-
-    <div class="methodo-link-wrap">
-      <a class="page-methodo-link" href="./methodologie.html#alertes" data-i18n="alertes.methodo_link">Méthodologie →</a>
+<section class="aune-section" id="al">
+  <div class="aune-head">
+    <div>
+      <h1 class="aune-title"><span class="page-sym" data-symbol="alertes"></span><span data-i18n="alertes.p_title">Alertes</span> <span class="accent" data-i18n="alertes.p_title_accent">de saillance</span></h1>
+      <p class="aune-lede" id="al-lede"></p>
     </div>
-  </header>
-
-  <!-- ── KPI bar : clic = toggle tier ─────────────────────────── -->
-  <div class="kpi-row" id="kpi-row"></div>
-  <div class="kpi-hint" id="kpi-hint" data-i18n="alertes.kpi_hint_3lvl">Clique un niveau pour le masquer/afficher.</div>
-
-  <!-- ── Heatmap ──────────────────────────────────────────────── -->
-  <section class="section">
-    <div class="section-head">
-      <span class="section-title" data-i18n="alertes.section_heatmap">Calendrier des alertes</span>
-    </div>
-
-    <div class="filter-bar">
-      <div class="filter-group" role="radiogroup" aria-label="Pays">
-        <span class="filter-label-txt" data-i18n="alertes.filter_country">Pays</span>
-        <button class="pill-btn" data-country="all" role="radio" aria-checked="false" data-i18n="common.all_countries">Tous</button>
-        <button class="pill-btn is-active" data-country="QC"  role="radio" aria-checked="true" data-i18n="country.QC">Québec</button>
-        <button class="pill-btn" data-country="CAN" role="radio" aria-checked="false" data-i18n="country.CAN">Canada</button>
-        <button class="pill-btn" data-country="USA" role="radio" aria-checked="false" data-i18n="country.USA">États-Unis</button>
+    <div class="aune-controls">
+      <div class="country-tabs" id="al-regions">
+        <button type="button" class="country-tab active" data-region="QC" data-i18n="country.QC">Québec</button>
+        <button type="button" class="country-tab" data-region="CAN" data-i18n="country.CAN">Canada</button>
+        <button type="button" class="country-tab" data-region="USA" data-i18n="country.USA">États-Unis</button>
       </div>
-
-      <div class="filter-group" role="radiogroup" aria-label="Période">
-        <span class="filter-label-txt" data-i18n="alertes.filter_period">Période</span>
-        <button class="pill-btn" data-gran="day"   role="radio" aria-checked="false" data-i18n="period.day">Jour</button>
-        <button class="pill-btn" data-gran="week"  role="radio" aria-checked="false" data-i18n="period.week">Semaine</button>
-        <button class="pill-btn" data-gran="month" role="radio" aria-checked="false" data-i18n="period.month">Mois</button>
-        <button class="pill-btn is-active" data-gran="total" role="radio" aria-checked="true" data-i18n="period.total">Total</button>
-      </div>
-
-      <div class="search-wrap">
-        <input type="text" id="search-input" class="search-input" placeholder="Rechercher un objet…" data-i18n-placeholder="alertes.search_placeholder" />
-        <button type="button" id="search-clear" class="search-clear" aria-label="Effacer">×</button>
+      <div class="aune-tabs" id="al-ranges" role="tablist">
+        <button type="button" class="aune-tab" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
+        <button type="button" class="aune-tab active" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
+        <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
+        <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
       </div>
     </div>
-
-    <div class="period-nav" id="period-nav">
-      <button class="period-nav-btn" id="period-prev" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Période précédente">‹</button>
-      <span class="period-nav-label" id="period-nav-label"></span>
-      <button class="period-nav-btn" id="period-next" data-i18n-aria-label="evolution.next_period_aria" aria-label="Période suivante">›</button>
-    </div>
-    <div class="heatmap-wrap" id="heatmap-wrap">
-      <svg id="heatmap-svg" role="img" aria-label="Heatmap"></svg>
-      <div class="ttip" id="ttip-heatmap"></div>
-    </div>
-    <div class="legend-row">
-      <span class="legend-item"><span class="legend-block lvl-extreme"></span> <span data-i18n="alertes.level_extreme">Extrême</span></span>
-      <span class="legend-item"><span class="legend-block lvl-tres-eleve"></span> <span data-i18n="alertes.level_tres_eleve">Très élevé</span></span>
-      <span class="legend-item"><span class="legend-block lvl-eleve"></span> <span data-i18n="alertes.level_eleve">Élevé</span></span>
-    </div>
-  </section>
-</div>
-
-<!-- ── Side panel ───────────────────────────────────────────────── -->
-<div id="panel-overlay" aria-hidden="true"></div>
-<aside id="side-panel" aria-hidden="true">
-  <div class="panel-head">
-    <span id="panel-tier-badge" class="panel-tier-badge"></span>
-    <span id="panel-country" class="panel-country"></span>
-    <button class="panel-close" id="panel-close" aria-label="Fermer">×</button>
   </div>
-  <div class="panel-body" id="panel-body"></div>
-</aside>
+
+  <!-- En ce moment : la dernière édition de chaque région, comme la barre d'alerte du haut -->
+  <div class="al-now" id="al-now"></div>
+
+  <div class="cl-toolbar">
+    <div class="cl-nav">
+      <button type="button" id="al-prev" data-i18n-title="homepage.previous_period_btn_title" title="Période précédente">&#8249;</button>
+      <div class="cl-nav-block"><span class="cl-nav-status" id="al-status"></span><span class="cl-nav-label" id="al-label"></span><span class="cl-count" id="al-count"></span></div>
+      <button type="button" id="al-next" data-i18n-title="homepage.next_period_btn_title" title="Période suivante" disabled>&#8250;</button>
+    </div>
+    <span class="al-filter" id="al-filter"><span id="al-filter-label"></span><button type="button" id="al-filter-clear" data-i18n="alertes.p_filter_clear">Tout voir</button></span>
+    <div class="al-sort" id="al-sort">
+      <button type="button" class="active" data-sort="recent" data-i18n="alertes.p_sort_recent">Plus récentes</button>
+      <button type="button" data-sort="peak" data-i18n="alertes.p_sort_peak">Plus fortes</button>
+    </div>
+  </div>
+
+  <div class="al-grid" id="al-grid"><div class="al-loading" data-i18n="alertes.p_loading">Chargement des alertes…</div></div>
+  <div class="cl-more" id="al-more" hidden><button type="button"></button></div>
+
+  <div class="al-how" id="al-how"></div>
+</section>
+</div>
+<div class="al-tip" id="al-tip"></div>
 
 <!-- Ticker manchettes -->
 <section class="ticker-section" id="ticker-section" aria-label="Manchettes récentes">
@@ -730,9 +196,6 @@
     <span class="ticker-label-title" id="ticker-updated" data-i18n="ticker.label">Les Unes</span>
     <span class="ticker-radar" aria-hidden="true"></span>
   </a>
-  <button type="button" id="ticker-restore" class="ticker-restore" title="Revenir aux Unes courantes">
-    <span>↺</span><span data-i18n="alertes.ticker_restore">Unes du jour</span>
-  </button>
   <div class="ticker-viewport">
     <div class="ticker-track" id="ticker-track" aria-live="off"></div>
   </div>
@@ -741,1072 +204,376 @@
 <script src="./assets/js/i18n.js"></script>
 <script src="./assets/js/shared-menu.js"></script>
 <script src="./assets/js/shared-ticker.js"></script>
-
+<script src="./assets/js/aune.js"></script>
 <script>
-(function() {
+  // Ciel étoilé, comme le Classement et la page des indices.
+  (function() {
+    var canvas = document.getElementById('stars'); if (!canvas) return;
+    var ctx = canvas.getContext('2d'), stars = [], tick = 0;
+    function resize() {
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      var count = Math.floor((canvas.width * canvas.height) / 3200);
+      stars = Array.from({ length: count }, function() { return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.1 + 0.25, a: Math.random() * 0.5 + 0.18, s: Math.random() * 0.03 + 0.004, p: Math.random() * Math.PI * 2 }; });
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); tick += 0.016;
+      for (var i = 0; i < stars.length; i++) { var st = stars[i], a = st.a + Math.sin(tick * st.s + st.p) * 0.14; ctx.fillStyle = 'rgba(180, 205, 255, ' + Math.max(0, a) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill(); }
+      requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', resize); resize(); draw();
+  })();
+</script>
+<script>
+(function () {
   'use strict';
+  // ── Ce qu'est une alerte (la même règle que la barre d'alerte du haut) ─────────────────
+  // Québec et Canada : une HISTOIRE est en alerte dans une édition quand ses points de cette
+  // édition atteignent le seuil « Saillance très élevée » de sa région (80e centile des Unes de
+  // l'année, events/index.json → thresholds.block) ; « extrême » au-delà du 95e centile.
+  // États-Unis : pas d'histoires (deux médias) ; un OBJET est en alerte quand son indice d'une
+  // édition dépasse le palier « très élevé » du pays (95e centile des pics, 99e pour extrême).
+  var U = window.RadarAune.util;
+  var esc = U.escapeHtml;
+  var BLOCK = 4 * 3600e3, LAG = 5 * 3600e3;
+  var LV_RGB = { tres_elevee: '255,159,67', extreme: '255,77,77' };
+  function T(k, p) { return window.t ? window.t(k, p) : k; }
+  function lang() { return (document.documentElement.lang || 'fr').slice(0, 2); }
+  function loc() { return lang() === 'en' ? 'en-CA' : 'fr-CA'; }
+  function f1(v) { return (Math.round(v * 10) / 10).toFixed(1); }
 
-  // ─── Constantes ────────────────────────────────────────────────
-  const TIERS = ['extreme', 'tres_eleve']; // plus de niveau « élevé » : trop fréquent (Adrien, 31 oct. 2026)
-  const TIER_RANK = { extreme: 0, tres_eleve: 1, eleve: 2, none: 99 };
-  const TIER_CSS = { extreme: 'extreme', tres_eleve: 'tres-eleve', eleve: 'eleve' };
-  const COUNTRY_ORDER = ['QC', 'CAN', 'USA'];
-  const FR_MONTHS_SHORT = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
-  const EN_MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var q = new URLSearchParams(location.search);
+  var st = {
+    region: ['QC', 'CAN', 'USA'].indexOf((q.get('region') || q.get('country') || '').toUpperCase()) >= 0 ? (q.get('region') || q.get('country')).toUpperCase() : 'QC',
+    range: ['today', 'week', 'month', 'year'].indexOf(q.get('range')) >= 0 ? q.get('range') : 'week',
+    offset: 0, sort: q.get('tri') === 'forts' ? 'peak' : 'recent', extra: 0, pick: null,
+    focus: q.get('evenement') || q.get('objet') || null, focusDone: false
+  };
+  if (st.focus) st.range = q.get('range') ? st.range : 'year'; // depuis une fiche : toute l'année, la ligne en évidence
+  var data = { idx: null, latest: null, graph: null, ts: null, stories: {} };
 
-  // ─── État ──────────────────────────────────────────────────────
-  let graphData = null;
-  let timeseriesData = null;
-  let articlesData = null;
-  let articlesLoadPromise = null;
-  let filterCountry = 'QC';
-  let granularity = 'total';
-  let periodOffset = 0;
-  const DATA_DAYS = 130;
-  let searchQuery = '';
-  let kpiTiersHidden = new Set();
-  let selectedCell = null;  // { country, id, date }
+  // ── Temps : éditions et journées (une journée = les éditions sorties ce jour-là) ──────
+  var dayFmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', year: 'numeric', month: '2-digit', day: '2-digit' });
+  function dayKey(t) { return dayFmt.format(new Date(t + LAG)); } // t = début du bloc ; l'édition sort 5 h plus tard
+  function edHour(t) { return +new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(new Date(t + LAG)) % 24; }
+  function edWord(h) { return lang() === 'en' ? h + 'h edition' : 'édition de ' + (h === 0 ? 'minuit' : h === 12 ? 'midi' : h + 'h'); }
+  function dayShort(t) { return new Intl.DateTimeFormat(loc(), { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(t + LAG)); }
+  function dayLong(t) { return new Intl.DateTimeFormat(loc(), { timeZone: 'America/Montreal', weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(t + LAG)); }
+  function edName(t) { return dayShort(t) + ', ' + edWord(edHour(t)); } // « 31 oct., édition de 20h », comme Évolution
+  function gridStart(t) { var d = new Date(t), h = d.getUTCHours(), add = ((3 - h % 4) + 4) % 4; var s = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), h) + add * 3600e3; return s < t ? s + BLOCK : s; }
 
-  // ─── Helpers ───────────────────────────────────────────────────
-  function T(key, fallback) {
-    var v = window.t ? window.t(key) : null;
-    if (typeof v === 'string' && v !== key) return v;
-    return fallback !== undefined ? fallback : key;
+  // ── Données ──────────────────────────────────────────────────────────────────────────
+  function years(region) {
+    var ds = (data.idx && data.idx.dates && data.idx.dates[region]) || [], ys = {};
+    ds.forEach(function (d) { ys[d.slice(0, 4)] = 1; }); return Object.keys(ys).sort();
   }
-  function lang() {
-    return (window.__i18n && window.__i18n.currentLang) ? window.__i18n.currentLang() : 'fr';
+  function ensureRegion(region) {
+    if (region === 'USA') return data.ts ? Promise.resolve() : window.radarData.timeseries().then(function (t) { data.ts = t; }).catch(function () { data.ts = { graphs: {} }; });
+    return Promise.all(years(region).filter(function (y) { return !data.stories[region + '/' + y]; }).map(function (y) {
+      return window.radarData.eventsStorylines(region, y).then(function (f) { data.stories[region + '/' + y] = f || { storylines: {} }; })
+        .catch(function () { data.stories[region + '/' + y] = { storylines: {} }; });
+    }));
   }
-  function esc(v) {
-    return String(v == null ? '' : v).replace(/[&<>'"]/g, function(c) {
-      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
-    });
+  function thresholds(region) {
+    if (region === 'USA') { var tr = data.graph && data.graph.meta && data.graph.meta.salience_tiers && data.graph.meta.salience_tiers.USA; return tr ? { tres: tr.very_high, ext: tr.extreme } : null; }
+    var b = data.idx && data.idx.thresholds && data.idx.thresholds[region] && data.idx.thresholds[region].block;
+    return b ? { tres: b.tres_elevee, ext: b.extreme } : null;
   }
-  function tierRank(t) { return TIER_RANK[t] != null ? TIER_RANK[t] : 99; }
-  function tierLabel(t) { return T('alertes.level_' + t, t); }
-  function tierCss(t) { return TIER_CSS[t] || t; }
-  function tierVar(t) { return 'var(--' + tierCss(t) + ')'; }
-  function countryLabel(c) { return T('country.' + c, c); }
-  function fmtDay(d) {
-    if (!d) return '';
-    var p = String(d).split('-');
-    if (p.length !== 3) return d;
-    var dd = parseInt(p[2], 10);
-    var mm = parseInt(p[1], 10) - 1;
-    var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
-    return dd + ' ' + months[mm];
-  }
-  function getCountries() {
-    var src = graphData || timeseriesData;
-    if (!src || !src.graphs) return [];
+  function levelOf(v, th) { return v >= th.ext ? 'extreme' : v >= th.tres ? 'tres_elevee' : null; }
+  function cap(s) { return String(s || '').replace(/(^|\s)\S/g, function (c) { return c.toUpperCase(); }); }
+
+  // Les histoires (ou objets) qui ont au moins une édition en alerte dans la fenêtre.
+  function items(region, w) {
+    var th = thresholds(region); if (!th) return [];
+    var by = {};
+    function add(id, base, k, v) {
+      var t = U.periodStartUtc(k); if (t < w[0] || t >= w[1]) return;
+      var it = by[id] || (by[id] = Object.assign({ id: id, pts: [] }, base));
+      it.pts.push({ t: t, v: v, lv: levelOf(v, th) });
+    }
+    if (region === 'USA') {
+      var per = (data.ts && data.ts.graphs && data.ts.graphs.USA) || {};
+      Object.keys(per).forEach(function (k) {
+        var t = U.periodStartUtc(k); if (t < w[0] || t >= w[1]) return;
+        (per[k].nodes || []).forEach(function (n) {
+          add(n.id, { kind: 'object', title: cap(n.id), sub: T('alertes.p_object_sub'), href: './statistiques.html?objet=' + encodeURIComponent(n.id) + '&pays=USA' }, k, Number(n.size) || 0);
+        });
+      });
+    } else {
+      years(region).forEach(function (y) {
+        var f = data.stories[region + '/' + y]; if (!f || !f.storylines) return;
+        Object.keys(f.storylines).forEach(function (sid) {
+          var s = f.storylines[sid], ser = s.series || {};
+          var base = { kind: 'event', title: s.title_peak || s.title_last || s.title || sid, sub: (lang() === 'en' ? (s.issue_en || s.issue_fr) : (s.issue_fr || s.issue_en)) || '',
+                       href: './statistiques.html?evenement=' + encodeURIComponent(sid) + '&region=' + region };
+          Object.keys(ser).forEach(function (k) { add(sid, base, k, Number(ser[k]) || 0); });
+        });
+      });
+    }
     var out = [];
-    COUNTRY_ORDER.forEach(function(c) { if (src.graphs[c]) out.push(c); });
-    Object.keys(src.graphs).forEach(function(c) { if (out.indexOf(c) === -1) out.push(c); });
+    Object.keys(by).forEach(function (id) {
+      var it = by[id], al = it.pts.filter(function (p) { return p.lv; });
+      if (!al.length) return;
+      it.pts.sort(function (a, b) { return a.t - b.t; });
+      var pk = al.reduce(function (m, p) { return p.v > m.v ? p : m; }, al[0]);
+      it.alerts = al; it.peak = pk.v; it.peakT = pk.t; it.level = levelOf(pk.v, th);
+      it.firstT = al[0].t; it.lastT = al[al.length - 1].t;
+      out.push(it);
+    });
     return out;
   }
 
-  // Dérive le niveau à partir du pic + des seuils du pays (canonique).
-  function deriveLevel(country, size) {
-    if (typeof size !== 'number' || !isFinite(size)) return 'none';
-    var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
-      ? graphData.meta.salience_tiers[country] : null;
-    if (!tiers) return 'none';
-    if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
-    if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
-    return 'none';
-  }
-
-  function fmtPeakWithTier(country, size) {
-    if (typeof size !== 'number') return '—';
-    var tiers = graphData && graphData.meta && graphData.meta.salience_tiers
-      ? graphData.meta.salience_tiers[country] : null;
-    var lbl = size.toFixed(1);
-    if (!tiers) return lbl;
-    var lvl = deriveLevel(country, size);
-    if (lvl !== 'none') {
-      var thrKey = lvl === 'extreme' ? 'extreme' : lvl === 'tres_eleve' ? 'very_high' : 'high';
-      var thr = tiers[thrKey];
-      if (typeof thr === 'number' && thr > 0) {
-        var short = lvl === 'extreme' ? 'ext' : lvl === 'tres_eleve' ? 'vhi' : 'hi';
-        lbl += ' (' + short + ' ×' + (size / thr).toFixed(1) + ')';
-      }
-    }
-    return lbl;
-  }
-
-  // ─── Chargement ────────────────────────────────────────────────
-  async function loadData() {
-    try {
-      // Données découpées (#59) : latest.json (paliers, pays) + séries/épisodes
-      // recomposés dans l'ancienne forme par radar-data.js.
-      var [g, t] = await Promise.all([
-        window.radarData.latestAsGraph().catch(() => null),
-        window.radarData.timeseries().catch(() => null)
-      ]);
-      graphData = g;
-      timeseriesData = t;
-      render();
-    } catch (e) {
-      console.error('Erreur chargement:', e);
-      var hw = document.getElementById('heatmap-wrap');
-      if (hw) hw.innerHTML = '<div class="section-empty">Erreur de chargement.</div>';
-    }
-  }
-
-  // Articles chargés PAR JOUR à la demande (articles/{pays}/{date}.json) dans
-  // un magasin qui garde l'ancienne forme de articles.json.
-  var articleStore = window.radarData.articleStore();
-  articlesData = articleStore.data;
-  function loadArticlesFor(country, date) {
-    return articleStore.ensure(country, [date]).then(function() { return articlesData; })
-      .catch(function(e) { console.error('Erreur articles du jour:', e); return articlesData; });
-  }
-
-  // ─── Calcul de la période courante ─────────────────────────────
-  function getPeriodRange() {
-    var today = new Date(); today.setUTCHours(0,0,0,0);
-    var dataMin = new Date(today.getTime() - (DATA_DAYS - 1) * 86400000);
-    var start, end;
-    if (granularity === 'day') {
-      end = new Date(today.getTime() + periodOffset * 86400000);
-      start = new Date(end);
-    } else if (granularity === 'week') {
-      end = new Date(today.getTime() + periodOffset * 7 * 86400000);
-      start = new Date(end.getTime() - 6 * 86400000);
-    } else if (granularity === 'month') {
-      var anchor = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + periodOffset, 1));
-      start = anchor;
-      end = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
-    } else { // total
-      start = dataMin;
-      end = today;
-    }
-    var days = Math.round((end - start) / 86400000) + 1;
-    var canNext = periodOffset < 0;
-    var canPrev = granularity !== 'total' && start > dataMin;
-    return { start: start, end: end, days: days, canPrev: canPrev, canNext: canNext, dataMin: dataMin, today: today };
-  }
-
-  function formatPeriodLabel(range) {
-    var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
-    if (granularity === 'day') {
-      var d = range.start;
-      return d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
-    }
-    if (granularity === 'week') {
-      var s = range.start, e = range.end;
-      if (s.getUTCMonth() === e.getUTCMonth()) {
-        return s.getUTCDate() + '–' + e.getUTCDate() + ' ' + months[s.getUTCMonth()] + ' ' + s.getUTCFullYear();
-      }
-      return s.getUTCDate() + ' ' + months[s.getUTCMonth()] + ' – ' + e.getUTCDate() + ' ' + months[e.getUTCMonth()] + ' ' + e.getUTCFullYear();
-    }
-    if (granularity === 'month') {
-      return months[range.start.getUTCMonth()] + ' ' + range.start.getUTCFullYear();
-    }
-    return T('period.total', 'Total');
-  }
-
-  // ─── Construction des épisodes (pour KPI compte) ──────────────
-  function buildEpisodesFromTimeseries() {
+  // Cases du graphique : une par édition (jour, semaine), une par journée (mois, année).
+  function bins(w) {
     var out = [];
-    if (!timeseriesData || !timeseriesData.graphs) return out;
-    var range = getPeriodRange();
-    var windowStart = range.start;
-    var windowEnd = range.end;
-    var byEp = {};
-    Object.keys(timeseriesData.graphs).forEach(function(country) {
-      if (filterCountry !== 'all' && country !== filterCountry) return;
-      var periods = timeseriesData.graphs[country];
-      Object.keys(periods).forEach(function(pk) {
-        var gd = periods[pk];
-        if (!gd || !gd.nodes) return;
-        gd.nodes.forEach(function(n) {
-          if (!n.alert_episode_id) return;
-          var peak = typeof n.alert_episode_peak === 'number' ? n.alert_episode_peak : null;
-          if (peak == null) return;
-          var derived = deriveLevel(country, peak);
-          if (derived === 'none') return;
-          // Filtre période : on garde l'épisode si sa plage chevauche la fenêtre
-          var epEnd = n.alert_episode_last_day ? new Date(n.alert_episode_last_day) : null;
-          var epStart = n.alert_episode_first_day ? new Date(n.alert_episode_first_day) : null;
-          if (epEnd && epEnd < windowStart) return;
-          if (epStart && epStart > windowEnd) return;
-          var key = n.alert_episode_id;
-          if (byEp[key]) return;
-          byEp[key] = {
-            key: key, country: country, id: n.id, tier: derived,
-            first_day: n.alert_episode_first_day,
-            last_day: n.alert_episode_last_day,
-            peak: peak
-          };
-        });
-      });
-    });
-    Object.keys(byEp).forEach(function(k) { out.push(byEp[k]); });
-    return out;
-  }
-
-  // ─── Render KPIs ──────────────────────────────────────────────
-  function renderKPIs() {
-    var el = document.getElementById('kpi-row');
-    if (!el) return;
-    var eps = buildEpisodesFromTimeseries();
-    var counts = { extreme: 0, tres_eleve: 0, eleve: 0 };
-    eps.forEach(function(e) { counts[e.tier] = (counts[e.tier] || 0) + 1; });
-    var subLbl = formatPeriodLabel(getPeriodRange());
-    var html = '';
-    TIERS.forEach(function(tier) {
-      var hidden = kpiTiersHidden.has(tier);
-      var cls = 'kpi' + (hidden ? ' is-dim' : ' is-active');
-      html += '<div class="' + cls + '" data-tier="' + tier + '" role="button" tabindex="0" aria-pressed="' + (!hidden) + '">'
-        + '<span class="kpi-mark lvl-' + tierCss(tier) + '"></span>'
-        + '<span class="kpi-val">' + (counts[tier] || 0) + '</span>'
-        + '<span class="kpi-lbl">' + esc(tierLabel(tier))
-        +   '<span class="kpi-lbl-sub">' + esc(T('alertes.kpi_episodes_lbl', 'épisodes')) + ' · ' + subLbl + '</span>'
-        + '</span></div>';
-    });
-    el.innerHTML = html;
-    el.querySelectorAll('.kpi').forEach(function(node) {
-      var tier = node.getAttribute('data-tier');
-      node.addEventListener('click', function() { toggleKpiFilter(tier); });
-      node.addEventListener('keydown', function(ev) {
-        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggleKpiFilter(tier); }
-      });
-    });
-  }
-
-  function toggleKpiFilter(tier) {
-    if (kpiTiersHidden.has(tier)) kpiTiersHidden.delete(tier);
-    else kpiTiersHidden.add(tier);
-    render();
-  }
-
-  // ─── Outils SVG partagés ──────────────────────────────────────
-  function computeMonthTicks(start, end) {
-    var ticks = [];
-    var cur = new Date(start);
-    cur.setUTCDate(1);
-    while (cur <= end) {
-      var months = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
-      ticks.push({ date: cur.toISOString().slice(0, 10), label: months[cur.getUTCMonth()] });
-      cur.setUTCMonth(cur.getUTCMonth() + 1);
-    }
-    return ticks;
-  }
-
-  function moveTooltip(ev, wrap, ttip) {
-    if (!ttip || !wrap) return;
-    var rect = wrap.getBoundingClientRect();
-    var x = ev.clientX - rect.left + 12;
-    var y = ev.clientY - rect.top - 8;
-    if (x + 280 > wrap.clientWidth) x = wrap.clientWidth - 280;
-    ttip.style.left = x + 'px';
-    ttip.style.top  = Math.max(0, y - 40) + 'px';
-  }
-
-  function truncate(s, n) {
-    if (!s) return '';
-    return s.length > n ? s.slice(0, n - 1) + '…' : s;
-  }
-
-  function compareHeatmapRows(a, b) {
-    var d = b.lastDate.localeCompare(a.lastDate);
-    if (d !== 0) return d;
-    var r = a.topRank - b.topRank;
-    if (r !== 0) return r;
-    return b.maxPeak - a.maxPeak;
-  }
-
-  function compareHeatmapEntries(a, b) {
-    var d = b.lastDate.localeCompare(a.lastDate);
-    if (d !== 0) return d;
-    var r = a.topRank - b.topRank;
-    if (r !== 0) return r;
-    return (b.maxPeak || 0) - (a.maxPeak || 0);
-  }
-
-  function buildHeatmapObjectRows(range) {
-    var byObj = {};
-    var contextByCluster = {};
-    if (!timeseriesData || !timeseriesData.graphs) return { rows: [], contextByCluster: contextByCluster };
-
-    Object.keys(timeseriesData.graphs).forEach(function(country) {
-      if (filterCountry !== 'all' && country !== filterCountry) return;
-      var periods = timeseriesData.graphs[country];
-      Object.keys(periods).forEach(function(pk) {
-        var gd = periods[pk];
-        if (!gd || !gd.nodes) return;
-        var date = pk.split('_')[0];
-        var dd = new Date(date);
-        if (dd < range.start || dd > range.end) return;
-        gd.nodes.forEach(function(n) {
-          if (searchQuery && n.id.toLowerCase().indexOf(searchQuery) === -1) return;
-          // Membres contextuels : alert_cluster_id défini mais aucun tier
-          // (objet sous-seuil absorbé par le pivot). On les collecte par
-          // cluster pour les afficher en métadonnées sous l'événement.
-          if (n.alert_cluster_context === true && n.alert_cluster_id) {
-            var ckey = n.alert_cluster_id;
-            if (!contextByCluster[ckey]) contextByCluster[ckey] = {};
-            if (!contextByCluster[ckey][n.id]) contextByCluster[ckey][n.id] = true;
-          }
-          var size = typeof n.size === 'number' ? n.size : 0;
-          var lvl = deriveLevel(country, size);
-          if (lvl === 'none' || kpiTiersHidden.has(lvl)) return;
-          var key = country + '|' + n.id;
-          if (!byObj[key]) {
-            byObj[key] = {
-              country: country,
-              id: n.id,
-              days: {},
-              lastDate: '',
-              topRank: 99,
-              topTier: 'none',
-              maxPeak: 0,
-              clusterStats: {}
-            };
-          }
-          var prev = byObj[key].days[date];
-          if (!prev || tierRank(lvl) < tierRank(prev.tier) || (tierRank(lvl) === tierRank(prev.tier) && size > prev.size)) {
-            byObj[key].days[date] = { tier: lvl, size: size };
-          }
-          if (date > byObj[key].lastDate) byObj[key].lastDate = date;
-          if (tierRank(lvl) < byObj[key].topRank) {
-            byObj[key].topRank = tierRank(lvl);
-            byObj[key].topTier = lvl;
-          }
-          if (size > byObj[key].maxPeak) byObj[key].maxPeak = size;
-
-          if (n.alert_cluster_id) {
-            if (!byObj[key].clusterStats[n.alert_cluster_id]) {
-              byObj[key].clusterStats[n.alert_cluster_id] = {
-                clusterId: n.alert_cluster_id,
-                lastDate: date,
-                count: 0,
-                isPivot: false,
-                clusterSize: 0,
-                topRank: 99
-              };
-            }
-            var cs = byObj[key].clusterStats[n.alert_cluster_id];
-            cs.count += 1;
-            if (date > cs.lastDate) cs.lastDate = date;
-            if (n.alert_cluster_pivot) cs.isPivot = true;
-            if (typeof n.alert_cluster_size === 'number' && n.alert_cluster_size > cs.clusterSize) cs.clusterSize = n.alert_cluster_size;
-            if (tierRank(lvl) < cs.topRank) cs.topRank = tierRank(lvl);
-          }
-        });
-      });
-    });
-
-    return {
-      rows: Object.keys(byObj).map(function(key) { return byObj[key]; }),
-      contextByCluster: contextByCluster
-    };
-  }
-
-  function buildHeatmapClusterGrouping(rowByKey) {
-    var assignments = {};
-    var groupsById = {};
-
-    Object.keys(rowByKey).forEach(function(objectKey) {
-      var row = rowByKey[objectKey];
-      var statsList = Object.keys(row.clusterStats || {}).map(function(clusterId) {
-        return row.clusterStats[clusterId];
-      });
-      if (!statsList.length) return;
-
-      statsList.sort(function(a, b) {
-        var d = b.lastDate.localeCompare(a.lastDate);
-        if (d !== 0) return d;
-        if (a.topRank !== b.topRank) return a.topRank - b.topRank;
-        return b.count - a.count;
-      });
-
-      var best = statsList[0];
-      assignments[objectKey] = {
-        clusterId: best.clusterId,
-        lastDate: best.lastDate,
-        topRank: best.topRank
-      };
-
-      if (!groupsById[best.clusterId]) {
-        groupsById[best.clusterId] = {
-          clusterId: best.clusterId,
-          country: row.country,
-          lastDate: best.lastDate,
-          topRank: best.topRank,
-          objectKeys: [],
-          pivotKey: null,
-          declaredSize: best.clusterSize || 0
-        };
-      }
-      var group = groupsById[best.clusterId];
-      group.objectKeys.push(objectKey);
-      if (best.lastDate > group.lastDate) group.lastDate = best.lastDate;
-      if (best.topRank < group.topRank) group.topRank = best.topRank;
-      if ((best.clusterSize || 0) > group.declaredSize) group.declaredSize = best.clusterSize || 0;
-      if (best.isPivot) group.pivotKey = objectKey;
-    });
-
-    var groups = Object.keys(groupsById).map(function(clusterId) {
-      return groupsById[clusterId];
-    }).filter(function(group) {
-      return group.objectKeys.length > 0;
-    });
-
-    groups.sort(function(a, b) {
-      var d = b.lastDate.localeCompare(a.lastDate);
-      if (d !== 0) return d;
-      return a.topRank - b.topRank;
-    });
-
-    return { groups: groups, assignments: assignments };
-  }
-
-  function buildHeatmapRows(range) {
-    var built = buildHeatmapObjectRows(range);
-    var objectRows = built.rows;
-    var contextByCluster = built.contextByCluster || {};
-    objectRows.sort(compareHeatmapRows);
-    var MAX_ROWS = 80;
-    if (objectRows.length > MAX_ROWS) objectRows = objectRows.slice(0, MAX_ROWS);
-
-    var rowByKey = {};
-    objectRows.forEach(function(row) {
-      rowByKey[row.country + '|' + row.id] = row;
-    });
-
-    var grouping = buildHeatmapClusterGrouping(rowByKey);
-    var groupedClusters = {};
-    var entries = [];
-
-    grouping.groups.forEach(function(group) {
-      var members = group.objectKeys
-        .map(function(objectKey) { return rowByKey[objectKey]; })
-        .filter(Boolean)
-        .sort(compareHeatmapRows);
-      if (members.length < 2) return;
-
-      groupedClusters[group.clusterId] = true;
-      var pivotRow = group.pivotKey && rowByKey[group.pivotKey] ? rowByKey[group.pivotKey] : members[0];
-      var ctxIds = contextByCluster[group.clusterId]
-        ? Object.keys(contextByCluster[group.clusterId])
-        : [];
-      entries.push({
-        kind: 'event',
-        eventId: group.clusterId,
-        country: group.country,
-        id: pivotRow ? pivotRow.id : members[0].id,
-        label: pivotRow ? pivotRow.id : members[0].id,
-        lastDate: group.lastDate,
-        topRank: group.topRank,
-        topTier: pivotRow ? pivotRow.topTier : members[0].topTier,
-        objectCount: members.length,
-        maxPeak: members.reduce(function(acc, member) {
-          return Math.max(acc, member.maxPeak || 0);
-        }, 0),
-        members: members,
-        contextIds: ctxIds
-      });
-    });
-
-    // Debug clustering stats
-    var soloCount = 0;
-    var noClusterCount = 0;
-    var groupedCount = 0;
-    var groupedMembers = 0;
-
-    objectRows.forEach(function(row) {
-      var assignment = grouping.assignments[row.country + '|' + row.id];
-      if (assignment && groupedClusters[assignment.clusterId]) {
-        groupedMembers++;
-        return;
-      }
-      if (!assignment || Object.keys(row.clusterStats || {}).length === 0) {
-        noClusterCount++;
-      } else {
-        soloCount++;
-      }
-      // Solo cluster_id pour récupérer le contexte (un événement « solo »
-      // peut quand même avoir des objets contextuels absorbés autour du
-      // pivot — ex: iran solo + nabatiyé).
-      var soloCid = assignment ? assignment.clusterId : null;
-      var soloCtx = soloCid && contextByCluster[soloCid]
-        ? Object.keys(contextByCluster[soloCid])
-        : [];
-      entries.push({
-        kind: 'object',
-        country: row.country,
-        id: row.id,
-        lastDate: row.lastDate,
-        topRank: row.topRank,
-        maxPeak: row.maxPeak,
-        row: row,
-        contextIds: soloCtx
-      });
-    });
-
-    groupedCount = Object.keys(groupedClusters).length;
-    console.log('CLUSTERING STATS [' + (granularity || 'all') + ']:', {
-      totalObjects: objectRows.length,
-      grouped: {count: groupedCount, members: groupedMembers},
-      solo: soloCount,
-      noCluster: noClusterCount,
-      entriesCount: entries.length
-    });
-
-    entries.sort(compareHeatmapEntries);
-
-    var rows = [];
-    entries.forEach(function(entry) {
-      if (entry.kind === 'event') {
-        rows.push(entry);
-        entry.members.forEach(function(member) {
-          member.kind = 'object';
-          member.isMember = true;
-          member.parentEventId = entry.eventId;
-          rows.push(member);
-        });
-        return;
-      }
-
-      entry.row.kind = 'object';
-      entry.row.isMember = false;
-      entry.row.isSolo = true;
-      entry.row.parentEventId = null;
-      entry.row.contextIds = entry.contextIds || [];
-      rows.push(entry.row);
-    });
-
-    return rows;
-  }
-
-  // ─── Render Heatmap ──────────────────────────────────────────
-  function renderHeatmap() {
-    var svg = document.getElementById('heatmap-svg');
-    var wrap = document.getElementById('heatmap-wrap');
-    if (!svg || !wrap) return;
-
-    var range = getPeriodRange();
-    var today = range.today;
-    var windowStart = range.start;
-    var windowEnd = range.end;
-
-    var rows = buildHeatmapRows(range);
-
-    if (!rows.length) {
-      svg.innerHTML = '';
-      wrap.querySelectorAll('.no-data-msg').forEach(function(n) { n.remove(); });
-      var msg = document.createElement('div');
-      msg.className = 'section-empty no-data-msg';
-      msg.style.marginTop = '8px';
-      msg.textContent = searchQuery
-        ? T('alertes.no_heatmap_search', 'Aucun objet ne correspond à la recherche.')
-        : T('alertes.no_heatmap', 'Aucune donnée pour les filtres.');
-      wrap.appendChild(msg);
-      return;
+    if (st.range === 'today' || st.range === 'week') {
+      for (var t = gridStart(w[0]); t < w[1]; t += BLOCK) out.push({ key: String(t), t0: t, t1: t + BLOCK, ed: true });
     } else {
-      wrap.querySelectorAll('.no-data-msg').forEach(function(n) { n.remove(); });
-    }
-
-    var DAYS = range.days;
-    var labelW = 228;
-    var topPad = 22;
-    var bottomPad = 22;
-    var rowH = 18;
-    var width = wrap.clientWidth - 28;
-    if (width < 480) width = 480;
-    var rightPad = 10;
-    var gridW = Math.max(260, width - labelW - rightPad);
-    var cellW = gridW / DAYS;
-    var height = topPad + rows.length * rowH + bottomPad;
-
-    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
-    svg.setAttribute('width',  width);
-    svg.setAttribute('height', height);
-
-    var parts = [];
-
-    rows.forEach(function(r, idx) {
-      var y = topPad + idx * rowH;
-      if (r.kind === 'event') {
-        parts.push('<line class="heatmap-event-line" x1="8" y1="' + (y + rowH - 2) + '" x2="' + (width - rightPad) + '" y2="' + (y + rowH - 2) + '" />');
-        parts.push('<text class="heatmap-event-label" x="8" y="' + (y + rowH/2 + 4) + '">' + esc(truncate(r.label, 22))
-          + ' <tspan class="heatmap-event-meta">' + esc(r.country) + ' · ' + esc(String(r.objectCount)) + ' ' + esc(T('alertes.event_objects_count', 'objets')) + '</tspan></text>');
-        return;
-      }
-
-      if (r.isSolo) {
-        parts.push('<line class="heatmap-solo-line" x1="8" y1="' + (y + rowH - 2) + '" x2="' + (width - rightPad) + '" y2="' + (y + rowH - 2) + '" />');
-        parts.push('<text class="heatmap-solo-label" x="8" y="' + (y + rowH/2 + 4) + '" data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '">'
-          + esc(truncate(r.id, 22)) + ' <tspan fill="rgba(140,170,220,0.7)" font-size="9">' + esc(r.country) + '</tspan></text>');
-      } else {
-        var labelCls = 'heatmap-row-label' + (r.isMember ? ' is-member' : '');
-        var labelX = r.isMember ? 28 : 8;
-        parts.push('<text class="' + labelCls + '" x="' + labelX + '" y="' + (y + rowH/2 + 4) + '" data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '">'
-          + esc(truncate(r.id, r.isMember ? 22 : 22))
-          + (r.isMember ? '' : ' <tspan fill="rgba(140,170,220,0.55)" font-size="9">' + esc(r.country) + '</tspan>')
-          + '</text>');
-      }
-      for (var i = 0; i < DAYS; i++) {
-        var date = new Date(windowStart.getTime() + i * 86400000);
-        var dateStr = date.toISOString().slice(0, 10);
-        var info = r.days[dateStr];
-        if (!info) continue;
-        var x = labelW + i * cellW;
-        var sel = (selectedCell && selectedCell.country === r.country && selectedCell.id === r.id && selectedCell.date === dateStr);
-        parts.push('<rect class="heatmap-cell' + (sel ? ' is-selected' : '') + '" x="' + x.toFixed(1) + '" y="' + (y + 1) + '" width="' + cellW.toFixed(2) + '" height="' + (rowH - 2) + '" fill="' + tierVar(info.tier) + '" '
-          + 'data-country="' + esc(r.country) + '" data-id="' + esc(r.id) + '" data-date="' + esc(dateStr) + '" data-tier="' + esc(info.tier) + '" data-size="' + info.size.toFixed(1) + '" />');
-      }
-    });
-
-    // Month ticks
-    var months = computeMonthTicks(windowStart, windowEnd);
-    months.forEach(function(m) {
-      var d = new Date(m.date);
-      var dayIdx = Math.round((d - windowStart) / 86400000);
-      if (dayIdx < 0 || dayIdx > DAYS) return;
-      var x = labelW + dayIdx * cellW;
-      parts.push('<line class="month-tick" x1="' + x.toFixed(1) + '" y1="' + topPad + '" x2="' + x.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
-      parts.push('<text class="month-label" x="' + (x + 3).toFixed(1) + '" y="' + (topPad - 6) + '">' + esc(m.label) + '</text>');
-    });
-
-    // Day labels along x-axis (bottom)
-    var monthsShort = lang() === 'fr' ? FR_MONTHS_SHORT : EN_MONTHS_SHORT;
-    var labelStep = Math.max(1, Math.ceil(48 / cellW));
-    var labelY = height - bottomPad + 14;
-    for (var di = 0; di < DAYS; di += labelStep) {
-      var dDate = new Date(windowStart.getTime() + di * 86400000);
-      var dLbl = String(dDate.getUTCDate()).padStart(2, '0') + ' ' + monthsShort[dDate.getUTCMonth()];
-      var dX = labelW + (di + 0.5) * cellW;
-      parts.push('<text class="day-label" x="' + dX.toFixed(1) + '" y="' + labelY + '" text-anchor="middle">' + esc(dLbl) + '</text>');
-    }
-
-    // Now line — vertical marker at today's column (only when today falls in window)
-    if (today >= windowStart && today <= windowEnd) {
-      var todayIdx = Math.round((today - windowStart) / 86400000);
-      var nowX = labelW + (todayIdx + 1) * cellW;
-      parts.push('<line class="now-line" x1="' + nowX.toFixed(1) + '" y1="' + topPad + '" x2="' + nowX.toFixed(1) + '" y2="' + (height - bottomPad) + '" />');
-      parts.push('<text class="now-label" x="' + (nowX - 3).toFixed(1) + '" y="' + (topPad - 6) + '" text-anchor="end">' + esc(T('common.now', 'Maintenant')) + '</text>');
-    }
-
-    svg.innerHTML = parts.join('');
-
-    var ttip = document.getElementById('ttip-heatmap');
-    svg.querySelectorAll('.heatmap-cell').forEach(function(cell) {
-      cell.addEventListener('click', function() {
-        var country = cell.getAttribute('data-country');
-        var id = cell.getAttribute('data-id');
-        var date = cell.getAttribute('data-date');
-        var tier = cell.getAttribute('data-tier');
-        var size = parseFloat(cell.getAttribute('data-size')) || 0;
-        selectedCell = { country: country, id: id, date: date };
-        renderHeatmap();  // refresh selection state
-        openDayPanel(country, id, date, tier, size);
-        showDayArticlesInTicker(country, id, date);
-      });
-      cell.addEventListener('mouseenter', function(ev) {
-        if (!ttip) return;
-        var tier = cell.getAttribute('data-tier');
-        var size = cell.getAttribute('data-size');
-        ttip.style.display = 'block';
-        ttip.innerHTML = '<div class="tt-title">' + esc(cell.getAttribute('data-id')) + '</div>'
-          + '<div class="tt-meta">' + esc(countryLabel(cell.getAttribute('data-country'))) + ' · ' + esc(fmtDay(cell.getAttribute('data-date'))) + '</div>'
-          + '<div class="tt-meta" style="color:' + tierVar(tier) + ';"><b>' + esc(tierLabel(tier)) + '</b> · pic ' + esc(size) + '</div>'
-          + '<div class="tt-meta" style="margin-top:3px;">' + esc(T('alertes.click_for_articles', 'Clic = articles du jour')) + '</div>';
-        moveTooltip(ev, wrap, ttip);
-      });
-      cell.addEventListener('mousemove', function(ev) { moveTooltip(ev, wrap, ttip); });
-      cell.addEventListener('mouseleave', function() { if (ttip) ttip.style.display = 'none'; });
-    });
-    svg.querySelectorAll('.heatmap-row-label').forEach(function(lbl) {
-      lbl.addEventListener('click', function() {
-        openObjectPanel(lbl.getAttribute('data-country'), lbl.getAttribute('data-id'));
-      });
-    });
-  }
-
-  // ─── Ticker : injection d'articles d'un jour ─────────────────
-  // Le ticker partagé charge tickerData via shared-ticker.js. On override
-  // le contenu visible (track + label) pour montrer les articles cliqués.
-  function setTickerContent(items, label) {
-    var track = document.getElementById('ticker-track');
-    var updatedEl = document.getElementById('ticker-updated');
-    if (!track) return;
-    if (updatedEl && label) updatedEl.textContent = label;
-    if (!Array.isArray(items) || !items.length) {
-      track.innerHTML = '<span class="ticker-empty">' + esc(T('alertes.ticker_no_articles', 'Aucun article disponible.')) + '</span>';
-      return;
-    }
-    var payload = items.map(function(item) {
-      var media = esc(item.media_id || '');
-      var title = esc(item.title || 'Article');
-      var url = esc(item.url || '#');
-      return '<a class="ticker-item" href="' + url + '" target="_blank" rel="noopener"><span class="ticker-media">' + media + '</span>' + title + '</a>';
-    }).join('<span class="ticker-sep">&bull;</span>');
-    track.innerHTML = '<div class="ticker-strip">' + payload + '</div><div class="ticker-strip" aria-hidden="true">' + payload + '</div>';
-    window.requestAnimationFrame(function() {
-      var firstStrip = track.querySelector('.ticker-strip');
-      var px = firstStrip ? firstStrip.scrollWidth : 1600;
-      var duration = Math.max(35, Math.round(px / 70));
-      track.style.setProperty('--ticker-duration', duration + 's');
-    });
-  }
-
-  function showDayArticlesInTicker(country, id, date) {
-    var updatedEl = document.getElementById('ticker-updated');
-    var restoreBtn = document.getElementById('ticker-restore');
-    if (updatedEl) updatedEl.textContent = T('alertes.ticker_loading', 'Chargement…');
-    if (restoreBtn) restoreBtn.classList.add('is-visible');
-    loadArticlesFor(country, date).then(function(data) {
-      var arts = [];
-      if (data && data.articles && data.articles[country]) {
-        var seenUrls = {};
-        Object.keys(data.articles[country]).forEach(function(pk) {
-          if (pk.split('_')[0] !== date) return;
-          var byObj = data.articles[country][pk];
-          if (byObj && byObj[id] && Array.isArray(byObj[id])) {
-            byObj[id].forEach(function(a) {
-              if (!a || !a.url || seenUrls[a.url]) return;
-              seenUrls[a.url] = true;
-              arts.push(a);
-            });
-          }
-        });
-      }
-      var label = esc(id.toUpperCase()) + ' · ' + esc(fmtDay(date));
-      setTickerContent(arts, label);
-    });
-  }
-
-  function restoreTicker() {
-    selectedCell = null;
-    renderHeatmap();
-    var restoreBtn = document.getElementById('ticker-restore');
-    if (restoreBtn) restoreBtn.classList.remove('is-visible');
-    // Réinitialise le ticker en relançant le script partagé
-    var section = document.getElementById('ticker-section');
-    if (section) {
-      delete section.dataset.tickerInitialized;
-      section.classList.remove('ready');
-    }
-    if (window.__initSharedTicker) {
-      window.__initSharedTicker();
-    } else {
-      // Fallback : reload via fetch
-      fetch(radarDataUrl('ticker.json') + '?t=' + Date.now(), { cache: 'no-store' })
-        .then(r => r.ok ? r.json() : null)
-        .then(function(j) {
-          if (j && j.items) {
-            var lbl = j.generated_at ? T('ticker.label', 'Les Unes') : T('ticker.label', 'Les Unes');
-            setTickerContent(j.items, lbl);
-          }
-        });
-    }
-  }
-
-  // ─── Side panel — version "jour" (articles d'une cellule) ──────
-  function openDayPanel(country, id, date, tier, size) {
-    var panel = document.getElementById('side-panel');
-    var badge = document.getElementById('panel-tier-badge');
-    var countryEl = document.getElementById('panel-country');
-    var body = document.getElementById('panel-body');
-    if (!panel || !body) return;
-
-    badge.className = 'panel-tier-badge lvl-' + tierCss(tier);
-    badge.textContent = tier === 'none' ? '—' : tierLabel(tier);
-    countryEl.textContent = countryLabel(country);
-
-    var headHTML = '<div class="panel-title">' + esc(id) + '</div>'
-      + '<div class="panel-period">' + esc(fmtDay(date)) + ' · ' + esc(T('alertes.panel_peak', 'pic')) + ' ' + size.toFixed(1) + '</div>';
-
-    body.innerHTML = headHTML
-      + '<div class="panel-section">'
-      +   '<div class="panel-section-title">' + esc(T('alertes.panel_articles_section', 'Articles du jour')) + '</div>'
-      +   '<div class="panel-empty">' + esc(T('common.loading', 'Chargement…')) + '</div>'
-      + '</div>';
-
-    showSidePanel();
-
-    loadArticlesFor(country, date).then(function(data) {
-      var arts = [];
-      if (data && data.articles && data.articles[country]) {
-        var seen = {};
-        Object.keys(data.articles[country]).forEach(function(pk) {
-          if (pk.split('_')[0] !== date) return;
-          var byObj = data.articles[country][pk];
-          if (byObj && byObj[id] && Array.isArray(byObj[id])) {
-            byObj[id].forEach(function(a) {
-              if (!a || !a.url || seen[a.url]) return;
-              seen[a.url] = true;
-              arts.push(a);
-            });
-          }
-        });
-      }
-      var qC = encodeURIComponent(country);
-      var qN = encodeURIComponent(id);
-      var evoUrl = './evolution.html?country=' + qC + '&node=' + qN + '&mode=tracking&gran=week';
-      var cstUrl = './constellation.html?country=' + qC + '&node=' + qN;
-      var statsUrl = './statistiques.html?pays=' + qC + '&objet=' + qN;
-
-      var articlesHTML;
-      if (!arts.length) {
-        articlesHTML = '<div class="panel-empty">' + esc(T('alertes.panel_no_articles', 'Aucun article disponible pour cette journée.')) + '</div>';
-      } else {
-        articlesHTML = arts.map(function(a) {
-          return '<a class="panel-article" href="' + esc(a.url) + '" target="_blank" rel="noopener">'
-            +   '<span class="panel-article-media">' + esc(a.media_id || '') + '</span>'
-            +   '<span class="panel-article-title">' + esc(a.title || 'Article') + '</span>'
-            + '</a>';
-        }).join('');
-      }
-
-      body.innerHTML = headHTML
-        + '<div class="panel-section">'
-        +   '<div class="panel-section-title">' + esc(T('alertes.panel_articles_section', 'Articles du jour')) + ' (' + arts.length + ')</div>'
-        +   articlesHTML
-        + '</div>'
-        + '<div class="panel-section">'
-        +   '<div class="panel-section-title">' + esc(T('alertes.detail_see_in', 'Voir ailleurs')) + '</div>'
-        +   '<div class="panel-links">'
-        +     '<a class="panel-link-btn" href="' + esc(evoUrl) + '">' + esc(T('alertes.detail_nav_evolution', 'Évolution')) + ' →</a>'
-        +     '<a class="panel-link-btn" href="' + esc(cstUrl) + '">' + esc(T('alertes.detail_nav_constellation', 'Constellation')) + ' →</a>'
-        +     '<a class="panel-link-btn" href="' + esc(statsUrl) + '">' + esc(T('alertes.detail_nav_stats', 'Statistiques')) + ' →</a>'
-        +   '</div>'
-        + '</div>';
-    });
-  }
-
-  // ─── Side panel — version "objet" ─────────────────────────────
-  function openObjectPanel(country, objectId) {
-    var allEpisodes = [];
-    if (timeseriesData && timeseriesData.graphs && timeseriesData.graphs[country]) {
-      var periods = timeseriesData.graphs[country];
       var seen = {};
-      Object.keys(periods).forEach(function(pk) {
-        var gd = periods[pk];
-        if (!gd || !gd.nodes) return;
-        gd.nodes.forEach(function(n) {
-          if (n.id !== objectId) return;
-          if (!n.alert_episode_id || seen[n.alert_episode_id]) return;
-          var peak = typeof n.alert_episode_peak === 'number' ? n.alert_episode_peak : null;
-          if (peak == null) return;
-          var derived = deriveLevel(country, peak);
-          if (derived === 'none') return;
-          seen[n.alert_episode_id] = true;
-          allEpisodes.push({
-            key: n.alert_episode_id, tier: derived,
-            first_day: n.alert_episode_first_day,
-            last_day: n.alert_episode_last_day,
-            n_days: n.alert_episode_n_days, peak: peak,
-            status: n.alert_episode_status
-          });
+      for (var u = gridStart(w[0]); u < w[1]; u += BLOCK) {
+        var dk = dayKey(u);
+        if (!seen[dk]) { seen[dk] = { key: dk, t0: u, t1: u + BLOCK, ed: false }; out.push(seen[dk]); }
+        else seen[dk].t1 = u + BLOCK;
+      }
+    }
+    return out;
+  }
+  function binOf(b, t) { return b.ed ? t === b.t0 : dayKey(t) === b.key; }
+  function binLabel(b) { return b.ed ? edName(b.t0) : dayLong(b.t0); }
+
+  // ── Rendu ────────────────────────────────────────────────────────────────────────────
+  var tip = document.getElementById('al-tip');
+  function showTip(e, html) { tip.innerHTML = html; tip.style.display = 'block'; var x = Math.min(e.clientX + 14, window.innerWidth - 320), y = Math.min(e.clientY + 14, window.innerHeight - 120); tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+  function hideTip() { tip.style.display = 'none'; }
+
+  function renderNow() {
+    var box = document.getElementById('al-now'); if (!box) return;
+    var regs = ['QC', 'CAN', 'USA'];
+    box.innerHTML = regs.map(function (r) {
+      var list = [], when = '';
+      if (r === 'USA') {
+        var g = data.graph && data.graph.graphs && data.graph.graphs.USA, th = thresholds('USA');
+        if (g && th) Object.keys(g).forEach(function (k) {
+          when = edName(U.periodStartUtc(k));
+          (g[k].nodes || []).forEach(function (n) { var v = Number(n.size) || 0, lv = levelOf(v, th); if (lv) list.push({ title: cap(n.id), v: v, lv: lv }); });
         });
-      });
-    }
-
-    var panel = document.getElementById('side-panel');
-    var badge = document.getElementById('panel-tier-badge');
-    var countryEl = document.getElementById('panel-country');
-    var body = document.getElementById('panel-body');
-    if (!panel || !body) return;
-
-    var maxTier = allEpisodes.length ? 'tres_eleve' : 'none';
-    allEpisodes.forEach(function(e) {
-      if (tierRank(e.tier) < tierRank(maxTier)) maxTier = e.tier;
-    });
-    badge.className = 'panel-tier-badge lvl-' + tierCss(maxTier);
-    badge.textContent = maxTier === 'none' ? '—' : tierLabel(maxTier);
-    countryEl.textContent = countryLabel(country);
-
-    allEpisodes.sort(function(a, b) { return new Date(b.first_day) - new Date(a.first_day); });
-    var anyActive = allEpisodes.some(function(e) { return e.status === 'active'; });
-
-    var maxPeak = 0, totalDays = 0;
-    allEpisodes.forEach(function(e) {
-      if ((e.peak || 0) > maxPeak) maxPeak = e.peak;
-      totalDays += (e.n_days || 0);
-    });
-    var peakStr = maxPeak > 0 ? fmtPeakWithTier(country, maxPeak) : '—';
-
-    var episodesHTML = allEpisodes.map(function(e) {
-      var dateRange = fmtDay(e.first_day) + (e.first_day !== e.last_day ? ' → ' + fmtDay(e.last_day) : '');
-      return '<div class="panel-member">'
-        + '<span class="panel-member-name"><span class="panel-tier-mini lvl-' + tierCss(e.tier) + '" style="margin-right:6px;">' + esc(tierLabel(e.tier)) + '</span>' + esc(dateRange) + '</span>'
-        + '<span class="panel-member-meta">' + e.n_days + 'j · pic ' + (e.peak || 0).toFixed(1) + '</span>'
-        + '</div>';
+      } else {
+        var reg = data.latest && data.latest.by_region && data.latest.by_region[r];
+        if (reg && reg.period && reg.period.key) when = edName(U.periodStartUtc(reg.period.key));
+        ((reg && reg.events) || []).forEach(function (e) { if (e.band === 'tres_elevee' || e.band === 'extreme') list.push({ title: e.title || '', v: Number(e.index) || 0, lv: e.band }); });
+      }
+      list.sort(function (a, b) { return b.v - a.v; });
+      var top = list.length ? (list.some(function (x) { return x.lv === 'extreme'; }) ? 'extreme' : 'tres_elevee') : 'none';
+      var state = top === 'none' ? T('alertes.p_now_none') : T('alertes.p_now_alert') + ' · ' + T('aune.band.' + top);
+      var itemsHtml = list.length
+        ? list.slice(0, 2).map(function (x) { return '<span class="al-now-item">' + esc(x.title) + '<b>' + f1(x.v) + '</b></span>'; }).join('') + (list.length > 2 ? '<span class="al-now-when">' + esc(T('alertes.p_now_more', { n: list.length - 2 })) + '</span>' : '')
+        : '<span class="al-now-calm">' + esc(T(r === 'USA' ? 'alertes.p_now_calm_obj' : 'alertes.p_now_calm')) + '</span>';
+      return '<button type="button" class="al-now-card lvl-' + top + (r === st.region ? ' active' : '') + '" data-region="' + r + '">' +
+        '<span class="al-now-top"><span class="al-now-region">' + esc(T('alertbar.region.' + r)) + '</span><span class="al-now-state"><span class="dot"></span>' + esc(state) + '</span></span>' +
+        '<span class="al-now-items">' + itemsHtml + '</span>' +
+        (when ? '<span class="al-now-when">' + esc(T('alertes.p_now_when', { when: when })) + '</span>' : '') + '</button>';
     }).join('');
-
-    var qC = encodeURIComponent(country);
-    var qN = encodeURIComponent(objectId);
-    var evoUrl = './evolution.html?country=' + qC + '&node=' + qN + '&mode=tracking&gran=week';
-    var cstUrl = './constellation.html?country=' + qC + '&node=' + qN;
-    var statsUrl = './statistiques.html?pays=' + qC + '&objet=' + qN;
-
-    body.innerHTML =
-        '<div class="panel-title">' + esc(objectId) + '</div>'
-      + '<div class="panel-period">' + allEpisodes.length + ' ' + esc(T('alertes.episodes_cumul', 'épisode(s)')) + ' · ' + totalDays + ' ' + esc(T('alertes.total_days', 'jours cumulés')) + (anyActive ? ' · <span style="color:rgba(140,255,180,0.95);">' + esc(T('alertes.status_active_label', 'En cours')) + '</span>' : '') + '</div>'
-      + '<div class="panel-section">'
-      +   '<div class="panel-section-title">' + esc(T('alertes.detail_metrics', 'Métriques')) + '</div>'
-      +   '<div class="panel-metrics">'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + esc(peakStr) + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_peak_salience', 'Pic saillance')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + allEpisodes.length + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_episodes', 'Épisodes')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + totalDays + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_total_days', 'Jours cumulés')) + '</span></div>'
-      +     '<div class="panel-metric"><span class="panel-metric-val">' + (anyActive ? '✓' : '—') + '</span><span class="panel-metric-lbl">' + esc(T('alertes.detail_active', 'Actif')) + '</span></div>'
-      +   '</div>'
-      + '</div>'
-      + '<div class="panel-section">'
-      +   '<div class="panel-section-title">' + esc(T('alertes.detail_history', 'Historique')) + ' (' + allEpisodes.length + ')</div>'
-      +   episodesHTML
-      + '</div>'
-      + '<div class="panel-section">'
-      +   '<div class="panel-section-title">' + esc(T('alertes.detail_see_in', 'Voir ailleurs')) + '</div>'
-      +   '<div class="panel-links">'
-      +     '<a class="panel-link-btn" href="' + esc(evoUrl) + '">' + esc(T('alertes.detail_nav_evolution', 'Évolution')) + ' →</a>'
-      +     '<a class="panel-link-btn" href="' + esc(cstUrl) + '">' + esc(T('alertes.detail_nav_constellation', 'Constellation')) + ' →</a>'
-      +     '<a class="panel-link-btn" href="' + esc(statsUrl) + '">' + esc(T('alertes.detail_nav_stats', 'Statistiques')) + ' →</a>'
-      +   '</div>'
-      + '</div>';
-
-    showSidePanel();
+    box.querySelectorAll('.al-now-card').forEach(function (c) { c.addEventListener('click', function () { setRegion(c.dataset.region); }); });
   }
 
-  function closeSidePanel() {
-    var panel = document.getElementById('side-panel');
-    var overlay = document.getElementById('panel-overlay');
-    if (panel) {
-      panel.classList.remove('is-open');
-      panel.setAttribute('aria-hidden', 'true');
-    }
-    if (overlay) {
-      overlay.classList.remove('is-open');
-      overlay.setAttribute('aria-hidden', 'true');
-    }
-    if (selectedCell) {
-      selectedCell = null;
-      renderHeatmap();
-    }
+  function renderHow() {
+    var box = document.getElementById('al-how'); if (!box) return;
+    var qc = thresholds('QC'), can = thresholds('CAN'), us = thresholds('USA');
+    var n = function (th, k) { return th && typeof th[k] === 'number' ? f1(th[k]) : '—'; };
+    box.innerHTML = '<h2>' + esc(T('alertes.p_how_title')) + '</h2>' +
+      '<p>' + esc(T('alertes.p_how_1')) + '</p>' +
+      '<p>' + T('alertes.p_how_2', { qc: n(qc, 'tres'), can: n(can, 'tres'), qcx: n(qc, 'ext'), canx: n(can, 'ext'), tres: '<span class="chip tres">' + esc(T('aune.band.tres_elevee')) + '</span>', ext: '<span class="chip ext">' + esc(T('aune.band.extreme')) + '</span>' }) + '</p>' +
+      '<p>' + esc(T('alertes.p_how_3', { us: n(us, 'tres'), usx: n(us, 'ext') })) + '</p>' +
+      '<div class="links"><a href="./indices.html">' + esc(T('alertes.p_how_link_indices')) + '</a><a href="./methodologie.html#alertes">' + esc(T('alertes.p_how_link_methodo')) + '</a></div>';
   }
 
-  function showSidePanel() {
-    var panel = document.getElementById('side-panel');
-    var overlay = document.getElementById('panel-overlay');
-    if (panel) {
-      panel.classList.add('is-open');
-      panel.setAttribute('aria-hidden', 'false');
-    }
-    if (overlay) {
-      overlay.classList.add('is-open');
-      overlay.setAttribute('aria-hidden', 'false');
-    }
+  function trackSvg(it, w, W) {
+    var H = 34, mid = 17, x = function (t) { return (t - w[0]) / (w[1] - w[0]) * W; }, bw = Math.max(3, BLOCK / (w[1] - w[0]) * W);
+    var p0 = it.pts[0], p1 = it.pts[it.pts.length - 1];
+    var h = '<svg viewBox="0 0 ' + W + ' ' + H + '" height="' + H + '" preserveAspectRatio="none">';
+    h += '<line x1="0" x2="' + W + '" y1="' + mid + '" y2="' + mid + '" stroke="rgba(90,140,255,0.10)" />';
+    h += '<line x1="' + x(p0.t) + '" x2="' + (x(p1.t) + bw) + '" y1="' + mid + '" y2="' + mid + '" stroke="rgba(140,180,255,0.35)" stroke-width="2" stroke-linecap="round" />';
+    it.pts.forEach(function (p) {
+      var cx = x(p.t);
+      if (p.lv) {
+        var isPk = p.t === it.peakT;
+        h += '<rect class="pt" data-t="' + p.t + '" x="' + cx + '" y="' + (mid - 9) + '" width="' + bw + '" height="18" rx="2" fill="rgb(' + LV_RGB[p.lv] + ')"' + (isPk ? ' stroke="#fff" stroke-width="1.5"' : '') + ' />';
+      } else {
+        h += '<circle class="pt" data-t="' + p.t + '" cx="' + (cx + bw / 2) + '" cy="' + mid + '" r="2.4" fill="rgba(160,190,240,0.75)" />';
+      }
+    });
+    return h + '</svg>';
   }
 
-  // ─── Render période nav (flèches + label) ─────────────────────
-  function renderPeriodNav() {
-    var nav = document.getElementById('period-nav');
-    var label = document.getElementById('period-nav-label');
-    var prev = document.getElementById('period-prev');
-    var next = document.getElementById('period-next');
-    if (!nav || !label || !prev || !next) return;
-    nav.classList.remove('is-hidden');
-    var range = getPeriodRange();
-    label.textContent = formatPeriodLabel(range);
-    prev.disabled = !range.canPrev;
-    next.disabled = !range.canNext;
-  }
-
-  // ─── Render global ───────────────────────────────────────────
   function render() {
-    if (!graphData || !timeseriesData) return;
-    renderPeriodNav();
-    renderKPIs();
-    renderHeatmap();
+    var grid = document.getElementById('al-grid'); if (!grid) return;
+    var w = U.window(st.range, st.offset), now = Date.now();
+    // L'axe commence aux premières données (23 juillet 2026) ; l'année en cours s'arrête aujourd'hui.
+    var firstD = data.idx && data.idx.dates && data.idx.dates[st.region === 'USA' ? 'QC' : st.region] && data.idx.dates[st.region === 'USA' ? 'QC' : st.region][0];
+    var wFull = w.slice();
+    if (firstD) { var f0 = gridStart(Date.parse(firstD + 'T00:00:00Z') - LAG); if (w[0] < f0 && w[1] > f0) w = [f0, w[1]]; }
+    if (st.range === 'year' && st.offset === 0) w = [w[0], Math.min(w[1], gridStart(now) + 6 * BLOCK)];
+    var region = st.region, all = items(region, w), bs = bins(w);
+    // Graphique : histoires (ou objets) en alerte par case, extrêmes en bas
+    bs.forEach(function (b) {
+      b.ext = 0; b.tres = 0; b.ids = {};
+      all.forEach(function (it) {
+        var best = null;
+        it.alerts.forEach(function (p) { if (binOf(b, p.t) && (!best || p.lv === 'extreme')) best = p.lv; });
+        if (best) { b.ids[it.id] = 1; if (best === 'extreme') b.ext++; else b.tres++; }
+      });
+    });
+    var pick = st.pick && bs.filter(function (b) { return b.key === st.pick; })[0];
+    var list = pick ? all.filter(function (it) { return pick.ids[it.id]; }) : all.slice();
+    list.sort(st.sort === 'peak' ? function (a, b) { return b.peak - a.peak; } : function (a, b) { return b.lastT - a.lastT || b.peak - a.peak; });
+
+    // En-tête de période
+    var isEv = region !== 'USA', nExt = all.filter(function (it) { return it.level === 'extreme'; }).length;
+    document.getElementById('al-label').textContent = U.navLabel(st.range, st.offset, lang(), T);
+    var stEl = document.getElementById('al-status'); stEl.className = 'cl-nav-status ' + (st.offset < 0 ? 'final' : 'live'); stEl.textContent = T(st.offset < 0 ? 'alertes.p_status_final' : 'alertes.p_status_live');
+    document.getElementById('al-count').textContent = T(isEv ? (all.length === 1 ? 'alertes.p_count_one' : 'alertes.p_count') : (all.length === 1 ? 'alertes.p_count_obj_one' : 'alertes.p_count_obj'), { n: all.length }) + (nExt ? ' · ' + T('alertes.p_count_ext', { n: nExt }) : '');
+    var first = data.idx && data.idx.dates && data.idx.dates[region === 'USA' ? 'QC' : region] && data.idx.dates[region === 'USA' ? 'QC' : region][0];
+    document.getElementById('al-prev').disabled = first ? wFull[0] <= Date.parse(first + 'T12:00:00Z') : false;
+    document.getElementById('al-next').disabled = st.offset >= 0;
+    var fl = document.getElementById('al-filter'); fl.classList.toggle('on', !!pick);
+    if (pick) document.getElementById('al-filter-label').textContent = T('alertes.p_filter', { label: binLabel(pick) });
+
+    // Graphique du haut
+    // Écran large : trois colonnes alignées (titre | fil | sommet) ; écran étroit : une seule colonne, fil pleine largeur.
+    var narrow = window.matchMedia('(max-width: 960px)').matches;
+    var W = Math.max(260, (grid.clientWidth || 1000) - 32), c1 = Math.max(240, W * 0.32), c3 = 132, trackW = narrow ? Math.round(W) : Math.max(200, Math.round(W - c1 - c3 - 36));
+    var cols = narrow ? '' : ' style="grid-template-columns:' + c1 + 'px ' + trackW + 'px ' + c3 + 'px"';
+    var maxN = Math.max(3, Math.max.apply(null, bs.map(function (b) { return b.ext + b.tres; }).concat([0])));
+    var PH = 96, gap = bs.length > 60 ? 0.5 : 1.5, cw = trackW / Math.max(1, bs.length);
+    var sx = function (t) { return (t - w[0]) / (w[1] - w[0]) * trackW; };
+    var svg = '<svg viewBox="0 -4 ' + trackW + ' ' + (PH + 26) + '" height="' + (PH + 26) + '" preserveAspectRatio="none">';
+    [Math.round(maxN / 2), maxN].forEach(function (v) { var y = PH - v / maxN * PH; svg += '<line x1="0" x2="' + trackW + '" y1="' + y + '" y2="' + y + '" stroke="rgba(90,140,255,0.12)" stroke-dasharray="2 4" /><text class="ylab" x="' + (trackW - 2) + '" y="' + (y - 3) + '" text-anchor="end">' + v + '</text>'; });
+    svg += '<line x1="0" x2="' + trackW + '" y1="' + PH + '" y2="' + PH + '" stroke="rgba(140,180,255,0.35)" />';
+    var lastLbl = -1e9;
+    bs.forEach(function (b, i) {
+      var x0 = sx(b.t0), x1 = sx(b.t1), bw = Math.max(1, x1 - x0 - gap), he = b.ext / maxN * PH, ht = b.tres / maxN * PH, fut = b.t0 > now;
+      svg += '<g class="bin' + (pick && pick.key === b.key ? ' sel' : '') + '" data-i="' + i + '"><rect class="bg" x="' + x0 + '" y="-4" width="' + Math.max(1, x1 - x0) + '" height="' + (PH + 4) + '" fill="transparent" />';
+      if (b.ext) svg += '<rect class="bar" x="' + x0 + '" y="' + (PH - he) + '" width="' + bw + '" height="' + he + '" rx="1.5" fill="var(--ext)" />';
+      if (b.tres) svg += '<rect class="bar" x="' + x0 + '" y="' + (PH - he - ht) + '" width="' + bw + '" height="' + ht + '" rx="1.5" fill="var(--tres)" />';
+      if (fut) svg += '<rect x="' + x0 + '" y="' + (PH - 2) + '" width="' + bw + '" height="2" fill="rgba(140,180,255,0.18)" />';
+      svg += '</g>';
+      // Étiquettes : chaque jour (vue par édition) ; le 1er, le 8, le 15, le 22 (mois) ; le début de chaque mois (année)
+      var lbl = null;
+      if (b.ed) { if (edHour(b.t0) === 0 || i === 0) lbl = st.range === 'today' ? edWord(edHour(b.t0)).replace(/^édition de /, '') : new Intl.DateTimeFormat(loc(), { timeZone: 'America/Montreal', weekday: 'short', day: 'numeric' }).format(new Date(b.t0 + LAG)); if (st.range === 'today') lbl = edWord(edHour(b.t0)).replace(/^édition de /, '').replace(/ edition$/, ''); }
+      else if (st.range === 'month') { var dd = +b.key.slice(8, 10); if (dd === 1 || dd === 8 || dd === 15 || dd === 22 || dd === 29) lbl = String(dd); }
+      else if (b.key.slice(8, 10) === '01' || i === 0) lbl = new Intl.DateTimeFormat(loc(), { timeZone: 'America/Montreal', month: 'short' }).format(new Date(b.t0 + LAG));
+      if (lbl && x0 - lastLbl > (narrow ? 52 : 40)) { svg += '<text class="tick" x="' + (x0 + 1) + '" y="' + (PH + 16) + '">' + esc(lbl) + '</text>'; lastLbl = x0; }
+    });
+    svg += '</svg>';
+    var pulseTitle = T(isEv ? (bs[0] && bs[0].ed ? 'alertes.p_pulse_ed' : 'alertes.p_pulse_day') : (bs[0] && bs[0].ed ? 'alertes.p_pulse_ed_obj' : 'alertes.p_pulse_day_obj'));
+    var html = '<div class="al-pulse"' + cols + '>' +
+      '<div class="al-pulse-head"><strong>' + esc(pulseTitle) + '</strong>' + esc(T('alertes.p_pulse_hint')) +
+      '<span class="al-legend"><span><i style="background:var(--tres)"></i>' + esc(T('aune.band.tres_elevee')) + '</span><span><i style="background:var(--ext)"></i>' + esc(T('aune.band.extreme')) + '</span></span></div>' +
+      '<div class="al-pulse-chart">' + svg + '</div><div class="al-pulse-max"></div></div>';
+
+    // Avis : la fiche d'où l'on vient n'a jamais été en alerte
+    if (st.focus && !st.focusDone) {
+      var inAll = all.some(function (it) { return it.id === st.focus; });
+      if (!inAll) html += '<div class="al-notice">' + esc(T(isEv ? 'alertes.p_focus_none' : 'alertes.p_focus_none_obj')) + '</div>';
+    }
+
+    // Liste : 20 lignes, puis « Voir plus »
+    if (!list.length) html += '<div class="al-empty">' + esc(T('alertes.p_empty')) + '</div>';
+    var limit = 20 + st.extra;
+    if (st.focus && !st.focusDone) { var fi = list.findIndex(function (it) { return it.id === st.focus; }); if (fi >= limit) limit = fi + 1; }
+    var shown = list.slice(0, limit);
+    html += '<div class="al-list">' + shown.map(function (it) {
+      var n = it.alerts.length;
+      var meta = (it.sub ? esc(it.sub) + ' · ' : '') + esc(T(n === 1 ? 'alertes.p_row_meta_one' : 'alertes.p_row_meta', { n: n, when: edName(it.firstT) }));
+      return '<div class="al-row band-' + it.level + (it.id === st.focus ? ' focused' : '') + '" data-id="' + esc(it.id) + '" data-href="' + esc(it.href) + '"' + cols + '>' +
+        '<div class="al-row-main"><span class="aune-band band-' + it.level + '">' + esc(T('aune.band.' + it.level)) + '</span>' +
+          '<span class="al-row-title"><a href="' + esc(it.href) + '">' + esc(it.title) + '</a></span><span class="al-row-meta">' + meta + '</span></div>' +
+        '<div class="al-track">' + trackSvg(it, w, trackW) + '</div>' +
+        '<div class="al-peak"><span class="num">' + f1(it.peak) + '</span><span class="pts">' + esc(T('aune.points')) + '</span><span class="when">' + esc(T('alertes.p_peak', { when: edName(it.peakT) })) + '</span></div></div>';
+    }).join('') + '</div>';
+    grid.innerHTML = html;
+
+    var more = document.getElementById('al-more'), left = list.length - shown.length;
+    more.hidden = left <= 0;
+    if (left > 0) more.querySelector('button').textContent = T('classement.more', { n: Math.min(20, left), left: left });
+
+    // Interactions : survol et clic sur le graphique ; survol des traits ; clic sur une ligne
+    grid.querySelectorAll('.al-pulse .bin').forEach(function (g) {
+      var b = bs[+g.dataset.i];
+      g.addEventListener('mousemove', function (e) {
+        var tot = b.ext + b.tres;
+        showTip(e, '<b>' + esc(binLabel(b)) + '</b><br>' + esc(tot ? T(isEv ? (tot === 1 ? 'alertes.p_tip_n_one' : 'alertes.p_tip_n') : (tot === 1 ? 'alertes.p_tip_n_obj_one' : 'alertes.p_tip_n_obj'), { n: tot }) + (b.ext ? ' · ' + T('alertes.p_count_ext', { n: b.ext }) : '') : T('alertes.p_tip_none')) + (tot ? '<br><span class="lv">' + esc(T('alertes.p_tip_click')) + '</span>' : ''));
+      });
+      g.addEventListener('mouseleave', hideTip);
+      g.addEventListener('click', function () { if (!(b.ext + b.tres)) return; st.pick = st.pick === b.key ? null : b.key; st.extra = 0; hideTip(); render(); });
+    });
+    grid.querySelectorAll('.al-row').forEach(function (row) {
+      var it = shown.filter(function (x) { return x.id === row.dataset.id; })[0];
+      row.addEventListener('click', function (e) { if (e.target.closest('a')) return; location.href = row.dataset.href; });
+      var svgEl = row.querySelector('.al-track svg'); if (!svgEl || !it) return;
+      svgEl.addEventListener('mousemove', function (e) {
+        var r = svgEl.getBoundingClientRect(), t = w[0] + (e.clientX - r.left) / r.width * (w[1] - w[0]);
+        var p = it.pts.reduce(function (m, x) { return Math.abs(x.t + BLOCK / 2 - t) < Math.abs(m.t + BLOCK / 2 - t) ? x : m; }, it.pts[0]);
+        showTip(e, '<b>' + esc(edName(p.t)) + '</b><br>' + f1(p.v) + ' ' + esc(T('aune.points')) + (p.lv ? '<br><span class="lv" style="color:rgb(' + LV_RGB[p.lv] + ')">' + esc(T('aune.band.' + p.lv)) + '</span>' : ''));
+      });
+      svgEl.addEventListener('mouseleave', hideTip);
+    });
+    if (st.focus && !st.focusDone) {
+      st.focusDone = true;
+      var fr = grid.querySelector('.al-row.focused'); if (fr) setTimeout(function () { fr.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 80);
+    }
   }
 
-  // ─── Hooks ───────────────────────────────────────────────────
-  // Filtres pays (pills)
-  document.querySelectorAll('[data-country]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      filterCountry = btn.getAttribute('data-country');
-      document.querySelectorAll('[data-country]').forEach(function(b) {
-        var active = b === btn;
-        b.classList.toggle('is-active', active);
-        b.setAttribute('aria-checked', active ? 'true' : 'false');
-      });
-      render();
-    });
-  });
-  // Filtres période (pills)
-  document.querySelectorAll('[data-gran]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      granularity = btn.getAttribute('data-gran') || 'month';
-      periodOffset = 0;
-      document.querySelectorAll('[data-gran]').forEach(function(b) {
-        var active = b === btn;
-        b.classList.toggle('is-active', active);
-        b.setAttribute('aria-checked', active ? 'true' : 'false');
-      });
-      render();
-    });
-  });
-  // Navigation période (flèches)
-  var prevBtn = document.getElementById('period-prev');
-  var nextBtn = document.getElementById('period-next');
-  if (prevBtn) prevBtn.addEventListener('click', function() {
-    if (prevBtn.disabled) return;
-    periodOffset -= 1;
-    render();
-  });
-  if (nextBtn) nextBtn.addEventListener('click', function() {
-    if (nextBtn.disabled) return;
-    periodOffset += 1;
-    render();
-  });
-  // Recherche
-  var searchInput = document.getElementById('search-input');
-  var searchClear = document.getElementById('search-clear');
-  if (searchInput) {
-    var searchTO;
-    searchInput.addEventListener('input', function() {
-      var v = searchInput.value.trim().toLowerCase();
-      searchInput.classList.toggle('has-value', v.length > 0);
-      clearTimeout(searchTO);
-      searchTO = setTimeout(function() {
-        searchQuery = v;
-        renderHeatmap();
-      }, 140);
-    });
+  // ── Contrôles ────────────────────────────────────────────────────────────────────────
+  function syncUrl() {
+    try {
+      var u = new URL(location.href); u.searchParams.set('region', st.region); u.searchParams.set('range', st.range);
+      u.searchParams.delete('country'); if (st.sort === 'peak') u.searchParams.set('tri', 'forts'); else u.searchParams.delete('tri');
+      history.replaceState(null, '', u.toString());
+    } catch (e) { /* ignore */ }
   }
-  if (searchClear) {
-    searchClear.addEventListener('click', function() {
-      searchInput.value = '';
-      searchInput.classList.remove('has-value');
-      searchQuery = '';
-      renderHeatmap();
-      searchInput.focus();
-    });
+  function setRegion(r) {
+    st.region = r; st.pick = null; st.extra = 0;
+    document.querySelectorAll('#al-regions .country-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.region === r); });
+    renderNow(); syncUrl();
+    document.getElementById('al-grid').innerHTML = '<div class="al-loading">' + esc(T('alertes.p_loading')) + '</div>';
+    ensureRegion(r).then(function () { if (st.region === r) render(); });
   }
-  // Ticker restore
-  var restoreBtn = document.getElementById('ticker-restore');
-  if (restoreBtn) restoreBtn.addEventListener('click', restoreTicker);
-  // Side panel
-  document.getElementById('panel-close').addEventListener('click', closeSidePanel);
-  document.getElementById('panel-overlay').addEventListener('click', closeSidePanel);
-  document.addEventListener('keydown', function(ev) {
-    if (ev.key === 'Escape') closeSidePanel();
+  document.querySelectorAll('#al-regions .country-tab').forEach(function (b) { b.addEventListener('click', function () { if (b.dataset.region !== st.region) setRegion(b.dataset.region); }); });
+  document.querySelectorAll('#al-ranges .aune-tab').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.range === st.range);
+    b.addEventListener('click', function () {
+      st.range = b.dataset.range; st.offset = 0; st.pick = null; st.extra = 0;
+      document.querySelectorAll('#al-ranges .aune-tab').forEach(function (x) { x.classList.toggle('active', x === b); });
+      syncUrl(); render();
+    });
   });
-  document.addEventListener('i18n:applied', function() {
-    if (graphData && timeseriesData) render();
+  document.querySelectorAll('#al-sort button').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.sort === st.sort);
+    b.addEventListener('click', function () { st.sort = b.dataset.sort; st.extra = 0; document.querySelectorAll('#al-sort button').forEach(function (x) { x.classList.toggle('active', x === b); }); syncUrl(); render(); });
   });
-  // Resize
-  var resizeTO;
-  window.addEventListener('resize', function() {
-    clearTimeout(resizeTO);
-    resizeTO = setTimeout(function() { if (graphData && timeseriesData) renderHeatmap(); }, 120);
-  });
+  document.getElementById('al-prev').addEventListener('click', function () { st.offset -= 1; st.pick = null; st.extra = 0; render(); });
+  document.getElementById('al-next').addEventListener('click', function () { if (st.offset < 0) { st.offset += 1; st.pick = null; st.extra = 0; render(); } });
+  document.getElementById('al-filter-clear').addEventListener('click', function () { st.pick = null; render(); });
+  document.querySelector('#al-more button').addEventListener('click', function () { st.extra += 20; render(); });
+  document.querySelectorAll('#al-regions .country-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.region === st.region); });
+  var rt = null; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 150); });
+  function lede() { U.setSub(document.getElementById('al-lede'), T('alertes.p_lede')); }
+  document.addEventListener('i18n:applied', function () { lede(); renderNow(); renderHow(); if (data.idx) render(); });
 
-  loadData();
+  // ── Démarrage ────────────────────────────────────────────────────────────────────────
+  lede();
+  Promise.all([
+    window.radarData.eventsIndex().catch(function () { return null; }),
+    window.radarData.eventsLatest().catch(function () { return null; }),
+    window.radarData.latestAsGraph().catch(function () { return null; })
+  ]).then(function (res) {
+    data.idx = res[0]; data.latest = res[1]; data.graph = res[2];
+    renderNow(); renderHow(); syncUrl();
+    return ensureRegion(st.region);
+  }).then(render).catch(function (e) {
+    console.error('Alertes :', e);
+    document.getElementById('al-grid').innerHTML = '<div class="al-empty">' + esc(T('alertes.p_error')) + '</div>';
+  });
 })();
 </script>
 </body>
