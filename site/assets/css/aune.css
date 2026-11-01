@@ -220,6 +220,13 @@
 .aune-table-outer.has-more::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 70px; pointer-events: none; background: linear-gradient(90deg, rgba(2,0,16,0), rgba(2,0,16,0.9)); }
 .aune-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 .aune-table { width: 100%; min-width: 1320px; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+/* Dans le tableau du Classement, la place ne manque pas : étiquette sur une seule ligne,
+   « ACTUELLEMENT · SAILLANCE ÉLEVÉE (i) » (Adrien, 31 oct. 2026). */
+.aune-table .sal-tag { flex-direction: row; align-items: center; gap: 6px; min-width: 0; padding: 3px 9px 3px 8px; margin-bottom: 4px; }
+.aune-table .sal-tag-top { display: contents; }
+.aune-table .sal-prefix::after { content: ' ·'; }
+.aune-table .sal-level { order: 1; }
+.aune-table .sal-i { order: 2; margin-left: 4px; }
 .aune-table th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 10px 8px; border-bottom: 1px solid var(--border); font-weight: 400; vertical-align: bottom; line-height: 1.35; max-width: 150px; }
 .aune-table th.num, .aune-table td.num { text-align: right; }
 .aune-table th.center, .aune-table td.center { text-align: center; }
