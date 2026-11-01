@@ -1763,7 +1763,7 @@ function renderHot20() {
 
   // Update date label
   if (currentGranularity === '4h') {
-    var pf = parsePeriodLabel(slot.label || slot.raw.key);
+    var pf = parsePeriodLabel((slot.raw && slot.raw.key) || slot.label);
     document.getElementById('wl-date').textContent = pf.date;
     document.getElementById('wl-interval').textContent = pf.interval;
   } else {
@@ -2330,7 +2330,7 @@ function openArticlePanel(node) {
     });
     if (fresh.length) {
       var per = allPeriods.find(function(p) { return p.key === pk; });
-      var pf = parsePeriodLabel((per && per.label) || pk);
+      var pf = parsePeriodLabel(pk || (per && per.label));
       currentGroups.push({ label: pf.date + ' \u00b7 ' + pf.interval, articles: fresh });
     }
   });
@@ -2377,7 +2377,7 @@ function openArticlePanel(node) {
     var fresh = arts.filter(function(a) { return a.url && !seenUrls[a.url]; });
     if (!fresh.length) continue;
     fresh.forEach(function(a) { seenUrls[a.url] = true; });
-    var pf = parsePeriodLabel(allPeriods[pi].label || pk);
+    var pf = parsePeriodLabel(pk || allPeriods[pi].label);
     prevGroups.push({ label: pf.date + ' · ' + pf.interval, articles: fresh });
     if (prevGroups.length >= 8) break;
   }
@@ -2429,28 +2429,22 @@ document.getElementById('hot20-grid').addEventListener('click', function(e) {
 /* ===== PÉRIODE LABEL ===== */
 var FR_MONTHS_SHORT = {Jan:'janvier',Feb:'février',Mar:'mars',Apr:'avril',May:'mai',Jun:'juin',Jul:'juillet',Aug:'août',Sep:'septembre',Oct:'octobre',Nov:'novembre',Dec:'décembre'};
 
-/* Parse JSON label: "Apr 11 · 12-16 EDT" → {date, interval} en français */
-function parsePeriodLabel(label) {
-  var m = (label || '').match(/^([A-Za-z]+)\s+(\d+)\s*·\s*(\d+)-(\d+)/);
-  if (m) {
-    var month = FR_MONTHS_SHORT[m[1]] || m[1];
-    var day = parseInt(m[2], 10);
-    var h0 = m[3];
-    var h1 = m[4] === '0' ? 'minuit' : m[4] + 'h';
-    var year = allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear();
-    return { date: day + ' ' + month + ' ' + year, interval: 'Saillant entre ' + h0 + 'h et ' + h1 };
-  }
-  return parsePeriodKey(label);
+/* Libellé d'un bloc : sa date et son ÉDITION, l'heure où il sort (fin du bloc + 1 h), comme partout sur le
+   site : le bloc 15h-19h est « l'édition de 20h » (Adrien, 31 oct. 2026). Les clés sont en UTC. */
+function editionParts(key) {
+  var m = String(key || '').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})/);
+  if (!m) return null;
+  var t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4]) + 5 * 3600e3;
+  var d = new Date(t);
+  var h = +new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(d) % 24;
+  var date = new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  return { date: date, interval: 'édition de ' + (h === 0 ? 'minuit' : h === 12 ? 'midi' : h + 'h') };
 }
-
+function parsePeriodLabel(label) { return parsePeriodKey(label); }
 function parsePeriodKey(key) {
-  var parts = (key || '').split('_');
-  if (parts.length < 2) return { date: key, interval: '' };
-  var dp = parts[0].split('-');
-  var ip = parts[1].split('-');
-  var dateStr = parseInt(dp[2], 10) + ' ' + (FR_MONTHS[parseInt(dp[1], 10) - 1] || dp[1]) + ' ' + dp[0];
-  var h1 = ip[1] === '24' ? 'minuit' : ip[1] + 'h';
-  return { date: dateStr, interval: 'Saillant entre ' + ip[0] + 'h et ' + h1 };
+  var p = editionParts(key);
+  if (p) return p;
+  return { date: key, interval: '' };
 }
 
 /* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */

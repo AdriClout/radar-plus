@@ -798,6 +798,9 @@ body.has-site-bar .nav-toggle { display: none; }
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); z-index: 240;
 }
 .site-bar-dropdown.open .site-bar-dropdown-menu, .site-bar-dropdown.hoverable:hover .site-bar-dropdown-menu { display: flex; }
+/* Pont invisible entre le bouton et la liste : la souris peut descendre sans que le menu se ferme
+   (l'espace de 8 px le fermait ; Adrien, 31 oct. 2026). */
+.site-bar-dropdown-menu::before { content: ''; position: absolute; left: 0; right: 0; top: -12px; height: 12px; }
 /* « Accueil » : le bouton est un lien (va à l'accueil), le menu liste ses modules */
 .site-bar-home .site-bar-dropdown-btn { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .site-bar-home .site-bar-dropdown-menu { min-width: 200px; }

@@ -200,6 +200,10 @@
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') ddWraps.forEach(function(w) { setDropdown(w, false); }); });
     // Au clavier, le menu Accueil s'ouvre quand un de ses éléments a le focus.
     ddWraps.filter(function(w) { return w.classList.contains('hoverable'); }).forEach(function(w) {
+      // Délai de fermeture : un mouvement en diagonale qui sort une fraction de seconde ne ferme plus le menu.
+      var closeT = null;
+      w.addEventListener('mouseenter', function() { clearTimeout(closeT); ddWraps.forEach(function(o) { if (o !== w) setDropdown(o, false); }); setDropdown(w, true); });
+      w.addEventListener('mouseleave', function() { clearTimeout(closeT); closeT = setTimeout(function() { setDropdown(w, false); }, 300); });
       w.addEventListener('focusin', function() { setDropdown(w, true); });
       w.addEventListener('focusout', function() { setTimeout(function() { if (!w.contains(document.activeElement)) setDropdown(w, false); }, 0); });
     });

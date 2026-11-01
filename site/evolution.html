@@ -1517,11 +1517,13 @@
     if (nextBtn) nextBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx >= rankedSlots.length - 1 : currentIdx >= periods.length - 1;
   }
 
+  // Un bloc se nomme par son édition : l'heure où il sort (fin du bloc + 1 h). Le bloc 15h-19h est
+  // « l'édition de 20h », comme sur l'accueil et le Classement (Adrien, 31 oct. 2026).
   const FR_BLOCK_SHORT = {}, FR_BLOCK_LONG = {};
   for (let h = 0; h < 24; h++) {
-    const shortOf = x => (x === 0 ? 'Minuit' : x === 12 ? 'Midi' : x + 'h');
-    FR_BLOCK_SHORT[h] = shortOf(h);
-    FR_BLOCK_LONG[h] = shortOf(h) + '–' + shortOf((h + 4) % 24);
+    const ed = (h + 5) % 24;
+    FR_BLOCK_SHORT[h] = ed === 0 ? 'Minuit' : ed === 12 ? 'Midi' : ed + 'h';
+    FR_BLOCK_LONG[h] = 'édition de ' + (ed === 0 ? 'minuit' : ed === 12 ? 'midi' : ed + 'h');
   }
 
   function blockStartFromPeriod(period) {
@@ -2337,8 +2339,10 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
-    // Chaque édition nommée par sa plage (« 3h–7h »), centrée sous son bloc (Adrien, 31 oct. 2026).
-    const DAY_LABELS = ACTIVE_DAY_STARTS.map((st, i) => ({ h: i * 4 + 2, label: FR_BLOCK_LONG[st], align: 'center' }));
+    // Chaque point porte le nom de son édition (« 20h »), à la fin de son bloc.
+    const DAY_LABELS = [{ h: 0, label: 'Hier', align: 'left' }].concat(
+      ACTIVE_DAY_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[st], align: i === ACTIVE_DAY_STARTS.length - 1 ? 'right' : 'center' }))
+    );
     DAY_LABELS.forEach(({ h, label, align }) => {
       const x = xOfHour(h);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
@@ -2514,7 +2518,7 @@
     if (rankedGranularity === 'day') {
       if (period?.isVeille) return { major: 'Hier', minor: '' };
       const start = blockStartFromPeriod(period);
-      return { major: FR_BLOCK_LONG[start] ?? (String(start) + 'h'), minor: '' }; // l'édition par sa plage
+      return { major: FR_BLOCK_SHORT[start] ?? (String(start) + 'h'), minor: '' }; // l'édition par son heure de sortie
     }
 
     const dateStr = periodDisplayDate(period);

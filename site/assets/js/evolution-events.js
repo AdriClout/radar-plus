@@ -63,10 +63,15 @@
     var opt = withYear ? { timeZone: 'America/Montreal', month: 'short', year: 'numeric' } : { timeZone: 'America/Montreal', month: 'short' };
     return new Intl.DateTimeFormat(lang === 'en' ? 'en-CA' : 'fr-CA', opt).format(new Date(t));
   }
+  // Une édition se nomme par son heure de sortie (fin du bloc de 4 h + 1 h), comme partout sur le site :
+  // le bloc 15h-19h sort à « l'édition de 20h » (Adrien, 31 oct. 2026). Jamais l'heure de début du bloc.
+  var EDITION_LAG = 5 * 3600e3;
+  function editionHour(h) { return (h + 5) % 24; }
+  function editionWord(h, lang) { return lang === 'en' ? (h === 0 ? 'midnight' : h === 12 ? 'noon' : h + 'h') + ' edition' : 'édition de ' + (h === 0 ? 'minuit' : h === 12 ? 'midi' : h + 'h'); }
   function whenLabel(key, lang) {
-    var t = periodStartUtc(key);
+    var t = periodStartUtc(key) + EDITION_LAG;
     var d = new Intl.DateTimeFormat(lang === 'en' ? 'en-CA' : 'fr-CA', { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(t));
-    return d + ' ' + hourLabel(localHourOfKey(key));
+    return d + ', ' + editionWord(editionHour(localHourOfKey(key)), lang);
   }
   function fmt(v) { return (Math.round(v * 10) / 10).toFixed(1); }
 
@@ -145,7 +150,7 @@
   function tickIndices(periods, gran, lang) {
     var n = periods.length, out = [];
     if (!n) return out;
-    if (gran === 'day') { for (var i = 0; i < n; i++) out.push({ i: i, label: hourLabel(periods[i].blockStart != null ? periods[i].blockStart : localHourOfKey(periods[i].key)) }); return out; }
+    if (gran === 'day') { for (var i = 0; i < n; i++) out.push({ i: i, label: hourLabel(editionHour(periods[i].blockStart != null ? periods[i].blockStart : localHourOfKey(periods[i].key))) }); return out; }
     var bucketOf = function (p) {
       var t = periodStartUtc(p.key), d = new Date(t);
       var local = new Date(t - mtlOffsetHours(d) * 3600e3);
