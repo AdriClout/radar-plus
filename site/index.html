@@ -835,6 +835,8 @@
     .week-nav { display: none; } /* remonter dans le temps : sur la page Classement, pas sur l'accueil (Adrien, 31 oct.) */
     .hot20-title { font-size: clamp(24px, 3.2vw, 37px); }
     .hot20-title .hot20-subtitle { font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 400; margin-top: 8px; }
+    .hot20-subtitle .sub-main { display: block; color: #e8f0ff; font-weight: 600; }
+    .hot20-subtitle .sub-detail { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
     .hot20-evolution-cta, .hot20-evolution-cta:hover { padding: 0; background: none; border: 0; box-shadow: none; transform: none; font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 600; color: #9dbcff; }
     .hot20-evolution-cta:hover { color: #fff; }
     .hot20-controls { grid-template-columns: 1fr auto; align-items: center; }
@@ -1723,8 +1725,26 @@ function renderHot20() {
   var nextBtn = document.getElementById('week-next');
   var subtitleEl = document.getElementById('hot20-subtitle');
 
-  // Update subtitle
-  subtitleEl.textContent = (window.t ? window.t('subtitle.' + currentGranularity) : '') || '';
+  // Sous-titre : la période exacte, comme le navigateur du Classement (Adrien, 31 oct. 2026) :
+  // « Semaine 44 · 26 oct. – 1 nov. 2026 » puis « Saillance cumulée depuis le 26 octobre 2026 ».
+  // Année et total : depuis la première date des données chargées (130 jours), jamais « 1er janvier ».
+  (function() {
+    var T = window.t || function(k) { return k; }, lang = (document.documentElement.lang || 'fr').slice(0, 2);
+    var u = window.RadarAune && window.RadarAune.util, slot0 = aggregatedSlots[currentSlotIdx];
+    var main = T('subtitle.' + currentGranularity) || '', detail = '';
+    if (u && slot0 && slot0.periodKeys && slot0.periodKeys.length) {
+      var loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+      var fmtDate = function(key) { return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(u.editionTime(key) + 12 * 3600e3)); };
+      var firstKey = slot0.periodKeys[0], lastKey = slot0.periodKeys[slot0.periodKeys.length - 1];
+      var map = { day: 'today', week: 'week', month: 'month' };
+      if (currentGranularity === '4h') { main = u.blockLabel(lastKey, lang); detail = T('hot20.sub_edition'); }
+      else if (currentGranularity === 'day') { main = u.navLabel('today', 0, lang, T); detail = T('hot20.sub_today', { n: slot0.periodKeys.length }); }
+      else if (map[currentGranularity]) { main = u.navLabel(map[currentGranularity], 0, lang, T); detail = u.navSub(map[currentGranularity], 0, lang, T); }
+      else if (currentGranularity === 'quarter') { main = u.navLabel('year', 0, lang, T); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_data_start'); }
+      else { main = T('subtitle.total'); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_days', { n: new Set(slot0.periodKeys.map(function(k) { return k.slice(0, 10); })).size }); }
+    }
+    subtitleEl.innerHTML = '<span class="sub-main">' + escapeHtml(main) + '</span>' + (detail ? '<span class="sub-detail">' + escapeHtml(detail) + '</span>' : '');
+  })();
 
   if (!aggregatedSlots.length) {
     grid.innerHTML = '<div class="hot20-empty">Données non disponibles</div>';

@@ -207,7 +207,11 @@
       "quarter": "an dernier",
       "total": ""
     },
-    "streak_first_tip": "En première position depuis {n} {grans} consécutifs."
+    "streak_first_tip": "En première position depuis {n} {grans} consécutifs.",
+    "sub_edition": "Saillance gagnée pendant cette édition de 4 heures",
+    "sub_data_start": "début des données chargées",
+    "sub_days": "{n} jours de données",
+    "sub_today": "Saillance cumulée depuis minuit · {n} éditions"
   },
   "constellation": {
     "title": "Constellation",

@@ -160,9 +160,10 @@
 .sal-tag:not(.band-aucune) { animation: aune-pulse 2.2s ease-in-out infinite; }
 .sal-tag.band-extreme { animation-duration: 1.4s; }
 @media (prefers-reduced-motion: reduce) { .sal-tag { animation: none; } }
-/* La colonne des points (étiquette sur deux lignes, nombre, barre, part) fait ~100 px : plancher des
-   rangées relevé pour qu'elle ne déborde jamais sur la rangée suivante (Adrien, 31 oct. 2026). */
-.aune-row { min-height: 120px; }
+/* Plancher des rangées = leur contenu (min-height auto d'un élément flex) : ni la colonne des points
+   (étiquette sur deux lignes, nombre, barre, part), ni la carte du rang 1 (illustration, titre sur
+   deux lignes, puces) ne peuvent déborder de leur rangée (Adrien, 31 oct. 2026). */
+.aune-row { min-height: auto; }
 .aune-row-score { align-self: center; }
 .sal-pop { position: fixed; z-index: 400; background: rgba(8,16,46,0.97); border: 1px solid rgba(120,170,255,0.4); border-radius: 10px; padding: 14px 16px 12px; box-shadow: 0 12px 40px rgba(0,0,20,0.6); font-family: var(--grotesk); color: #dbe6ff; text-align: left; }
 .sal-pop p { margin: 0 0 8px; }

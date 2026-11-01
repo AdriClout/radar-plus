@@ -207,7 +207,11 @@
       "quarter": "last year",
       "total": ""
     },
-    "streak_first_tip": "In first place for {n} consecutive {grans}."
+    "streak_first_tip": "In first place for {n} consecutive {grans}.",
+    "sub_edition": "Saliency gained during this 4-hour edition",
+    "sub_data_start": "start of the loaded data",
+    "sub_days": "{n} days of data",
+    "sub_today": "Saliency summed since midnight · {n} editions"
   },
   "constellation": {
     "title": "Constellation",
