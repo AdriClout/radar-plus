@@ -41,6 +41,7 @@ var cfg = {
   type: 'evenements',   // page Classement : 'evenements' (ce module) ou 'objets' (assets/js/objets.js)
   moreId: null,         // page Classement : bouton « Voir plus » (+50 rangs par clic) ; extra = rangs ajoutés
   extra: 0, moreStep: 50,
+  customFrom: null, customTo: null, // période personnalisée (Classement) : dates 'AAAA-MM-JJ', fin incluse
   table: false          // page Classement : table large avec les statistiques d'archive
 };
 var CHART_N = 20;      // « au classement » = dans le top 20 de la période (comme le Hot 20)
@@ -72,9 +73,31 @@ function mtlMidnightUtc(y, m, d) {
 function auneDayStart(t) { var q = mtlParts(new Date(t)); return mtlMidnightUtc(q.y, q.m, q.d); }
 // Fenêtre [début, fin[ en ms UTC d'une vue, décalée de `offset` périodes (0 = courante,
 // −1 = précédente…). Les bornes suivent l'heure de Montréal (jour, lundi, 1er du mois).
+// Périodes FIXES (Classement) : la campagne électorale québécoise 2026, du déclenchement (jeudi 27 août)
+// au scrutin (lundi 5 octobre) soirée électorale comprise, et la période choisie au calendrier.
+// offset −1 = la période de même durée juste avant (sert au mouvement), comme les autres vues.
+var AUNE_FIXED = { elecqc2026: ['2026-08-27', '2026-10-05'], custom: null };
+function auneIsFixed(range) { return Object.prototype.hasOwnProperty.call(AUNE_FIXED, range); }
+function auneFixedSpan(range) {
+  var span = range === 'custom' ? (cfg.customFrom && cfg.customTo ? [cfg.customFrom, cfg.customTo] : null) : AUNE_FIXED[range];
+  if (!span) return null;
+  var a = span[0].split('-').map(Number), b = span[1].split('-').map(Number);
+  var s = mtlMidnightUtc(a[0], a[1], a[2]), e = auneDayStart(mtlMidnightUtc(b[0], b[1], b[2]) + 36 * 3600e3); // fin incluse
+  return [s, e];
+}
+// « Hot 20 » : semaine, mois, année, élections, et une période choisie d'au moins 7 jours.
+function auneIsHot(range, offset) {
+  if (['week', 'month', 'year', 'elecqc2026'].indexOf(range) !== -1) return true;
+  if (range !== 'custom') return false;
+  var w = auneWindow(range, offset || 0); return w[1] - w[0] >= 7 * 86400e3 - 3 * 3600e3;
+}
 function auneWindow(range, offset) {
   offset = offset || 0;
   var now = Date.now(), p = mtlParts(new Date(now)), s, e;
+  if (auneIsFixed(range)) {
+    var fx = auneFixedSpan(range); if (!fx) return [now - 86400e3, now];
+    var len = fx[1] - fx[0]; return [fx[0] + offset * len, fx[1] + offset * len];
+  }
   if (range === 'today') { s = auneDayStart(auneDayStart(now) + offset * 86400e3 + 12 * 3600e3); e = auneDayStart(s + 36 * 3600e3); return [s, e]; }
   if (range === 'week') {
     var back = (p.wd + 6) % 7; // lundi = 0
@@ -405,13 +428,20 @@ function auneNavLabel(range, offset, lang, T) {
   }
   if (range === 'month') return fmt(w[0] + 12 * 3600e3, { month: 'long', year: 'numeric' });
   if (range === 'year') return fmt(w[0] + 12 * 3600e3, { year: 'numeric' });
+  if (auneIsFixed(range)) {
+    if (w[1] - w[0] <= 26 * 3600e3) return fmt(w[0] + 12 * 3600e3, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); // une seule journée
+    var span = fmt(w[0] + 12 * 3600e3, { day: 'numeric', month: 'short' }) + ' – ' + fmt(w[1] - 12 * 3600e3, { day: 'numeric', month: 'short', year: 'numeric' });
+    return range === 'elecqc2026' && !offset ? T('aune.elec_label') + ' · ' + span : span;
+  }
   return '';
 }
 // Deuxième ligne du navigateur : « Saillance cumulée depuis le 26 octobre 2026 » ou, pour
 // Dernières heures, « Indice 24h à cette édition ».
 function auneNavSub(range, offset, lang, T) {
   if (range === '24h') return T('classement.nav_sub_24h');
+  if (range === 'elecqc2026' && !offset) return T('classement.nav_sub_elec');
   var w = auneWindow(range, offset), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+  if (range === 'custom') { var f = function(t) { return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(t)); }; var nd = Math.round((w[1] - w[0]) / 86400e3); return nd <= 1 ? T('classement.nav_sub_custom_day') : T('classement.nav_sub_custom', { from: f(w[0] + 12 * 3600e3), to: f(w[1] - 12 * 3600e3), days: nd }); }
   var date = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(w[0] + 12 * 3600e3));
   return T('classement.nav_sub_cumul', { date: date });
 }
@@ -433,10 +463,10 @@ function auneMoreButton(nAll, shown, T) {
 // encore mise à jour à chaque édition.
 function auneNavStatus(cfg, T) {
   var el = document.getElementById(cfg.navId + '-status'); if (!el) return;
-  var final = cfg.offset < 0;
-  // « Hot 20 » seulement pour la semaine, le mois et l'année : il n'y a souvent pas vingt événements
-  // dans une journée (Adrien, 31 oct. 2026).
-  var hot = ['week', 'month', 'year'].indexOf(cfg.range) !== -1;
+  var final = cfg.offset < 0 || (auneIsFixed(cfg.range) && auneWindow(cfg.range, 0)[1] <= Date.now());
+  // « Hot 20 » : semaine, mois, année, élections, période d'au moins 7 jours ; pas un jour, qui compte
+  // souvent moins de vingt événements (Adrien, 31 oct. 2026).
+  var hot = auneIsHot(cfg.range, cfg.offset);
   el.textContent = T('classement.' + (hot ? 'hot20_' : '') + (final ? 'status_final' : 'status_live'));
   el.className = 'cl-nav-status ' + (final ? 'final' : 'live');
 }
@@ -678,8 +708,9 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
       '<td class="num">' + auneNumUnit(Math.round(c.sharePct || 0), '%') + '</td>' +
       '<td class="num">' + auneNumUnit((c.peak || 0).toFixed(1), T('aune.points')) + '<span class="sub">' + esc(auneWhen(c.peakKey, lang)) + '</span></td>' +
       '<td>' + esc(c.firstKey ? auneWhen(c.firstKey, lang) : '') + '</td>' +
+      (auneIsFixed(cfg.range) ? '<td class="num">—</td><td class="num">—</td>' :
       '<td class="num">' + auneNumUnit(stats.consec, auneUnitPeriod(cfg.range, stats.consec, T)) + '</td>' +
-      '<td class="num">' + auneNumUnit(stats.total, auneUnitPeriod(cfg.range, stats.total, T)) + '</td>' +
+      '<td class="num">' + auneNumUnit(stats.total, auneUnitPeriod(cfg.range, stats.total, T)) + '</td>') +
     '</tr>';
   }).join('');
   return auneTableWrap('<table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>', T);
@@ -810,6 +841,7 @@ function auneTopIds(region, range, offset) {
   var ids = {}; list.forEach(function(it) { ids[it.storyline] = true; }); return ids;
 }
 function auneChartStats(region, range) {
+  if (auneIsFixed(range)) return { stats: {}, tops: [] }; // « périodes d'affilée » : sans objet pour une période fixe
   var key = region + '|' + range + '|' + (auneLatestKey(eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null) || '');
   if (chartCache[key]) return chartCache[key];
   var tops = [], offset = 0, guard = 0;
@@ -857,6 +889,8 @@ function periodSlug(range, offset) {
   if (range === 'today') return 'jour-' + q.y + '-' + p(q.m) + '-' + p(q.d);
   if (range === 'week') return 'semaine-' + p(auneIsoWeek(w[0] + 12 * 3600e3)) + '-' + mtlParts(new Date(w[1] - 12 * 3600e3)).y;
   if (range === 'month') return 'mois-' + q.y + '-' + p(q.m);
+  if (range === 'elecqc2026') return 'elections-qc-2026';
+  if (range === 'custom') { var z = mtlParts(new Date(w[1] - 12 * 3600e3)); return 'du-' + q.y + '-' + p(q.m) + '-' + p(q.d) + '-au-' + z.y + '-' + p(z.m) + '-' + p(z.d); }
   return 'annee-' + q.y;
 }
 // Événement d'une histoire à un bloc donné, dans les fichiers du jour chargés (sinon null).
@@ -875,7 +909,7 @@ function exportData(n) {
   if (cfg.type === 'objets') return (window.RadarObjets && window.RadarObjets.exportData) ? window.RadarObjets.exportData(n) : null;
   if (!lastExport) return null;
   var T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang, region = x.region;
-  var hot = ['week', 'month', 'year'].indexOf(cfg.range) !== -1;
+  var hot = auneIsHot(cfg.range, cfg.offset), fixedFinal = auneIsFixed(cfg.range) && auneWindow(cfg.range, 0)[1] <= Date.now();
   var prevStart = x.is24h ? aunePrevEditionStart() : aunePrevWindow(cfg.range)[0];
   var rows = x.rows.slice(0, n || 20).map(function(c, i) {
     var band = x.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
@@ -887,9 +921,9 @@ function exportData(n) {
   });
   return { type: 'evenements', region: region, range: cfg.range, offset: cfg.offset, lang: lang, is24h: x.is24h, hot: hot, final: cfg.offset < 0,
     period: auneNavLabel(cfg.range, cfg.offset, lang, T), sub: auneNavSub(cfg.range, cfg.offset, lang, T),
-    status: T('classement.' + (hot ? 'hot20_' : '') + (cfg.offset < 0 ? 'status_final' : 'status_live')),
+    status: T('classement.' + (hot ? 'hot20_' : '') + (cfg.offset < 0 || fixedFinal ? 'status_final' : 'status_live')),
     nAll: x.rows.length, totalPoints: x.rows.reduce(function(m, c) { return m + (c.points || 0); }, 0), rows: rows,
-    slug: periodSlug(cfg.range, cfg.offset) };
+    slug: periodSlug(cfg.range, cfg.offset), from: cfg.customFrom, to: cfg.customTo };
 }
 function downloadCsv() {
   if (cfg.type === 'objets') { if (window.RadarObjets) window.RadarObjets.download(); return; }
@@ -935,6 +969,7 @@ function init(opts) {
   if (tabs) tabs.addEventListener('click', function(e) {
     var btn = e.target.closest('.aune-tab');
     if (!btn) return;
+    if (btn.dataset.range === 'custom' && !(cfg.customFrom && cfg.customTo)) return; // le formulaire de dates prend la main
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     cfg.range = btn.dataset.range; cfg.offset = 0; cfg.extra = 0;
@@ -965,5 +1000,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, exportData: exportData, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();

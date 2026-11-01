@@ -524,7 +524,9 @@
       "week": "This week",
       "month": "This month",
       "year": "This year",
-      "today": "Today"
+      "today": "Today",
+      "elecqc2026": "QC election 2026",
+      "custom": "Custom…"
     },
     "range_sub": {
       "24h": "The three stories dominating the front pages over the last 24 hours.",
@@ -548,7 +550,9 @@
       "week": "Points gained since Monday (sum of editions).",
       "month": "Points gained this month (sum of editions).",
       "year": "Points gained this year (sum of editions).",
-      "today": "Points gained since midnight (sum of editions)."
+      "today": "Points gained since midnight (sum of editions).",
+      "elecqc2026": "Points summed by edition during the election campaign, August 27 to October 5, 2026.",
+      "custom": "Points summed by edition over the chosen period."
     },
     "open_random": "Open one of the outlets that covered this front page (at random)",
     "title_from": {
@@ -589,28 +593,36 @@
       "today": "day",
       "week": "week",
       "month": "month",
-      "year": "year"
+      "year": "year",
+      "elecqc2026": "period",
+      "custom": "period"
     },
     "unit_many": {
       "24h": "editions",
       "today": "days",
       "week": "weeks",
       "month": "months",
-      "year": "years"
+      "year": "years",
+      "elecqc2026": "periods",
+      "custom": "periods"
     },
     "vs": {
       "24h": "prev. edition",
       "today": "yesterday",
       "week": "last week",
       "month": "last month",
-      "year": "last year"
+      "year": "last year",
+      "elecqc2026": "40 days before",
+      "custom": "prev. period"
     },
     "vs_prev": {
       "24h": "prev. edition",
       "today": "day before",
       "week": "prev. week",
       "month": "prev. month",
-      "year": "prev. year"
+      "year": "prev. year",
+      "elecqc2026": "prev. period",
+      "custom": "prev. period"
     },
     "art_info": "Illustration credit",
     "points_short": "pts",
@@ -657,8 +669,11 @@
       "today": "{pct}% of the radar today",
       "week": "{pct}% of the radar this week",
       "month": "{pct}% of the radar this month",
-      "year": "{pct}% of the radar this year"
-    }
+      "year": "{pct}% of the radar this year",
+      "elecqc2026": "{pct}% of the radar during the campaign",
+      "custom": "{pct}% of the radar over the period"
+    },
+    "elec_label": "2026 Quebec election"
   },
   "article_panel": {
     "current": "Current period",
@@ -675,7 +690,9 @@
       "today": "The stories that made the front pages since midnight, ranked by points summed by edition.",
       "week": "This week's Hot 20: the stories that made the front pages since Monday, ranked by points summed by edition.",
       "month": "This month's Hot 20: the stories that made the front pages this month, ranked by points summed by edition.",
-      "year": "This year's Hot 20: the stories that made the front pages this year, ranked by points summed by edition."
+      "year": "This year's Hot 20: the stories that made the front pages this year, ranked by points summed by edition.",
+      "elecqc2026": "The Hot 20 of the 2026 Quebec election campaign: from the writ (August 27) to election day (October 5), ranked by points summed by edition.",
+      "custom": "The stories of the chosen period, ranked by points summed by edition."
     },
     "title_accent_objects": "of objects",
     "header_object": "Object",
@@ -691,7 +708,9 @@
       "today": "The topics, actors and places on the front pages since midnight, ranked by points summed by edition.",
       "week": "The official Hot 20 of the week: the topics, actors and places on the front pages since Monday, ranked by points summed by edition.",
       "month": "This month's Hot 20: the topics, actors and places on the front pages this month, ranked by points summed by edition.",
-      "year": "This year's Hot 20: the topics, actors and places on the front pages this year, ranked by points summed by edition."
+      "year": "This year's Hot 20: the topics, actors and places on the front pages this year, ranked by points summed by edition.",
+      "elecqc2026": "The Hot 20 topics, actors and places of the 2026 Quebec election campaign, August 27 to October 5.",
+      "custom": "The topics, actors and places of the chosen period, ranked by points summed by edition."
     },
     "download": "Download (CSV)",
     "download_tip": "The displayed ranking, with its filters, as a CSV file readable in Excel",
@@ -725,7 +744,13 @@
       "foot_data": "Data: major media front pages photographed every ten minutes · full ranking and CSV: radarplus.org/classement",
       "foot_source": "© CLESSN · Université Laval",
       "foot_scan": "See the ranking online"
-    }
+    },
+    "nav_sub_elec": "From the writ (August 27) to election day (October 5), election night included",
+    "nav_sub_custom": "Points summed from {from} to {to} · {days} days",
+    "custom_from": "From",
+    "custom_to": "to",
+    "custom_apply": "Show",
+    "nav_sub_custom_day": "Points summed over the day's six editions"
   },
   "csv": {
     "rank": "rank",

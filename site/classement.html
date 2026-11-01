@@ -67,6 +67,12 @@
     .cl-download:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     .cl-count { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
     .cl-more { text-align: center; margin: 22px 0 8px; }
+    .aune-tab.cl-tab-elec { color: #ffd98a; } .aune-tab.cl-tab-elec.active { background: rgba(255,200,87,0.18); color: #ffe7b0; }
+    .aune-tabs { flex-wrap: wrap; justify-content: flex-end; }
+    .cl-custom { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(10,18,50,0.7); font-family: var(--grotesk); font-size: 13px; color: var(--muted); }
+    .cl-custom[hidden] { display: none; }
+    .cl-custom input { font-family: var(--grotesk); font-size: 13px; color: #e8f0ff; background: rgba(5,10,30,0.9); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; color-scheme: dark; }
+    .cl-custom button { font-family: var(--grotesk); font-size: 13px; font-weight: 700; color: #fff; background: rgba(40,70,160,0.35); border: 1px solid rgba(120,170,255,0.5); border-radius: 6px; padding: 6px 14px; cursor: pointer; }
     .cl-more button { font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); cursor: pointer; }
     .cl-more button:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     @media (max-width: 760px) { #wrap { padding: 16px 16px calc(var(--ticker-height) + 40px); } .aune-head > div:first-child { flex: 0 0 auto; } .cl-nav { margin-right: 0; width: 100%; justify-content: space-between; } .cl-nav-block { min-width: 0; } .cl-nav-label { white-space: normal; } }
@@ -97,7 +103,15 @@
         <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
         <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
         <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
+        <button type="button" class="aune-tab cl-tab-elec" data-range="elecqc2026" data-i18n="aune.range.elecqc2026">Élections QC 2026</button>
+        <button type="button" class="aune-tab cl-tab-custom" data-range="custom" id="cl-custom-btn" data-i18n="aune.range.custom">Période…</button>
       </div>
+      <!-- Période personnalisée : deux dates, fin incluse ; le classement additionne les points de chaque édition de la période (Adrien, 31 oct. 2026) -->
+      <form class="cl-custom" id="cl-custom" hidden>
+        <label><span data-i18n="classement.custom_from">Du</span> <input type="date" id="cl-from" min="2026-07-15" required></label>
+        <label><span data-i18n="classement.custom_to">au</span> <input type="date" id="cl-to" min="2026-07-15" required></label>
+        <button type="submit" data-i18n="classement.custom_apply">Afficher</button>
+      </form>
     </div>
   </div>
   <div class="cl-toolbar">
@@ -159,6 +173,9 @@
   var q = new URLSearchParams(window.location.search);
   var range = q.get('range'), country = q.get('country'), type = q.get('type') === 'objets' ? 'objets' : 'evenements';
   var offset = Math.min(0, parseInt(q.get('offset'), 10) || 0); // ?offset=-1 : la période précédente (code QR de l'image officielle)
+  var isoOk = function(v) { return /^\d{4}-\d{2}-\d{2}$/.test(v || ''); };
+  var from = isoOk(q.get('from')) ? q.get('from') : null, to = isoOk(q.get('to')) ? q.get('to') : null;
+  if (range === 'custom' && !(from && to && from <= to)) range = null; // ?range=custom&from=AAAA-MM-JJ&to=AAAA-MM-JJ
   var tabs = document.getElementById('aune-tabs'), countries = document.getElementById('aune-country-tabs');
   if (range && tabs.querySelector('[data-range="' + range + '"]')) {
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.range === range); });
@@ -168,12 +185,40 @@
     countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.country === country); });
   } else country = 'QC';
   window.RadarAune.init({
-    limits: { '24h': 20, today: 20, week: 20, month: 20, year: 20 }, // Hot 20, événements et objets (Adrien, 31 oct. 2026) ; la recherche fouille toute la liste
+    limits: { '24h': 20, today: 20, week: 20, month: 20, year: 20, elecqc2026: 20, custom: 20 }, // Hot 20, événements et objets (Adrien, 31 oct. 2026) ; la recherche fouille toute la liste
     proportionalMax: 0, // jamais de hauteur proportionnelle ni d'illustration : liste serrée
     searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav', table: true, moreId: 'cl-more',
     subtitleKeys: 'classement.range_sub.',
-    range: range, country: country, type: type, offset: offset
+    range: range, country: country, type: type, offset: offset, customFrom: from, customTo: to
   });
+  // Période personnalisée : le bouton ouvre deux dates ; « Afficher » classe la période, fin incluse.
+  // L'adresse garde la vue (?range=…&from=…&to=…) pour qu'on puisse la partager.
+  var form = document.getElementById('cl-custom'), fromIn = document.getElementById('cl-from'), toIn = document.getElementById('cl-to');
+  var today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montreal' });
+  fromIn.max = today; toIn.max = today;
+  fromIn.value = from || '2026-08-27'; toIn.value = to || today;
+  function syncUrl() {
+    var c = window.RadarAune.cfg;
+    try { var u = new URL(location.href); u.searchParams.set('range', c.range); u.searchParams.set('country', c.country); u.searchParams.set('type', c.type);
+      if (c.range === 'custom') { u.searchParams.set('from', c.customFrom); u.searchParams.set('to', c.customTo); } else { u.searchParams.delete('from'); u.searchParams.delete('to'); }
+      u.searchParams.delete('offset'); history.replaceState(null, '', u.toString()); } catch (e) { /* ignore */ }
+  }
+  tabs.addEventListener('click', function(e) {
+    var b = e.target.closest('.aune-tab'); if (!b) return;
+    if (b.dataset.range === 'custom') { form.hidden = false; if (!window.RadarAune.cfg.customFrom) { fromIn.focus(); } }
+    else form.hidden = true;
+    setTimeout(syncUrl, 0);
+  }, true);
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var a = fromIn.value, z = toIn.value; if (!isoOk(a) || !isoOk(z)) return;
+    if (a > z) { var t = a; a = z; z = t; fromIn.value = a; toIn.value = z; }
+    var c = window.RadarAune.cfg; c.customFrom = a; c.customTo = z; c.range = 'custom'; c.offset = 0; c.extra = 0;
+    tabs.querySelectorAll('.aune-tab').forEach(function(x) { x.classList.toggle('active', x.dataset.range === 'custom'); });
+    window.RadarAune.render(); syncUrl();
+  });
+  if (range === 'custom') form.hidden = false;
+  document.getElementById('aune-country-tabs').addEventListener('click', function() { setTimeout(syncUrl, 0); });
   // Événements ou objets : même grille, même navigateur, même filtre ; le titre et la
   // région (États-Unis seulement pour les objets) suivent.
   var typeBtns = document.querySelectorAll('.cl-type button'), accent = document.getElementById('cl-title-accent');
@@ -188,7 +233,7 @@
     }
     window.RadarAune.render();
   }
-  typeBtns.forEach(function(b) { b.addEventListener('click', function() { applyType(b.dataset.type); }); });
+  typeBtns.forEach(function(b) { b.addEventListener('click', function() { applyType(b.dataset.type); syncUrl(); }); });
   document.getElementById('cl-download').addEventListener('click', function() { window.RadarAune.download(); });
   document.getElementById('cl-download-png').addEventListener('click', function() { window.RadarClassementPng.download(); });
   if (type === 'objets') applyType('objets');

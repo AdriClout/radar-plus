@@ -18,7 +18,7 @@
     return t.replace(/\s+$/, '') + '…';
   }
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-  function url(d) { return SITE + '/classement?type=' + d.type + '&range=' + d.range + '&country=' + d.region + (d.offset < 0 ? '&offset=' + d.offset : ''); }
+  function url(d) { return SITE + '/classement?type=' + d.type + '&range=' + d.range + '&country=' + d.region + (d.offset < 0 ? '&offset=' + d.offset : '') + (d.range === 'custom' && d.from && d.to ? '&from=' + d.from + '&to=' + d.to : ''); }
   function stats(d) {
     var lang = d.lang, out = [];
     var top3 = d.rows.slice(0, 3).reduce(function (m, r) { return m + (r.sharePct || 0); }, 0);
@@ -74,7 +74,7 @@
     ctx.fillText(T('classement.png.generated', { date: new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date()) }), W - PAD, 90);
     ctx.textAlign = 'left';
     // titre, période
-    var title = T('classement.png.' + (d.type === 'objets' ? (d.hot ? 'title_objects_hot' : 'title_objects') : (d.hot ? 'title_events_hot' : 'title_events')));
+    var title = T('classement.png.' + (d.type === 'objets' ? (d.hot ? 'title_objects_hot' : 'title_objects') : (d.hot ? 'title_events_hot' : 'title_events'))) + (d.range === 'elecqc2026' ? ' · ' + T('aune.range.elecqc2026') : '');
     ctx.font = '700 40px "Space Grotesk"'; ctx.fillStyle = '#f1f5ff'; ctx.fillText(title, PAD, 170);
     ctx.font = '600 20px "Space Grotesk"'; ctx.fillStyle = '#dbe6ff'; ctx.fillText(d.period + ' · ' + T('country.' + d.region), PAD, 206);
     ctx.font = '400 14px "Space Grotesk"'; ctx.fillStyle = 'rgba(150,178,225,0.95)'; ctx.fillText(d.sub, PAD, 230);

@@ -524,7 +524,9 @@
       "week": "Cette semaine",
       "month": "Ce mois-ci",
       "year": "Cette année",
-      "today": "Aujourd'hui"
+      "today": "Aujourd'hui",
+      "elecqc2026": "Élections QC 2026",
+      "custom": "Période…"
     },
     "range_sub": {
       "24h": "Les trois histoires qui dominent les Unes des 24 dernières heures.",
@@ -548,7 +550,9 @@
       "week": "Points gagnés depuis lundi (somme des éditions).",
       "month": "Points gagnés ce mois-ci (somme des éditions).",
       "year": "Points gagnés cette année (somme des éditions).",
-      "today": "Points gagnés depuis minuit (somme des éditions)."
+      "today": "Points gagnés depuis minuit (somme des éditions).",
+      "elecqc2026": "Points cumulés par édition pendant la campagne électorale, du 27 août au 5 octobre 2026.",
+      "custom": "Points cumulés par édition sur la période choisie."
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
     "title_from": {
@@ -589,28 +593,36 @@
       "today": "jour",
       "week": "semaine",
       "month": "mois",
-      "year": "année"
+      "year": "année",
+      "elecqc2026": "période",
+      "custom": "période"
     },
     "unit_many": {
       "24h": "éditions",
       "today": "jours",
       "week": "semaines",
       "month": "mois",
-      "year": "années"
+      "year": "années",
+      "elecqc2026": "périodes",
+      "custom": "périodes"
     },
     "vs": {
       "24h": "édition préc.",
       "today": "hier",
       "week": "sem. dernière",
       "month": "mois dernier",
-      "year": "an dernier"
+      "year": "an dernier",
+      "elecqc2026": "40 jours avant",
+      "custom": "période préc."
     },
     "vs_prev": {
       "24h": "édition préc.",
       "today": "veille",
       "week": "sem. préc.",
       "month": "mois préc.",
-      "year": "an préc."
+      "year": "an préc.",
+      "elecqc2026": "période préc.",
+      "custom": "période préc."
     },
     "art_info": "Crédit de l'illustration",
     "points_short": "pts",
@@ -657,8 +669,11 @@
       "today": "{pct} % du radar aujourd'hui",
       "week": "{pct} % du radar cette semaine",
       "month": "{pct} % du radar ce mois-ci",
-      "year": "{pct} % du radar cette année"
-    }
+      "year": "{pct} % du radar cette année",
+      "elecqc2026": "{pct} % du radar pendant la campagne",
+      "custom": "{pct} % du radar sur la période"
+    },
+    "elec_label": "Élections québécoises 2026"
   },
   "article_panel": {
     "current": "Période courante",
@@ -675,7 +690,9 @@
       "today": "Les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition.",
       "week": "Le Hot 20 de la semaine : les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
       "month": "Le Hot 20 du mois : les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
-      "year": "Le Hot 20 de l'année : les histoires qui ont fait les Unes cette année, classées par points cumulés par édition."
+      "year": "Le Hot 20 de l'année : les histoires qui ont fait les Unes cette année, classées par points cumulés par édition.",
+      "elecqc2026": "Le Hot 20 de la campagne électorale québécoise 2026 : du déclenchement (27 août) au scrutin (5 octobre), classé par points cumulés par édition.",
+      "custom": "Les histoires de la période choisie, classées par points cumulés par édition."
     },
     "title_accent_objects": "des objets",
     "header_object": "Objet",
@@ -691,7 +708,9 @@
       "today": "Les sujets, acteurs et lieux en Une depuis minuit, classés par points cumulés par édition.",
       "week": "Le Hot 20 officiel de la semaine : les sujets, acteurs et lieux en Une depuis lundi, classés par points cumulés par édition.",
       "month": "Le Hot 20 du mois : les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
-      "year": "Le Hot 20 de l'année : les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition."
+      "year": "Le Hot 20 de l'année : les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition.",
+      "elecqc2026": "Le Hot 20 des sujets, acteurs et lieux de la campagne électorale québécoise 2026, du 27 août au 5 octobre.",
+      "custom": "Les sujets, acteurs et lieux de la période choisie, classés par points cumulés par édition."
     },
     "download": "Télécharger (CSV)",
     "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel",
@@ -725,7 +744,13 @@
       "foot_data": "Données : Unes des grands médias photographiées toutes les dix minutes · classement complet et CSV : radarplus.org/classement",
       "foot_source": "© CLESSN · Université Laval",
       "foot_scan": "Voir le classement en ligne"
-    }
+    },
+    "nav_sub_elec": "Du déclenchement (27 août) au scrutin (5 octobre), soirée électorale comprise",
+    "nav_sub_custom": "Points cumulés du {from} au {to} · {days} jours",
+    "custom_from": "Du",
+    "custom_to": "au",
+    "custom_apply": "Afficher",
+    "nav_sub_custom_day": "Points cumulés des six éditions de la journée"
   },
   "csv": {
     "rank": "rang",

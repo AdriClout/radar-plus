@@ -153,8 +153,8 @@
             '<a href="./indices.html" data-page="indices.html" data-i18n="nav.indices">Les indices de saillance</a>' +
           '</div>' +
         '</div>' +
-        // Tout ce qui restait dans l'ancien tiroir : menu déroulant vers le bas.
-        '<div class="site-bar-dropdown">' +
+        // Tout ce qui restait dans l'ancien tiroir : menu déroulant vers le bas, au survol comme les autres.
+        '<div class="site-bar-dropdown hoverable">' +
           '<button type="button" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
             '<span data-i18n="nav.section_about">À propos</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
           '</button>' +
@@ -193,7 +193,8 @@
     }
     ddWraps.forEach(function(wrap) {
       var b = wrap.querySelector('.site-bar-dropdown-btn');
-      if (!b || wrap.classList.contains('hoverable')) return;
+      // Un bouton (« À propos ») s'ouvre aussi au clic, pour les écrans tactiles ; un lien (« Accueil ») mène à sa page.
+      if (!b || (wrap.classList.contains('hoverable') && b.tagName === 'A')) return;
       b.addEventListener('click', function(e) { e.stopPropagation(); setDropdown(wrap, !wrap.classList.contains('open')); });
     });
     document.addEventListener('click', function(e) { ddWraps.forEach(function(w) { if (!w.contains(e.target)) setDropdown(w, false); }); });

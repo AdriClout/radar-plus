@@ -61,6 +61,7 @@ function topIds(graphs, allKeys, range, offset, u) {
   return ids;
 }
 function chartStats(graphs, allKeys, range, country, u) {
+  if (u.isFixed && u.isFixed(range)) return { tops: [], total: {} }; // sans objet pour une période fixe
   var key = country + '|' + range + '|' + (allKeys[allKeys.length - 1] || '');
   if (chartCache[key]) return chartCache[key];
   var firstT = allKeys.length ? u.periodStartUtc(allKeys[0]) : Date.now();
@@ -99,8 +100,9 @@ function tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotal
       '<td class="num">' + u.numUnit(Math.round(100 * it.points / total), '%') + '</td>' +
       '<td class="num">' + u.numUnit((allTotal[it.id] || 0).toFixed(1), T('aune.points')) + '</td>' +
       '<td class="num">' + u.numUnit(it.blocks, T(it.blocks === 1 ? 'aune.unit_one.24h' : 'aune.unit_many.24h')) + '</td>' +
+      (u.isFixed(cfg.range) ? '<td class="num">—</td><td class="num">—</td>' :
       '<td class="num">' + u.numUnit(st.consec, u.unitPeriod(cfg.range, st.consec, T)) + '</td>' +
-      '<td class="num">' + u.numUnit(st.total, u.unitPeriod(cfg.range, st.total, T)) + '</td>' +
+      '<td class="num">' + u.numUnit(st.total, u.unitPeriod(cfg.range, st.total, T)) + '</td>') +
     '</tr>';
   }).join('');
   return u.tableWrap('<table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>', T);
@@ -171,7 +173,7 @@ function stripHtml(h) { var d = document.createElement('div'); d.innerHTML = h |
 function exportData(n) {
   if (!lastExport) return null;
   var cfg = window.RadarAune.cfg, u = window.RadarAune.util;
-  var T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang, hot = ['week', 'month', 'year'].indexOf(cfg.range) !== -1;
+  var T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang, hot = u.isHot(cfg.range, cfg.offset), fixedFinal = u.isFixed(cfg.range) && u.window(cfg.range, 0)[1] <= Date.now();
   var limit = (cfg.limits[cfg.range] || 10) + (cfg.extra || 0);
   var rows = x.rows.slice(0, n || 20).map(function(it, i) {
     var band = LEVEL_BAND[it.level] || 'aucune', rank = it.rank || (i + 1);
@@ -181,8 +183,8 @@ function exportData(n) {
   });
   return { type: 'objets', region: x.country, range: cfg.range, offset: cfg.offset, lang: lang, is24h: cfg.range === '24h', hot: hot, final: cfg.offset < 0,
     period: u.navLabel(cfg.range, cfg.offset, lang, T), sub: u.navSub(cfg.range, cfg.offset, lang, T),
-    status: T('classement.' + (hot ? 'hot20_' : '') + (cfg.offset < 0 ? 'status_final' : 'status_live')),
-    nAll: x.rows.length, totalPoints: x.total || 0, rows: rows, slug: u.periodSlug(cfg.range, cfg.offset) };
+    status: T('classement.' + (hot ? 'hot20_' : '') + (cfg.offset < 0 || fixedFinal ? 'status_final' : 'status_live')),
+    nAll: x.rows.length, totalPoints: x.total || 0, rows: rows, slug: u.periodSlug(cfg.range, cfg.offset), from: cfg.customFrom, to: cfg.customTo };
 }
 function download() {
   if (!lastExport) return;
