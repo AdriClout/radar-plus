@@ -862,8 +862,7 @@
     .hot20-row-name-wrap .hot20-row-name { flex: 0 1 auto; }
     .hot20-row-streak { font-family: var(--grotesk); font-size: 12.5px; margin: 0 0 0 12px; white-space: nowrap; flex: 0 0 auto; }
     .hot20-row-pct strong { font-size: 17px; }
-    .hot20-row-increase, .hot20-row-total { font-size: 11px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
-    .hot20-row-increase strong { color: #4ade80; }
+    .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
     /* Colonne « articles » retirée de l'accueil (Adrien, 31 oct.) ; le compte reste dans l'info-bulle du sujet. */
     .hot20-row-media, .hot20-list-header span:last-child { display: none; }
     .hot20-list-header, .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 210px; }
@@ -985,7 +984,7 @@
     </div>
   </div>
   <div class="aune-grid view-list" id="aune-grid"></div>
-  <div class="aune-foot"><span id="aune-foot"></span><span class="aune-foot-links"><a href="./classement.html" id="aune-see-all" data-i18n="aune.see_all">Voir tout le classement →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></span></div>
+  <div class="aune-foot"><span id="aune-foot"></span><span class="aune-foot-links"><a href="./classement.html" id="aune-see-all" data-i18n="aune.see_all">Voir tout le classement →</a><a href="./indices.html" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></span></div>
 </section>
 
 <!-- ========== HOT 20 ========== -->
@@ -1028,13 +1027,13 @@
   <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
   </div>
-  <div class="hot20-more"><a href="./classement.html?type=objets" id="hot20-more-link" data-i18n="hot20.see_more">Voir plus →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
+  <div class="hot20-more"><a href="./classement.html?type=objets" id="hot20-more-link" data-i18n="hot20.see_more">Voir plus →</a><a href="./indices.html" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
 </div>
 <!-- Barre sous les modules : le lien méthodo à gauche, les points (un par module visible, flèches de
      part et d'autre, clavier ← →) au centre, le bouton vers le classement (du module affiché) à droite. Les pieds des modules restent dans la page pour le mobile (Adrien, 1er nov. 2026). -->
 <div class="top-bar" id="top-bar">
-  <a class="top-bar-link methodo-how" href="./methodologie.html#indice-de-saillance-absolu" data-i18n="aune.how">Comment l'indice est calculé →</a>
+  <a class="top-bar-link methodo-how" href="./indices.html" data-i18n="aune.how">Comment l'indice est calculé →</a>
   <div class="top-dots" id="top-dots" data-i18n-aria-label="hero.panels_aria" aria-label="Modules de l'accueil">
     <button type="button" class="top-arrow" data-dir="-1" data-i18n-aria-label="hero.panel_prev" aria-label="Module précédent">&#8249;</button>
     <button type="button" class="top-dot active" data-panel="0" data-i18n-aria-label="hero.panel_aune" aria-label="La Une des Unes"></button>
@@ -1094,6 +1093,73 @@
       .observe(p, { attributes: true, attributeFilter: ['hidden'] });
   });
   sync();
+
+  /* ── Rotation automatique (Adrien, 1er nov. 2026) : après 20 s sans geste (souris, clavier,
+     molette, toucher, défilement), le carrousel passe au module suivant et y avance le filtre de
+     période ; quand la période a fait le tour, le pays avance. Rien ne bouge si l'onglet est
+     caché, si le visiteur a défilé sous le carrousel, ou sur mobile (modules empilés). ── */
+  var IDLE_MS = 20000, idleTimer = null, lastInput = Date.now();
+  function armIdle() { lastInput = Date.now(); clearTimeout(idleTimer); idleTimer = setTimeout(autoTick, IDLE_MS); }
+  function carouselInView() {
+    var r = track.getBoundingClientRect(); return r.bottom > 120 && r.top < window.innerHeight - 120;
+  }
+  function nextTab(list) {
+    var tabs = Array.prototype.slice.call(list).filter(function (t) { return !t.hidden && t.offsetParent !== null; });
+    var i = tabs.findIndex(function (t) { return t.classList.contains('active'); });
+    if (tabs.length < 2) return false;
+    var wrapped = i >= tabs.length - 1;
+    tabs[wrapped ? 0 : i + 1].click();
+    return wrapped;
+  }
+  function advanceFilters(panel) {
+    if (!panel) return;
+    var wrapped = nextTab(panel.querySelectorAll('.aune-tab, .granularity-tab'));
+    if (wrapped) nextTab(panel.querySelectorAll('.country-tab'));
+  }
+  function autoTick() {
+    if (!document.hidden && horizontal() && carouselInView()) {
+      var ps = shown(); if (ps.length) { var next = (cur + 1) % ps.length; advanceFilters(ps[next]); goTo(next); }
+    }
+    if (reloadPending && Date.now() - lastInput >= IDLE_MS) { location.reload(); return; }
+    idleTimer = setTimeout(autoTick, IDLE_MS);
+  }
+  ['mousemove', 'mousedown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach(function (ev) {
+    window.addEventListener(ev, armIdle, { passive: true });
+  });
+  document.addEventListener('visibilitychange', armIdle);
+  armIdle();
+
+  /* ── Nouvelles données : toutes les 5 min, relire les deux petits fichiers « latest » (objets et
+     événements) ; s'ils ont changé (nouvelle édition), recharger la page dès 20 s sans geste, pour
+     ne pas couper un visiteur en train de lire (Adrien, 1er nov. 2026). ── */
+  var reloadPending = false, baseline = {}, WATCH_MS = 5 * 60000;
+  var watched = ['v2/latest.json', 'v2/events/latest.json'];
+  function fingerprint(name) {
+    if (!window.radarDataUrl) return Promise.resolve(null);
+    return fetch(window.radarDataUrl(name) + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (txt) {
+        if (txt === null) return null;
+        // Empreinte = les clés d'édition par pays (une nouvelle édition = une nouvelle clé) ; sinon generated_at
+        try {
+          var j = JSON.parse(txt), by = j.by_country || j.by_region || {}, keys = Object.keys(by).sort().map(function (c) { return by[c] && by[c].period ? by[c].period.key : ''; }).join('|');
+          if (keys.replace(/\|/g, '')) return keys;
+          if (j.generated_at) return String(j.generated_at);
+        } catch (e) {}
+        return txt.length + ':' + txt.slice(0, 2000);
+      })
+      .catch(function () { return null; });
+  }
+  function watchData(first) {
+    watched.forEach(function (name) {
+      fingerprint(name).then(function (fp) {
+        if (fp === null) return;
+        if (first || !baseline[name]) { baseline[name] = fp; return; }
+        if (fp !== baseline[name]) { reloadPending = true; if (Date.now() - lastInput >= IDLE_MS && !document.hidden) location.reload(); }
+      });
+    });
+  }
+  setTimeout(function () { watchData(true); setInterval(function () { watchData(false); }, WATCH_MS); }, 15000);
 })();
 </script>
 
@@ -1631,10 +1697,10 @@ function getArticlesFor(country, periodKey, nodeId, fallback) {
 var allPeriods = [];
 var currentCountry = 'QC';
 
-// Liens « Comment l'indice est calculé » → § 5.2 de la méthodologie (indice v1, par objet et par événement) ; ancre EN propre.
+// Liens « Comment l'indice est calculé » → la page « Les indices de saillance » (indices.html, même adresse
+// dans les deux langues ; Adrien, 1er nov. 2026). Avant : § 5.2 de la méthodologie.
 function setMethodoAnchors() {
-  var en = (document.documentElement.lang || 'fr').slice(0, 2) === 'en';
-  document.querySelectorAll('a.methodo-how').forEach(function(a) { a.setAttribute('href', './methodologie.html#' + (en ? 'en-indice-absolu' : 'indice-de-saillance-absolu')); });
+  document.querySelectorAll('a.methodo-how').forEach(function(a) { a.setAttribute('href', './indices.html'); });
 }
 document.addEventListener('i18n:applied', setMethodoAnchors);
 setMethodoAnchors();
@@ -2182,12 +2248,8 @@ function renderHot20() {
         '</div>' +
         '<div class="hot20-row-score">' +
           '<div class="hot20-row-pct">' +
-            // Le chiffre qui classe (l'augmentation de la période) en gros et en vert, le total depuis
-            // le début en petit à sa droite ; « Depuis le début » : le total seul (Adrien, 1er nov. 2026).
-            (currentGranularity === 'total'
-              ? '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '"><strong>' + totalStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>'
-              : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '."><strong>' + increaseStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>' +
-                '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '">' + totalStr + ' ' + escapeHtml(T('hot20.total_label')) + '</span>') +
+            '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '"><strong>' + totalStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>' +
+            (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
           '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T(currentSlotIdx === aggregatedSlots.length - 1 ? 'hot20.share_label_gran.' + currentGranularity : 'hot20.share_label', { pct: pct })) + '</div>' +
