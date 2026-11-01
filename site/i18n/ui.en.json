@@ -109,7 +109,7 @@
     "partenaires": "Partners and contributors",
     "acces_donnees": "Data access",
     "sonar": "SONAR",
-    "statistiques": "Per-object statistics",
+    "statistiques": "Statistics",
     "methodologie": "Methodology",
     "radarplus": "Radar+"
   },
@@ -668,14 +668,18 @@
     "region_QC": "Quebec",
     "region_CAN": "Canada",
     "loading": "Loading…",
-    "type_objects": "Objects",
-    "type_events": "Events",
+    "type_objects": "an object (topic, actor, place)",
+    "type_events": "an event (a story)",
     "search_placeholder": "Search an event (a word from the title or theme)…",
     "search_empty": "Search an event to show its profile.",
     "search_none": "No event matches.",
     "search_hint": "Examples: cyclist, Carney, budget, strike.",
-    "page_title_events": "Statistics by event",
-    "page_lead_events": "Search an event to show its profile: index per edition, peak, front pages and outlets.",
-    "no_usa": "No events for the United States: the American panel has only two outlets. Quebec or Canada."
+    "page_title_events": "Statistics",
+    "page_lead_events": "An object or an event: its path through the front pages, edition by edition.",
+    "no_usa": "No events for the United States: the American panel has only two outlets. Quebec or Canada.",
+    "type_label": "I'm looking for"
+  },
+  "stats": {
+    "lead": "An object or an event: its path through the front pages, edition by edition."
   }
 }

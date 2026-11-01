@@ -21,9 +21,9 @@ var FALLBACK = {
   'fiche.title_peak': "Titre au sommet", 'fiche.in_ranking': "Voir dans le classement →", 'fiche.not_found': "Événement introuvable dans les données publiées.",
   'fiche.band_aucune': "Sous le radar", 'fiche.band_faible': "Saillance faible", 'fiche.band_moderee': "Saillance modérée", 'fiche.band_elevee': "Saillance élevée", 'fiche.band_tres_elevee': "Saillance très élevée", 'fiche.band_extreme': "Saillance extrême",
   'fiche.region_QC': "Québec", 'fiche.region_CAN': "Canada", 'fiche.loading': "Chargement…",
-  'fiche.type_objects': "Objets", 'fiche.type_events': "Événements", 'fiche.search_placeholder': "Rechercher un événement (un mot du titre ou du thème)…",
+  'fiche.type_label': "Je cherche", 'fiche.type_objects': "un objet (sujet, acteur, lieu)", 'fiche.type_events': "un événement (une histoire)", 'fiche.search_placeholder': "Rechercher un événement (un mot du titre ou du thème)…",
   'fiche.search_empty': "Recherchez un événement pour afficher sa fiche.", 'fiche.search_none': "Aucun événement ne correspond.", 'fiche.search_hint': "Exemples : cycliste, Carney, budget, grève.",
-  'fiche.page_title_events': "Statistiques par événement", 'fiche.page_lead_events': "Recherchez un événement pour afficher sa fiche : indice par édition, sommet, Unes et médias.",
+  'fiche.page_title_events': "Statistiques", 'fiche.page_lead_events': "Un événement : son parcours dans les Unes, édition par édition.",
   'fiche.no_usa': "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada."
 };
 var u = window.RadarAune && window.RadarAune.util;
@@ -68,11 +68,12 @@ function pageRegion() {
 }
 function mountSearch() {
   var main = mainEl(); if (!main) return;
-  var title = main.querySelector('section.panel .panel-title');
-  if (title && !document.querySelector('.ev-type')) {
-    var tog = document.createElement('div'); tog.className = 'ev-type';
-    tog.innerHTML = '<button type="button" data-type="objets" class="active">' + esc(T('fiche.type_objects')) + '</button><button type="button" data-type="evenements">' + esc(T('fiche.type_events')) + '</button>';
-    title.appendChild(tog);
+  var panel = main.querySelector('section.panel');
+  if (panel && !document.querySelector('.ev-type')) {
+    // Le choix vient en premier, en grand : « Je cherche : [un objet] [un événement] »
+    var tog = document.createElement('div'); tog.className = 'ev-type-row';
+    tog.innerHTML = '<span class="ev-type-label">' + esc(T('fiche.type_label')) + '</span><div class="ev-type"><button type="button" data-type="objets" class="active">' + esc(T('fiche.type_objects')) + '</button><button type="button" data-type="evenements">' + esc(T('fiche.type_events')) + '</button></div>';
+    panel.insertBefore(tog, panel.firstChild);
     tog.addEventListener('click', function(e) { var b = e.target.closest('button'); if (b) setMode(b.dataset.type); });
   }
   var stack = main.querySelector('.search-stack > div');

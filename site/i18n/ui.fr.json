@@ -109,7 +109,7 @@
     "partenaires": "Partenaires et contributeurs",
     "acces_donnees": "Accès aux données",
     "sonar": "SONAR",
-    "statistiques": "Statistiques par objet saillant",
+    "statistiques": "Statistiques",
     "methodologie": "Méthodologie",
     "radarplus": "Radar+"
   },
@@ -668,14 +668,18 @@
     "region_QC": "Québec",
     "region_CAN": "Canada",
     "loading": "Chargement…",
-    "type_objects": "Objets",
-    "type_events": "Événements",
+    "type_objects": "un objet (sujet, acteur, lieu)",
+    "type_events": "un événement (une histoire)",
     "search_placeholder": "Rechercher un événement (un mot du titre ou du thème)…",
     "search_empty": "Recherchez un événement pour afficher sa fiche.",
     "search_none": "Aucun événement ne correspond.",
     "search_hint": "Exemples : cycliste, Carney, budget, grève.",
-    "page_title_events": "Statistiques par événement",
-    "page_lead_events": "Recherchez un événement pour afficher sa fiche : indice par édition, sommet, Unes et médias.",
-    "no_usa": "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada."
+    "page_title_events": "Statistiques",
+    "page_lead_events": "Un objet ou un événement : son parcours dans les Unes, édition par édition.",
+    "no_usa": "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada.",
+    "type_label": "Je cherche"
+  },
+  "stats": {
+    "lead": "Un objet ou un événement : son parcours dans les Unes, édition par édition."
   }
 }
