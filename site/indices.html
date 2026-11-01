@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/radar-data.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Les indices de saillance | Radar+</title>
+  <meta name="description" content="Comprendre les indices et les étiquettes de saillance de Radar+ : ce qu'ils mesurent, comment ils sont calculés, et où se situe une nouvelle parmi les Unes d'une année." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/css/shared-menu.css" />
+  <link rel="stylesheet" href="./assets/css/shared-ticker.css" />
+  <link rel="stylesheet" href="./assets/css/aune.css" />
+  <style>
+    /* Page grand public des indices de saillance (Adrien, 31 oct. 2026) : texte plus grand et plus
+       simple que la méthodologie, une grande courbe vivante, les étiquettes expliquées. */
+    :root {
+      --bg: #00000f; --text: rgba(220, 232, 255, 0.96); --muted: rgba(150, 178, 225, 0.9);
+      --panel: rgba(8, 16, 46, 0.72); --line: rgba(95, 140, 255, 0.28); --accent: #5b8cff; --border: rgba(95, 140, 255, 0.22);
+      --grotesk: 'Space Grotesk', 'Helvetica Neue', sans-serif; --mono: 'Space Mono', 'SF Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--grotesk); overflow-x: hidden; }
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .wrap { position: relative; z-index: 1; width: min(980px, calc(100vw - 32px)); margin: 28px auto 48px; }
+    .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+    .back { color: var(--muted); text-decoration: none; font-size: 13px; border: 1px solid var(--line); border-radius: 6px; padding: 7px 11px; }
+    .back:hover { color: #fff; border-color: var(--accent); }
+    h1.title { font-size: clamp(30px, 4.4vw, 48px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; color: #f1f5ff; }
+    h1.title .accent { color: var(--accent); }
+    .lead { font-size: 17px; line-height: 1.55; color: var(--muted); max-width: 720px; margin: 10px 0 26px; }
+
+    /* ── La grande courbe ── */
+    .chart-card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 18px 20px 14px; margin-bottom: 36px; }
+    .chart-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin-bottom: 8px; }
+    .chart-head h2 { font-size: 18px; font-weight: 600; color: #f1f5ff; }
+    .chart-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+    .seg { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); }
+    .seg button { font-family: var(--grotesk); font-size: 13px; padding: 6px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+    .seg button.active { background: rgba(85,136,255,0.22); color: #fff; }
+    .chart-wrap { position: relative; }
+    svg.big { display: block; width: 100%; height: auto; }
+    .zone { opacity: 0.2; transition: opacity 0.25s; }
+    .zone.hot { opacity: 0.5; }
+    .zone.band-aucune { fill: #55658a; } .zone.band-faible { fill: #7f93b8; } .zone.band-moderee { fill: #5fa8ff; }
+    .zone.band-elevee { fill: #f2c94c; } .zone.band-tres_elevee { fill: #ff9f43; } .zone.band-extreme { fill: #ff4d4d; }
+    .area { fill: rgba(255,255,255,0.07); }
+    .curve { fill: none; stroke: #fff; stroke-width: 2.2; stroke-linejoin: round; stroke-dasharray: 2600; stroke-dashoffset: 2600; animation: draw 1.8s cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .zone-name { font-family: var(--grotesk); font-size: 13px; font-weight: 700; fill: #f1f5ff; letter-spacing: 0.04em; text-transform: uppercase; }
+    .zone-share { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+    .tick { stroke: rgba(255,255,255,0.35); stroke-dasharray: 3 4; }
+    .tick-label { font-family: var(--mono); font-size: 11px; fill: #cfe1ff; }
+    .axis-label { font-family: var(--mono); font-size: 11px; fill: var(--muted); letter-spacing: 0.3px; }
+    .dot { stroke: #00000f; stroke-width: 2; }
+    /* Exemples : points numérotés sur la courbe, reliés aux cartes sous le graphique */
+    .ex-link { fill: none; stroke: rgba(255,255,255,0.28); stroke-width: 1.2; stroke-dasharray: 3 4; transition: stroke 0.15s; }
+    .ex-link.hot { stroke: rgba(255,255,255,0.85); stroke-dasharray: none; }
+    .ex-dot { cursor: pointer; }
+    .ex-dot circle { stroke: #00000f; stroke-width: 2.5; transition: r 0.15s; }
+    .ex-dot.hot circle { r: 14; stroke: #fff; }
+    .ex-dot text { font-family: var(--mono); font-size: 11px; font-weight: 700; fill: #060d22; pointer-events: none; }
+    .ex-cards { display: grid; gap: 10px; margin-top: 4px; }
+    .ex-card { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px 12px 10px; border: 1px solid var(--border); border-radius: 10px; background: rgba(8,16,46,0.75); text-decoration: none; color: inherit; transition: border-color 0.15s, background 0.15s, transform 0.15s; }
+    .ex-card:hover, .ex-card.hot { border-color: rgba(120,170,255,0.7); background: rgba(20,36,86,0.75); transform: translateY(-2px); }
+    .ex-num { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 700; color: #060d22; }
+    .ex-card .aune-band { animation: none; font-size: 9.5px; padding: 2px 7px; }
+    .ex-tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: #ffc857; }
+    .ex-title { font-size: 13.5px; font-weight: 600; line-height: 1.3; color: #f1f5ff; }
+    .ex-meta { font-size: 11.5px; color: var(--muted); } .ex-meta b { color: #fff; font-family: var(--mono); }
+    .ex-go { margin-top: auto; font-size: 11.5px; color: #9dbcff; }
+    @media (max-width: 900px) { .ex-cards { grid-template-columns: 1fr 1fr !important; } .ex-link { display: none; } }
+    .dot-line { stroke: rgba(255,255,255,0.55); stroke-width: 1; }
+    .dot-label { font-family: var(--grotesk); font-size: 12px; fill: #f1f5ff; }
+    .dot-sub { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+    .cross { stroke: #fff; stroke-width: 1.2; opacity: 0; }
+    .cross.on { opacity: 0.9; }
+    .readout { position: absolute; left: 0; top: 0; pointer-events: none; opacity: 0; transition: opacity 0.12s; background: rgba(8,16,46,0.97); border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; padding: 10px 12px; width: 300px; font-size: 13px; line-height: 1.4; }
+    .readout.on { opacity: 1; }
+    .readout .v { font-family: var(--mono); font-size: 16px; font-weight: 700; color: #fff; }
+    .readout .aune-band { animation: none; margin-left: 6px; vertical-align: 1px; }
+    .readout p { margin-top: 5px; color: #dbe6ff; }
+    .chart-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-top: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+    /* ── Texte ── */
+    .doc { font-size: 17px; line-height: 1.65; color: var(--text); }
+    .doc h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: #f1f5ff; margin: 34px 0 10px; }
+    .doc h2:first-child { margin-top: 0; }
+    .doc p { margin: 0 0 14px; max-width: 760px; }
+    .doc ul { margin: 0 0 14px 22px; max-width: 760px; }
+    .doc li { margin: 6px 0; }
+    .doc a { color: #9dbcff; }
+    .doc a:hover { color: #fff; }
+    .doc strong { color: #fff; }
+    .doc .ex { border-left: 3px solid var(--accent); background: rgba(7,15,41,0.65); padding: 12px 16px; border-radius: 6px; font-size: 15.5px; max-width: 760px; margin: 0 0 16px; }
+    .doc .aune-band { animation: none; vertical-align: 1px; }
+    .doc table { width: 100%; border-collapse: collapse; font-size: 14.5px; background: rgba(7,15,41,0.55); margin: 8px 0 18px; }
+    .doc th, .doc td { border: 1px solid var(--border); padding: 9px 10px; text-align: left; vertical-align: middle; }
+    .doc th { color: #cfe1ff; font-weight: 600; font-size: 13px; }
+    .doc td.num { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 760px; margin-bottom: 16px; }
+    .two .card { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 14px 16px; font-size: 15.5px; }
+    .two .card b { display: block; font-size: 17px; color: #fff; margin-bottom: 6px; }
+    @media (max-width: 720px) {
+      .wrap { margin-top: 16px; }
+      .doc { font-size: 16px; }
+      .two { grid-template-columns: 1fr; }
+      .zone-name { font-size: 10px; }
+      .readout { width: 240px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+
+  <main class="wrap">
+    <header class="top">
+      <h1 class="title"><span data-i18n="indices.title">Les indices</span> <span class="accent" data-i18n="indices.title_accent">de saillance</span></h1>
+      <a class="back" href="./methodologie.html" data-i18n="indices.full_metho">Méthodologie complète →</a>
+    </header>
+    <p class="lead" data-i18n="indices.lead">Ce que Radar+ mesure quand il dit qu'une nouvelle est « saillante », comment les points sont calculés, et ce que veulent dire les étiquettes, de « Sous le radar » à « Saillance extrême ».</p>
+
+    <!-- La grande courbe : seuils publiés avec les données (events/index.json), Unes du moment (events/latest.json). -->
+    <section class="chart-card" aria-labelledby="chart-title">
+      <div class="chart-head">
+        <h2 id="chart-title" data-i18n="indices.chart_title">Où se situe une nouvelle parmi les Unes d'une année</h2>
+        <div class="chart-controls">
+          <div class="seg" id="seg-region" role="tablist">
+            <button type="button" data-region="QC" class="active" data-i18n="country.QC">Québec</button>
+            <button type="button" data-region="CAN" data-i18n="country.CAN">Canada</button>
+          </div>
+          <div class="seg" id="seg-scale" role="tablist">
+            <button type="button" data-scale="sum24h" class="active" data-i18n="indices.scale_24h">Indice 24h</button>
+            <button type="button" data-scale="block" data-i18n="indices.scale_block">Une édition (4 h)</button>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap" id="chart-wrap">
+        <svg class="big" id="big" viewBox="0 0 1000 440" role="img" aria-label="Courbe des Unes d'une année, découpée en six étiquettes"></svg>
+        <div class="readout" id="readout"></div>
+      </div>
+      <div class="ex-cards" id="ex-cards"></div>
+      <div class="chart-foot"><span id="chart-foot-left"></span><span id="chart-foot-right"></span></div>
+    </section>
+
+    <section class="doc" id="indices-doc">
+<div data-lang="fr">
+<h2 id="mesure">Ce que mesure la saillance</h2>
+<p>Toutes les dix minutes, Radar+ photographie la page d'accueil des grands médias. La <strong>saillance</strong> d'une nouvelle, c'est la place qu'elle prend à la Une : combien de médias la mettent en tête de page, avec combien d'articles, et pendant combien de temps. Ce n'est pas un jugement sur l'importance de la nouvelle. C'est une mesure de l'attention que les médias lui accordent.</p>
+
+<h2 id="points">Les points : de 0 à 100 par édition</h2>
+<p>Radar+ découpe la journée en six <strong>éditions</strong> de quatre heures. Pour chaque édition, chaque nouvelle reçoit un indice de 0 à 100 qui combine trois facettes :</p>
+<ul>
+  <li><strong>la visibilité</strong> : combien de médias la portent en Une ;</li>
+  <li><strong>le volume</strong> : combien d'articles distincts en parlent (au plus trois par média, pour qu'un média qui multiplie les textes ne pèse pas plus) ;</li>
+  <li><strong>la durée</strong> : combien de temps elle reste en Une.</li>
+</ul>
+<p>Les trois facettes sont multipliées entre elles. Une nouvelle qu'un seul média garde toute la journée en Une reste basse ; une nouvelle que plusieurs médias portent en même temps monte vite.</p>
+<p>Une <strong>histoire</strong> peut réunir plusieurs événements : ses points d'une édition sont la somme de ses événements de cette édition. C'est presque toujours un seul événement, donc 100 points au plus ; très rarement, une histoire dépasse 100 points dans une édition parce que plusieurs de ses événements font la Une en même temps.</p>
+<p>L'<strong>indice 24h</strong>, celui de la Une des Unes et des étiquettes « Actuellement », est la moyenne des six dernières éditions, les plus récentes comptant davantage : une édition pèse deux fois moins après dix heures. Une nouvelle qui vient d'apparaître a donc un indice 24h encore partiel, même si son édition est forte.</p>
+<div class="ex"><strong>Exemple.</strong> Une nouvelle entre dans le radar à l'édition de 20 h avec un indice d'édition de 43,9. Son indice 24h vaut 13,1 : une seule édition sur les six comptées. Si les médias la gardent en Une, il monte édition après édition.</div>
+
+<h2 id="etiquettes">Les étiquettes : situer une nouvelle parmi les Unes d'une année</h2>
+<p>L'étiquette ne dit pas si une nouvelle est importante. Elle dit <strong>où elle se situe parmi toutes les Unes d'une année entière</strong>, pour le même territoire. Les seuils sont des centiles de cette distribution : « Saillance élevée » commence à la médiane, « Saillance extrême » au-delà du 95<sup>e</sup> centile. Ils sont publiés avec les données et recalculés ; le tableau ci-dessous montre les valeurs du moment.</p>
+<table id="table-fr">
+  <thead><tr><th>Étiquette</th><th>Position parmi les Unes de l'année</th><th>Part des Unes</th><th>À partir de (indice 24h)<br>Québec · Canada</th><th>À partir de (une édition)<br>Québec · Canada</th></tr></thead>
+  <tbody>
+    <tr><td><span class="aune-band band-aucune">Sous le radar</span></td><td>sous le 5<sup>e</sup> centile</td><td class="num">5 %</td><td class="num" data-th="sum24h:faible:lt">—</td><td class="num" data-th="block:faible:lt">—</td></tr>
+    <tr><td><span class="aune-band band-faible">Saillance faible</span></td><td>du 5<sup>e</sup> au 20<sup>e</sup> centile</td><td class="num">15 %</td><td class="num" data-th="sum24h:faible">—</td><td class="num" data-th="block:faible">—</td></tr>
+    <tr><td><span class="aune-band band-moderee">Saillance modérée</span></td><td>du 20<sup>e</sup> au 50<sup>e</sup> centile</td><td class="num">30 %</td><td class="num" data-th="sum24h:moderee">—</td><td class="num" data-th="block:moderee">—</td></tr>
+    <tr><td><span class="aune-band band-elevee">Saillance élevée</span></td><td>du 50<sup>e</sup> au 80<sup>e</sup> centile</td><td class="num">30 %</td><td class="num" data-th="sum24h:elevee">—</td><td class="num" data-th="block:elevee">—</td></tr>
+    <tr><td><span class="aune-band band-tres_elevee">Saillance très élevée</span></td><td>du 80<sup>e</sup> au 95<sup>e</sup> centile</td><td class="num">15 %</td><td class="num" data-th="sum24h:tres_elevee">—</td><td class="num" data-th="block:tres_elevee">—</td></tr>
+    <tr><td><span class="aune-band band-extreme">Saillance extrême</span></td><td>au-dessus du 95<sup>e</sup> centile</td><td class="num">5 %</td><td class="num" data-th="sum24h:extreme">—</td><td class="num" data-th="block:extreme">—</td></tr>
+  </tbody>
+</table>
+
+<h2 id="actuellement">« Actuellement » et « Sommet »</h2>
+<p>Partout sur le site, une nouvelle porte deux étiquettes.</p>
+<div class="two">
+  <div class="card"><b>Actuellement</b> Le niveau de son indice 24h en ce moment. Il monte et redescend avec l'attention des médias.</div>
+  <div class="card"><b>Sommet</b> Le plus haut niveau atteint par une de ses éditions depuis qu'elle est dans le radar. Il ne redescend jamais.</div>
+</div>
+<p>Le <strong>« i »</strong> à côté d'une étiquette ouvre sa fiche : les deux niveaux avec leurs points, la position de la nouvelle sur la courbe, et le nombre d'éditions déjà comptées dans son indice 24h.</p>
+
+<h2 id="objets">Les objets : le Hot 10, le Classement et les alertes</h2>
+<p>Les <strong>objets</strong> (personnes, lieux, organisations, enjeux) reçoivent le même indice par édition, calculé pour chacun d'eux. Le Hot 10 de l'accueil et le Classement des objets <strong>additionnent</strong> ces points sur la période choisie, sans plafond : un objet très présent accumule. Les <strong>alertes</strong>, elles, regardent le pic d'un objet par rapport aux pics observés dans le pays sur 130 jours : « Très élevé » dans le vingtième le plus fort (95<sup>e</sup> centile), « Extrême » dans le centième (99<sup>e</sup>). Détails dans la méthodologie : <a href="./methodologie.html#alertes">les alertes</a> et <a href="./methodologie.html#paliers">les paliers</a>.</p>
+
+<h2 id="ou">Où les trouver</h2>
+<ul>
+  <li><a href="./index.html#aune">La Une des Unes</a> : les trois histoires du moment, avec leur indice 24h et leur étiquette.</li>
+  <li><a href="./classement.html">Classement</a> : le classement officiel des événements et des objets, par édition, jour, semaine, mois ou année.</li>
+  <li><a href="./alertes.html">Alertes</a> : les objets qui dépassent les seuils d'alerte.</li>
+  <li><a href="./evolution.html">Évolution</a> : la courbe de chaque objet dans le temps, avec les paliers.</li>
+  <li><a href="./statistiques.html">Statistiques</a> : la fiche de chaque objet et de chaque événement.</li>
+</ul>
+<p>Pour les formules, les sources et les limites : <a href="./methodologie.html#calcul-des-indices">la méthodologie complète</a>.</p>
+</div>
+
+<div data-lang="en">
+<h2 id="en-mesure">What saliency measures</h2>
+<p>Every ten minutes, Radar+ photographs the home page of major media outlets. A story's <strong>saliency</strong> is the room it takes on the front page: how many outlets put it at the top, with how many articles, and for how long. It is not a judgement on how important the story is. It is a measure of the attention the media give it.</p>
+
+<h2 id="en-points">Points: from 0 to 100 per edition</h2>
+<p>Radar+ splits the day into six four-hour <strong>editions</strong>. For each edition, each story gets an index from 0 to 100 combining three facets:</p>
+<ul>
+  <li><strong>visibility</strong>: how many outlets carry it on their front page;</li>
+  <li><strong>volume</strong>: how many distinct articles cover it (at most three per outlet, so that an outlet multiplying texts does not weigh more);</li>
+  <li><strong>duration</strong>: how long it stays on the front page.</li>
+</ul>
+<p>The three facets are multiplied together. A story that a single outlet keeps on its front page all day stays low; a story carried by several outlets at the same time rises fast.</p>
+<p>A <strong>story</strong> can gather several events: its points for an edition are the sum of its events in that edition. It is almost always a single event, so 100 points at most; very rarely, a story exceeds 100 points in an edition because several of its events make the front page at once.</p>
+<p>The <strong>24h index</strong>, the one shown in the Une des Unes and in the "Now" labels, averages the last six editions, the most recent counting more: an edition weighs half as much after ten hours. A story that has just appeared therefore has a partial 24h index, even when its edition is strong.</p>
+<div class="ex"><strong>Example.</strong> A story enters the radar at the 8 p.m. edition with an edition index of 43.9. Its 24h index is 13.1: one edition out of the six counted. If the media keep it on the front page, it rises edition after edition.</div>
+
+<h2 id="en-etiquettes">The labels: placing a story among a year of front pages</h2>
+<p>The label does not say whether a story is important. It says <strong>where it stands among all the front pages of a full year</strong>, for the same territory. The thresholds are percentiles of that distribution: "High saliency" starts at the median, "Extreme saliency" beyond the 95th percentile. They are published with the data and recalculated; the table shows the current values.</p>
+<table id="table-en">
+  <thead><tr><th>Label</th><th>Position among the year's front pages</th><th>Share of front pages</th><th>From (24h index)<br>Quebec · Canada</th><th>From (one edition)<br>Quebec · Canada</th></tr></thead>
+  <tbody>
+    <tr><td><span class="aune-band band-aucune">Under the radar</span></td><td>below the 5th percentile</td><td class="num">5%</td><td class="num" data-th="sum24h:faible:lt">—</td><td class="num" data-th="block:faible:lt">—</td></tr>
+    <tr><td><span class="aune-band band-faible">Low saliency</span></td><td>5th to 20th percentile</td><td class="num">15%</td><td class="num" data-th="sum24h:faible">—</td><td class="num" data-th="block:faible">—</td></tr>
+    <tr><td><span class="aune-band band-moderee">Moderate saliency</span></td><td>20th to 50th percentile</td><td class="num">30%</td><td class="num" data-th="sum24h:moderee">—</td><td class="num" data-th="block:moderee">—</td></tr>
+    <tr><td><span class="aune-band band-elevee">High saliency</span></td><td>50th to 80th percentile</td><td class="num">30%</td><td class="num" data-th="sum24h:elevee">—</td><td class="num" data-th="block:elevee">—</td></tr>
+    <tr><td><span class="aune-band band-tres_elevee">Very high saliency</span></td><td>80th to 95th percentile</td><td class="num">15%</td><td class="num" data-th="sum24h:tres_elevee">—</td><td class="num" data-th="block:tres_elevee">—</td></tr>
+    <tr><td><span class="aune-band band-extreme">Extreme saliency</span></td><td>above the 95th percentile</td><td class="num">5%</td><td class="num" data-th="sum24h:extreme">—</td><td class="num" data-th="block:extreme">—</td></tr>
+  </tbody>
+</table>
+
+<h2 id="en-actuellement">"Now" and "Peak"</h2>
+<p>Everywhere on the site, a story carries two labels.</p>
+<div class="two">
+  <div class="card"><b>Now</b> The level of its 24h index right now. It rises and falls with media attention.</div>
+  <div class="card"><b>Peak</b> The highest level reached by one of its editions since it entered the radar. It never goes down.</div>
+</div>
+<p>The <strong>"i"</strong> next to a label opens its card: both levels with their points, the story's position on the curve, and how many editions already count in its 24h index.</p>
+
+<h2 id="en-objets">Objects: the Hot 10, the Ranking and the alerts</h2>
+<p><strong>Objects</strong> (people, places, organizations, issues) get the same per-edition index, computed for each of them. The home page's Hot 10 and the objects' Ranking <strong>add up</strong> these points over the chosen period, with no cap: a very present object accumulates. The <strong>alerts</strong> look at an object's peak against the peaks observed in the country over 130 days: "Very high" in the strongest twentieth (95th percentile), "Extreme" in the strongest hundredth (99th). Details in the methodology: <a href="./methodologie.html#en-alertes">alerts</a> and <a href="./methodologie.html#en-paliers">tiers</a>.</p>
+
+<h2 id="en-ou">Where to find them</h2>
+<ul>
+  <li><a href="./index.html#aune">La Une des Unes</a>: the three stories of the moment, with their 24h index and label.</li>
+  <li><a href="./classement.html">Ranking</a>: the official ranking of events and objects, by edition, day, week, month or year.</li>
+  <li><a href="./alertes.html">Alerts</a>: the objects exceeding the alert thresholds.</li>
+  <li><a href="./evolution.html">Evolution</a>: each object's curve over time, with the tiers.</li>
+  <li><a href="./statistiques.html">Statistics</a>: the card of each object and each event.</li>
+</ul>
+<p>For formulas, sources and limits: <a href="./methodologie.html#en-calcul-indices">the full methodology</a>.</p>
+</div>
+    </section>
+  </main>
+
+  <script>
+    (function() {
+      var canvas = document.getElementById('stars'), ctx = canvas.getContext('2d'), stars = [], tick = 0;
+      function resize() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        var count = Math.floor((canvas.width * canvas.height) / 3200);
+        stars = Array.from({ length: count }, function() { return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.1 + 0.25, a: Math.random() * 0.5 + 0.18, s: Math.random() * 0.03 + 0.004, p: Math.random() * Math.PI * 2 }; });
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); tick += 0.016;
+        for (var i = 0; i < stars.length; i++) { var st = stars[i]; var alpha = st.a + Math.sin(tick * st.s + st.p) * 0.14; ctx.fillStyle = 'rgba(180, 205, 255, ' + Math.max(0, alpha) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill(); }
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize); resize(); draw();
+    })();
+  </script>
+  <script>
+    // ── La grande courbe ────────────────────────────────────────────────────────────────
+    // Seuils publiés (events/index.json : p5, p20, p50, p80, p95 des Unes d'une année, par région
+    // et par échelle) ; Unes du moment (events/latest.json). Même ajustement que la fenêtre « i » :
+    // log-normale à deux pentes, médiane au centre, p5 et p95 pour les pentes. Rien d'inventé :
+    // les zones, leurs parts et les seuils viennent des données ; la courbe n'est qu'un dessin de
+    // la distribution que ces centiles décrivent.
+    (function() {
+      var BANDS = ['aucune', 'faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'], SHARES = [5, 15, 30, 30, 15, 5];
+      var TXT = {
+        fr: { names: { aucune: 'Sous le radar', faible: 'Faible', moderee: 'Modérée', elevee: 'Élevée', tres_elevee: 'Très élevée', extreme: 'Extrême' },
+              share: function(p) { return p + ' % des Unes'; }, less: '← moins d\'attention', more: 'plus d\'attention →',
+              pts: 'points', now: 'Unes du moment', adj: { QC: 'québécoises', CAN: 'canadiennes' },
+              micro: { aucune: 'sur un an de Unes {adj}, 19 sur 20 attirent plus d\'attention', faible: '4 Unes {adj} sur 5 de l\'année attirent plus d\'attention', moderee: 'le niveau d\'une Une typique : la moitié des Unes {adj} en attire plus, l\'autre moitié moins', elevee: 'plus saillante que la moitié des Unes {adj} de l\'année', tres_elevee: 'dans le cinquième le plus marquant des Unes {adj} de l\'année', extreme: 'à peine 1 Une {adj} sur 20 attire autant d\'attention' },
+              foot: function(r, s, when) { return 'Seuils publiés avec les données · ' + (s === 'sum24h' ? 'indice 24h' : 'indice d\'une édition (4 h)') + ' · Unes ' + (r === 'QC' ? 'québécoises' : 'canadiennes') + ' · échelle logarithmique'; },
+              footRight: function(n) { return n ? 'Exemples : le sommet d\'une histoire de ' + new Date().getFullYear() + ' par niveau' : ''; },
+              tag: { least: 'La moins saillante de l\'année', most: 'La plus saillante de l\'année' }, go: 'Voir sa fiche →' },
+        en: { names: { aucune: 'Under the radar', faible: 'Low', moderee: 'Moderate', elevee: 'High', tres_elevee: 'Very high', extreme: 'Extreme' },
+              share: function(p) { return p + '% of front pages'; }, less: '← less attention', more: 'more attention →',
+              pts: 'points', now: 'Current front pages', adj: { QC: 'Quebec', CAN: 'Canadian' },
+              micro: { aucune: 'over a year of {adj} front pages, 19 in 20 draw more attention', faible: '4 in 5 {adj} front pages of the year draw more attention', moderee: 'the level of a typical front page: half the {adj} front pages draw more, half less', elevee: 'more salient than half the {adj} front pages of the year', tres_elevee: 'in the most striking fifth of the year\'s {adj} front pages', extreme: 'barely 1 in 20 {adj} front pages draws as much attention' },
+              foot: function(r, s) { return 'Thresholds published with the data · ' + (s === 'sum24h' ? '24h index' : 'single-edition (4 h) index') + ' · ' + (r === 'QC' ? 'Quebec' : 'Canadian') + ' front pages · log scale'; },
+              footRight: function(n) { return n ? 'Examples: one story peak of ' + new Date().getFullYear() + ' per level' : ''; },
+              tag: { least: 'Least salient of the year', most: 'Most salient of the year' }, go: 'See its card →' }
+      };
+      var W = 1000, H = 440, TOP = 70, BOT = 70, PH = H - TOP - BOT;
+      var svg = document.getElementById('big'), readout = document.getElementById('readout'), wrap = document.getElementById('chart-wrap');
+      var state = { region: 'QC', scale: 'sum24h', index: null, latest: null, stories: {} };
+      function lang() { return (document.documentElement.lang || 'fr').slice(0, 2) === 'en' ? 'en' : 'fr'; }
+      function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+      function l10(v) { return Math.log10(Math.max(v, 0.5)); }
+      function thresholds() {
+        var th = state.index && state.index.thresholds && state.index.thresholds[state.region]; th = th && th[state.scale];
+        if (!th) return null;
+        var t = BANDS.slice(1).map(function(b) { return Number(th[b]); });
+        return (t.every(function(v) { return isFinite(v) && v > 0; }) && t[4] > t[0]) ? t : null;
+      }
+      function bandOf(v, t) { var b = 'aucune'; BANDS.slice(1).forEach(function(k, i) { if (v >= t[i]) b = k; }); return b; }
+      function fmt(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+      function blockWhen(key, L) {
+        // « 2026-10-31_19-23 » → « 15 h – 19 h » (heure de Montréal : la clé est en UTC, le libellé dans index.json est juste)
+        var p = (state.index && state.index.periods || []).filter(function(x) { return x.key === key; })[0];
+        return p ? p.label.replace(/^[A-Za-z]+ \d+ · /, '').replace(' EDT', ' h').replace(' EST', ' h').replace('-', ' h – ') : '';
+      }
+      var base = (window.radarData && window.radarData.base) || ((window.RADAR_DATA_BASE || '') + '/v2');
+      var BAND_COL = { aucune: '#8fa0c4', faible: '#7f93b8', moderee: '#5fa8ff', elevee: '#f2c94c', tres_elevee: '#ff9f43', extreme: '#ff4d4d' };
+      // Sommets des histoires de l'année (fichier storylines de la région) : à l'échelle d'une édition,
+      // le meilleur événement ; à l'échelle 24h, le plus haut indice 24h atteint.
+      function peaks() {
+        var f = state.stories[state.region]; if (!f || !f.storylines) return [];
+        return Object.keys(f.storylines).map(function(sid) {
+          var st = f.storylines[sid], v = 0, key = null;
+          if (state.scale === 'block') { v = Number(st.peak) || 0; key = st.peak_key; }
+          else Object.keys(st.sum24h || {}).forEach(function(k) { if (st.sum24h[k] > v) { v = st.sum24h[k]; key = k; } });
+          return { sid: sid, v: v, key: key, title: st.title_peak || st.title_last || st.title || sid };
+        }).filter(function(x) { return x.v > 0; });
+      }
+      function examples(t) {
+        var all = peaks(); if (!all.length) return [];
+        all.sort(function(a, b) { return a.v - b.v; });
+        var used = {}, out = [], lim = [0].concat(t).concat([Infinity]);
+        BANDS.forEach(function(b, k) {
+          var lo = lim[k], hi = lim[k + 1], inBand = all.filter(function(x) { return x.v >= lo && x.v < hi && !used[x.sid]; });
+          if (!inBand.length) return;
+          var pick;
+          if (k === 0) pick = inBand[0];                                   // le moins saillant de l'année
+          else if (k === BANDS.length - 1) pick = inBand[inBand.length - 1]; // le plus saillant de l'année
+          else { var mid = Math.sqrt(lo * hi); pick = inBand.slice().sort(function(a, c) { return Math.abs(Math.log(a.v / mid)) - Math.abs(Math.log(c.v / mid)); })[0]; }
+          used[pick.sid] = true;
+          out.push({ sid: pick.sid, v: pick.v, key: pick.key, title: pick.title, band: b, tag: k === 0 ? 'least' : (k === BANDS.length - 1 ? 'most' : ''),
+                     href: './statistiques.html?evenement=' + encodeURIComponent(pick.sid) + '&region=' + state.region });
+        });
+        return out;
+      }
+      function editionName(key) {
+        var m = String(key || '').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})/); if (!m) return '';
+        var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4]) + 5 * 3600e3), L = lang();
+        var h = +new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(d) % 24;
+        var day = new Intl.DateTimeFormat(L === 'en' ? 'en-CA' : 'fr-CA', { timeZone: 'America/Montreal', day: 'numeric', month: 'long' }).format(d);
+        return L === 'en' ? h + 'h edition, ' + day : 'édition de ' + (h === 0 ? 'minuit' : h === 12 ? 'midi' : h + 'h') + ', ' + day;
+      }
+      function renderCards(ex, L) {
+        var box = document.getElementById('ex-cards'); if (!box) return;
+        box.style.gridTemplateColumns = 'repeat(' + Math.max(1, ex.length) + ', minmax(0, 1fr))';
+        box.innerHTML = ex.map(function(it, k) {
+          return '<a class="ex-card" data-k="' + k + '" href="' + esc(it.href) + '">' +
+            '<span class="ex-num" style="background:' + BAND_COL[it.band] + '">' + (k + 1) + '</span>' +
+            '<span class="aune-band band-' + it.band + '">' + esc(L.names[it.band]) + '</span>' +
+            (it.tag ? '<span class="ex-tag">' + esc(L.tag[it.tag]) + '</span>' : '') +
+            '<span class="ex-title">' + esc(it.title) + '</span>' +
+            '<span class="ex-meta"><b>' + fmt(it.v) + ' ' + esc(L.pts) + '</b> · ' + esc(editionName(it.key)) + '</span>' +
+            '<span class="ex-go">' + esc(L.go) + '</span></a>';
+        }).join('');
+        // Survol croisé : la carte allume son point, le point allume sa carte.
+        var hot = function(k, on) { box.querySelectorAll('.ex-card').forEach(function(c) { c.classList.toggle('hot', on && +c.dataset.k === k); }); svg.querySelectorAll('.ex-dot, .ex-link').forEach(function(d) { d.classList.toggle('hot', on && +d.dataset.k === k); }); };
+        box.querySelectorAll('.ex-card').forEach(function(c) { c.addEventListener('mouseenter', function() { hot(+c.dataset.k, true); }); c.addEventListener('mouseleave', function() { hot(-1, false); }); });
+        svg.querySelectorAll('.ex-dot').forEach(function(d) { d.addEventListener('mouseenter', function() { hot(+d.dataset.k, true); }); d.addEventListener('mouseleave', function() { hot(-1, false); }); d.addEventListener('click', function() { location.href = d.dataset.href; }); });
+      }
+      function ensureStories(region) {
+        if (state.stories[region] !== undefined) return Promise.resolve();
+        state.stories[region] = null;
+        var y = new Date().getFullYear();
+        return fetch(base + '/events/storylines/' + region + '/' + y + '.json').then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(f) { state.stories[region] = f; }).catch(function() { state.stories[region] = null; });
+      }
+      function render() {
+        var L = TXT[lang()], t = thresholds();
+        if (!t) { svg.innerHTML = ''; return; }
+        var ex = examples(t), vmin = ex.length ? ex[0].v : t[0], vmax = ex.length ? ex[ex.length - 1].v : t[4];
+        // Axe d'origine à gauche (le moins saillant de l'année, très bas, écraserait la courbe : son point se pose
+        // au bord gauche, sa valeur exacte est dans sa carte) ; à droite, assez de place pour le plus saillant.
+        var x0 = l10(t[0] / 2), x1 = l10(Math.max(t[4] * 2, vmax * 1.15)), px = function(v) { return (l10(v) - x0) / (x1 - x0) * W; };
+        var mu = l10(t[2]), sR = Math.max((l10(t[4]) - mu) / 1.645, 1e-3), sL = Math.max((mu - l10(t[0])) / 1.645, 1e-3);
+        var g = function(lx) { var s = lx < mu ? sL : sR; return Math.exp(-0.5 * Math.pow((lx - mu) / s, 2)); };
+        var cy = function(v) { return TOP + PH - 6 - g(l10(v)) * (PH - 24); };
+        var pts = [], area = ['0,' + (TOP + PH)];
+        for (var i = 0; i <= 200; i++) { var lx = x0 + (x1 - x0) * i / 200, x = (lx - x0) / (x1 - x0) * W, y = TOP + PH - 6 - g(lx) * (PH - 24); pts.push(x.toFixed(1) + ',' + y.toFixed(1)); area.push(x.toFixed(1) + ',' + y.toFixed(1)); }
+        area.push(W + ',' + (TOP + PH));
+        var edges = [0].concat(t.map(px)).concat([W]);
+        var h = '';
+        BANDS.forEach(function(b, k) {
+          var w = Math.max(0, edges[k + 1] - edges[k]), cx = edges[k] + w / 2;
+          h += '<rect class="zone band-' + b + '" data-band="' + b + '" x="' + edges[k].toFixed(1) + '" y="' + TOP + '" width="' + w.toFixed(1) + '" height="' + PH + '"/>';
+          var name = L.names[b];
+          h += '<text class="zone-name" x="' + cx.toFixed(1) + '" y="' + (TOP - 30) + '" text-anchor="middle">' + esc(name) + '</text>';
+          h += '<text class="zone-share" x="' + cx.toFixed(1) + '" y="' + (TOP - 12) + '" text-anchor="middle">' + esc(L.share(SHARES[k])) + '</text>';
+        });
+        h += '<polygon class="area" points="' + area.join(' ') + '"/>';
+        h += '<polyline class="curve" points="' + pts.join(' ') + '"/>';
+        t.forEach(function(v, k) {
+          var x = px(v);
+          h += '<line class="tick" x1="' + x.toFixed(1) + '" y1="' + TOP + '" x2="' + x.toFixed(1) + '" y2="' + (TOP + PH + 8) + '"/>';
+          h += '<text class="tick-label" x="' + x.toFixed(1) + '" y="' + (TOP + PH + 24) + '" text-anchor="middle">' + fmt(v) + '</text>';
+        });
+        h += '<text class="axis-label" x="4" y="' + (TOP + PH + 48) + '">' + esc(L.less) + '</text>';
+        h += '<text class="axis-label" x="' + (W - 4) + '" y="' + (TOP + PH + 48) + '" text-anchor="end">' + esc(L.more) + '</text>';
+        h += '<text class="axis-label" x="' + (W / 2) + '" y="' + (TOP + PH + 48) + '" text-anchor="middle">' + esc(L.pts) + '</text>';
+        // Un exemple par niveau, choisi parmi les SOMMETS des histoires de l'année : le moins saillant de
+        // l'année (sous le radar), le plus saillant (extrême), et pour chaque niveau entre les deux,
+        // l'histoire dont le sommet tombe au milieu de la bande (Adrien, 1er nov. 2026). Les titres
+        // entiers sont dans les cartes sous la courbe ; chaque point y est relié par un trait.
+        var n = ex.length;
+        ex.forEach(function(it, k) {
+          var x = Math.min(W - 14, Math.max(14, px(it.v))), y = cy(Math.max(it.v, Math.pow(10, x0))), col = BAND_COL[it.band], cx = (k + 0.5) * W / n;
+          h += '<path class="ex-link" data-k="' + k + '" d="M' + x.toFixed(1) + ' ' + y.toFixed(1) + ' L' + x.toFixed(1) + ' ' + (TOP + PH).toFixed(1) + ' L' + cx.toFixed(1) + ' ' + H + '"/>';
+          h += '<g class="ex-dot" data-k="' + k + '" data-href="' + esc(it.href) + '"><circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="11" style="fill:' + col + '"/><text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="middle">' + (k + 1) + '</text></g>';
+        });
+        h += '<line class="cross" id="cross" x1="0" y1="' + TOP + '" x2="0" y2="' + (TOP + PH) + '"/>';
+        svg.innerHTML = h;
+        document.getElementById('chart-foot-left').textContent = L.foot(state.region, state.scale);
+        document.getElementById('chart-foot-right').textContent = L.footRight(n);
+        renderCards(ex, L);
+        // lecture au survol
+        svg.onmousemove = function(e) {
+          var r = svg.getBoundingClientRect(), xr = (e.clientX - r.left) / r.width * W;
+          if (xr < 0 || xr > W) return;
+          var v = Math.pow(10, x0 + (x1 - x0) * xr / W), b = bandOf(v, t);
+          var cross = document.getElementById('cross'); cross.setAttribute('x1', xr.toFixed(1)); cross.setAttribute('x2', xr.toFixed(1)); cross.classList.add('on');
+          svg.querySelectorAll('.zone').forEach(function(z) { z.classList.toggle('hot', z.dataset.band === b); });
+          readout.innerHTML = '<span class="v">' + fmt(v) + ' ' + esc(L.pts) + '</span><span class="aune-band band-' + b + '">' + esc(L.names[b]) + '</span><p>' + esc(L.micro[b].replace('{adj}', L.adj[state.region])) + '.</p>';
+          readout.classList.add('on');
+          var rw = readout.offsetWidth, left = e.clientX - r.left + 16; if (left + rw > r.width) left = e.clientX - r.left - rw - 16;
+          readout.style.left = Math.max(0, left) + 'px'; readout.style.top = Math.max(0, e.clientY - r.top - 20) + 'px';
+        };
+        svg.onmouseleave = function() { readout.classList.remove('on'); var c = document.getElementById('cross'); if (c) c.classList.remove('on'); svg.querySelectorAll('.zone').forEach(function(z) { z.classList.remove('hot'); }); };
+        fillTable(L);
+      }
+      function fillTable(L) {
+        var th = state.index && state.index.thresholds; if (!th) return;
+        document.querySelectorAll('[data-th]').forEach(function(td) {
+          var p = td.dataset.th.split(':'), scale = p[0], band = p[1], lt = p[2] === 'lt';
+          var q = th.QC && th.QC[scale] && th.QC[scale][band], c = th.CAN && th.CAN[scale] && th.CAN[scale][band];
+          if (typeof q !== 'number' || typeof c !== 'number') return;
+          td.textContent = lt ? ('< ' + fmt(q) + ' · < ' + fmt(c)) : (fmt(q) + ' · ' + fmt(c));
+        });
+      }
+      document.getElementById('seg-region').addEventListener('click', function(e) { var b = e.target.closest('button'); if (!b) return; this.querySelectorAll('button').forEach(function(x) { x.classList.toggle('active', x === b); }); state.region = b.dataset.region; ensureStories(state.region).then(render); render(); });
+      document.getElementById('seg-scale').addEventListener('click', function(e) { var b = e.target.closest('button'); if (!b) return; this.querySelectorAll('button').forEach(function(x) { x.classList.toggle('active', x === b); }); state.scale = b.dataset.scale; render(); });
+      document.addEventListener('i18n:applied', function() { render(); });
+      Promise.all([
+        fetch(base + '/events/index.json?t=' + Date.now()).then(function(r) { return r.json(); }),
+        fetch(base + '/events/latest.json?t=' + Date.now()).then(function(r) { return r.json(); }).catch(function() { return null; })
+      ]).then(function(res) { state.index = res[0]; state.latest = res[1]; render(); return ensureStories(state.region).then(render); }).catch(function(err) { console.error('indices: données', err); });
+      // Ancre EN : les sections anglaises ont leurs propres ids (en-…).
+      if (lang() === 'en' && location.hash && location.hash.indexOf('#en-') !== 0) { var el = document.getElementById('en-' + location.hash.slice(1)); if (el) el.scrollIntoView(); }
+    })();
+  </script>
+  <script src="./assets/js/i18n.js"></script>
+  <script src="./assets/js/shared-menu.js"></script>
+  <script src="./assets/js/shared-ticker.js"></script>
+</body>
+</html>

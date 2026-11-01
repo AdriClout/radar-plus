@@ -19,6 +19,7 @@
 !site/sonar.html
 !site/monitoring.html
 !site/404.html
+!site/indices.html
 *.png
 !site/assets/img/GRCP-Logo.png
 !site/assets/img/infrastructure-radarplus.png
