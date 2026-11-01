@@ -555,7 +555,7 @@
     "trend_stable_tip_24h": "Même rang qu'à l'édition précédente ({now}e)",
     "trend_new_tip_24h": "Nouvelle histoire : absente du top {n} de l'édition précédente",
     "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top {n} de l'édition précédente",
-    "header_subject": "Saillance · sujet",
+    "header_subject": "Sujet",
     "header_score24h": "Indice 24h · variation 4h",
     "header_points": "Points",
     "medias_one": "{n} média",

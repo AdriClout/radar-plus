@@ -29,9 +29,11 @@
   display: flex; flex-direction: column;
   /* Hauteur = l'écran moins le bandeau d'alertes (fixé, 32 px de marge du body), le menu
      (collant, en flux) et le bandeau « Dans le radar » fixé en bas. Plancher 540 px (un
-     portable à 680 px de haut tient : trois rangs au plancher de 84 px) ; en dessous, la
-     page défile un peu plutôt que d'écraser les rangs. */
-  height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 540px);
+     portable à 680 px de haut tient : trois rangs au plancher) ; en dessous, la page défile
+     un peu plutôt que d'écraser les rangs. Hauteur MINIMALE, pas fixe : si les rangées (plancher
+     120 px) et le pied ne tiennent pas, le module s'allonge au lieu que le pied chevauche la
+     dernière rangée (Adrien, 31 oct. 2026). */
+  min-height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 540px);
 }
 .aune-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
 .aune-title { font-family: var(--grotesk); font-size: clamp(24px, 3.2vw, 37px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #f1f5ff; }
@@ -47,7 +49,7 @@
 .aune-controls .country-tab:hover, .aune-tab:hover { color: #fff; background: transparent; border: 0; }
 .aune-controls .country-tab.active, .aune-tab.active { background: rgba(85,136,255,0.22); color: #fff; border: 0; box-shadow: none; }
 .aune-grid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1 1 auto; min-height: auto; }
 .aune-list-header {
   display: grid; grid-template-columns: 48px 72px minmax(0, 1fr) 210px; gap: 16px; flex: 0 0 auto;
   padding: 0 14px 7px 17px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px;

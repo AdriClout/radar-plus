@@ -555,7 +555,7 @@
     "trend_stable_tip_24h": "Same rank as at the previous edition ({now})",
     "trend_new_tip_24h": "New story: absent from the previous edition's top {n}",
     "trend_return_tip_24h": "Back: a story seen before, absent from the previous edition's top {n}",
-    "header_subject": "Salience · subject",
+    "header_subject": "Subject",
     "header_score24h": "24h index · 4h change",
     "header_points": "Points",
     "medias_one": "{n} outlet",
