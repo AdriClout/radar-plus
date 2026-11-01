@@ -269,11 +269,14 @@ function auneFirstKey(region, sid) { var st = auneStoryline(region, sid); return
 function auneTrendHtml(c, i, region, range, prevRanks, prevStart, T) {
   var now = i + 1, prev = prevRanks[c.storyline], limit = AUNE_LIMIT[range] || 10;
   var sfx = auneIs24h(range) ? '_24h' : ''; // libellés « édition précédente » plutôt que « période précédente »
+  // « / hier », « / sem. dernière »… : le mouvement dit toujours par rapport à quoi (Adrien, 31 oct. 2026) ;
+  // sur une période antérieure (Classement), « / veille », « / sem. préc. »…
+  var vs = '<span class="trend-vs">/ ' + escapeHtml(T((cfg.offset < 0 ? 'aune.vs_prev.' : 'aune.vs.') + range)) + '</span>';
   if (prev && prev <= limit) {
     var diff = prev - now;
-    if (diff > 0) return '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('aune.trend_up_tip' + sfx, { n: diff, prev: prev, now: now })) + '">&#9650;' + diff + '</span>';
-    if (diff < 0) return '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('aune.trend_down_tip' + sfx, { n: -diff, prev: prev, now: now })) + '">&#9660;' + (-diff) + '</span>';
-    return '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('aune.trend_stable_tip' + sfx, { now: now })) + '">&mdash;</span>';
+    if (diff > 0) return '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('aune.trend_up_tip' + sfx, { n: diff, prev: prev, now: now })) + '">&#9650;' + diff + vs + '</span>';
+    if (diff < 0) return '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('aune.trend_down_tip' + sfx, { n: -diff, prev: prev, now: now })) + '">&#9660;' + (-diff) + vs + '</span>';
+    return '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('aune.trend_stable_tip' + sfx, { now: now })) + '">&mdash;' + vs + '</span>';
   }
   // Absente du classement précédent : « Retour » si l'histoire existait déjà avant la période précédente, sinon « Nouveau ».
   var fk = auneFirstKey(region, c.storyline);
@@ -428,6 +431,7 @@ function auneArtHtml(c, rnd, urls, T, latest) {
   return '<figure class="aune-row-art' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' +
     '<img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp' + v) + '" alt=""' +
     ' onload="this.closest(\'.aune-row\').classList.add(\'has-art\')" onerror="this.parentNode.remove()">' +
+    '<span class="aune-art-i" tabindex="0" aria-label="' + escapeHtml(T('aune.art_info')) + '">i</span>' +
     '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>';
 }
 // Un rang, à l'image du Hot 20 : rang, mouvement, [illustration], badge de saillance
@@ -724,7 +728,7 @@ function init(opts) {
   AUNE_LIMIT = cfg.limits;
   var grid = document.getElementById(cfg.gridId);
   if (grid) grid.addEventListener('click', function(e) {
-    if (e.target.closest('a, button')) return; // manchettes, puces, boutons : liens normaux
+    if (e.target.closest('a, button, .aune-art-i')) return; // manchettes, puces, boutons, « i » du crédit : pas d'ouverture d'article
     var el = e.target.closest('.aune-clickable');
     if (!el) { var row = e.target.closest('.aune-go'); if (row && row.dataset.href) { window.location.href = row.dataset.href; } return; }
     if (!el || !el.dataset.urls) return;

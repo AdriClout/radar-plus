@@ -195,7 +195,15 @@
     "media_tip": "Médias en cause: {list}",
     "media_tip_none": "Aucun média identifié.",
     "articles_tip": "{count} article(s) associé(s)",
-    "see_more": "Voir le classement complet →"
+    "see_more": "Voir le classement complet →",
+    "vs": {
+      "4h": "édition préc.",
+      "day": "hier",
+      "week": "sem. dernière",
+      "month": "mois dernier",
+      "quarter": "an dernier",
+      "total": ""
+    }
   },
   "constellation": {
     "title": "Constellation",
@@ -566,7 +574,22 @@
       "week": "semaines",
       "month": "mois",
       "year": "années"
-    }
+    },
+    "vs": {
+      "24h": "édition préc.",
+      "today": "hier",
+      "week": "sem. dernière",
+      "month": "mois dernier",
+      "year": "an dernier"
+    },
+    "vs_prev": {
+      "24h": "édition préc.",
+      "today": "veille",
+      "week": "sem. préc.",
+      "month": "mois préc.",
+      "year": "an préc."
+    },
+    "art_info": "Crédit de l'illustration"
   },
   "article_panel": {
     "current": "Période courante",

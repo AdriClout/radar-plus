@@ -1914,8 +1914,10 @@ function renderHot20() {
           (mediaIds.length ? ' • ' + escapeHtml(T('hot20.media_tip', { list: mediaIds.join(', ') })) : '')
         : (slotArticlesReady ? T('common.no_articles_dataset') : T('common.loading'));
 
-      /* Trend badge (i18n) */
+      /* Trend badge (i18n) ; « / hier », « / sem. dernière »… dit toujours par rapport à quoi (Adrien, 31 oct. 2026) */
       var trendHtml = '';
+      var vsTxt = T('hot20.vs.' + currentGranularity);
+      var vs = vsTxt && vsTxt !== 'hot20.vs.' + currentGranularity ? '<span class="trend-vs">/ ' + escapeHtml(vsTxt) + '</span>' : '';
       if (currentSlotIdx > 0) {
         var prevRank = prevRanks[node.id];
         if (!prevRank && comebacks[node.id]) {
@@ -1925,11 +1927,11 @@ function renderHot20() {
         } else {
           var diff = prevRank - (i + 1);
           if (diff > 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('hot20.trend_up_tip', { n: diff, gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9650;' + diff + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('hot20.trend_up_tip', { n: diff, gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9650;' + diff + vs + '</span>';
           } else if (diff < 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('hot20.trend_down_tip', { n: Math.abs(diff), gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9660;' + Math.abs(diff) + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('hot20.trend_down_tip', { n: Math.abs(diff), gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9660;' + Math.abs(diff) + vs + '</span>';
           } else {
-            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_stable_tip', { gran: gl, grans: glp, now: i + 1 })) + '">&mdash;</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_stable_tip', { gran: gl, grans: glp, now: i + 1 })) + '">&mdash;' + vs + '</span>';
           }
         }
       }

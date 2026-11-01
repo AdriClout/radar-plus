@@ -14,6 +14,7 @@
 .hot20-hint::before { content: ''; left: 50%; bottom: calc(100% + 4px); transform: translateX(-50%) translateY(4px); border: 6px solid transparent; border-top-color: rgba(130,170,255,0.32); }
 .hot20-hint:hover::before, .hot20-hint:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
 .hot20-trend { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.trend-vs { font-family: var(--grotesk); font-size: 10.5px; font-weight: 400; color: var(--muted); margin-left: 3px; }
 .hot20-trend.up { color: #4ade80; } .hot20-trend.down { color: #f87171; } .hot20-trend.new { color: #fbbf24; } .hot20-trend.comeback { color: #c084fc; } .hot20-trend.stable { color: var(--muted); }
 .hot20-bar-track { height: 3px; background: rgba(60,100,200,0.15); border-radius: 2px; overflow: hidden; }
 .hot20-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8)); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -73,7 +74,10 @@
 .aune-row-art { display: none; position: relative; align-self: stretch; min-height: 0; margin: 0; border-radius: 6px; overflow: hidden; background: rgba(20,40,110,0.3); }
 .aune-row.has-art .aune-row-art { display: block; }
 .aune-row-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.aune-row-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.3px; padding: 3px 6px; background: rgba(2,0,16,0.6); color: #cfe1ff; }
+/* Crédit de l'illustration : un « i » dans un rond au coin de l'image ; la légende n'apparaît qu'au survol du « i » (Adrien, 31 oct. 2026). */
+.aune-art-i { position: absolute; right: 6px; bottom: 6px; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(207,225,255,0.7); background: rgba(2,0,16,0.35); color: #cfe1ff; font-family: var(--mono); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; cursor: help; z-index: 2; }
+.aune-row-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.3px; padding: 3px 30px 3px 6px; background: rgba(2,0,16,0.7); color: #cfe1ff; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.aune-art-i:hover + figcaption, .aune-art-i:focus + figcaption { opacity: 1; }
 .aune-row-rank { font-family: var(--mono); font-size: 18px; font-weight: 700; color: rgba(120,165,255,0.75); }
 .aune-row.rank-1 .aune-row-rank { font-size: 28px; color: #ffc857; text-shadow: 0 0 18px rgba(255,200,87,0.45); }
 .aune-row.rank-2 .aune-row-rank { font-size: 21px; color: #d9e2f5; }
