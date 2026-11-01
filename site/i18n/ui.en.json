@@ -351,7 +351,6 @@
     "title": "Analysis tools",
     "explore": "Explore →",
     "view_evolution": "View evolution →",
-    "analyze": "Analyze →",
     "constellation": {
       "name": "Constellation",
       "desc": "Co-occurrence map for a given period. Explore connections between media topics and discover thematic clusters."
@@ -360,9 +359,15 @@
       "name": "Evolution",
       "desc": "Time-evolving ranking of salient objects. Track the trajectory of any topic across the full history."
     },
-    "statistiques": {
-      "name": "Statistics",
-      "desc": "Detailed per-object analysis: saliency peaks, media distribution, full history and associated articles."
+    "see_ranking": "See the ranking →",
+    "see_alerts": "See the alerts →",
+    "classement": {
+      "name": "Ranking",
+      "desc": "The official ranking of events and objects, by edition, day, week, month or year, with its full history."
+    },
+    "alertes": {
+      "name": "Alerts",
+      "desc": "Topics whose saliency exceeds the thresholds calibrated per country: high, very high, extreme, and their episodes."
     }
   },
   "homepage": {

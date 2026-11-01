@@ -742,9 +742,10 @@
     }
     .modules-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 18px;
     }
+    @media (max-width: 980px) { .modules-grid { grid-template-columns: repeat(2, 1fr); } }
     .module-card {
       display: flex; flex-direction: column; gap: 10px;
       padding: 22px 20px;
@@ -766,8 +767,10 @@
       box-shadow: 0 0 22px rgba(60,100,200,0.12);
     }
     .module-card-icon {
-      font-size: 20px; color: var(--accent); opacity: 0.75; line-height: 1;
+      font-size: 20px; color: var(--accent); opacity: 0.75; line-height: 0;
     }
+    .module-card-icon .radar-sym { width: 26px; height: 26px; }
+    .module-card:hover .module-card-icon { opacity: 1; }
     .module-card-featured .module-card-icon { opacity: 1; }
     .module-card-name {
       font-family: var(--orbitron); font-size: 13px;
@@ -1037,24 +1040,31 @@
 
 <section class="modules-section" id="modules">
   <h2 class="modules-title" data-i18n="modules.title">Outils d&rsquo;analyse</h2>
+  <!-- Quatre outils = les quatre symboles du robot, dans leur ordre (Adrien, 31 oct. 2026). -->
   <div class="modules-grid">
     <a class="module-card" href="./constellation.html">
-      <div class="module-card-icon">&#9678;</div>
+      <div class="module-card-icon" data-symbol="constellation"></div>
       <div class="module-card-name" data-i18n="modules.constellation.name">Constellation</div>
       <div class="module-card-desc" data-i18n="modules.constellation.desc">Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques.</div>
       <div class="module-card-cta" data-i18n="modules.explore">Explorer &rarr;</div>
     </a>
-    <a class="module-card module-card-featured" href="./evolution.html">
-      <div class="module-card-icon">&#9672;</div>
+    <a class="module-card" href="./classement.html">
+      <div class="module-card-icon" data-symbol="classement"></div>
+      <div class="module-card-name" data-i18n="modules.classement.name">Classement</div>
+      <div class="module-card-desc" data-i18n="modules.classement.desc">Le classement officiel des événements et des objets, par édition, jour, semaine, mois ou année, et tout son historique.</div>
+      <div class="module-card-cta" data-i18n="modules.see_ranking">Voir le classement &rarr;</div>
+    </a>
+    <a class="module-card" href="./evolution.html">
+      <div class="module-card-icon" data-symbol="evolution"></div>
       <div class="module-card-name" data-i18n="modules.evolution.name">Évolution</div>
       <div class="module-card-desc" data-i18n="modules.evolution.desc">Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n&rsquo;importe quel sujet sur l&rsquo;ensemble de l&rsquo;historique.</div>
       <div class="module-card-cta" data-i18n="modules.view_evolution">Voir l&rsquo;évolution &rarr;</div>
     </a>
-    <a class="module-card" href="./statistiques.html">
-      <div class="module-card-icon">&#9638;</div>
-      <div class="module-card-name" data-i18n="modules.statistiques.name">Statistiques</div>
-      <div class="module-card-desc" data-i18n="modules.statistiques.desc">Analyse détaillée par objet&nbsp;: pics de saillance, distribution médiatique, historique complet et articles associés.</div>
-      <div class="module-card-cta" data-i18n="modules.analyze">Analyser &rarr;</div>
+    <a class="module-card" href="./alertes.html">
+      <div class="module-card-icon" data-symbol="alertes"></div>
+      <div class="module-card-name" data-i18n="modules.alertes.name">Alertes</div>
+      <div class="module-card-desc" data-i18n="modules.alertes.desc">Les sujets dont la saillance dépasse les seuils calibrés par pays&nbsp;: élevé, très élevé, extrême, et leurs épisodes.</div>
+      <div class="module-card-cta" data-i18n="modules.see_alerts">Voir les alertes &rarr;</div>
     </a>
   </div>
 </section>

@@ -351,7 +351,6 @@
     "title": "Outils d’analyse",
     "explore": "Explorer →",
     "view_evolution": "Voir l’évolution →",
-    "analyze": "Analyser →",
     "constellation": {
       "name": "Constellation",
       "desc": "Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques."
@@ -360,9 +359,15 @@
       "name": "Évolution",
       "desc": "Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n’importe quel sujet sur l’ensemble de l’historique."
     },
-    "statistiques": {
-      "name": "Statistiques",
-      "desc": "Analyse détaillée par objet : pics de saillance, distribution médiatique, historique complet et articles associés."
+    "see_ranking": "Voir le classement →",
+    "see_alerts": "Voir les alertes →",
+    "classement": {
+      "name": "Classement",
+      "desc": "Le classement officiel des événements et des objets, par édition, jour, semaine, mois ou année, et tout son historique."
+    },
+    "alertes": {
+      "name": "Alertes",
+      "desc": "Les sujets dont la saillance dépasse les seuils calibrés par pays : élevé, très élevé, extrême, et leurs épisodes."
     }
   },
   "homepage": {

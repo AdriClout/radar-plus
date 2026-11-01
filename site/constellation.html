@@ -70,8 +70,8 @@
     }
     #cst-title {
       font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 16px;
-      letter-spacing: 2.5px;
+      font-size: 15px;
+      letter-spacing: 1.6px; /* resserré pour laisser la place au symbole (épingle) devant le titre */
       color: rgba(195, 220, 255, 0.92);
       text-transform: uppercase;
       text-shadow: 0 0 10px rgba(90,140,255,0.36), 0 0 26px rgba(70,110,230,0.22);
@@ -520,7 +520,7 @@
           </g>
         </svg>
       </a>
-      <div id="cst-title" data-i18n="constellation.title">Constellation</div>
+      <div id="cst-title"><span class="page-sym" data-symbol="constellation"></span><span data-i18n="constellation.title">Constellation</span></div>
     </div>
     <div class="lpanel-section">
       <div class="lpanel-label" data-i18n="hot20.country_label">Pays</div>

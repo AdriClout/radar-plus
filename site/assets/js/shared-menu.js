@@ -33,6 +33,27 @@
   })();
 
   // Helper exposé pour les pages: window.radarTrack('event_name', { ... })
+  // ─── Les quatre symboles du robot (accueil) : une page chacun ─────────────────
+  // Épingle → Constellation, podium → Classement, chronomètre → Évolution,
+  // thermomètre → Alertes (Adrien, 31 oct. 2026). Même dessin partout : cartes
+  // « Outils d'analyse », menu et titre de la page. fill = currentColor.
+  var SYMBOLS = {
+    constellation: '<path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/>',
+    classement: '<path d="M8.5 7h7v15h-7zM1.5 12h6v10h-6zM16.5 10h6v12h-6z"/>',
+    evolution: '<path fill-rule="evenodd" d="M9.5 1h5v2h-1.5v1.6a8.5 8.5 0 1 1-2 0V3H9.5zm9.1 3.2 1.5 1.5-1.8 1.8a8.6 8.6 0 0 0-1.5-1.5zM12 6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm-1 2.5h2v5h-2z"/>',
+    alertes: '<path fill-rule="evenodd" d="M12 1.5A3.5 3.5 0 0 0 8.5 5v8.6a5.5 5.5 0 1 0 7 0V5A3.5 3.5 0 0 0 12 1.5zm0 2A1.5 1.5 0 0 1 13.5 5v9.6l.7.5a3.5 3.5 0 1 1-4.4 0l.7-.5V5A1.5 1.5 0 0 1 12 3.5z"/><path d="M11 9h2v6.3a2.5 2.5 0 1 1-2 0z"/>'
+  };
+  function sym(page, cls) {
+    if (!SYMBOLS[page]) return '';
+    return '<svg class="radar-sym' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + SYMBOLS[page] + '</svg>';
+  }
+  window.radarSymbol = sym;
+  // Les pages posent <span class="page-sym" data-symbol="alertes"></span> dans leur titre.
+  function fillSymbols(root) {
+    (root || document).querySelectorAll('[data-symbol]').forEach(function (el) { if (!el.firstChild) el.innerHTML = sym(el.dataset.symbol); });
+  }
+  window.radarFillSymbols = fillSymbols;
+
   window.radarTrack = function(eventName, params) {
     if (typeof window.gtag !== 'function') return;
     try { window.gtag('event', eventName, params || {}); } catch (_) { /* noop */ }
@@ -107,10 +128,10 @@
             '<a href="./index.html#hot20" data-i18n="nav.home_hot20">Hot 20</a>' +
           '</div>' +
         '</div>' +
-        '<a href="./classement.html" data-page="classement.html" data-i18n="nav.classement">Classement</a>' +
-        '<a href="./evolution.html" data-page="evolution.html" data-i18n="nav.evolution">Évolution</a>' +
-        '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
-        '<a href="./alertes.html" data-page="alertes.html" data-i18n="nav.alertes">Alertes</a>' +
+        '<a href="./classement.html" data-page="classement.html">' + sym('classement') + '<span data-i18n="nav.classement">Classement</span></a>' +
+        '<a href="./evolution.html" data-page="evolution.html">' + sym('evolution') + '<span data-i18n="nav.evolution">Évolution</span></a>' +
+        '<a href="./constellation.html" data-page="constellation.html">' + sym('constellation') + '<span data-i18n="nav.constellation">Constellation</span></a>' +
+        '<a href="./alertes.html" data-page="alertes.html">' + sym('alertes') + '<span data-i18n="nav.alertes">Alertes</span></a>' +
         '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
         '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
         '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>' +
@@ -208,10 +229,10 @@
       '</div>',
       '<h3 data-i18n="nav.section_navigation">Navigation</h3>',
       '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>',
-      '<a href="./classement.html" data-page="classement.html" data-i18n="nav.classement">Classement</a>',
-      '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
-      '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
-      '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
+      '<a href="./classement.html" data-page="classement.html">' + sym('classement') + '<span data-i18n="nav.classement">Classement</span></a>',
+      '<a href="./evolution.html" data-page="evolution.html">' + sym('evolution') + '<span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
+      '<a href="./constellation.html" data-page="constellation.html">' + sym('constellation') + '<span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
+      '<a href="./alertes.html" data-page="alertes.html">' + sym('alertes') + '<span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_qualite">QUALITÉ</span></a>',
       '<a href="./index.html#hot20" data-i18n="nav.hot20">Hot 20</a>',
@@ -289,6 +310,7 @@
     });
     refreshLangButtons();
     document.addEventListener('i18n:applied', refreshLangButtons);
+    fillSymbols();
 
     var reportLink = document.getElementById('nav-report-link');
     if (reportLink) {
