@@ -1020,23 +1020,43 @@
   </button>
 </section>
 
-<!-- Dotted bridge -->
+<!-- Pont pointillé : une ligne par outil, du symbole du robot à sa carte (positions mesurées
+     par layoutBridge(), donc justes à toute largeur d'écran ; Adrien, 31 oct. 2026). -->
 <div class="dotted-bridge">
-  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <line x1="350" y1="0" x2="300" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="500" y1="0" x2="500" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="650" y1="0" x2="700" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2s" repeatCount="indefinite" path="M350,0 L300,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.3s" repeatCount="indefinite" path="M500,0 L500,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.6s" repeatCount="indefinite" path="M650,0 L700,120"/>
-    </circle>
+  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" id="dotted-bridge-svg">
+    <line x1="340" y1="0" x2="280" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="450" y1="0" x2="427" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="550" y1="0" x2="573" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="660" y1="0" x2="720" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2s" repeatCount="indefinite" path="M340,0 L280,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.3s" repeatCount="indefinite" path="M450,0 L427,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.6s" repeatCount="indefinite" path="M550,0 L573,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.9s" repeatCount="indefinite" path="M660,0 L720,120"/></circle>
   </svg>
 </div>
+<script>
+// Chaque pointillé relie un symbole du robot (.page-hotspot, dans l'ordre des cartes) au centre
+// de sa carte « Outils d'analyse » ; recalculé au chargement et au redimensionnement.
+(function () {
+  function layoutBridge() {
+    var svg = document.getElementById('dotted-bridge-svg'); if (!svg) return;
+    var box = svg.getBoundingClientRect(), w = Math.round(box.width) || 1000;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' 120');
+    var spots = document.querySelectorAll('.page-hotspot'), cards = document.querySelectorAll('.module-card');
+    var lines = svg.querySelectorAll('line'), motions = svg.querySelectorAll('animateMotion');
+    lines.forEach(function (l, i) {
+      var s = spots[i], c = cards[i]; if (!s || !c) { l.style.display = 'none'; return; }
+      var sb = s.getBoundingClientRect(), cb = c.getBoundingClientRect();
+      var x1 = Math.round(sb.left + sb.width / 2 - box.left), x2 = Math.round(cb.left + cb.width / 2 - box.left);
+      l.setAttribute('x1', x1); l.setAttribute('x2', x2);
+      if (motions[i]) motions[i].setAttribute('path', 'M' + x1 + ',0 L' + x2 + ',120');
+    });
+  }
+  window.addEventListener('resize', layoutBridge);
+  window.addEventListener('load', layoutBridge);
+  if (document.readyState !== 'loading') layoutBridge(); else document.addEventListener('DOMContentLoaded', layoutBridge);
+})();
+</script>
 
 <section class="modules-section" id="modules">
   <h2 class="modules-title" data-i18n="modules.title">Outils d&rsquo;analyse</h2>
