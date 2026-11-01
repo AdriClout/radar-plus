@@ -183,7 +183,7 @@
     "header_rank": "Rank",
     "header_movement": "Movement",
     "header_subject": "Subject",
-    "header_score_increase": "Score · Increase",
+    "header_score_increase": "Increase · total",
     "header_articles": "Articles",
     "country_label": "Country",
     "country_qc": "Quebec",
@@ -230,7 +230,8 @@
       "month": "{pct}% of the radar this month",
       "quarter": "{pct}% of the radar this year",
       "total": "{pct}% of the radar since the start"
-    }
+    },
+    "total_label": "in total"
   },
   "constellation": {
     "title": "Constellation",

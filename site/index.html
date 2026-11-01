@@ -862,7 +862,8 @@
     .hot20-row-name-wrap .hot20-row-name { flex: 0 1 auto; }
     .hot20-row-streak { font-family: var(--grotesk); font-size: 12.5px; margin: 0 0 0 12px; white-space: nowrap; flex: 0 0 auto; }
     .hot20-row-pct strong { font-size: 17px; }
-    .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
+    .hot20-row-increase, .hot20-row-total { font-size: 11px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+    .hot20-row-increase strong { color: #4ade80; }
     /* Colonne « articles » retirée de l'accueil (Adrien, 31 oct.) ; le compte reste dans l'info-bulle du sujet. */
     .hot20-row-media, .hot20-list-header span:last-child { display: none; }
     .hot20-list-header, .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 210px; }
@@ -909,7 +910,8 @@
         display: flex; flex-direction: column;
         padding: clamp(14px, 2.5vh, 32px) max(28px, calc((100% - 984px) / 2)) 6px; /* contenu centré, 984 px au plus (1040 moins les marges d'avant) */
       }
-      .aune-section.top-panel .aune-head, .hot20-section.top-panel .hot20-header { margin-bottom: 10px; }
+      .aune-section.top-panel .aune-head { margin-bottom: 10px; }
+      .hot20-section.top-panel .hot20-header { margin-bottom: 20px; }
       /* Rangs un peu plus serrés pour que les trois tiennent sur un portable de 700 px de haut */
       .aune-section.top-panel .aune-row { padding-top: 6px; padding-bottom: 6px; }
       .aune-section.top-panel .aune-row.rank-1 { padding-top: 8px; padding-bottom: 8px; margin: 8px 0 6px; }
@@ -919,7 +921,7 @@
       .hot20-section.top-panel .hot20-list { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
       .hot20-section.top-panel .hot20-list-header { flex: 0 0 auto; }
       .hot20-section.top-panel .hot20-row { flex: 1 1 0; min-height: 0; padding: 3px 14px; }
-      .hot20-section.top-panel .hot20-list-header, .hot20-section.top-panel .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 250px; }
+      .hot20-section.top-panel .hot20-list-header, .hot20-section.top-panel .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 270px; }
       .hot20-section.top-panel .hot20-row-pct, .hot20-section.top-panel .hot20-row-total { white-space: nowrap; }
       .hot20-section.top-panel .hot20-empty { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; }
       /* Score sur une ligne : points et augmentation ; ni barre ni part du radar (Adrien, 1er nov. 2026) */
@@ -2180,8 +2182,12 @@ function renderHot20() {
         '</div>' +
         '<div class="hot20-row-score">' +
           '<div class="hot20-row-pct">' +
-            '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '"><strong>' + totalStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>' +
-            (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
+            // Le chiffre qui classe (l'augmentation de la période) en gros et en vert, le total depuis
+            // le début en petit à sa droite ; « Depuis le début » : le total seul (Adrien, 1er nov. 2026).
+            (currentGranularity === 'total'
+              ? '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '"><strong>' + totalStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>'
+              : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '."><strong>' + increaseStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>' +
+                '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '">' + totalStr + ' ' + escapeHtml(T('hot20.total_label')) + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
           '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T(currentSlotIdx === aggregatedSlots.length - 1 ? 'hot20.share_label_gran.' + currentGranularity : 'hot20.share_label', { pct: pct })) + '</div>' +
