@@ -135,7 +135,16 @@
         '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
         '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
         '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>' +
-        '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>' +
+        // Méthodologie : la page, et dessous la page grand public des indices (Adrien, 31 oct. 2026).
+        '<div class="site-bar-dropdown site-bar-home hoverable">' +
+          '<a href="./methodologie.html" data-page="methodologie.html" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.methodologie">Méthodologie</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</a>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie_full">Méthodologie complète</a>' +
+            '<a href="./indices.html" data-page="indices.html" data-i18n="nav.indices">Les indices de saillance</a>' +
+          '</div>' +
+        '</div>' +
         // Tout ce qui restait dans l'ancien tiroir : menu déroulant vers le bas.
         '<div class="site-bar-dropdown">' +
           '<button type="button" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
@@ -241,6 +250,7 @@
       '<h3 style="margin-top: 30px;" data-i18n="nav.section_about">À propos</h3>',
       '<a href="./radarplus.html" data-page="radarplus.html" data-i18n="nav.radarplus">Radar+</a>',
       '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>',
+      '<a href="./indices.html" data-page="indices.html" data-i18n="nav.indices">Les indices de saillance</a>',
       '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>',
       '<a href="./acces-donnees.html" data-page="acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>',
       '<a href="#" id="nav-report-link" data-i18n="nav.report_issue">Signaler un problème</a>',

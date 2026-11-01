@@ -507,9 +507,12 @@ function salPill(band, T) { return '<span class="aune-band band-' + escapeHtml(b
 function salBadgeHtml(c, region, T) {
   var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
   salRows[c.storyline] = { c: c, region: region };
-  return '<span class="sal-wrap">' +
-    '<a class="sal-badge" href="./indices.html#etiquettes"><span class="sal-prefix">' + escapeHtml(T(c.is24h ? 'aune.sal.now_prefix' : 'aune.sal.peak_prefix')) + '</span> ' + salPill(band, T) + '</a>' +
-    '<button type="button" class="sal-i" data-sid="' + escapeHtml(c.storyline) + '" aria-label="' + escapeHtml(T('aune.sal.i_label')) + '">i</button>' +
+  // Un seul rectangle de couleur sur deux lignes : « ACTUELLEMENT » (ou « SOMMET ») et le « i »
+  // en haut, le niveau dessous ; tient dans la colonne des points (Adrien, 31 oct. 2026).
+  return '<span class="sal-tag band-' + escapeHtml(band) + '">' +
+    '<span class="sal-tag-top"><span class="sal-prefix">' + escapeHtml(T(c.is24h ? 'aune.sal.now_word' : 'aune.sal.peak_word')) + '</span>' +
+    '<button type="button" class="sal-i" data-sid="' + escapeHtml(c.storyline) + '" aria-label="' + escapeHtml(T('aune.sal.i_label')) + '">i</button></span>' +
+    '<a class="sal-level" href="./indices.html#etiquettes">' + escapeHtml(T('aune.band.' + band)) + '</a>' +
   '</span>';
 }
 function salCurveSvg(value, t, band, markerLabel, T) {

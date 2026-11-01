@@ -36,7 +36,9 @@
     "alert_marker": "!",
     "home_une": "La Une des Unes",
     "home_hot20": "Hot 10",
-    "classement": "Classement"
+    "classement": "Classement",
+    "methodologie_full": "Méthodologie complète",
+    "indices": "Les indices de saillance"
   },
   "alertbar": {
     "label": "ALERTE",
@@ -111,7 +113,8 @@
     "sonar": "SONAR",
     "statistiques": "Statistiques",
     "methodologie": "Méthodologie",
-    "radarplus": "Radar+"
+    "radarplus": "Radar+",
+    "indices": "Les indices de saillance"
   },
   "country": {
     "QC": "Québec",
@@ -626,7 +629,9 @@
       "def": "L'indice de saillance Radar+ mesure la place qu'une nouvelle prend à la Une des médias : combien de médias l'y mettent, pendant combien de temps et avec quelle intensité. Chaque édition de 4 heures est notée de 0 à 100 ; l'indice 24h est la moyenne des six dernières éditions, les plus récentes comptant davantage. L'étiquette situe la nouvelle parmi les Unes d'une année entière.",
       "more": "Comprendre les indices de saillance →",
       "partial_one": "Apparue à la dernière édition seulement : l'indice 24h ne compte encore qu'une édition sur les six qu'il moyenne. Il monte si l'histoire reste en Une.",
-      "partial_many": "Présente dans {n} des six éditions que moyenne l'indice 24h : il monte si l'histoire reste en Une."
+      "partial_many": "Présente dans {n} des six éditions que moyenne l'indice 24h : il monte si l'histoire reste en Une.",
+      "now_word": "Actuellement",
+      "peak_word": "Sommet"
     }
   },
   "article_panel": {
@@ -747,5 +752,14 @@
   },
   "stats": {
     "lead": "Un objet ou un événement : son parcours dans les Unes, édition par édition."
+  },
+  "indices": {
+    "title": "Les indices",
+    "title_accent": "de saillance",
+    "full_metho": "Méthodologie complète →",
+    "lead": "Ce que Radar+ mesure quand il dit qu'une nouvelle est « saillante », comment les points sont calculés, et ce que veulent dire les étiquettes, de « Sous le radar » à « Saillance extrême ».",
+    "chart_title": "Où se situe une nouvelle parmi les Unes d'une année",
+    "scale_24h": "Indice 24h",
+    "scale_block": "Une édition (4 h)"
   }
 }

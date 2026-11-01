@@ -137,14 +137,28 @@
 .aune-row-score .inc.stable { color: var(--muted); font-weight: 400; }
 .aune-row-score .hot20-bar-track { grid-column: 1 / -1; margin-top: 4px; }
 .aune-row-score .unit { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
-/* Étiquette « Actuellement : … » / « Sommet : … » + « i », à droite au-dessus des points (Adrien, 31 oct. 2026) */
-.aune-row-score .sal-wrap { grid-column: 1 / -1; margin-bottom: 5px; }
-.sal-wrap { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.sal-badge { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: inherit; }
-.sal-badge:hover .aune-band { filter: brightness(1.15); }
-.sal-prefix { font-family: var(--grotesk); font-size: 11.5px; color: var(--muted); }
-.sal-i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(160,190,255,0.6); background: transparent; color: #cfe1ff; font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 14px; padding: 0; cursor: help; flex: 0 0 auto; }
-.sal-i:hover, .sal-i:focus { background: rgba(85,136,255,0.25); border-color: var(--accent); outline: none; }
+/* Étiquette de saillance : un rectangle de couleur sur deux lignes, « ACTUELLEMENT » (ou « SOMMET ») et
+   le « i » en haut, le niveau dessous ; à droite, au-dessus des points (Adrien, 31 oct. 2026). */
+.aune-row-score .sal-tag { grid-column: 1 / -1; justify-self: start; margin-bottom: 6px; }
+.sal-tag {
+  display: inline-flex; flex-direction: column; gap: 1px; padding: 4px 8px 5px; border-radius: 6px; min-width: 150px; max-width: 100%;
+  font-family: var(--grotesk); color: #060d22; background: #6b7fa8; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.2;
+}
+.sal-tag-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.85; }
+.sal-level { font-size: 11px; font-weight: 800; color: inherit; text-decoration: none; white-space: nowrap; }
+.sal-level:hover { text-decoration: underline; }
+.sal-i { width: 14px; height: 14px; border-radius: 50%; border: 1.3px solid currentColor; background: transparent; color: inherit; font-family: var(--mono); font-size: 9px; font-weight: 700; line-height: 11px; padding: 0; cursor: help; flex: 0 0 auto; opacity: 0.9; }
+.sal-i:hover, .sal-i:focus { background: rgba(0,0,0,0.18); outline: none; opacity: 1; }
+.sal-tag.band-faible { background: #7f93b8; --pulse: rgba(127,147,184,0.55); }
+.sal-tag.band-moderee { background: #5fa8ff; --pulse: rgba(95,168,255,0.7); }
+.sal-tag.band-elevee { background: #f2c94c; --pulse: rgba(242,201,76,0.8); --pulse-r: 14px; }
+.sal-tag.band-tres_elevee { background: #ff9f43; --pulse: rgba(255,159,67,0.85); --pulse-r: 16px; }
+.sal-tag.band-extreme { background: #ff4d4d; color: #fff; --pulse: rgba(255,77,77,0.9); --pulse-r: 18px; }
+.sal-tag.band-aucune { background: transparent; border: 1px solid rgba(127,147,184,0.45); color: #9fb0cf; }
+.sal-tag:not(.band-aucune) { animation: aune-pulse 2.2s ease-in-out infinite; }
+.sal-tag.band-extreme { animation-duration: 1.4s; }
+@media (prefers-reduced-motion: reduce) { .sal-tag { animation: none; } }
+.aune-row { min-height: 96px; } /* l'étiquette sur deux lignes au-dessus des points */
 .sal-pop { position: fixed; z-index: 400; background: rgba(8,16,46,0.97); border: 1px solid rgba(120,170,255,0.4); border-radius: 10px; padding: 14px 16px 12px; box-shadow: 0 12px 40px rgba(0,0,20,0.6); font-family: var(--grotesk); color: #dbe6ff; text-align: left; }
 .sal-pop p { margin: 0 0 8px; }
 .sal-kicker { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
