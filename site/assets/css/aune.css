@@ -68,6 +68,10 @@
   flex: var(--grow, 1) 1 0px;
 }
 .aune-row.has-art { grid-template-columns: 48px 72px minmax(160px, 22%) minmax(0, 1fr) 210px; }
+/* Rangs 2 et 3 : une illustration plus petite, la carte du n° 1 garde la grande (Adrien, 1er nov. 2026). */
+.aune-row.has-art:not(.rank-1) { grid-template-columns: 48px 72px 140px minmax(0, 1fr) 210px; }
+.aune-row:not(.rank-1) .aune-row-art { align-self: center; height: 86px; }
+.aune-row:not(.rank-1) .aune-row-art figcaption { font-size: 7.5px; }
 .aune-row.rank-1 { background: var(--card-bg); border: 1px solid rgba(120,170,255,0.35); border-left-width: 3px; border-radius: 10px; margin: 10px 0 8px; padding: 11px 15px; }
 /* Filet de gauche = niveau de saillance (mêmes couleurs que le badge) */
 .aune-row.band-faible { border-left-color: #7f93b8; }
@@ -131,8 +135,9 @@
 }
 .aune-media-chip:hover { border-color: var(--accent); color: #fff; }
 /* Score comme le Hot 20 : chiffre et variation, la barre, puis la part de l'actualité sous la barre */
-.aune-row-score { justify-self: end; width: 190px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: baseline; }
-.aune-row-score .num { font-family: var(--mono); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+.aune-row-score { justify-self: end; width: 210px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: baseline; }
+/* Le nombre et son unité restent sur une ligne, même à quatre chiffres (« 1110.2 points cumulés »). */
+.aune-row-score .num { font-family: var(--mono); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; white-space: nowrap; }
 .aune-row.rank-1 .aune-row-score .num { font-size: 24px; }
 .aune-row-score .inc { font-family: var(--mono); font-size: 12px; font-weight: 700; white-space: nowrap; }
 .aune-row-score .pts { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
@@ -259,6 +264,14 @@
 .aune-table tr.rank-1 td.rank { color: #ffc857; font-size: 24px; text-shadow: 0 0 14px rgba(255,200,87,0.4); }
 .aune-table tr.rank-2 td.rank { color: #d9e2f5; } .aune-table tr.rank-3 td.rank { color: #d9a86c; }
 .aune-table td.subject .aune-band { display: inline-block; margin-bottom: 4px; }
+.aune-table td.subject .subj-wrap { display: flex; gap: 12px; align-items: flex-start; }
+.aune-table td.subject .subj-text { min-width: 0; flex: 1 1 auto; }
+.aune-thumb { position: relative; flex: 0 0 auto; width: 96px; height: 60px; border-radius: 6px; overflow: hidden; background: rgba(20,40,110,0.3); display: none; }
+.aune-thumb.ok { display: block; }
+.aune-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aune-thumb .aune-art-i { width: 14px; height: 14px; line-height: 12px; font-size: 9px; right: 4px; bottom: 4px; }
+.aune-thumb-credit { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 7px; padding: 2px 20px 2px 4px; background: rgba(2,0,16,0.75); color: #cfe1ff; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.aune-thumb .aune-art-i:hover + .aune-thumb-credit, .aune-thumb .aune-art-i:focus + .aune-thumb-credit { opacity: 1; }
 .aune-table td.subject .aune-row-title { display: block; font-size: 14px; white-space: normal; -webkit-line-clamp: unset; }
 .aune-table tr.rank-1 td.subject .aune-row-title { font-size: 18px; line-height: 1.25; }
 .aune-table tr.rank-1 td.subject .aune-band { font-size: 12px; padding: 3px 10px; }

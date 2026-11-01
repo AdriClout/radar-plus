@@ -8,6 +8,15 @@
 .ev-region { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
 .ev-title { font-size: clamp(22px, 3vw, 34px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; color: #f1f5ff; }
 .ev-alt { margin-top: 8px; color: var(--muted); font-size: 13.5px; }
+/* Illustration de la Vitrine pour cette histoire, si elle existe (Adrien, 1er nov. 2026) */
+.ev-head { display: flow-root; }
+.ev-art { display: none; float: right; position: relative; width: min(300px, 34%); aspect-ratio: 16 / 10; margin: 0 0 12px 24px; border-radius: 10px; overflow: hidden; background: rgba(20,40,110,0.3); border: 1px solid rgba(120,170,255,0.25); }
+.ev-art.ok { display: block; }
+.ev-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ev-art .aune-art-i { position: absolute; right: 8px; bottom: 8px; z-index: 2; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(207,225,255,0.7); background: rgba(2,0,16,0.35); color: #cfe1ff; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; cursor: help; }
+.ev-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-family: 'Space Mono', monospace; font-size: 9px; padding: 4px 30px 4px 8px; background: rgba(2,0,16,0.75); color: #cfe1ff; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.ev-art .aune-art-i:hover + figcaption, .ev-art .aune-art-i:focus + figcaption { opacity: 1; }
+@media (max-width: 700px) { .ev-art { float: none; width: 100%; margin: 0 0 12px; } }
 .ev-section { margin-top: 28px; }
 .ev-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .ev-note { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }

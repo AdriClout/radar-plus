@@ -279,7 +279,9 @@ function render(sec, data) {
     return '<div class="ev-metric"><span class="ev-m-label">' + esc(label) + '</span><span class="ev-band band-' + tagBand + '">' + esc(tagText) + '</span>' +
       (val ? '<span class="ev-m-val">' + val + '</span>' : '') + (sub ? '<span class="ev-m-sub">' + esc(sub) + '</span>' : '') + '</div>';
   };
-  var html = '<div class="ev-head">' +
+  var artUrl = u.artUrl ? u.artUrl(sid) : '';
+  var artHtml = artUrl ? '<figure class="ev-art"><img src="' + esc(artUrl) + '" alt="" onload="this.parentNode.classList.add(\'ok\')" onerror="this.parentNode.remove()"><span class="aune-art-i" tabindex="0" aria-label="' + esc(T('aune.art_info')) + '">i</span><figcaption>' + esc(T('aune.art_credit')) + '</figcaption></figure>' : '';
+  var html = '<div class="ev-head">' + artHtml +
       '<div class="ev-top">' + (issue ? '<span class="ev-issue">' + esc(issue) + '</span>' : '') + '<span class="ev-region">' + esc(T('fiche.region_' + region)) + '</span></div>' +
       '<h2 class="ev-title">' + esc(bestTitle) + '</h2>' +
       (lastTitle && lastTitle !== bestTitle ? '<p class="ev-alt">' + esc(T('fiche.title_last')) + ' : ' + esc(lastTitle) + '</p>' : '') +

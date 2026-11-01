@@ -518,6 +518,16 @@ function auneArtHtml(c, rnd, urls, T, latest) {
     '<span class="aune-art-i" tabindex="0" aria-label="' + escapeHtml(T('aune.art_info')) + '">i</span>' +
     '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>';
 }
+// Vignette de l'illustration (tableau de Classement) : rien si l'histoire n'en a pas.
+function auneArtUrl(sid) {
+  var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[cfg.country] : null, k = auneLatestKey(latest);
+  return window.radarData.base + '/events/art/' + encodeURIComponent(sid) + '.webp' + (k ? '?v=' + encodeURIComponent(k) : '');
+}
+function auneThumbHtml(c, T) {
+  if (!c.storyline) return '';
+  return '<span class="aune-thumb"><img src="' + escapeHtml(auneArtUrl(c.storyline)) + '" alt="" loading="lazy" onload="this.parentNode.classList.add(\'ok\')" onerror="this.parentNode.remove()">' +
+    '<span class="aune-art-i" tabindex="0" aria-label="' + escapeHtml(T('aune.art_info')) + '">i</span><span class="aune-thumb-credit">' + escapeHtml(T('aune.art_credit')) + '</span></span>';
+}
 // Un rang, à l'image du Hot 20 : rang, mouvement, [illustration], badge de saillance
 // puis titre puis détails, et à droite la mesure de la vue avec sa variation et sa barre.
 function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense, latest) {
@@ -552,7 +562,7 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
     : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points_cumul')) + '</span>' + '</span>';
-  var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T, latest) : '';
+  var art = !dense ? auneArtHtml(c, rnd, urls, T, latest) : ''; // l'illustration de chaque histoire qui en a une (Adrien, 1er nov. 2026)
   var rank = c.rank || (i + 1);
   var cls = 'aune-row rank-' + rank + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
@@ -705,9 +715,9 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
     return '<tr class="rank-' + rank + ' band-' + esc(band) + ' aune-go" data-href="' + auneFicheUrl(c, region) + '">' +
       '<td class="rank">' + rank + '</td>' +
       '<td class="center">' + auneTrendHtml(c, rank - 1, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
-      '<td class="subject">' + salBadgeHtml(c, region, T) +
+      '<td class="subject"><div class="subj-wrap">' + auneThumbHtml(c, T) + '<div class="subj-text">' + salBadgeHtml(c, region, T) +
         '<span class="aune-row-title"><a href="' + auneFicheUrl(c, region) + '">' + esc(c.title) + '</a></span>' +
-        '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</td>' +
+        '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</div></div></td>' +
       '<td class="num strong">' + auneNumUnit(c.points.toFixed(1), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
       (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + auneNumUnit((delta > 0 ? '+' : '') + delta.toFixed(1), T('aune.points')) + '</td>'
              : '<td class="num">' + auneNumUnit((c.total || 0).toFixed(1), T('aune.points')) + '</td>') +
@@ -1026,5 +1036,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, exportData: exportData, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, artUrl: auneArtUrl, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();
