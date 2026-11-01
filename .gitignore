@@ -82,6 +82,7 @@ tmp/
 # Python
 __pycache__/
 !site/alertes.html
+!site/classement.html
 !site/cycles.html
 !site/statistiques.html
 *.py.bak
