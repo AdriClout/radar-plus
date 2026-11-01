@@ -442,6 +442,7 @@
       background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8));
       transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
+    .hot20-row-share { font-family: var(--grotesk); font-size: 11px; color: var(--muted); margin-top: 5px; }
     .hot20-row-media { font-size: 10px; color: var(--muted); text-align: right; white-space: nowrap; }
 
     .hot20-hint {
@@ -521,139 +522,6 @@
     .hot20-trend.new { color: #fbbf24; }
     .hot20-trend.comeback { color: #c084fc; }
     .hot20-trend.stable { color: var(--muted); }
-
-    /* Search bar */
-    .hot20-search {
-      width: 100%; margin-bottom: 20px;
-      position: relative;
-    }
-    .hot20-search input {
-      width: 100%; padding: 12px 16px 12px 42px;
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text); font-family: var(--mono);
-      font-size: 14px; outline: none; transition: border-color 0.3s;
-    }
-    .hot20-search input::placeholder { color: var(--muted); }
-    .hot20-search input:focus { border-color: var(--accent); }
-    .hot20-search-icon {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--muted); font-size: 16px; pointer-events: none;
-    }
-    .hot20-search-result {
-      margin-bottom: 20px; padding: 16px 20px;
-      background: linear-gradient(135deg, rgba(40,70,160,0.3), rgba(20,30,80,0.4));
-      border: 1px solid rgba(100,160,255,0.35); border-radius: 6px;
-      display: none;
-      position: relative;
-      overflow: hidden;
-    }
-    .hot20-search-result::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -45%;
-      width: 40%;
-      height: 100%;
-      background: linear-gradient(90deg, rgba(84,255,165,0), rgba(84,255,165,0.16), rgba(84,255,165,0));
-      opacity: 0;
-      pointer-events: none;
-    }
-    .hot20-search-result.visible { display: block; }
-    .hot20-search-result.visible::before {
-      animation: radarSweep 4.2s ease-in-out infinite;
-    }
-    @keyframes radarSweep {
-      0% { transform: translateX(0); opacity: 0; }
-      15% { opacity: 0.62; }
-      70% { opacity: 0.26; }
-      100% { transform: translateX(360%); opacity: 0; }
-    }
-    .hot20-search-result .sr-name {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 18px; font-weight: 700; color: #e8f0ff;
-      text-transform: capitalize; margin-bottom: 4px;
-    }
-    .hot20-search-result .sr-name-text {
-      line-height: 1.1;
-    }
-    .hot20-search-result .sr-radar-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #44ff9a;
-      position: relative;
-      box-shadow: 0 0 0 0 rgba(68,255,154,0.55), 0 0 8px rgba(68,255,154,0.55);
-      flex: 0 0 auto;
-    }
-    .hot20-search-result .sr-radar-dot::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 50%;
-      border: 1px solid rgba(68,255,154,0.65);
-      opacity: 0;
-      transform: scale(0.7);
-    }
-    .hot20-search-result.radar-active .sr-radar-dot {
-      animation: radarDotPulse 2.2s ease-out infinite;
-    }
-    .hot20-search-result.radar-active .sr-radar-dot::after {
-      animation: radarRing 2.2s ease-out infinite;
-    }
-    .hot20-search-result.radar-inactive .sr-radar-dot {
-      background: rgba(116,206,164,0.78);
-      box-shadow: 0 0 0 0 rgba(116,206,164,0.35), 0 0 6px rgba(116,206,164,0.35);
-    }
-    .hot20-search-result.radar-inactive .sr-radar-dot::after {
-      border-color: rgba(116,206,164,0.55);
-      animation: radarRingSoft 3.4s ease-out infinite;
-    }
-    @keyframes radarDotPulse {
-      0% { box-shadow: 0 0 0 0 rgba(68,255,154,0.6), 0 0 10px rgba(68,255,154,0.5); }
-      60% { box-shadow: 0 0 0 8px rgba(68,255,154,0), 0 0 12px rgba(68,255,154,0.25); }
-      100% { box-shadow: 0 0 0 0 rgba(68,255,154,0), 0 0 8px rgba(68,255,154,0.18); }
-    }
-    @keyframes radarRing {
-      0% { opacity: 0.65; transform: scale(0.75); }
-      70% { opacity: 0; transform: scale(1.8); }
-      100% { opacity: 0; transform: scale(1.8); }
-    }
-    @keyframes radarRingSoft {
-      0% { opacity: 0.5; transform: scale(0.75); }
-      70% { opacity: 0; transform: scale(1.5); }
-      100% { opacity: 0; transform: scale(1.5); }
-    }
-    .hot20-search-result .sr-info {
-      font-size: 12px; color: var(--text); line-height: 1.6;
-    }
-    .hot20-search-result .sr-actions {
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .hot20-search-result .sr-evo-btn {
-      display: inline;
-      padding: 0;
-      border: none;
-      background: none;
-      color: rgba(170, 210, 255, 0.95);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      text-transform: none;
-      transition: color 0.25s;
-    }
-    .hot20-search-result .sr-evo-btn:hover {
-      color: #eaf3ff;
-    }
-    .hot20-search-result .sr-not-found {
-      font-size: 13px; color: var(--muted); font-style: italic;
-    }
 
     /* Article panel */
     .article-overlay {
@@ -975,8 +843,6 @@
     .week-label-date { font-size: 14px; font-weight: 600; }
     .week-label-interval, .week-label-countdown { font-size: 12px; }
     .week-btn { font-family: var(--grotesk); border-radius: 6px; }
-    .hot20-search { margin: 18px 0 10px; }
-    .hot20-search input { font-family: var(--grotesk); font-size: 14px; padding: 9px 12px; border-radius: 8px; letter-spacing: 0; }
     .hot20-list { border: 0; border-radius: 0; }
     .hot20-list-header { background: transparent; padding: 0 14px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; border-bottom: 1px solid var(--border); }
     .hot20-row { padding: 11px 14px; border-bottom: 1px solid var(--border); }
@@ -986,16 +852,19 @@
     .hot20-row.alert-eleve, .hot20-row.alert-tres-eleve, .hot20-row.alert-extreme { background: transparent; box-shadow: none; }
     .hot20-row.alert-eleve:hover, .hot20-row.alert-tres-eleve:hover, .hot20-row.alert-extreme:hover { background: rgba(40,70,160,0.14); }
     .hot20-row-rank { font-family: var(--mono); font-size: 18px; color: rgba(120,165,255,0.75); }
-    .hot20-row-name { font-size: 14.5px; font-weight: 600; }
-    .hot20-row-streak { font-family: var(--grotesk); font-size: 11.5px; margin-top: 2px; }
+    .hot20-row-name { font-size: 19px; font-weight: 700; }
+    /* « N jours de suite » à la suite du nom, avec 📍 (Adrien, 31 oct. 2026) */
+    .hot20-row-name-wrap .hot20-row-name { flex: 0 1 auto; }
+    .hot20-row-streak { font-family: var(--grotesk); font-size: 12.5px; margin: 0 0 0 12px; white-space: nowrap; flex: 0 0 auto; }
     .hot20-row-pct strong { font-size: 17px; }
     .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
     /* Colonne « articles » retirée de l'accueil (Adrien, 31 oct.) ; le compte reste dans l'info-bulle du sujet. */
     .hot20-row-media, .hot20-list-header span:last-child { display: none; }
     .hot20-list-header, .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 210px; }
-    .hot20-more { margin-top: 22px; text-align: center; }
-    .hot20-more a, .aune-foot-links a:first-child { display: inline-block; font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
-    .hot20-more a:hover, .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
+    .hot20-more { margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: var(--grotesk); font-size: 12px; }
+    .hot20-more .methodo-how { color: #9dbcff; }
+    .hot20-more a:first-child, .aune-foot-links a:first-child { display: inline-block; font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
+    .hot20-more a:first-child:hover, .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     @media (max-width: 760px) { .hot20-section { margin-top: 48px; padding: 0 16px 60px; } }
     @media (max-width: 700px) {
       .hot20-header { flex-direction: column; align-items: flex-start; }
@@ -1005,7 +874,7 @@
       .hot20-row-pct { gap: 6px; }
       .hot20-row-pct strong { font-size: 14px; }
       .hot20-row-increase { font-size: 11px; }
-      .hot20-row-name { font-size: 14.5px; }
+      .hot20-row-name { font-size: 16px; }
     }
   </style>
 </head>
@@ -1040,7 +909,7 @@
     </div>
   </div>
   <div class="aune-grid view-list" id="aune-grid"></div>
-  <div class="aune-foot"><span id="aune-foot"></span><span class="aune-foot-links"><a href="./classement.html" id="aune-see-all" data-i18n="aune.see_all">Voir tout le classement →</a><a href="./methodologie.html" data-i18n="aune.how">Comment l'indice est calculé →</a></span></div>
+  <div class="aune-foot"><span id="aune-foot"></span><span class="aune-foot-links"><a href="./classement.html" id="aune-see-all" data-i18n="aune.see_all">Voir tout le classement →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></span></div>
 </section>
 
 <!-- ========== HOT 20 ========== -->
@@ -1080,14 +949,10 @@
       </div>
     </div>
   </div>
-  <div class="hot20-search">
-    <input type="text" id="hot20-search-input" data-i18n-placeholder="common.search_radar_placeholder" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
-  </div>
-  <div class="hot20-search-result" id="search-result"></div>
   <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
   </div>
-  <div class="hot20-more"><a href="./classement.html" data-i18n="hot20.see_more">Voir plus →</a></div>
+  <div class="hot20-more"><a href="./classement.html?type=objets" id="hot20-more-link" data-i18n="hot20.see_more">Voir plus →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
 
 <!-- ========== MODULES ========== -->
@@ -1597,6 +1462,13 @@ function getArticlesFor(country, periodKey, nodeId, fallback) {
 var allPeriods = [];
 var currentCountry = 'QC';
 
+// Liens « Comment l'indice est calculé » → § 5.2 de la méthodologie (indice v1, par objet et par événement) ; ancre EN propre.
+function setMethodoAnchors() {
+  var en = (document.documentElement.lang || 'fr').slice(0, 2) === 'en';
+  document.querySelectorAll('a.methodo-how').forEach(function(a) { a.setAttribute('href', './methodologie.html#' + (en ? 'en-indice-absolu' : 'indice-de-saillance-absolu')); });
+}
+document.addEventListener('i18n:applied', setMethodoAnchors);
+setMethodoAnchors();
 // La Une des Unes : module partagé assets/js/aune.js (réglages de l'accueil = ceux par défaut).
 if (window.RadarAune) window.RadarAune.init({});
 var currentPeriodIdx = 0;
@@ -2007,7 +1879,9 @@ function renderHot20() {
     '</div>' +
     nodes.map(function(node, i) {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
-      var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
+      // Barre = part de l'objet dans la saillance de TOUS les objets de la période, comme la
+      // Une des Unes (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026).
+      var barPct = Math.max(1, pct);
       var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
       // Compteur d'articles fiable: agrège sur tous les blocs 4h du
       // slot via articles.json (dédupliqué par URL). Fallback sur
@@ -2065,7 +1939,7 @@ function renderHot20() {
       var streakHtml = '';
       if (streak > 1) {
         var streakKey = streak > 1 ? 'homepage.streak_suffix_many' : 'homepage.streak_suffix_one';
-        streakHtml = '<div class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</div>';
+        streakHtml = '<span class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">\uD83D\uDCCD ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</span>';
       }
 
       /* Rank class */
@@ -2096,9 +1970,9 @@ function renderHot20() {
         '<div class="hot20-row-info">' +
           '<div class="hot20-row-name-wrap">' +
             '<div class="hot20-row-name">' + escapeHtml(name) + '</div>' +
+            streakHtml +
             alertBadgeHtml +
           '</div>' +
-          streakHtml +
         '</div>' +
         '<div class="hot20-row-score">' +
           '<div class="hot20-row-pct">' +
@@ -2106,6 +1980,7 @@ function renderHot20() {
             (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
+          '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T('hot20.share_label', { pct: pct })) + '</div>' +
         '</div>' +
         '<div class="hot20-row-media hot20-hint" data-tip="' + escapeHtml(articlesTip) + '">' + articleCount + ' ' + escapeHtml(articleLabel) + '</div>' +
       '</div>';
@@ -2479,166 +2354,6 @@ document.getElementById('hot20-grid').addEventListener('click', function(e) {
   if (isNaN(idx)) return;
   var node = window._hot20Nodes[idx];
   if (node) openArticlePanel(node);
-});
-
-/* ===== SEARCH BAR ===== */
-var searchTimeout = null;
-document.getElementById('hot20-search-input').addEventListener('input', function(e) {
-  clearTimeout(searchTimeout);
-  var query = e.target.value.trim().toLowerCase();
-  var resultDiv = document.getElementById('search-result');
-
-  if (query.length < 2) {
-    resultDiv.classList.remove('radar-active', 'radar-inactive');
-    resultDiv.classList.remove('visible');
-    resultDiv.innerHTML = '';
-    return;
-  }
-
-  searchTimeout = setTimeout(function() {
-    var src = timeseriesData || graphData;
-    if (!src || !src.graphs) {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.remove('visible');
-      return;
-    }
-    var countryGraphs = src.graphs[currentCountry];
-    if (!countryGraphs) {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.remove('visible');
-      return;
-    }
-
-    var currentSlot = aggregatedSlots.length ? aggregatedSlots[currentSlotIdx] : null;
-    var currentPeriodKey = currentSlot ? currentSlot.periodKeys[currentSlot.periodKeys.length - 1] : (allPeriods.length ? allPeriods[allPeriods.length - 1].key : null);
-    function getSortedNodes(periodKey) {
-      var pd = countryGraphs[periodKey];
-      if (!pd || !pd.nodes) return [];
-      return pd.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-    }
-
-    function findFirstQueryMatch(sortedNodes) {
-      for (var i = 0; i < sortedNodes.length; i++) {
-        if (sortedNodes[i].id.toLowerCase().indexOf(query) !== -1) {
-          return { node: sortedNodes[i], rank: i + 1 };
-        }
-      }
-      return null;
-    }
-
-    function findRankById(sortedNodes, nodeId) {
-      for (var i = 0; i < sortedNodes.length; i++) {
-        if (sortedNodes[i].id === nodeId) return i + 1;
-      }
-      return -1;
-    }
-
-    function formatPeriodForSearch(periodObj) {
-      var raw = periodObj.label || periodObj.key;
-      var parsed = parsePeriodLabel(raw);
-      if (!parsed || !parsed.date) return raw;
-      return parsed.date + (parsed.interval ? ' &middot; ' + parsed.interval.replace('Saillant entre ', '') : '');
-    }
-
-    var currentSorted = currentPeriodKey ? getSortedNodes(currentPeriodKey) : [];
-    var currentQueryMatch = findFirstQueryMatch(currentSorted);
-
-    var targetId = currentQueryMatch ? currentQueryMatch.node.id : null;
-    var targetNodeName = currentQueryMatch ? currentQueryMatch.node.id : null;
-
-    if (!targetId) {
-      for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
-        var sortedAtPi = getSortedNodes(allPeriods[pi].key);
-        var queryMatchAtPi = findFirstQueryMatch(sortedAtPi);
-        if (queryMatchAtPi) {
-          targetId = queryMatchAtPi.node.id;
-          targetNodeName = queryMatchAtPi.node.id;
-          break;
-        }
-      }
-    }
-
-    if (targetId) {
-      var currentRank = findRankById(currentSorted, targetId);
-      var currentNode = currentRank > 0 ? currentSorted[currentRank - 1] : null;
-
-      var lastSeen = null;
-      var peakSeen = null;
-
-      for (var p = allPeriods.length - 1; p >= 0; p--) {
-        var periodObj = allPeriods[p];
-        var sortedNodes = getSortedNodes(periodObj.key);
-        var rank = findRankById(sortedNodes, targetId);
-        if (rank < 0) continue;
-
-        var nodeAtPeriod = sortedNodes[rank - 1];
-        var seen = {
-          rank: rank,
-          node: nodeAtPeriod,
-          period: periodObj,
-          periodIdx: p
-        };
-
-        if (!lastSeen) lastSeen = seen;
-        if (!peakSeen) {
-          peakSeen = seen;
-        } else {
-          var seenScore = Number(seen.node.size) || 0;
-          var peakScore = Number(peakSeen.node.size) || 0;
-          if (
-            seenScore > peakScore ||
-            (seenScore === peakScore && seen.rank < peakSeen.rank) ||
-            (seenScore === peakScore && seen.rank === peakSeen.rank && p > peakSeen.periodIdx)
-          ) {
-            peakSeen = seen;
-          }
-        }
-      }
-
-      var dName = targetNodeName.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
-
-      function formatArticleCount(value) {
-        var count = Number(value) || 0;
-        return count + ' article' + (count > 1 ? 's' : '');
-      }
-
-      var statusNow = currentNode
-        ? 'Actuellement&nbsp;: rang <strong>' + currentRank + '</strong>' +
-          (currentRank <= 20 ? ' (Top 20)' : ' (hors Top 20)') +
-          ' &middot; ' + formatArticleCount(currentNode.n) + ' &middot; score ' + (currentNode.size || 0).toFixed(1)
-        : 'Actuellement absent du radar';
-
-      var lastSeenText = lastSeen
-        ? 'Derni&egrave;re apparition&nbsp;: rang <strong>' + lastSeen.rank + '</strong> &middot; ' +
-          formatArticleCount(lastSeen.node.n) + ' &middot; ' + formatPeriodForSearch(lastSeen.period)
-        : 'Derni&egrave;re apparition&nbsp;: n/a';
-
-      var peakSeenText = peakSeen
-        ? 'Bloc horaire le plus saillant (4 h)&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(1) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
-          formatArticleCount(peakSeen.node.n) + ' &middot; ' + formatPeriodForSearch(peakSeen.period)
-        : 'Bloc horaire le plus saillant (4 h)&nbsp;: n/a';
-
-      var evolutionUrl = './evolution.html?country=' + encodeURIComponent(currentCountry) + '&node=' + encodeURIComponent(targetId);
-
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.add(currentNode ? 'radar-active' : 'radar-inactive');
-
-      resultDiv.innerHTML = '<div class="sr-name"><span class="sr-radar-dot" aria-hidden="true"></span><span class="sr-name-text">' + escapeHtml(dName) + '</span></div>' +
-        '<div class="sr-info">' +
-          statusNow +
-          '<br>' + lastSeenText +
-          '<br>' + peakSeenText +
-          '<div class="sr-actions">' +
-            '<a class="sr-evo-btn" href="' + evolutionUrl + '">Voir l&rsquo;&eacute;volution de la saillance</a>' +
-          '</div>' +
-        '</div>';
-      resultDiv.classList.add('visible');
-    } else {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.innerHTML = '<div class="sr-not-found">« ' + escapeHtml(query) + ' » n\'est pas dans le radar pour le moment.</div>';
-      resultDiv.classList.add('visible');
-    }
-  }, 250);
 });
 
 /* ===== INIT ===== */

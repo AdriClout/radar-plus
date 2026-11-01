@@ -24,12 +24,13 @@
 .aune-section {
   position: relative; z-index: 1;
   max-width: 1040px; margin: 0 auto;
-  padding: 48px 28px 14px; /* de l'air au-dessus du titre (Adrien, 31 oct. 2026) */
+  padding: clamp(24px, 5vh, 48px) 28px 14px; /* de l'air au-dessus du titre, selon la hauteur d'écran (Adrien, 31 oct. 2026) */
   display: flex; flex-direction: column;
   /* Hauteur = l'écran moins le bandeau d'alertes (fixé, 32 px de marge du body), le menu
-     (collant, en flux) et le bandeau « Dans le radar » fixé en bas. Plancher 640 px : en
-     dessous, la page défile un peu plutôt que d'écraser les rangs. */
-  height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 740px);
+     (collant, en flux) et le bandeau « Dans le radar » fixé en bas. Plancher 540 px (un
+     portable à 680 px de haut tient : trois rangs au plancher de 84 px) ; en dessous, la
+     page défile un peu plutôt que d'écraser les rangs. */
+  height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 540px);
 }
 .aune-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
 .aune-title { font-family: var(--grotesk); font-size: clamp(24px, 3.2vw, 37px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #f1f5ff; }
