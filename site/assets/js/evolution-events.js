@@ -359,5 +359,6 @@
     render();
   }
 
-  window.radarEvents = { render: render, hover: hover, click: click, reset: function () { focused = null; hoverIdx = null; } };
+  // focus(sid) : met une histoire en évidence (lien depuis sa fiche, ?evenement=).
+  window.radarEvents = { render: render, hover: hover, click: click, reset: function () { focused = null; hoverIdx = null; }, focus: function (sid) { focused = sid || null; render(); } };
 })();

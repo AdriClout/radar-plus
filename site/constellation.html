@@ -2212,7 +2212,22 @@
   document.addEventListener('i18n:applied', function () {
     if (slots && slots.length) loadSlot(currentCountry, currentSlotIdx);
   });
+  // Lien depuis une fiche : ?date=AAAA-MM-JJ ouvre cette journée ; ?evenement=<histoire> met son étoile en évidence.
+  const urlDate = urlParams.get('date'), urlEvent = urlParams.get('evenement');
+  if (urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate)) {
+    let di = slots.findIndex(s => s.key === urlDate);
+    if (di < 0) di = slots.findIndex(s => (s.periodKeys || []).some(k => k.slice(0, 10) === urlDate));
+    if (di >= 0) { currentSlotIdx = di; refreshSliderRange(); }
+  }
   loadSlot(currentCountry, currentSlotIdx);
+  if (urlEvent) {
+    let tries = 0;
+    const ti = setInterval(() => {
+      const id = 'ev:' + urlEvent, gd = Graph.graphData();
+      if ((gd.nodes || []).some(n => n.id === id)) { clearInterval(ti); focusNodeById(id); }
+      else if (++tries > 30) clearInterval(ti);
+    }, 300);
+  }
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
   const urlNode = urlParams.get('node');

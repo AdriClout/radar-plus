@@ -870,6 +870,9 @@
                 </div>
               </div>
             </section>
+
+            <!-- Gros boutons vers les outils, comme au bas de la fiche d'événement (Adrien, 1er nov. 2026) -->
+            <section class="section-block" id="obj-tools"></section>
           </div>
         </div>
       </section>
@@ -1831,6 +1834,22 @@
         setStatus('Objet sélectionné: ' + stats.objectId + '.', false);
       }
 
+      function renderObjectTools(stats) {
+        const box = document.getElementById('obj-tools'); if (!box) return;
+        const T = (k, fb) => { const v = window.t ? window.t(k) : null; return v && v !== k ? v : fb; };
+        const sym = p => (window.radarSymbol ? window.radarSymbol(p) : '');
+        const c = encodeURIComponent(stats.country), id = encodeURIComponent(stats.objectId), usa = stats.country === 'USA';
+        // Au Québec et au Canada, les alertes portent sur les histoires ; aux États-Unis, sur les objets.
+        const tools = [
+          { p: 'constellation', href: './constellation.html?country=' + c + '&node=' + id, sub: T('fiche.tool_constellation_sub_obj', 'Ses liens avec les autres objets') },
+          { p: 'evolution', href: './evolution.html?country=' + c + '&node=' + id, sub: T('fiche.tool_evolution_sub_obj', 'Sa courbe dans le temps') },
+          { p: 'alertes', href: './alertes.html?region=' + c + (usa ? '&objet=' + id : ''), sub: usa ? T('fiche.tool_alertes_sub_obj', 'Ses passages au-dessus des paliers') : T('fiche.tool_alertes_sub_region', 'Les histoires en alerte dans sa région') },
+          { p: 'classement', href: './classement.html?type=objets&range=year&country=' + c, sub: T('fiche.tool_classement_sub_obj', "Son rang parmi les objets de l'année") }
+        ];
+        box.innerHTML = '<div class="section-heading"><h3>' + escapeHtml(T('fiche.tools_obj', 'Voir cet objet dans les outils')) + '</h3></div><div class="tool-btns">' + tools.map(t =>
+          '<a class="tool-btn" href="' + t.href + '"><span class="tool-btn-sym">' + sym(t.p) + '</span><span class="tool-btn-txt"><span class="tool-btn-name">' + escapeHtml(T('fiche.tool_' + t.p, t.p)) + '</span><span class="tool-btn-sub">' + escapeHtml(t.sub) + '</span></span><span class="tool-btn-go">→</span></a>').join('') + '</div>';
+      }
+
       function renderStats(stats) {
         summaryEmptyEl.hidden = true;
         summaryContentEl.hidden = false;
@@ -1844,6 +1863,7 @@
         document.getElementById('scope-current').textContent = stats.currentLabel;
         document.getElementById('scope-history').textContent = stats.activePeriods + ' périodes actives sur ' + stats.totalPeriods + ' publiées';
 
+        renderObjectTools(stats);
         renderNowMetrics(stats);
         renderHistoryStats(stats);
         renderPeakList(stats);

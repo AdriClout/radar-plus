@@ -24,7 +24,15 @@ var FALLBACK = {
   'fiche.type_label': "Je cherche", 'fiche.type_objects': "un objet (sujet, acteur, lieu)", 'fiche.type_events': "un événement (une histoire)", 'fiche.search_placeholder': "Rechercher un événement (un mot du titre ou du thème)…",
   'fiche.search_empty': "Recherchez un événement pour afficher sa fiche.", 'fiche.search_none': "Aucun événement ne correspond.", 'fiche.search_hint': "Exemples : cycliste, Carney, budget, grève.",
   'fiche.page_title_events': "Statistiques", 'fiche.page_lead_events': "Un événement : son parcours dans les Unes, édition par édition.",
-  'fiche.no_usa': "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada."
+  'fiche.no_usa': "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada.",
+  'fiche.records': "Ses meilleures positions", 'fiche.records_note': "Le meilleur rang tenu dans chaque classement, et quand. Cliquez pour ouvrir ce classement.",
+  'fiche.rec_h24': "Dernières heures", 'fiche.rec_day': "Journée", 'fiche.rec_week': "Semaine", 'fiche.rec_month': "Mois", 'fiche.rec_year': "Année",
+  'fiche.rec_of': "sur {n}", 'fiche.rec_times': "{n} fois",
+  'fiche.tools': "Voir cette histoire dans les outils",
+  'fiche.tool_constellation': "Constellation", 'fiche.tool_constellation_sub': "Ses liens avec les autres histoires, le jour de son sommet",
+  'fiche.tool_evolution': "Évolution", 'fiche.tool_evolution_sub': "Sa courbe parmi les grandes histoires du jour",
+  'fiche.tool_alertes': "Alertes", 'fiche.tool_alertes_sub': "Ses éditions en alerte dans l'année",
+  'fiche.tool_classement': "Classement", 'fiche.tool_classement_sub': "Son rang parmi les histoires de l'année"
 };
 var u = window.RadarAune && window.RadarAune.util;
 function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
@@ -240,6 +248,74 @@ function bindChart(sec, axis, series, cum, th, data, L) {
   hover.addEventListener('mousemove', show); hover.addEventListener('mouseleave', hide);
   hover.addEventListener('touchstart', function(e) { if (e.touches[0]) show(e.touches[0]); }, { passive: true });
 }
+// ── Meilleures positions (Adrien, 1er nov. 2026) : pour chaque vue du Classement, le meilleur rang que
+// l'histoire a tenu, combien de fois, et quand. Journée = éditions sorties ce jour-là ; semaine ISO (lundi).
+var REC_LAG = 5 * 3600e3, REC_DAY = 864e5;
+var recDayFmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', year: 'numeric', month: '2-digit', day: '2-digit' });
+function recDay(k) { return recDayFmt.format(new Date(u.periodStartUtc(k) + REC_LAG)); }
+function recDayNum(d) { return Math.round(Date.parse(d + 'T12:00:00Z') / REC_DAY); }
+function recMonday(d) { var t = Date.parse(d + 'T12:00:00Z'), wd = (new Date(t).getUTCDay() + 6) % 7; return new Date(t - wd * REC_DAY).toISOString().slice(0, 10); }
+function records(all, me) {
+  var maps = { day: {}, week: {}, month: {}, year: {}, h24: {} };
+  Object.keys(all).forEach(function(id) {
+    var s = all[id].series || {}, acc = { day: {}, week: {}, month: {}, year: {} };
+    Object.keys(s).forEach(function(k) {
+      var v = Number(s[k]) || 0; if (!v) return;
+      var d = recDay(k), b = { day: d, week: recMonday(d), month: d.slice(0, 7), year: d.slice(0, 4) };
+      Object.keys(b).forEach(function(g) { acc[g][b[g]] = (acc[g][b[g]] || 0) + v; });
+    });
+    Object.keys(acc).forEach(function(g) { Object.keys(acc[g]).forEach(function(b) { (maps[g][b] = maps[g][b] || []).push({ id: id, v: acc[g][b] }); }); });
+    var c = all[id].sum24h || {}; Object.keys(c).forEach(function(k) { var v = Number(c[k]) || 0; if (v > 0) (maps.h24[k] = maps.h24[k] || []).push({ id: id, v: v }); });
+  });
+  var out = {};
+  Object.keys(maps).forEach(function(g) {
+    var best = null;
+    Object.keys(maps[g]).forEach(function(b) {
+      var arr = maps[g][b], mine = null; for (var i = 0; i < arr.length; i++) if (arr[i].id === me) { mine = arr[i]; break; }
+      if (!mine) return;
+      var r = 1; for (var j = 0; j < arr.length; j++) if (arr[j].v > mine.v + 1e-9) r++;
+      if (!best || r < best.rank) best = { rank: r, n: arr.length, bucket: b, v: mine.v, times: 1 };
+      else if (r === best.rank) { best.times++; if (b > best.bucket) { best.bucket = b; best.n = arr.length; best.v = mine.v; } }
+    });
+    out[g] = best;
+  });
+  return out;
+}
+function recordsHtml(rec, latestKey, L) {
+  var loc = L === 'en' ? 'en-CA' : 'fr-CA', today = recDayFmt.format(new Date());
+  var fmt = function(d, o) { return new Intl.DateTimeFormat(loc, Object.assign({ timeZone: 'UTC' }, o)).format(new Date(d + 'T12:00:00Z')); };
+  var latestT = latestKey ? u.periodStartUtc(latestKey) : null;
+  var defs = [
+    { g: 'h24', range: '24h', label: function(b) { return u.editionWhen ? u.editionWhen(b, L) : u.blockLabel(b, L); }, off: function(b) { return latestT === null ? 0 : Math.round((u.periodStartUtc(b) - latestT) / BLOCK_MS); } },
+    { g: 'day', range: 'today', label: function(b) { return fmt(b, { weekday: 'long', day: 'numeric', month: 'long' }); }, off: function(b) { return recDayNum(b) - recDayNum(today); } },
+    { g: 'week', range: 'week', label: function(b) { var e = new Date(Date.parse(b + 'T12:00:00Z') + 6 * REC_DAY).toISOString().slice(0, 10); return fmt(b, { day: 'numeric', month: 'short' }) + ' – ' + fmt(e, { day: 'numeric', month: 'short' }); }, off: function(b) { return Math.round((recDayNum(b) - recDayNum(recMonday(today))) / 7); } },
+    { g: 'month', range: 'month', label: function(b) { return fmt(b + '-15', { month: 'long', year: 'numeric' }); }, off: function(b) { return (+b.slice(0, 4) * 12 + +b.slice(5, 7)) - (+today.slice(0, 4) * 12 + +today.slice(5, 7)); } },
+    { g: 'year', range: 'year', label: function(b) { return b; }, off: function(b) { return +b - +today.slice(0, 4); } }
+  ];
+  return '<div class="ev-records">' + defs.map(function(d) {
+    var r = rec[d.g]; if (!r) return '';
+    var off = Math.min(0, d.off(r.bucket));
+    var href = './classement.html?range=' + d.range + '&country=' + region + (off ? '&offset=' + off : '');
+    return '<a class="ev-rec' + (r.rank === 1 ? ' gold' : r.rank <= 3 ? ' podium' : '') + '" href="' + href + '">' +
+      '<span class="ev-rec-label">' + esc(T('fiche.rec_' + d.g)) + '</span>' +
+      '<span class="ev-rec-rank">' + esc(ordinal(r.rank, L)) + '<span class="ev-rec-of">' + esc(T('fiche.rec_of', { n: r.n })) + '</span></span>' +
+      '<span class="ev-rec-when">' + esc(d.label(r.bucket)) + (r.times > 1 ? ' · ' + esc(T('fiche.rec_times', { n: r.times })) : '') + '</span>' +
+      '</a>';
+  }).join('') + '</div>';
+}
+// Gros boutons vers les outils, au bas de la fiche (Adrien, 1er nov. 2026)
+function toolsHtml(day) {
+  var sym = function(p) { return window.radarSymbol ? window.radarSymbol(p) : ''; };
+  var tools = [
+    { p: 'constellation', href: './constellation.html?country=' + region + '&gran=day&date=' + day + '&evenement=' + encodeURIComponent(sid) },
+    { p: 'evolution', href: './evolution.html?country=' + region + '&gran=day&date=' + day + '&evenement=' + encodeURIComponent(sid) },
+    { p: 'alertes', href: './alertes.html?region=' + region + '&evenement=' + encodeURIComponent(sid) },
+    { p: 'classement', href: './classement.html?range=year&country=' + region }
+  ];
+  return '<section class="ev-section"><h3>' + esc(T('fiche.tools')) + '</h3><div class="tool-btns">' + tools.map(function(t) {
+    return '<a class="tool-btn" href="' + t.href + '"><span class="tool-btn-sym">' + sym(t.p) + '</span><span class="tool-btn-txt"><span class="tool-btn-name">' + esc(T('fiche.tool_' + t.p)) + '</span><span class="tool-btn-sub">' + esc(T('fiche.tool_' + t.p + '_sub')) + '</span></span><span class="tool-btn-go">→</span></a>';
+  }).join('') + '</div></section>';
+}
 function render(sec, data) {
   var L = lang(), st = data.st;
   if (!st) { sec.innerHTML = '<div class="ev-empty">' + esc(T('fiche.not_found')) + '</div>'; return; }
@@ -300,12 +376,13 @@ function render(sec, data) {
       metric(T('fiche.m_best'), bBest, T('fiche.band_' + bBest), '<b>' + fmt1(best.v) + '</b> ' + esc(T('fiche.points')), when(best.key)) +
       '<div class="ev-metric ev-metric-media"><span class="ev-m-label">' + esc(T('fiche.m_media')) + '</span><span class="ev-chips">' + mediaList.map(function(m) { return '<span class="ev-media">' + esc(m) + '</span>'; }).join('') + '</span></div>' +
     '</div>' +
+    '<section class="ev-section"><h3>' + esc(T('fiche.records')) + '</h3><p class="ev-note">' + esc(T('fiche.records_note')) + '</p>' + recordsHtml(records(data.all || {}, sid), latestKey, L) + '</section>' +
     '<section class="ev-section"><h3>' + esc(T('fiche.chart')) + '</h3><p class="ev-note">' + esc(T('fiche.chart_tip')) + '</p>' + chartHtml(axis, series, cum, th, best, live ? lastCumKey : null, L) + '</section>' +
     '<section class="ev-section"><h3>' + esc(T('fiche.links')) + '</h3>' + linksHtml(T('fiche.links_first'), evFirst) + (st.peak_key !== st.first_key ? linksHtml(T('fiche.links_peak'), evPeak) : '') + (st.last_key !== st.peak_key && st.last_key !== st.first_key ? linksHtml(T('fiche.links_last'), evLast) : '') + '</section>' +
     '<section class="ev-section"><h3>' + esc(T('fiche.editions_list')) + '</h3><div class="ev-table-wrap"><table class="ev-table"><thead><tr><th>' + esc(T('fiche.col_edition')) + '</th><th class="num">' + esc(T('fiche.col_index')) + '</th><th class="num">' + esc(T('fiche.col_index24h')) + '</th><th>' + esc(T('fiche.col_title')) + '</th></tr></thead><tbody>' +
       known.filter(function(k, i) { return known.indexOf(k) === i; }).reverse().map(function(k) { var ev = eventAt(data.days, k); return '<tr' + (k === best.key ? ' class="peak"' : '') + '><td>' + esc(u.blockLabel(k, L)) + '</td><td class="num">' + (series[k] != null ? fmt1(series[k]) : '—') + '</td><td class="num">' + (cum[k] != null ? fmt1(cum[k]) : '—') + '</td><td>' + (ev ? esc(ev.title || '') : '') + '</td></tr>'; }).join('') +
     '</tbody></table></div></section>' +
-    '<p class="ev-foot"><a href="./classement.html?range=24h&country=' + region + '">' + esc(T('fiche.in_ranking')) + '</a></p>';
+    toolsHtml(best.key ? recDay(best.key) : '');
   sec.innerHTML = html;
   bindChart(sec, axis, series, cum, th, data, L);
 }
