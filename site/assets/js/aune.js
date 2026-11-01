@@ -373,6 +373,14 @@ function auneNavLabel(range, offset, lang, T) {
   if (range === 'year') return fmt(w[0] + 12 * 3600e3, { year: 'numeric' });
   return '';
 }
+// Deuxième ligne du navigateur : « Saillance cumulée depuis le 26 octobre 2026 » ou, pour
+// Dernières heures, « Indice 24h à cette édition ».
+function auneNavSub(range, offset, lang, T) {
+  if (range === '24h') return T('classement.nav_sub_24h');
+  var w = auneWindow(range, offset), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+  var date = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(w[0] + 12 * 3600e3));
+  return T('classement.nav_sub_cumul', { date: date });
+}
 function auneNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 function auneQuery() { var el = cfg.searchId ? document.getElementById(cfg.searchId) : null; return el ? auneNorm(el.value.trim()) : ''; }
 function auneFicheUrl(c, region) { return './statistiques.html?evenement=' + encodeURIComponent(c.storyline || '') + '&region=' + encodeURIComponent(region || 'QC'); }
@@ -549,6 +557,7 @@ function renderALaUne() {
   if (cfg.navId) {
     var lbl = document.getElementById(cfg.navId + '-label'), nxt = document.getElementById(cfg.navId + '-next');
     if (lbl) lbl.textContent = auneNavLabel(cfg.range, cfg.offset, lang, T);
+    var subEl = document.getElementById(cfg.navId + '-sub'); if (subEl) subEl.textContent = auneNavSub(cfg.range, cfg.offset, lang, T);
     if (nxt) nxt.disabled = cfg.offset >= 0;
   }
   var past24h = is24h && cfg.offset < 0;
@@ -746,5 +755,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, when: auneWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, when: auneWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();

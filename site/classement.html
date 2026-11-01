@@ -41,12 +41,13 @@
     body:not(.type-objets) .country-tab.obj-only { display: none; } /* pas d'événements pour les États-Unis */
     .aune-head > div:first-child { flex: 1 1 300px; min-width: 0; }
     /* Remonter dans le temps : ‹ Semaine 44 · 26 oct. – 1 nov. 2026 › */
-    .cl-left { display: flex; flex-direction: column; gap: 6px; margin-right: auto; }
-    .cl-nav { display: flex; align-items: center; gap: 6px; }
+    .cl-nav { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+    .cl-nav-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 260px; text-align: center; }
+    .cl-nav-sub { font-family: var(--grotesk); font-size: 12px; color: var(--muted); }
     .cl-nav button { font-family: var(--grotesk); font-size: 18px; line-height: 1; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: rgba(10,18,50,0.7); color: #e8f0ff; cursor: pointer; }
     .cl-nav button:hover { border-color: var(--accent); }
     .cl-nav button:disabled { opacity: 0.3; cursor: default; }
-    .cl-nav-label { font-family: var(--grotesk); font-size: 15px; font-weight: 600; color: #f1f5ff; padding: 0 8px; white-space: nowrap; }
+    .cl-nav-label { font-family: var(--grotesk); font-size: 15px; font-weight: 600; color: #f1f5ff; white-space: nowrap; }
     .cl-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 14px 0 12px; }
     .cl-search {
       flex: 1 1 220px; max-width: 360px; font-family: var(--grotesk); font-size: 14px; color: #e8f0ff;
@@ -56,8 +57,8 @@
     .cl-search::placeholder { color: var(--muted); }
     .cl-download { font-family: var(--grotesk); font-size: 12px; font-weight: 600; color: #e8f0ff; background: rgba(40,70,160,0.22); border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
     .cl-download:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
-    .cl-count { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-    @media (max-width: 760px) { #wrap { padding: 16px 16px calc(var(--ticker-height) + 40px); } .aune-head > div:first-child { flex: 0 0 auto; } .cl-left { margin-right: 0; width: 100%; } .cl-nav-label { white-space: normal; } }
+    .cl-count { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+    @media (max-width: 760px) { #wrap { padding: 16px 16px calc(var(--ticker-height) + 40px); } .aune-head > div:first-child { flex: 0 0 auto; } .cl-nav { margin-right: 0; width: 100%; justify-content: space-between; } .cl-nav-block { min-width: 0; } .cl-nav-label { white-space: normal; } }
   </style>
 </head>
 <body>
@@ -88,13 +89,10 @@
     </div>
   </div>
   <div class="cl-toolbar">
-    <div class="cl-left">
     <div class="cl-nav" id="cl-nav">
-    <button type="button" id="cl-nav-prev" data-i18n-title="homepage.previous_period_btn_title" title="Période précédente">&#8249;</button>
-    <span class="cl-nav-label" id="cl-nav-label"></span>
-    <button type="button" id="cl-nav-next" data-i18n-title="homepage.next_period_btn_title" title="Période suivante" disabled>&#8250;</button>
-    </div>
-      <span class="cl-count" id="cl-count"></span>
+      <button type="button" id="cl-nav-prev" data-i18n-title="homepage.previous_period_btn_title" title="Période précédente">&#8249;</button>
+      <div class="cl-nav-block"><span class="cl-nav-label" id="cl-nav-label"></span><span class="cl-nav-sub" id="cl-nav-sub"></span><span class="cl-count" id="cl-count"></span></div>
+      <button type="button" id="cl-nav-next" data-i18n-title="homepage.next_period_btn_title" title="Période suivante" disabled>&#8250;</button>
     </div>
     <input class="cl-search" id="cl-search" type="search" data-i18n-placeholder="classement.search_placeholder" placeholder="Filtrer : un mot du titre ou du thème" autocomplete="off">
     <button type="button" class="cl-download" id="cl-download" data-i18n="classement.download" data-i18n-title="classement.download_tip" title="Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel">Télécharger (CSV)</button>

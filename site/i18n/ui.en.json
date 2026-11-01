@@ -599,7 +599,9 @@
     "download": "Download (CSV)",
     "download_tip": "The displayed ranking, with its filters, as a CSV file readable in Excel",
     "obj_total": "total (130 days)",
-    "scroll_hint": "See the other columns"
+    "scroll_hint": "See the other columns",
+    "nav_sub_24h": "24h index at this edition",
+    "nav_sub_cumul": "Salience summed since {date}"
   },
   "csv": {
     "rank": "rank",
