@@ -19,6 +19,7 @@
 !site/sonar.html
 !site/monitoring.html
 !site/404.html
+!site/indices.html
 *.png
 !site/assets/img/GRCP-Logo.png
 !site/assets/img/infrastructure-radarplus.png
@@ -82,6 +83,7 @@ tmp/
 # Python
 __pycache__/
 !site/alertes.html
+!site/classement.html
 !site/cycles.html
 !site/statistiques.html
 *.py.bak

@@ -123,6 +123,37 @@ et lister les pages touchées (`git diff --stat origin/main origin/develop -- si
 pour qu'Adrien les regarde toutes sur dev d'un seul coup. Ne pas contourner par
 une PR directe vers `main` : le flux reste develop → main.
 
+**Lui donner un tour de dev, pas une liste de fichiers** (vécu le 29 oct. 2026,
+88 commits). Partir des titres des PR fusionnées depuis la dernière promotion
+(`git log --merges --format=%s origin/main..origin/develop`) et du `diff --stat`,
+et les regrouper par page : pour chacune, l'adresse, ce qui doit s'y voir et
+un geste à faire (clic, filtre, panneau). Ajouter une adresse bidon (page 404) si
+`site/404.html` ou `_headers` a changé, et un passage sur téléphone si une PR
+porte « mobile ». Vérifier d'abord que dev sert bien le dernier commit
+(`gh run list --workflow deploy-dev.yml --branch develop --limit 1`).
+
+**Promotion d'un changement invisible** (pipeline, workflow, docs, skills) :
+corps court, sans tour de dev. Modèle (PR #79, #120) :
+
+```
+## Quoi
+Promotion `develop → main` : #NNN (pipeline seulement, aucun fichier de `site/` touché).
+## Vérifié
+- [x] En CI : run <id> vert, <ce qui a été publié et relu>.
+- [x] Sur dev : sans objet (données seulement).
+## Non exécuté
+Rien.
+## Données
+<ce qui change dans ce que le site affiche, ou « aucun changement »>
+## Impact méthodologie
+- [x] Aucun impact métho — … (justification, en nommant ce qui a été relu : …)
+---
+- [x] Vérifié sur dev le AAAA-MM-JJ : pipeline seulement, aucun fichier déployé touché ; <fichier> publié et relu sur data.radarplus.org
+```
+
+Vérifier avant que develop ne contient rien d'autre en attente : sinon c'est
+une promotion visible, avec le tour de dev.
+
 
 ```bash
 gh pr create --base main --head develop --title "promotion : …" --body-file <corps.md>

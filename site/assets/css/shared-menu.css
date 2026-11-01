@@ -49,7 +49,7 @@
   gap: 8px;
   text-decoration: none;
   color: rgba(140, 170, 220, 0.85);
-  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: 9px;
   letter-spacing: 1.8px;
   text-transform: uppercase;
@@ -97,7 +97,7 @@
 }
 
 .side-nav h3 {
-  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: 11px;
   letter-spacing: 2px;
   color: rgba(140, 170, 220, 0.8);
@@ -208,7 +208,7 @@ html[lang="en"] .doc > [data-lang="fr"] { display: none !important; }
   color: rgba(212, 230, 255, 0.96);
   text-align: left;
   padding: 12px 14px;
-  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: 10px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -244,7 +244,7 @@ html[lang="en"] .doc > [data-lang="fr"] { display: none !important; }
 }
 
 .rp-issue-kicker {
-  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: 10px;
   letter-spacing: 2.1px;
   text-transform: uppercase;
@@ -253,7 +253,7 @@ html[lang="en"] .doc > [data-lang="fr"] { display: none !important; }
 }
 
 .rp-issue-dialog h2 {
-  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: clamp(17px, 2.4vw, 24px);
   letter-spacing: 1.1px;
   color: rgba(236, 245, 255, 0.98);
@@ -353,7 +353,7 @@ html[lang="en"] .doc > [data-lang="fr"] { display: none !important; }
   background: rgba(58, 108, 215, 0.45);
   color: rgba(240, 247, 255, 0.98);
   padding: 9px 14px;
-  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: 10px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
@@ -458,7 +458,7 @@ body.has-shared-menu .topbar {
   padding: 0 14px;
   border-right: 1px solid rgba(242,205,80,0.22);
   text-decoration: none;
-  font-family: 'Orbitron', 'Space Mono', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: 8px;
   letter-spacing: 1.8px;
   color: rgba(250,225,140,0.92);
@@ -544,7 +544,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
 .alert-bar-item.level-extreme    { color: rgba(255,210,210,0.92); }
 
 .alert-bar-item-badge {
-  font-family: 'Orbitron', monospace;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif;
   font-size: 7px;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -618,12 +618,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
   color: rgba(255,170,170,0.3);
 }
 
-.alert-bar-item-country {
-  font-size: 7px;
-  letter-spacing: 1px;
-  color: rgba(255,170,170,0.45);
-  text-transform: uppercase;
-}
+.alert-bar-item-country { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,230,200,0.95); margin-right: 8px; white-space: nowrap; }
 
 .alert-bar-sep {
   color: rgba(242,205,80,0.28);
@@ -738,10 +733,17 @@ body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
   background: url(../img/robot.png) center / contain no-repeat;
 }
 .site-bar-word {
-  font-family: 'Orbitron', 'Space Mono', monospace; font-weight: 700;
-  font-size: 18px; letter-spacing: 2px; line-height: 1;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif; font-weight: 700;
+  font-size: 19px; letter-spacing: 1px; line-height: 1;
 }
 .site-bar-plus { color: #e6ff8a; }
+/* Le « + » du logo clignote, comme sur Évolution et Constellation (Adrien, 31 oct. 2026). */
+.site-bar-plus { display: inline-block; animation: sbPlusPulse 1.6s ease-in-out infinite; }
+@keyframes sbPlusPulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(221,230,74,0.6); }
+  50%      { opacity: 0.45; text-shadow: 0 0 1px rgba(221,230,74,0.1); }
+}
+@media (prefers-reduced-motion: reduce) { .site-bar-plus { animation: none; } }
 .site-bar-beta {
   font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1.5px;
   padding: 2px 6px; border-radius: 3px;
@@ -752,13 +754,21 @@ body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
   flex: 1 1 auto; min-width: 0;
 }
 .site-bar-nav a {
-  font-family: 'Orbitron', 'Space Mono', monospace; font-size: 10.5px;
-  letter-spacing: 1.4px; text-transform: uppercase; white-space: nowrap;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif; font-size: 13px;
+  letter-spacing: 0.2px; white-space: nowrap;
   color: rgba(200, 216, 255, 0.78); text-decoration: none;
   padding: 8px 10px; border-radius: 4px; border: 1px solid transparent;
   transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
 .site-bar-nav a:hover { color: #fff; background: rgba(40, 70, 160, 0.35); }
+/* Symboles des quatre outils (épingle, podium, chronomètre, thermomètre) : menu, tiroir, titres. */
+.radar-sym { display: inline-block; width: 1em; height: 1em; fill: currentColor; vertical-align: -0.12em; }
+.site-bar-nav a .radar-sym { width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; opacity: 0.85; }
+.site-bar-nav a:hover .radar-sym, .site-bar-nav a.current .radar-sym { opacity: 1; }
+.nav-drawer a .radar-sym, .site-drawer a .radar-sym, #nav-drawer a .radar-sym { width: 15px; height: 15px; margin-right: 8px; vertical-align: -2px; opacity: 0.85; }
+.page-sym { display: inline-block; margin-right: 0.35em; line-height: 0; }
+.alert-bar-label .radar-sym { width: 12px; height: 12px; margin: 0 5px 0 2px; vertical-align: -2px; }
+.page-sym .radar-sym { width: 0.95em; height: 0.95em; vertical-align: -0.1em; }
 .site-bar-nav a.current { color: #fff; border-color: rgba(120, 170, 255, 0.55); background: rgba(40, 70, 160, 0.45); }
 .site-bar-right { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; margin-left: auto; }
 .site-bar-lang { position: static; margin: 0; }
@@ -773,8 +783,8 @@ body.has-site-bar .nav-toggle { display: none; }
 }
 .site-bar-dropdown { position: relative; }
 .site-bar-dropdown-btn {
-  font-family: 'Orbitron', 'Space Mono', monospace; font-size: 10.5px;
-  letter-spacing: 1.4px; text-transform: uppercase; white-space: nowrap;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif; font-size: 13px;
+  letter-spacing: 0.2px; white-space: nowrap;
   color: rgba(200, 216, 255, 0.78); background: transparent; cursor: pointer;
   padding: 8px 10px; border-radius: 4px; border: 1px solid transparent;
   transition: color 0.2s, background 0.2s, border-color 0.2s;
@@ -790,9 +800,13 @@ body.has-site-bar .nav-toggle { display: none; }
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); z-index: 240;
 }
 .site-bar-dropdown.open .site-bar-dropdown-menu, .site-bar-dropdown.hoverable:hover .site-bar-dropdown-menu { display: flex; }
+/* Pont invisible entre le bouton et la liste : la souris peut descendre sans que le menu se ferme
+   (l'espace de 8 px le fermait ; Adrien, 31 oct. 2026). */
+.site-bar-dropdown-menu::before { content: ''; position: absolute; left: 0; right: 0; top: -12px; height: 12px; }
 /* « Accueil » : le bouton est un lien (va à l'accueil), le menu liste ses modules */
 .site-bar-home .site-bar-dropdown-btn { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .site-bar-home .site-bar-dropdown-menu { min-width: 200px; }
+.site-bar-dropdown-menu a .radar-sym { width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; opacity: 0.85; }
 /* Ancres des modules de l'accueil : dégager le menu (et le bandeau) */
 #aune, #hot20 { scroll-margin-top: calc(var(--site-bar-h, 58px) + 12px); }
 body.has-alert-bar #aune, body.has-alert-bar #hot20 { scroll-margin-top: calc(var(--alert-bar-h, 32px) + var(--site-bar-h, 58px) + 12px); }
@@ -856,7 +870,7 @@ body.has-alert-bar .side-nav.site-menu-panel { top: calc(var(--alert-bar-h) + va
 .alert-bar-item.is-event .alert-bar-item-name { text-transform: none; }
 .alert-bar-media { display: inline-flex; align-items: center; gap: 4px; margin-left: 2px; }
 .alert-bar-media-chip {
-  font-family: 'Orbitron', 'Space Mono', monospace; font-size: 8px; letter-spacing: 1px;
+  font-family: 'Space Grotesk', 'Space Mono', sans-serif; font-size: 8px; letter-spacing: 1px;
   padding: 1px 5px; border: 1px solid currentColor; border-radius: 3px;
   color: inherit; text-decoration: none; opacity: 0.8; line-height: 1.5;
 }

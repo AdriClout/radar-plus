@@ -1,0 +1,118 @@
+/* Fiche d'un événement saillant (statistiques.html?evenement=…) */
+.ev-fiche { font-family: 'Space Grotesk', 'Space Mono', sans-serif; margin-top: 18px; }
+.ev-loading, .ev-empty { color: var(--muted); padding: 20px 0; }
+.ev-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; font-size: 12.5px; color: var(--muted); }
+.ev-band { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 4px; color: #060d22; background: #7f93b8; }
+.ev-band.band-moderee { background: #5fa8ff; } .ev-band.band-elevee { background: #f2c94c; } .ev-band.band-tres_elevee { background: #ff9f43; } .ev-band.band-extreme { background: #ff4d4d; color: #fff; }
+.ev-band.band-aucune { background: transparent; border: 1px solid rgba(127,147,184,0.45); color: #9fb0cf; }
+.ev-region { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+.ev-title { font-size: clamp(22px, 3vw, 34px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; color: #f1f5ff; }
+.ev-alt { margin-top: 8px; color: var(--muted); font-size: 13.5px; }
+/* Illustration de la Vitrine pour cette histoire, si elle existe (Adrien, 1er nov. 2026) */
+.ev-head { display: flow-root; }
+.ev-art { display: none; float: right; position: relative; width: min(300px, 34%); aspect-ratio: 16 / 10; margin: 0 0 12px 24px; border-radius: 10px; overflow: hidden; background: rgba(20,40,110,0.3); border: 1px solid rgba(120,170,255,0.25); }
+.ev-art.ok { display: block; }
+.ev-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ev-art .aune-art-i { position: absolute; right: 8px; bottom: 8px; z-index: 2; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(207,225,255,0.7); background: rgba(2,0,16,0.35); color: #cfe1ff; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; cursor: help; }
+.ev-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-family: 'Space Mono', monospace; font-size: 9px; padding: 4px 30px 4px 8px; background: rgba(2,0,16,0.75); color: #cfe1ff; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.ev-art .aune-art-i:hover + figcaption, .ev-art .aune-art-i:focus + figcaption { opacity: 1; }
+@media (max-width: 700px) { .ev-art { float: none; width: 100%; margin: 0 0 12px; } }
+.ev-section { margin-top: 28px; }
+.ev-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.ev-note { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+/* ── Fiche repensée (Adrien, 31 oct. 2026) : un chiffre-vedette, une phrase, trois mesures, un graphique vivant ── */
+.ev-hero { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 28px; align-items: center; margin: 24px 0 18px; padding: 22px 26px; border-radius: 14px;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(91,140,255,0.22), rgba(8,16,46,0.75) 55%); border: 1px solid rgba(120,170,255,0.32); }
+.ev-hero-num { display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: inherit; padding-right: 26px; border-right: 1px solid rgba(120,170,255,0.25); }
+.ev-big { font-family: 'Space Mono', monospace; font-size: clamp(44px, 6vw, 64px); font-weight: 700; line-height: 1; color: #fff; letter-spacing: -0.03em; text-shadow: 0 0 24px rgba(91,140,255,0.45); }
+.ev-big-unit { font-size: 14px; color: #cfe1ff; font-weight: 600; letter-spacing: 0.02em; }
+.ev-rank { margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.35; }
+.ev-rank b { color: #ffc857; font-weight: 700; font-size: 15px; }
+.ev-hero-num:hover .ev-rank { color: #cfe1ff; }
+.ev-story { font-size: clamp(15px, 1.5vw, 18px); line-height: 1.55; color: #dbe6ff; margin: 0; }
+.ev-story b { color: #fff; font-weight: 700; }
+.ev-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.ev-metric { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 18px; border-left: 1px solid var(--line); }
+.ev-metric:first-child { border-left: 0; padding-left: 4px; }
+.ev-m-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.ev-m-val { font-size: 13px; color: var(--muted); } .ev-m-val b { font-family: 'Space Mono', monospace; font-size: 24px; color: #fff; margin-right: 2px; }
+.ev-m-sub { font-size: 12px; color: var(--muted); }
+.ev-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+@media (max-width: 860px) {
+  .ev-hero { grid-template-columns: 1fr; gap: 14px; } .ev-hero-num { border-right: 0; padding-right: 0; border-bottom: 1px solid rgba(120,170,255,0.25); padding-bottom: 14px; }
+  .ev-metrics { grid-template-columns: 1fr 1fr; } .ev-metric:nth-child(3) { border-left: 0; padding-left: 4px; }
+}
+.ev-chart-wrap { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 4px 0; }
+.ev-chart { display: block; width: 100%; height: 300px; }
+.ev-chart .grid line { stroke: rgba(95,140,255,0.16); } .ev-chart .grid text, .ev-chart .days text, .ev-chart .axis-unit { fill: var(--muted); font-size: 11px; font-family: 'Space Mono', monospace; }
+.ev-chart .days line { stroke: rgba(95,140,255,0.12); stroke-dasharray: 2 4; }
+.ev-chart .bars rect { opacity: 0.85; transform-box: fill-box; transform-origin: 50% 100%; animation: ev-grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; transition: opacity 0.15s; }
+.ev-chart .bars rect.hl { opacity: 1; filter: brightness(1.25) drop-shadow(0 0 6px rgba(255,255,255,0.35)); }
+.ev-chart .line { fill: none; stroke: #ffffff; stroke-width: 2.4; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ev-draw 1.6s 0.35s cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
+.ev-chart .area { opacity: 0; animation: ev-fade 0.8s 1.2s forwards; }
+.ev-chart .note { fill: #ffc857; font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 600; opacity: 0; animation: ev-fade 0.6s 1.5s forwards; }
+.ev-chart .now { fill: #ffffff; stroke: #050a1e; stroke-width: 2; opacity: 0; animation: ev-fade 0.6s 1.8s forwards, ev-pulse 2s 2.4s ease-in-out infinite; }
+.ev-chart .now-t { fill: #ffffff; }
+.ev-chart .cross { stroke: rgba(255,255,255,0.55); stroke-width: 1; opacity: 0; pointer-events: none; } .ev-chart .cross.on { opacity: 1; }
+.ev-chart .hover { fill: transparent; cursor: crosshair; }
+@keyframes ev-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes ev-draw { to { stroke-dashoffset: 0; } }
+@keyframes ev-fade { to { opacity: 1; } }
+@keyframes ev-pulse { 50% { r: 8; opacity: 0.6; } }
+@media (prefers-reduced-motion: reduce) { .ev-chart .bars rect, .ev-chart .line, .ev-chart .area, .ev-chart .note, .ev-chart .now { animation: none; opacity: 1; stroke-dashoffset: 0; } }
+.ev-tip { position: absolute; z-index: 5; width: 290px; pointer-events: none; background: rgba(8,16,46,0.97); border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.4; box-shadow: 0 10px 30px rgba(0,0,20,0.6); }
+.ev-tip .t-when { font-family: 'Space Mono', monospace; font-size: 11px; color: #cfe1ff; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+.ev-tip .t-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; color: #dbe6ff; } .ev-tip .t-row b { font-family: 'Space Mono', monospace; font-size: 15px; color: #fff; }
+.ev-tip .t-dim { color: var(--muted); font-size: 12px; } .ev-tip .ev-band { font-size: 9.5px; padding: 2px 6px; }
+.ev-tip .t-title { margin-top: 6px; color: #f1f5ff; font-size: 12.5px; } .ev-tip .t-media { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.ev-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.ev-legend span { display: inline-flex; align-items: center; gap: 6px; } .ev-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+.ev-legend i.sw.bars { background: linear-gradient(90deg, #5fa8ff, #f2c94c, #ff4d4d); } .ev-legend i.sw.line { height: 3px; background: #fff; border-radius: 2px; }
+.ev-legend .lv:first-of-type { margin-left: 10px; }
+.ev-links-group { margin-top: 12px; } .ev-links-group h4 { font-size: 13px; font-weight: 700; color: #e8f0ff; margin-bottom: 4px; } .ev-links-group h4 .ev-when { font-weight: 400; color: var(--muted); margin-left: 8px; font-size: 12px; }
+.ev-links-group ul { list-style: none; padding: 0; margin: 0; }
+.ev-links-group li { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid rgba(95,140,255,0.12); font-size: 13.5px; }
+.ev-media { font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 0.06em; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; color: #cfe1ff; flex: 0 0 auto; }
+.ev-links-group a { color: #e8f0ff; text-decoration: none; } .ev-links-group a:hover { text-decoration: underline; }
+.ev-table-wrap { overflow-x: auto; } .ev-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ev-table th { font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 10px 6px; border-bottom: 1px solid var(--line); font-weight: 400; }
+.ev-table td { padding: 7px 10px; border-bottom: 1px solid rgba(95,140,255,0.12); } .ev-table th.num, .ev-table td.num { text-align: right; font-family: 'Space Mono', monospace; }
+.ev-table tr.peak td { color: #ffc857; }
+.ev-foot { margin: 24px 0 40px; } .ev-foot a { color: #9dbcff; font-weight: 600; text-decoration: none; }
+
+/* Objets | Événements dans le panneau de recherche, et les suggestions d'événements */
+.ev-type-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.ev-type-label { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; color: #e8f0ff; }
+.ev-type { display: inline-flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--line); }
+.ev-type button { font-family: 'Space Grotesk', sans-serif; font-size: 14px; padding: 8px 16px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.ev-type button.active { background: rgba(85,136,255,0.22); color: #fff; }
+.ev-results { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.ev-result { text-align: left; font-family: 'Space Grotesk', sans-serif; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; color: #e8f0ff; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.ev-result:hover { border-color: var(--accent); background: rgba(40,70,160,0.3); }
+.ev-result-title { font-size: 14px; font-weight: 600; } .ev-result-meta { font-size: 11.5px; color: var(--muted); }
+#ev-search-box .hint { margin-top: 10px; }
+
+/* ── Meilleures positions dans chaque classement (1er nov. 2026) ── */
+.ev-records { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.ev-rec { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line, rgba(90,140,255,0.22)); background: rgba(10,18,50,0.6); text-decoration: none; color: inherit; transition: border-color .15s, transform .15s; min-width: 0; }
+.ev-rec:hover { border-color: rgba(140,180,255,0.65); transform: translateY(-1px); }
+.ev-rec-label { font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted, rgba(140,170,220,0.7)); }
+.ev-rec-rank { font-family: 'Space Mono', monospace; font-size: 30px; font-weight: 700; line-height: 1.05; color: #f1f5ff; }
+.ev-rec-of { font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 500; color: var(--muted, rgba(140,170,220,0.7)); margin-left: 6px; }
+.ev-rec-when { font-size: 12.5px; line-height: 1.35; color: rgba(190,210,245,0.85); }
+.ev-rec.gold { border-color: rgba(255,210,90,0.6); background: linear-gradient(180deg, rgba(255,210,90,0.12), rgba(10,18,50,0.6)); }
+.ev-rec.gold .ev-rec-rank { color: #ffd65a; text-shadow: 0 0 14px rgba(255,214,90,0.35); }
+.ev-rec.podium .ev-rec-rank { color: #ffe3a3; }
+@media (max-width: 900px) { .ev-records { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ── Gros boutons vers les outils (bas des fiches d'événement et d'objet) ── */
+.tool-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; margin: 8px 0 40px; }
+.tool-btn { display: flex; align-items: center; gap: 14px; padding: 18px 18px; border-radius: 14px; border: 1px solid rgba(120,170,255,0.45); background: rgba(40,70,160,0.22); color: #f1f5ff; text-decoration: none; transition: background .15s, border-color .15s, transform .15s; min-width: 0; }
+.tool-btn:hover { background: rgba(40,70,160,0.42); border-color: #5588ff; transform: translateY(-2px); }
+.tool-btn-sym { flex: 0 0 auto; width: 34px; height: 34px; color: #9dc0ff; }
+.tool-btn-sym svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+.tool-btn-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tool-btn-name { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.tool-btn-sub { font-size: 12.5px; line-height: 1.35; color: rgba(180,200,240,0.8); }
+.tool-btn-go { flex: 0 0 auto; font-size: 20px; color: #9dc0ff; }
+@media (max-width: 600px) { .tool-btns { grid-template-columns: 1fr; } }

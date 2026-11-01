@@ -8,8 +8,9 @@
   <title>RADAR+ • Analyse de Saillance Médiatique</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared-menu.css" />
+  <link rel="stylesheet" href="./assets/css/aune.css" />
   <style>
     :root {
       --bg: #020010;
@@ -20,14 +21,18 @@
       --card-bg: rgba(10,18,50,0.7);
       --border: rgba(90,140,255,0.22);
       --ticker-height: 44px;
-      --orbitron: 'Orbitron', 'Space Mono', monospace;
+      /* Typographie (Adrien, 31 oct. 2026) : Space Grotesk pour le texte et les titres,
+         Space Mono pour les chiffres. Orbitron (science-fiction) est retirée. La variable
+         --orbitron est gardée pour ne pas réécrire toutes les règles : elle pointe sur Grotesk. */
+      --grotesk: 'Space Grotesk', 'Space Mono', sans-serif;
+      --orbitron: 'Space Grotesk', 'Space Mono', sans-serif;
       --mono: 'Space Mono', 'SF Mono', Consolas, monospace;
     }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     /* Pas de défilement latéral sur mobile : iOS Safari ignore overflow-x sur body
        seul, il faut aussi html ; « clip » ne crée pas de conteneur de défilement. */
     html { scroll-behavior: smooth; overflow-x: hidden; overflow-x: clip; }
-    body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; overflow-x: clip; }
+    body { background: var(--bg); color: var(--text); font-family: var(--grotesk); font-size: 15px; font-variant-numeric: tabular-nums; overflow-x: hidden; overflow-x: clip; }
 
     /* ========== STARFIELD ========== */
     #stars-canvas {
@@ -115,11 +120,13 @@
       font-family: var(--mono);
     }
     .media-hotspot:hover .media-tooltip { opacity: 1; }
+    .page-hotspot .media-tooltip { top: auto; bottom: 100%; margin-bottom: 6px; }
+    .page-hotspot:hover { background: rgba(85,136,255,0.14); border-radius: 10px; }
 
     /* Scroll indicator — au-dessus du ticker, mais un peu plus bas qu'avant
        (signalement #25 : « descendre un peu le Explorer ») */
     .scroll-hint {
-      position: absolute; bottom: calc(var(--ticker-height) + 56px); left: 50%;
+      position: absolute; bottom: calc(var(--ticker-height) + 18px); left: 50%; /* plus bas, détaché des symboles (Adrien, 31 oct. 2026) */
       transform: translateX(-50%); text-align: center;
       animation: float 2.5s ease-in-out infinite;
       z-index: 5;
@@ -156,136 +163,6 @@
 
     /* ========== HOT 20 SECTION ========== */
     /* ========== LA UNE DES UNES (événements saillants) ========== */
-    .aune-section {
-      position: relative; z-index: 1;
-      padding: 84px 40px 220px; /* 1re section : dégage le menu ; grand espace avant le Hot 20, comme avant le robot */
-      max-width: 1000px; margin: 0 auto;
-    }
-    .aune-controls { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 0 0 16px; }
-    .aune-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .aune-tab {
-      font-family: var(--orbitron); font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase;
-      color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 6px;
-      padding: 7px 14px; cursor: pointer; transition: color 0.2s, background 0.2s, border-color 0.2s;
-    }
-    .aune-tab:hover { color: var(--text); border-color: rgba(90,140,255,0.45); }
-    .aune-tab.active { color: #fff; background: rgba(40,70,160,0.55); border-color: var(--accent); box-shadow: 0 0 12px rgba(80,130,255,0.25); }
-    /* Le module garde TOUJOURS la même hauteur (règle d'Adrien) : cartes et liste s'y tiennent. */
-    .aune-grid { --aune-h: 600px; display: grid; grid-template-columns: 1fr; gap: 14px; }
-    @media (min-width: 760px) {
-      .aune-grid.view-cards { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; height: var(--aune-h); align-items: stretch; }
-      .aune-grid.view-cards .aune-card.aune-hero { grid-column: 1; grid-row: 1 / span 2; }
-      .aune-grid.view-cards .aune-card.aune-secondary { grid-column: 2; }
-      .aune-grid.view-list { height: var(--aune-h); }
-    }
-    .aune-card {
-      position: relative; min-height: 0; overflow: hidden;
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 10px; padding: 18px 20px;
-      display: flex; flex-direction: column; gap: 8px;
-      justify-content: flex-start; align-items: stretch;
-    }
-    .aune-card.aune-hero { padding: 22px 24px; border-color: rgba(120,170,255,0.45); box-shadow: 0 0 24px rgba(80,130,255,0.12); }
-    .aune-card-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .aune-rank { font-family: var(--orbitron); font-size: 11px; letter-spacing: 1.5px; color: var(--muted); }
-    .aune-band {
-      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase;
-      padding: 3px 8px; border-radius: 4px; color: #060d22; background: #6b7fa8; white-space: nowrap;
-    }
-    .aune-band.band-faible { background: #7f93b8; }
-    .aune-band.band-moderee { background: #5fa8ff; }
-    .aune-band.band-elevee { background: #f2c94c; }
-    .aune-band.band-tres_elevee { background: #ff9f43; }
-    .aune-band.band-extreme { background: #ff4d4d; color: #fff; }
-    .aune-clickable { cursor: pointer; }
-    .aune-title.aune-clickable:hover, .aune-row-title.aune-clickable:hover { color: #fff; text-decoration: underline; }
-    .aune-art.aune-clickable:hover img { filter: brightness(1.08); }
-    .aune-title {
-      font-size: 16px; line-height: 1.3; font-weight: 700; color: #e8f0ff; margin: 0;
-      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .aune-card.aune-hero .aune-title { font-size: clamp(18px, 2.1vw, 23px); }
-    .aune-issue { font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.6px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .aune-meta { font-size: 12px; color: var(--muted); }
-    /* Illustration : prend la place qui reste au-dessus du texte, recadrée. */
-    .aune-art { margin: -22px -24px 6px; position: relative; flex: 1 1 auto; min-height: 120px; }
-    .aune-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 10px 10px 0 0; }
-    /* Pas d'illustration pour cette Une (la Vitrine n'illustre que SA Une du moment) :
-       on garde l'espace, avec le robot en filigrane, pour que le module ne bouge jamais. */
-    .aune-art.no-art { background: radial-gradient(ellipse at 50% 40%, rgba(60,90,200,0.28), rgba(2,0,16,0) 70%); border-radius: 10px 10px 0 0; }
-    .aune-art.no-art::before {
-      content: ""; position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; transform: translate(-50%, -50%);
-      background: url('assets/img/robot.png') center / contain no-repeat; opacity: 0.22;
-    }
-    .aune-art figcaption { display: none; }
-    .aune-art.has-art figcaption { display: block; }
-    .aune-art figcaption {
-      position: absolute; right: 10px; bottom: 8px;
-      font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.5px;
-      color: rgba(220,230,255,0.85); background: rgba(2,0,16,0.55);
-      padding: 3px 7px; border-radius: 4px; max-width: 70%; text-align: right;
-    }
-    .aune-body { flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-    /* Cases 2 et 3 : le corps prend toute la hauteur, les manchettes se collent au bas. */
-    .aune-card.aune-secondary .aune-body { flex: 1 1 auto; }
-    .aune-card.aune-secondary .aune-headlines, .aune-card.aune-secondary .aune-chips { margin-top: auto; }
-    .aune-card.aune-secondary .aune-title { -webkit-line-clamp: 4; }
-    .aune-chips { margin-top: auto; padding-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
-    .aune-media-chip {
-      font-family: var(--orbitron); font-size: 9px; letter-spacing: 1px; text-decoration: none;
-      padding: 4px 9px; border: 1px solid rgba(90,140,255,0.4); border-radius: 4px; color: #cfe1ff;
-      background: rgba(20,40,110,0.35); transition: background 0.15s, border-color 0.15s, color 0.15s;
-    }
-    .aune-media-chip:hover { background: rgba(40,70,160,0.6); border-color: var(--accent); color: #fff; }
-    .aune-headlines { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
-    .aune-headlines-title { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
-    .aune-headline a { color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.4; display: flex; gap: 10px; align-items: baseline; min-width: 0; }
-    .aune-headline a span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .aune-headline a:hover { color: #fff; text-decoration: underline; }
-    .aune-media {
-      flex: 0 0 auto; font-family: var(--orbitron); font-size: 9px; letter-spacing: 1px;
-      padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; color: var(--muted);
-    }
-    /* Vue liste (top 10), à l'image du Hot 20 */
-    .aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; height: 100%; overflow: hidden; }
-    .aune-row {
-      display: grid; grid-template-columns: 36px 96px minmax(0, 1fr) auto; gap: 12px; align-items: center;
-      padding: 7px 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; min-height: 0;
-    }
-    .aune-row-rank { font-family: var(--orbitron); font-size: 15px; color: rgba(80,130,255,0.55); }
-    .aune-row-trend { display: flex; justify-content: center; }
-    .aune-row-trend .hot20-trend { font-size: 11px; }
-    .aune-list-header {
-      display: grid; grid-template-columns: 36px 96px minmax(0, 1fr) 170px; gap: 12px;
-      padding: 2px 14px 8px; font-family: var(--orbitron); font-size: 9px; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--muted); border-bottom: 1px solid rgba(80,130,255,0.2);
-    }
-    .aune-list-header span:nth-child(2) { text-align: center; }
-    @media (max-width: 700px) {
-      .aune-list-header { display: none; }
-      .aune-row { grid-template-columns: 30px 64px minmax(0, 1fr) auto; gap: 8px; }
-    }
-    /* Top 3 mis en évidence : or, argent, bronze, comme le Hot 20 */
-    .aune-row.rank-1, .aune-row.rank-2, .aune-row.rank-3 { background: rgba(14,24,64,0.85); }
-    .aune-row.rank-1 { border-color: rgba(255,200,60,0.55); box-shadow: 0 0 14px rgba(255,200,60,0.12); }
-    .aune-row.rank-2 { border-color: rgba(200,210,230,0.45); }
-    .aune-row.rank-3 { border-color: rgba(200,150,80,0.5); }
-    .aune-row.rank-1 .aune-row-rank { color: rgba(255,200,60,0.95); font-size: 18px; }
-    .aune-row.rank-2 .aune-row-rank { color: rgba(200,210,230,0.85); font-size: 17px; }
-    .aune-row.rank-3 .aune-row-rank { color: rgba(200,150,80,0.9); font-size: 16px; }
-    .aune-row.rank-1 .aune-row-title { font-size: 15px; }
-    .aune-row-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-    .aune-row-title { font-size: 13.5px; font-weight: 700; color: #e8f0ff; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .aune-row-meta { display: flex; gap: 10px; align-items: center; font-size: 10px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; }
-    .aune-row-meta .aune-band { font-size: 8px; padding: 2px 6px; }
-    .aune-row-score { width: 170px; }
-    .aune-row-score .hot20-row-pct { margin-bottom: 4px; }
-    .aune-meta b { color: #e8f0ff; }
-    @media (max-width: 700px) { .aune-row-score { width: 120px; } }
-    .aune-empty { color: var(--muted); font-size: 13px; padding: 14px 0; }
-    .aune-foot { margin-top: 8px; text-align: right; font-family: var(--mono); font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); min-height: 14px; }
-    @media (max-width: 700px) { .aune-section { padding: 76px 16px 120px; } .aune-grid { --aune-h: auto; } .aune-art { min-height: 180px; } }
-
     .hot20-section {
       position: relative; z-index: 1;
       padding: 0 40px 80px;
@@ -299,8 +176,8 @@
     }
 
     .hot20-title {
-      font-family: var(--orbitron); font-size: clamp(20px, 3vw, 32px);
-      letter-spacing: 2px; color: #e0ecff;
+      font-family: var(--grotesk); font-size: clamp(26px, 3vw, 36px);
+      letter-spacing: -0.02em; font-weight: 700; color: #e0ecff;
       line-height: 1.05;
     }
     .hot20-title .accent { color: var(--accent); }
@@ -565,6 +442,7 @@
       background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8));
       transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
+    .hot20-row-share { font-family: var(--grotesk); font-size: 11px; color: var(--muted); margin-top: 5px; }
     .hot20-row-media { font-size: 10px; color: var(--muted); text-align: right; white-space: nowrap; }
 
     .hot20-hint {
@@ -644,139 +522,6 @@
     .hot20-trend.new { color: #fbbf24; }
     .hot20-trend.comeback { color: #c084fc; }
     .hot20-trend.stable { color: var(--muted); }
-
-    /* Search bar */
-    .hot20-search {
-      width: 100%; margin-bottom: 20px;
-      position: relative;
-    }
-    .hot20-search input {
-      width: 100%; padding: 12px 16px 12px 42px;
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text); font-family: var(--mono);
-      font-size: 14px; outline: none; transition: border-color 0.3s;
-    }
-    .hot20-search input::placeholder { color: var(--muted); }
-    .hot20-search input:focus { border-color: var(--accent); }
-    .hot20-search-icon {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--muted); font-size: 16px; pointer-events: none;
-    }
-    .hot20-search-result {
-      margin-bottom: 20px; padding: 16px 20px;
-      background: linear-gradient(135deg, rgba(40,70,160,0.3), rgba(20,30,80,0.4));
-      border: 1px solid rgba(100,160,255,0.35); border-radius: 6px;
-      display: none;
-      position: relative;
-      overflow: hidden;
-    }
-    .hot20-search-result::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -45%;
-      width: 40%;
-      height: 100%;
-      background: linear-gradient(90deg, rgba(84,255,165,0), rgba(84,255,165,0.16), rgba(84,255,165,0));
-      opacity: 0;
-      pointer-events: none;
-    }
-    .hot20-search-result.visible { display: block; }
-    .hot20-search-result.visible::before {
-      animation: radarSweep 4.2s ease-in-out infinite;
-    }
-    @keyframes radarSweep {
-      0% { transform: translateX(0); opacity: 0; }
-      15% { opacity: 0.62; }
-      70% { opacity: 0.26; }
-      100% { transform: translateX(360%); opacity: 0; }
-    }
-    .hot20-search-result .sr-name {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 18px; font-weight: 700; color: #e8f0ff;
-      text-transform: capitalize; margin-bottom: 4px;
-    }
-    .hot20-search-result .sr-name-text {
-      line-height: 1.1;
-    }
-    .hot20-search-result .sr-radar-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #44ff9a;
-      position: relative;
-      box-shadow: 0 0 0 0 rgba(68,255,154,0.55), 0 0 8px rgba(68,255,154,0.55);
-      flex: 0 0 auto;
-    }
-    .hot20-search-result .sr-radar-dot::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 50%;
-      border: 1px solid rgba(68,255,154,0.65);
-      opacity: 0;
-      transform: scale(0.7);
-    }
-    .hot20-search-result.radar-active .sr-radar-dot {
-      animation: radarDotPulse 2.2s ease-out infinite;
-    }
-    .hot20-search-result.radar-active .sr-radar-dot::after {
-      animation: radarRing 2.2s ease-out infinite;
-    }
-    .hot20-search-result.radar-inactive .sr-radar-dot {
-      background: rgba(116,206,164,0.78);
-      box-shadow: 0 0 0 0 rgba(116,206,164,0.35), 0 0 6px rgba(116,206,164,0.35);
-    }
-    .hot20-search-result.radar-inactive .sr-radar-dot::after {
-      border-color: rgba(116,206,164,0.55);
-      animation: radarRingSoft 3.4s ease-out infinite;
-    }
-    @keyframes radarDotPulse {
-      0% { box-shadow: 0 0 0 0 rgba(68,255,154,0.6), 0 0 10px rgba(68,255,154,0.5); }
-      60% { box-shadow: 0 0 0 8px rgba(68,255,154,0), 0 0 12px rgba(68,255,154,0.25); }
-      100% { box-shadow: 0 0 0 0 rgba(68,255,154,0), 0 0 8px rgba(68,255,154,0.18); }
-    }
-    @keyframes radarRing {
-      0% { opacity: 0.65; transform: scale(0.75); }
-      70% { opacity: 0; transform: scale(1.8); }
-      100% { opacity: 0; transform: scale(1.8); }
-    }
-    @keyframes radarRingSoft {
-      0% { opacity: 0.5; transform: scale(0.75); }
-      70% { opacity: 0; transform: scale(1.5); }
-      100% { opacity: 0; transform: scale(1.5); }
-    }
-    .hot20-search-result .sr-info {
-      font-size: 12px; color: var(--text); line-height: 1.6;
-    }
-    .hot20-search-result .sr-actions {
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .hot20-search-result .sr-evo-btn {
-      display: inline;
-      padding: 0;
-      border: none;
-      background: none;
-      color: rgba(170, 210, 255, 0.95);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      text-transform: none;
-      transition: color 0.25s;
-    }
-    .hot20-search-result .sr-evo-btn:hover {
-      color: #eaf3ff;
-    }
-    .hot20-search-result .sr-not-found {
-      font-size: 13px; color: var(--muted); font-style: italic;
-    }
 
     /* Article panel */
     .article-overlay {
@@ -997,9 +742,10 @@
     }
     .modules-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 18px;
     }
+    @media (max-width: 980px) { .modules-grid { grid-template-columns: repeat(2, 1fr); } }
     .module-card {
       display: flex; flex-direction: column; gap: 10px;
       padding: 22px 20px;
@@ -1021,8 +767,10 @@
       box-shadow: 0 0 22px rgba(60,100,200,0.12);
     }
     .module-card-icon {
-      font-size: 20px; color: var(--accent); opacity: 0.75; line-height: 1;
+      font-size: 20px; color: var(--accent); opacity: 0.75; line-height: 0;
     }
+    .module-card-icon .radar-sym { width: 26px; height: 26px; }
+    .module-card:hover .module-card-icon { opacity: 1; }
     .module-card-featured .module-card-icon { opacity: 1; }
     .module-card-name {
       font-family: var(--orbitron); font-size: 13px;
@@ -1075,6 +823,64 @@
       .hot20-row-score { min-width: 78px; }
       .hot20-row-pct strong { font-size: 12px; }
     }
+    /* ===== HOT 10 simplifié (Adrien, 31 oct. 2026) : lignes plutôt que cartes, contrôles en
+       pastilles comme La Une des Unes, liens en texte, plus d'emoji. Ces règles l'emportent
+       sur les anciennes (même sélecteur, plus bas dans la feuille). ===== */
+    .hot20-section { max-width: 1040px; padding: 0 28px 80px; margin-top: 120px; }
+    .hot20-header { margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
+    .hot20-title-row { width: auto; margin: 0; }
+    .hot20-evolution-cta { display: none; } /* l'Évolution est dans le menu ; le lien sous le module mène au Classement */
+    .hot20-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; width: auto; }
+    .controls-left { flex-direction: column; align-items: flex-end; gap: 8px; width: auto; }
+    .week-nav { display: none; } /* remonter dans le temps : sur la page Classement, pas sur l'accueil (Adrien, 31 oct.) */
+    .hot20-title { font-size: clamp(24px, 3.2vw, 37px); }
+    .hot20-title .hot20-subtitle { font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 400; margin-top: 8px; }
+    .hot20-subtitle .sub-main { display: block; color: #e8f0ff; font-weight: 600; }
+    .hot20-subtitle .sub-detail { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .hot20-evolution-cta, .hot20-evolution-cta:hover { padding: 0; background: none; border: 0; box-shadow: none; transform: none; font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 600; color: #9dbcff; }
+    .hot20-evolution-cta:hover { color: #fff; }
+    .hot20-controls { grid-template-columns: 1fr auto; align-items: center; }
+    #country-tabs, .granularity-tabs { gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); }
+    #country-tabs .country-tab, .granularity-tab { font-family: var(--grotesk); font-size: 12px; letter-spacing: 0; text-transform: none; padding: 5px 11px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); box-shadow: none; }
+    #country-tabs .country-tab:hover, .granularity-tab:hover { color: #fff; background: transparent; }
+    #country-tabs .country-tab.active, .granularity-tab.active { background: rgba(85,136,255,0.22); color: #fff; }
+    .week-label, .week-label-date, .week-label-interval, .week-label-countdown { font-family: var(--grotesk); letter-spacing: 0; text-transform: none; }
+    .week-label-date { font-size: 14px; font-weight: 600; }
+    .week-label-interval, .week-label-countdown { font-size: 12px; }
+    .week-btn { font-family: var(--grotesk); border-radius: 6px; }
+    .hot20-list { border: 0; border-radius: 0; }
+    .hot20-list-header { background: transparent; padding: 0 14px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; border-bottom: 1px solid var(--border); }
+    .hot20-row { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+    .hot20-row:last-child { border-bottom: 1px solid var(--border); }
+    .hot20-row.rank-1, .hot20-row.rank-2, .hot20-row.rank-3 { border-left: 0; background: transparent; }
+    .hot20-row.rank-1:hover, .hot20-row:hover { background: rgba(40,70,160,0.14); }
+    .hot20-row.alert-eleve, .hot20-row.alert-tres-eleve, .hot20-row.alert-extreme { background: transparent; box-shadow: none; }
+    .hot20-row.alert-eleve:hover, .hot20-row.alert-tres-eleve:hover, .hot20-row.alert-extreme:hover { background: rgba(40,70,160,0.14); }
+    .hot20-row-rank { font-family: var(--mono); font-size: 18px; color: rgba(120,165,255,0.75); }
+    .hot20-row-name { font-size: 19px; font-weight: 700; }
+    /* « N jours de suite » à la suite du nom, avec 📍 (Adrien, 31 oct. 2026) */
+    .hot20-row-name-wrap .hot20-row-name { flex: 0 1 auto; }
+    .hot20-row-streak { font-family: var(--grotesk); font-size: 12.5px; margin: 0 0 0 12px; white-space: nowrap; flex: 0 0 auto; }
+    .hot20-row-pct strong { font-size: 17px; }
+    .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
+    /* Colonne « articles » retirée de l'accueil (Adrien, 31 oct.) ; le compte reste dans l'info-bulle du sujet. */
+    .hot20-row-media, .hot20-list-header span:last-child { display: none; }
+    .hot20-list-header, .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 210px; }
+    .hot20-more { margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: var(--grotesk); font-size: 12px; }
+    .hot20-more .methodo-how { color: #9dbcff; }
+    .hot20-more a:first-child, .aune-foot-links a:first-child { display: inline-block; font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
+    .hot20-more a:first-child:hover, .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
+    @media (max-width: 760px) { .hot20-section { margin-top: 48px; padding: 0 16px 60px; } }
+    @media (max-width: 700px) {
+      .hot20-header { flex-direction: column; align-items: flex-start; }
+      .hot20-controls, .controls-left { align-items: flex-start; }
+      .hot20-row { grid-template-columns: 32px minmax(0, 1fr) 132px; gap: 8px; }
+      .hot20-row-score { min-width: 0; padding: 0; }
+      .hot20-row-pct { gap: 6px; }
+      .hot20-row-pct strong { font-size: 14px; }
+      .hot20-row-increase { font-size: 11px; }
+      .hot20-row-name { font-size: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -1085,34 +891,37 @@
 <!-- ========== HERO ========== -->
 <!-- ========== LA UNE DES UNES (événements saillants, cumul 24 h) ========== -->
 <section class="aune-section" id="aune" hidden>
-  <div class="hot20-title-row">
-    <h2 class="hot20-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span><span class="hot20-subtitle" id="aune-subtitle"></span></h2>
-  </div>
-  <div class="aune-controls">
-    <div class="country-tabs" id="aune-country-tabs">
-      <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
-      <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
-      <!-- Pas d'États-Unis : la table d'événements de la Vitrine ne couvre que QC et
-           reste du Canada (panel américain de 2 médias). Un panel américain est prévu
-           au postdoc d'Adrien (avec Soroka). -->
+  <div class="aune-head">
+    <div>
+      <h2 class="aune-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span></h2>
+      <p class="aune-lede" id="aune-subtitle"></p>
     </div>
-  <div class="aune-tabs" id="aune-tabs" role="tablist">
-    <button type="button" class="aune-tab active" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
-    <button type="button" class="aune-tab" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
-    <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
-    <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
-    <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
+    <div class="aune-controls">
+      <div class="country-tabs" id="aune-country-tabs">
+        <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
+        <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
+        <!-- Pas d'États-Unis : la table d'événements de la Vitrine ne couvre que QC et
+             reste du Canada (panel américain de 2 médias). Un panel américain est prévu
+             au postdoc d'Adrien (avec Soroka). -->
+      </div>
+      <div class="aune-tabs" id="aune-tabs" role="tablist">
+        <button type="button" class="aune-tab" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
+        <button type="button" class="aune-tab active" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
+        <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
+        <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
+        <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
+      </div>
+    </div>
   </div>
-  </div>
-  <div class="aune-grid view-cards" id="aune-grid"></div>
-  <div class="aune-foot" id="aune-foot"></div>
+  <div class="aune-grid view-list" id="aune-grid"></div>
+  <div class="aune-foot"><span id="aune-foot"></span><span class="aune-foot-links"><a href="./classement.html" id="aune-see-all" data-i18n="aune.see_all">Voir tout le classement →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></span></div>
 </section>
 
 <!-- ========== HOT 20 ========== -->
 <section class="hot20-section" id="hot20">
   <div class="hot20-header">
     <div class="hot20-title-row">
-      <h2 class="hot20-title"><span data-i18n="hot20.title">HOT</span> <span class="accent" data-i18n="hot20.title_number">20</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
+      <h2 class="hot20-title"><span data-i18n="hot20.title">Hot</span> <span class="accent" data-i18n="hot20.title_number">10</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
       <a class="hot20-evolution-cta" id="hot20-evolution-cta" href="./evolution.html" data-i18n-aria-label="alertes.evo_cta" aria-label="Voir l'évolution dans le temps">
         <span data-i18n="alertes.evo_cta">Voir l&rsquo;évolution dans le temps</span>
         <span class="cta-arrow" aria-hidden="true">↗</span>
@@ -1126,12 +935,12 @@
           <button class="country-tab" data-country="USA" data-i18n="country.USA">États-Unis</button>
         </div>
         <div class="granularity-tabs" id="granularity-tabs">
-          <button class="granularity-tab" data-gran="4h" data-i18n="period.4h">4 h</button>
-          <button class="granularity-tab active" data-gran="day" data-i18n="period.day">Jour</button>
-          <button class="granularity-tab" data-gran="week" data-i18n="period.week">Semaine</button>
-          <button class="granularity-tab" data-gran="month" data-i18n="period.month">Mois</button>
-          <button class="granularity-tab" data-gran="quarter" data-i18n="period.quarter">Année</button>
-          <button class="granularity-tab" data-gran="total" data-i18n="period.total">Total</button>
+          <button class="granularity-tab" data-gran="4h" data-i18n="period_tab.4h">Dernière édition</button>
+          <button class="granularity-tab active" data-gran="day" data-i18n="period_tab.day">Aujourd’hui</button>
+          <button class="granularity-tab" data-gran="week" data-i18n="period_tab.week">Cette semaine</button>
+          <button class="granularity-tab" data-gran="month" data-i18n="period_tab.month">Ce mois-ci</button>
+          <button class="granularity-tab" data-gran="quarter" data-i18n="period_tab.quarter">Cette année</button>
+          <button class="granularity-tab" data-gran="total" data-i18n="period_tab.total">Depuis le début</button>
         </div>
       </div>
       <div class="week-nav">
@@ -1145,14 +954,10 @@
       </div>
     </div>
   </div>
-  <div class="hot20-search">
-    <span class="hot20-search-icon">&#128269;</span>
-    <input type="text" id="hot20-search-input" data-i18n-placeholder="common.search_radar_placeholder" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
-  </div>
-  <div class="hot20-search-result" id="search-result"></div>
   <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
   </div>
+  <div class="hot20-more"><a href="./classement.html?type=objets" id="hot20-more-link" data-i18n="hot20.see_more">Voir plus →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
 
 <!-- ========== MODULES ========== -->
@@ -1203,6 +1008,12 @@
       <!-- Row 4: National Post · Vancouver Sun -->
       <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:40%; left:6%;  width:13%; height:7%"><span class="media-tooltip">National Post</span></a>
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
+      <!-- Les quatre symboles sous le robot : une page chacun (Adrien, 31 oct. 2026).
+           Positions relatives à l'image (960×683) : repère, podium, chronomètre, thermomètre. -->
+      <a class="media-hotspot page-hotspot" href="./constellation.html" style="top:84%; left:23%; width:10%; height:15%"><span class="media-tooltip" data-i18n="hero.icon_constellation">Constellation : la carte des sujets</span></a>
+      <a class="media-hotspot page-hotspot" href="./classement.html"    style="top:84%; left:34%; width:12%; height:15%"><span class="media-tooltip" data-i18n="hero.icon_classement">Classement officiel</span></a>
+      <a class="media-hotspot page-hotspot" href="./evolution.html"     style="top:84%; left:56%; width:10%; height:15%"><span class="media-tooltip" data-i18n="hero.icon_evolution">Évolution dans le temps</span></a>
+      <a class="media-hotspot page-hotspot" href="./alertes.html"       style="top:82%; left:67%; width:10%; height:17%"><span class="media-tooltip" data-i18n="hero.icon_alertes">Alertes de saillance</span></a>
     </div>
   </div>
   <button type="button" class="scroll-hint" id="scroll-to-hot20" data-i18n-aria-label="hero.scroll_aria" aria-label="Explorer les modules">
@@ -1211,44 +1022,71 @@
   </button>
 </section>
 
-<!-- Dotted bridge -->
+<!-- Pont pointillé : une ligne par outil, du symbole du robot à sa carte (positions mesurées
+     par layoutBridge(), donc justes à toute largeur d'écran ; Adrien, 31 oct. 2026). -->
 <div class="dotted-bridge">
-  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <line x1="350" y1="0" x2="300" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="500" y1="0" x2="500" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="650" y1="0" x2="700" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2s" repeatCount="indefinite" path="M350,0 L300,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.3s" repeatCount="indefinite" path="M500,0 L500,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.6s" repeatCount="indefinite" path="M650,0 L700,120"/>
-    </circle>
+  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" id="dotted-bridge-svg">
+    <line x1="340" y1="0" x2="280" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="450" y1="0" x2="427" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="550" y1="0" x2="573" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="660" y1="0" x2="720" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2s" repeatCount="indefinite" path="M340,0 L280,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.3s" repeatCount="indefinite" path="M450,0 L427,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.6s" repeatCount="indefinite" path="M550,0 L573,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.9s" repeatCount="indefinite" path="M660,0 L720,120"/></circle>
   </svg>
 </div>
+<script>
+// Chaque pointillé relie un symbole du robot (.page-hotspot, dans l'ordre des cartes) au centre
+// de sa carte « Outils d'analyse » ; recalculé au chargement et au redimensionnement.
+(function () {
+  function layoutBridge() {
+    var svg = document.getElementById('dotted-bridge-svg'); if (!svg) return;
+    var box = svg.getBoundingClientRect(), w = Math.round(box.width) || 1000;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' 120');
+    var spots = document.querySelectorAll('.page-hotspot'), cards = document.querySelectorAll('.module-card');
+    var lines = svg.querySelectorAll('line'), motions = svg.querySelectorAll('animateMotion');
+    lines.forEach(function (l, i) {
+      var s = spots[i], c = cards[i]; if (!s || !c) { l.style.display = 'none'; return; }
+      var sb = s.getBoundingClientRect(), cb = c.getBoundingClientRect();
+      var x1 = Math.round(sb.left + sb.width / 2 - box.left), x2 = Math.round(cb.left + cb.width / 2 - box.left);
+      l.setAttribute('x1', x1); l.setAttribute('x2', x2);
+      if (motions[i]) motions[i].setAttribute('path', 'M' + x1 + ',0 L' + x2 + ',120');
+    });
+  }
+  window.addEventListener('resize', layoutBridge);
+  window.addEventListener('load', layoutBridge);
+  if (document.readyState !== 'loading') layoutBridge(); else document.addEventListener('DOMContentLoaded', layoutBridge);
+})();
+</script>
 
 <section class="modules-section" id="modules">
   <h2 class="modules-title" data-i18n="modules.title">Outils d&rsquo;analyse</h2>
+  <!-- Quatre outils = les quatre symboles du robot, dans leur ordre (Adrien, 31 oct. 2026). -->
   <div class="modules-grid">
     <a class="module-card" href="./constellation.html">
-      <div class="module-card-icon">&#9678;</div>
+      <div class="module-card-icon" data-symbol="constellation"></div>
       <div class="module-card-name" data-i18n="modules.constellation.name">Constellation</div>
       <div class="module-card-desc" data-i18n="modules.constellation.desc">Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques.</div>
       <div class="module-card-cta" data-i18n="modules.explore">Explorer &rarr;</div>
     </a>
-    <a class="module-card module-card-featured" href="./evolution.html">
-      <div class="module-card-icon">&#9672;</div>
+    <a class="module-card" href="./classement.html">
+      <div class="module-card-icon" data-symbol="classement"></div>
+      <div class="module-card-name" data-i18n="modules.classement.name">Classement</div>
+      <div class="module-card-desc" data-i18n="modules.classement.desc">Le classement officiel des événements et des objets, par édition, jour, semaine, mois ou année, et tout son historique.</div>
+      <div class="module-card-cta" data-i18n="modules.see_ranking">Voir le classement &rarr;</div>
+    </a>
+    <a class="module-card" href="./evolution.html">
+      <div class="module-card-icon" data-symbol="evolution"></div>
       <div class="module-card-name" data-i18n="modules.evolution.name">Évolution</div>
       <div class="module-card-desc" data-i18n="modules.evolution.desc">Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n&rsquo;importe quel sujet sur l&rsquo;ensemble de l&rsquo;historique.</div>
       <div class="module-card-cta" data-i18n="modules.view_evolution">Voir l&rsquo;évolution &rarr;</div>
     </a>
-    <a class="module-card" href="./statistiques.html">
-      <div class="module-card-icon">&#9638;</div>
-      <div class="module-card-name" data-i18n="modules.statistiques.name">Statistiques</div>
-      <div class="module-card-desc" data-i18n="modules.statistiques.desc">Analyse détaillée par objet&nbsp;: pics de saillance, distribution médiatique, historique complet et articles associés.</div>
-      <div class="module-card-cta" data-i18n="modules.analyze">Analyser &rarr;</div>
+    <a class="module-card" href="./alertes.html">
+      <div class="module-card-icon" data-symbol="alertes"></div>
+      <div class="module-card-name" data-i18n="modules.alertes.name">Alertes</div>
+      <div class="module-card-desc" data-i18n="modules.alertes.desc">Les sujets dont la saillance dépasse les seuils calibrés par pays&nbsp;: élevé, très élevé, extrême, et leurs épisodes.</div>
+      <div class="module-card-cta" data-i18n="modules.see_alerts">Voir les alertes &rarr;</div>
     </a>
   </div>
 </section>
@@ -1281,6 +1119,7 @@
   <div class="article-panel-body" id="article-panel-body"></div>
 </div>
 
+<script src="./assets/js/aune.js"></script>
 <script>
 /* ===== STARFIELD ===== */
 (function() {
@@ -1462,10 +1301,13 @@
     zone.addEventListener('mouseleave', () => { cstZones[i]._hovered = false; });
   });
 
-  function drawConstellations(time, dt) {
+  // oy : décalage vertical de la couche des constellations (parallaxe, voir draw()).
+  function drawConstellations(time, dt, oy) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     if (vw < 768) return; // mobile : étoiles seulement, pas de constellations (demande d'Adrien)
+    oy = oy || 0;
+    if (oy > vh + 40 || oy < -vh - 40) return; // couche hors écran : rien à dessiner
 
     for (let ci = 0; ci < constellationDefs.length; ci++) {
       const cst = constellationDefs[ci];
@@ -1492,8 +1334,8 @@
       ctx.strokeStyle = 'rgba(130,175,255,' + lineAlpha.toFixed(3) + ')';
       ctx.lineCap = 'round';
       for (const [a, b] of cst.lines) {
-        const ax = cst.stars[a][0] * vw, ay = cst.stars[a][1] * vh;
-        const bx = cst.stars[b][0] * vw, by = cst.stars[b][1] * vh;
+        const ax = cst.stars[a][0] * vw, ay = cst.stars[a][1] * vh + oy;
+        const bx = cst.stars[b][0] * vw, by = cst.stars[b][1] * vh + oy;
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.lineTo(bx, by);
@@ -1503,7 +1345,7 @@
       // — Stars —
       for (let i = 0; i < cst.stars.length; i++) {
         const x = cst.stars[i][0] * vw;
-        const y = cst.stars[i][1] * vh;
+        const y = cst.stars[i][1] * vh + oy;
         const isAnchor = (cst.anchor === i);
         const pulse = isAnchor ? 1 + Math.sin(time * 1.8 + ci * 2.3) * 0.14 : 1;
         const twinkle = 0.85 + Math.sin(time * 0.8 + i * 2.1 + ci * 5.7) * 0.15;
@@ -1528,14 +1370,14 @@
 
       // — Label (only visible when NOT hovered — tooltip replaces it) —
       ctx.save();
-      ctx.font = (cst.name === 'Radar+' ? '600 12px Orbitron, monospace' : '500 11px Orbitron, monospace');
+      ctx.font = (cst.name === 'Radar+' ? '600 12px "Space Grotesk", sans-serif' : '500 11px "Space Grotesk", sans-serif');
       ctx.textBaseline = 'top';
       // Compute label position: below centre of constellation
       let cx = 0, cy = 0;
       for (const s of cst.stars) { cx += s[0]; cy += s[1]; }
       cx = (cx / cst.stars.length) * vw;
-      cy = (cy / cst.stars.length) * vh;
-      const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + (cst.labelOffsetY || 12);
+      cy = (cy / cst.stars.length) * vh + oy;
+      const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + (cst.labelOffsetY || 12) + oy;
       ctx.shadowColor = 'rgba(18,34,82,0.45)';
       ctx.shadowBlur = 6;
       ctx.fillStyle = 'rgba(160,202,255,' + ((1 - h * 0.45) * labelAlpha).toFixed(3) + ')';
@@ -1569,16 +1411,24 @@
     lastTime = nowMs;
     ctx.clearRect(0, 0, c.width, c.height);
     t += 0.016;
+    // Parallaxe (Adrien, 31 oct. 2026) : le ciel descend avec la page, plus lentement qu'elle ;
+    // les constellations sont ancrées au héros (le robot) : hors écran en haut de page, elles
+    // arrivent exactement à leur place quand le héros atteint le haut de la fenêtre.
+    const sy = window.scrollY || 0;
+    const heroEl = document.getElementById('hero');
+    const heroTop = heroEl ? heroEl.getBoundingClientRect().top + sy : 0;
+    const starShift = sy * 0.25, H = c.height || 1;
     for (const s of stars) {
       const alpha = s.a + Math.sin(t * s.speed * 60 + s.phase) * 0.15;
       ctx.fillStyle = 'rgba(180,200,255,' + Math.max(0, alpha) + ')';
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.arc(s.x, (((s.y - starShift) % H) + H) % H, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Draw constellations (fixed in viewport)
-    drawConstellations(t, dt);
+    // Constellations : couche ancrée au héros (même vitesse que lui, pour rester sous les zones
+    // de survol du héros) ; les étoiles, elles, descendent plus lentement.
+    drawConstellations(t, dt, heroTop - sy);
 
     if (nowMs >= nextMeteorAt) {
       spawnMeteor(nowMs);
@@ -1644,426 +1494,15 @@ function getArticlesFor(country, periodKey, nodeId, fallback) {
 var allPeriods = [];
 var currentCountry = 'QC';
 
-// ─── La Une des Unes (chantier 2, #49) ──────────────────────────────────────
-// Sources : v2/events/latest.json (dernier bloc : manchettes), v2/events/index.json
-// (seuils des bandes par région) et v2/events/storylines/{région}/{année}.json
-// (indice par bloc de chaque histoire). Fenêtres en heure de Montréal :
-//   Aujourd'hui (défaut) et Dernières heures = la mesure de la Vitrine : cumul 24h
-//   glissant avec décroissance (sum24h / band24h de events/latest.json « current »),
-//   pour que la Une n° 1 soit la même que celle de la Vitrine (et son illustration).
-//   Aujourd'hui = 3 cartes (toujours 3, décision d'Adrien) ; Dernières heures = top 10.
-//   Cette semaine (depuis lundi 0h), Ce mois-ci, Cette année = top 10 en liste,
-//   classement = somme de l'indice des blocs de la fenêtre ; tag = bande du
-//   meilleur bloc (seuils Vitrine).
-// Pas d'événements pour les États-Unis (la table de la Vitrine ne couvre que QC
-// et reste du Canada ; panel américain de 2 médias) : le bouton n'est pas offert,
-// le message « aune.usa » reste en garde-fou. Le module garde la même hauteur
-// quelle que soit la vue.
-var eventsLatestData = null;
-var auneRange = 'today';
-var auneCountry = 'QC'; // sélecteur propre au module, indépendant de celui du Hot 20
-var AUNE_LIMIT = { today: 3, '24h': 10, week: 10, month: 10, year: 10 };
-var auneStore = { index: null, storylines: {}, loading: {} };
-var AUNE_BANDS = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
-
-function mtlOffsetMs(d) {
-  var parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Montreal', timeZoneName: 'longOffset' }).formatToParts(d);
-  var tz = (parts.find(function(x) { return x.type === 'timeZoneName'; }) || {}).value || 'GMT-05:00';
-  var m = tz.match(/GMT([+-])(\d{1,2}):?(\d{2})?/);
-  if (!m) return -5 * 3600e3;
-  return (m[1] === '-' ? -1 : 1) * ((+m[2]) * 3600e3 + (+(m[3] || 0)) * 60e3);
+// Liens « Comment l'indice est calculé » → § 5.2 de la méthodologie (indice v1, par objet et par événement) ; ancre EN propre.
+function setMethodoAnchors() {
+  var en = (document.documentElement.lang || 'fr').slice(0, 2) === 'en';
+  document.querySelectorAll('a.methodo-how').forEach(function(a) { a.setAttribute('href', './methodologie.html#' + (en ? 'en-indice-absolu' : 'indice-de-saillance-absolu')); });
 }
-function mtlParts(d) {
-  var parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' }).formatToParts(d);
-  var o = {}; parts.forEach(function(x) { o[x.type] = x.value; });
-  return { y: +o.year, m: +o.month, d: +o.day, wd: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(o.weekday) };
-}
-function mtlMidnightUtc(y, m, d) {
-  return Date.UTC(y, m - 1, d) - mtlOffsetMs(new Date(Date.UTC(y, m - 1, d, 12)));
-}
-function auneWindowStart(range) {
-  var now = new Date(), p = mtlParts(now);
-  if (range === '24h') return now.getTime() - 24 * 3600e3;
-  if (range === 'today') return mtlMidnightUtc(p.y, p.m, p.d);
-  if (range === 'week') {
-    var back = (p.wd + 6) % 7; // lundi = 0
-    var q = mtlParts(new Date(mtlMidnightUtc(p.y, p.m, p.d) - back * 86400e3 + 12 * 3600e3));
-    return mtlMidnightUtc(q.y, q.m, q.d);
-  }
-  if (range === 'month') return mtlMidnightUtc(p.y, p.m, 1);
-  if (range === 'year') return mtlMidnightUtc(p.y, 1, 1);
-  return 0;
-}
-// Fenêtre précédente de même nature : [début, fin[ en ms UTC.
-function aunePrevWindow(range) {
-  var start = auneWindowStart(range), p = mtlParts(new Date(start + 12 * 3600e3));
-  if (range === '24h' || range === 'today') return [start - 24 * 3600e3, start];
-  if (range === 'week') return [start - 7 * 86400e3, start];
-  if (range === 'month') { var m = p.m === 1 ? 12 : p.m - 1, y = p.m === 1 ? p.y - 1 : p.y; return [mtlMidnightUtc(y, m, 1), start]; }
-  if (range === 'year') return [mtlMidnightUtc(p.y - 1, 1, 1), start];
-  return [0, start];
-}
-function periodStartUtc(key) { // 'AAAA-MM-JJ_HH-HH' (UTC)
-  return Date.UTC(+key.slice(0, 4), +key.slice(5, 7) - 1, +key.slice(8, 10), parseInt(key.slice(11, 13), 10) || 0);
-}
-function auneBand(region, value) {
-  var th = auneStore.index && auneStore.index.thresholds && auneStore.index.thresholds[region] && auneStore.index.thresholds[region].block;
-  if (!th) return 'aucune';
-  var band = 'aucune';
-  AUNE_BANDS.forEach(function(b) { if (typeof th[b] === 'number' && value >= th[b]) band = b; });
-  return band;
-}
-var AUNE_FIRST_YEAR = 2026; // début du suivi des événements : 23 juillet 2026
-function auneYears() {
-  var y1 = new Date().getUTCFullYear();
-  var out = []; for (var y = AUNE_FIRST_YEAR; y <= y1; y++) out.push(y); return out;
-}
-function auneIs24h(range) { return range === 'today' || range === '24h'; }
-function auneReady(region, range) {
-  if (!auneStore.index) return false;
-  if (!auneDayDates().every(function(d) { return !!auneStore.storylines['day:' + region + ':' + d]; })) return false;
-  return auneYears().every(function(y) { return !!auneStore.storylines[region + '/' + y]; });
-}
-function auneDayDates() {
-  var d = eventsLatestData && eventsLatestData.by_region && eventsLatestData.by_region.QC && eventsLatestData.by_region.QC.period
-    ? eventsLatestData.by_region.QC.period.date : new Date().toISOString().slice(0, 10);
-  var t = Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
-  return [d, new Date(t - 86400e3).toISOString().slice(0, 10)];
-}
-function auneArticlesByStory(region) {
-  var out = {}, since = Date.now() - 24 * 3600e3;
-  auneDayDates().forEach(function(date) {
-    var f = auneStore.storylines['day:' + region + ':' + date]; if (!f || !f.periods) return;
-    Object.keys(f.periods).sort().reverse().forEach(function(key) {
-      if (periodStartUtc(key) < since) return;
-      (f.periods[key] || []).forEach(function(ev) {
-        if (!ev || !ev.storyline) return;
-        var o = out[ev.storyline] || (out[ev.storyline] = { articles: [], seen: {} });
-        (ev.articles || []).forEach(function(a) {
-          if (!a || !a.url || o.seen[a.media_id]) return; // un média par manchette, le plus récent
-          o.seen[a.media_id] = true; o.articles.push(a);
-        });
-      });
-    });
-  });
-  return out;
-}
-function auneLoad(region, range) {
-  var jobs = [];
-  auneDayDates().forEach(function(date) {
-    var k = 'day:' + region + ':' + date;
-    if (!auneStore.storylines[k] && !auneStore.loading[k]) {
-      auneStore.loading[k] = window.radarData.eventsDay(region, date)
-        .then(function(f) { auneStore.storylines[k] = f; })
-        .catch(function() { auneStore.storylines[k] = { periods: {} }; });
-    }
-    if (auneStore.loading[k]) jobs.push(auneStore.loading[k]);
-  });
-  if (!auneStore.index) {
-    if (!auneStore.loading.index) auneStore.loading.index = window.radarData.eventsIndex().then(function(i) { auneStore.index = i; });
-    jobs.push(auneStore.loading.index);
-  }
-  auneYears().forEach(function(y) {
-    var k = region + '/' + y;
-    if (!auneStore.storylines[k] && !auneStore.loading[k]) {
-      auneStore.loading[k] = window.radarData.eventsStorylines(region, y)
-        .then(function(f) { auneStore.storylines[k] = f; })
-        .catch(function() { auneStore.storylines[k] = { storylines: {} }; });
-    }
-    if (auneStore.loading[k]) jobs.push(auneStore.loading[k]);
-  });
-  return Promise.all(jobs);
-}
-// Trois mesures, chacune à sa place (voir le commentaire de tête) :
-//   total = somme de tous les blocs de l'histoire depuis sa première Une ;
-//   gain  = somme des blocs dans la fenêtre choisie ;
-//   peak  = meilleur bloc de 4h dans la fenêtre (indice du moment le plus fort).
-function auneSums(region, range) {
-  var start = auneWindowStart(range), now = Date.now(), out = {};
-  auneYears().forEach(function(y) {
-    var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
-    Object.keys(f.storylines).forEach(function(sid) {
-      var series = f.storylines[sid].series || {};
-      var o = out[sid] || (out[sid] = { total: 0, gain: 0, peak: 0, peakKey: null });
-      Object.keys(series).forEach(function(key) {
-        var v = Number(series[key]) || 0; o.total += v;
-        var t = periodStartUtc(key); if (t < start || t > now) return;
-        o.gain += v; if (v > o.peak) { o.peak = v; o.peakKey = key; }
-      });
-    });
-  });
-  return out;
-}
-// Rang de chaque histoire dans la période précédente (même mesure que la vue).
-function aunePrevRanks(region, range, latest) {
-  var ranks = {}, list = [];
-  if (auneIs24h(range)) {
-    // Indice 24h tel qu'il était il y a 24 h (6 blocs plus tôt), lu dans les fiches.
-    var lastKey = latest && latest.period && latest.period.key; if (!lastKey) return ranks;
-    var prevT = periodStartUtc(lastKey) - 24 * 3600e3;
-    auneYears().forEach(function(y) {
-      var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
-      Object.keys(f.storylines).forEach(function(sid) {
-        var cum = f.storylines[sid].sum24h || {};
-        Object.keys(cum).forEach(function(k) {
-          if (periodStartUtc(k) !== prevT) return;
-          list.push({ storyline: sid, points: Number(cum[k]) || 0 });
-        });
-      });
-    });
-  } else {
-    list = auneRanking(region, range, 1e9, aunePrevWindow(range)).map(function(it) { return { storyline: it.storyline, points: it.points }; });
-  }
-  list.sort(function(a, b) { return b.points - a.points; });
-  list.forEach(function(it, i) { ranks[it.storyline] = i + 1; });
-  return ranks;
-}
-function auneFirstKey(region, sid) {
-  var ys = auneYears();
-  for (var i = 0; i < ys.length; i++) {
-    var f = auneStore.storylines[region + '/' + ys[i]];
-    if (f && f.storylines && f.storylines[sid]) return f.storylines[sid].first_key || null;
-  }
-  return null;
-}
-function auneTrendHtml(c, i, region, range, prevRanks, T) {
-  var now = i + 1, prev = prevRanks[c.storyline];
-  if (prev && prev <= 10) {
-    var diff = prev - now;
-    if (diff > 0) return '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('aune.trend_up_tip', { n: diff, prev: prev, now: now })) + '">&#9650;' + diff + '</span>';
-    if (diff < 0) return '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('aune.trend_down_tip', { n: -diff, prev: prev, now: now })) + '">&#9660;' + (-diff) + '</span>';
-    return '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('aune.trend_stable_tip', { now: now })) + '">&mdash;</span>';
-  }
-  // Absente du top 10 précédent : « Retour » si l'histoire existait déjà avant la période précédente, sinon « Nouveau ».
-  var fk = auneFirstKey(region, c.storyline), prevStart = aunePrevWindow(range)[0];
-  if (fk && periodStartUtc(fk) < prevStart) {
-    return '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('aune.trend_return_tip')) + '">&#128260; ' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
-  }
-  return '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('aune.trend_new_tip')) + '">&#128293; ' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
-}
-function auneRanking24h(latest, limit) {
-  var cur = (latest && latest.current) || [];
-  return cur.slice().sort(function(a, b) { return (b.sum24h || 0) - (a.sum24h || 0); }).slice(0, limit).map(function(c) {
-    return { storyline: c.storyline, title: c.title || '', issue_fr: c.issue_fr, issue_en: c.issue_en, url: c.url, media: c.media,
-             points: Number(c.sum24h) || 0, blocks: c.n_blocks || 0, band: c.band24h || 'aucune', lastKey: c.last_key, is24h: true };
-  });
-}
-function auneRanking(region, range, limit, win) {
-  var start = win ? win[0] : auneWindowStart(range), now = win ? win[1] : Date.now(), acc = {};
-  auneYears().forEach(function(y) {
-    var f = auneStore.storylines[region + '/' + y]; if (!f || !f.storylines) return;
-    Object.keys(f.storylines).forEach(function(sid) {
-      var st = f.storylines[sid], series = st.series || {};
-      var pts = 0, blocks = 0, peak = 0, lastKey = null;
-      Object.keys(series).forEach(function(key) {
-        var t = periodStartUtc(key); if (t < start || t >= now) return;
-        var v = Number(series[key]) || 0;
-        pts += v; blocks++; if (v > peak) peak = v; if (!lastKey || key > lastKey) lastKey = key;
-      });
-      if (!blocks) return;
-      var cur = acc[sid];
-      // Titre : celui du bloc du pic de l'histoire si ce pic est dans la fenêtre (cohérent
-      // avec le tag « Pic »), sinon celui de la dernière apparition.
-      var peakIn = st.peak_key && periodStartUtc(st.peak_key) >= start && periodStartUtc(st.peak_key) <= now;
-      var ttl = (peakIn && st.title_peak) ? st.title_peak : (st.title_last || st.title || '');
-      if (!cur) acc[sid] = { storyline: sid, title: ttl, titleFrom: peakIn && st.title_peak ? 'peak' : 'last', titleKey: peakIn ? st.peak_key : st.last_key,
-                             issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
-      else { cur.points += pts; cur.blocks += blocks; if (peak > cur.peak) cur.peak = peak; }
-    });
-  });
-  var list = Object.keys(acc).map(function(k) { return acc[k]; });
-  list.sort(function(a, b) { return b.points - a.points; });
-  return list.slice(0, limit);
-}
-function auneBlockLabel(key, lang) {
-  var start = periodStartUtc(key), end = start + 4 * 3600e3;
-  var loc = lang === 'en' ? 'en-CA' : 'fr-CA';
-  var day = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(start));
-  var hour = function(t) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(new Date(t)).replace(/^24$/, '0') + 'h'; };
-  return day + ' · ' + hour(start) + '–' + hour(end);
-}
-function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
-function auneHeadlines(c, ev, max) {
-  var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, max) : [];
-  if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
-  return arts;
-}
-// Clic sur un titre ou une illustration : un média au hasard parmi ceux qui ont
-// couvert l'histoire (comme la Vitrine et le bandeau d'alerte).
-function auneUrls(c, ev) {
-  var urls = (ev && Array.isArray(ev.articles) ? ev.articles : []).map(function(a) { return a && a.url; }).filter(Boolean);
-  if (!urls.length && c.url) urls = [c.url];
-  return urls;
-}
-function auneRandomAttr(urls, T) {
-  if (!urls.length) return '';
-  // escapeHtml ne touche pas aux guillemets : on les encode pour l'attribut.
-  return ' data-urls="' + escapeHtml(JSON.stringify(urls)).replace(/"/g, '&quot;') + '" title="' + escapeHtml(T('aune.open_random')).replace(/"/g, '&quot;') + '"';
-}
-function auneCardHtml(c, i, byStory, region, lang, T) {
-  var ev = byStory[c.storyline];
-  var band = c.band || 'aucune';
-  var issue = auneIssue(c, lang);
-  // Puces des médias qui ont couvert (un par média, dernier article scrapé), pas de titres.
-  var arts = auneHeadlines(c, ev, 12);
-  var headlines = arts.length
-    ? '<div class="aune-chips">' + arts.map(function(a) {
-        return '<a class="aune-media-chip" href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener" title="' + escapeHtml(a.title || '').replace(/"/g, '&quot;') + '">' + escapeHtml(a.media_id || '') + '</a>';
-      }).join('') + '</div>'
-    : '';
-  var urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
-  var art = (i === 0 && c.storyline)
-    ? '<figure class="aune-art' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '><img src="' + escapeHtml(window.radarData.base + '/events/art/' + encodeURIComponent(c.storyline) + '.webp') +
-      '" alt="" loading="lazy" onload="this.parentNode.classList.add(\'has-art\')" onerror="this.parentNode.classList.add(\'no-art\'); this.remove()">' +
-      '<figcaption>' + escapeHtml(T('aune.art_credit')) + '</figcaption></figure>'
-    : '';
-  return '<article class="aune-card ' + (i === 0 ? 'aune-hero' : 'aune-secondary') + '">' + art +
-    '<div class="aune-body">' +
-      '<div class="aune-card-top">' +
-        '<span class="aune-rank">' + (i + 1) + '</span>' +
-        '<span class="aune-band band-' + escapeHtml(band) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.band24h_tip')) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>' +
-        (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') +
-      '</div>' +
-      '<h3 class="aune-title' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' + escapeHtml(c.title) + '</h3>' +
-      '<div class="aune-meta">' +
-        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + escapeHtml(T('aune.index24h_label')) + ' : <b>' + c.points.toFixed(1) + '</b> ' + escapeHtml(T('aune.points')) + '</span>' +
-        ' · <span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>' +
-      '</div>' +
-      headlines +
-    '</div>' +
-  '</article>';
-}
-function auneRowHtml(c, i, region, lang, T, byStory, prevRanks) {
-  var issue = auneIssue(c, lang);
-  var title = escapeHtml(c.title);
-  var urls = auneUrls(c, byStory && byStory[c.storyline]);
-  var titleHtml = urls.length ? '<span class="aune-row-title aune-clickable"' + auneRandomAttr(urls, T) + '>' + title + '</span>'
-                              : '<span class="aune-row-title">' + title + '</span>';
-  var issueHtml = issue ? '<span>' + escapeHtml(issue) + '</span>' : '';
-  var titleTip = c.titleFrom && c.titleKey
-    ? ' ' + T('aune.title_from.' + c.titleFrom, { label: auneBlockLabel(c.titleKey, lang) })
-    : '';
-  var peakHtml = '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { points: (c.peak || 0).toFixed(1) })) + '</span>';
-  var tagHtml, scoreHtml;
-  if (c.is24h) {
-    // Dernières heures : la mesure est l'indice 24h de la Vitrine ; le tag est SON niveau.
-    tagHtml = '<span class="aune-band band-' + escapeHtml(c.band) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.band24h_tip')) + '">' + escapeHtml(T('aune.band.' + c.band)) + '</span>';
-    scoreHtml = '<div class="hot20-row-pct">' +
-        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '"><strong>' + c.points.toFixed(1) + '</strong> ' + escapeHtml(T('aune.index24h_label')) + '</span>' +
-      '</div>';
-  } else {
-    // Semaine / mois / année : la mesure est un cumul de points (pas de niveau défini
-    // pour un cumul) ; le tag est le PIC, dit explicitement. Score = total depuis la
-    // première Une + hausse dans la période, comme le Hot 20.
-    tagHtml = '<span class="aune-band band-' + escapeHtml(c.peakBand) + ' hot20-hint" data-tip="' + escapeHtml(T('aune.peak_tip')) + '">' + escapeHtml(T('aune.peak_prefix')) + ' ' + escapeHtml(T('aune.band.' + c.peakBand)) + '</span>';
-    scoreHtml = '<div class="hot20-row-pct">' +
-        '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '"><strong>' + (c.total || 0).toFixed(1) + '</strong> ' + escapeHtml(T('aune.points')) + '</span>' +
-        '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + auneRange)) + '">+' + (c.gain || 0).toFixed(1) + '</span>' +
-      '</div>';
-  }
-  return '<li class="aune-row' + (i < 3 ? ' rank-' + (i + 1) : '') + '">' +
-    '<span class="aune-row-rank">' + (i + 1) + '</span>' +
-    '<span class="aune-row-trend">' + auneTrendHtml(c, i, region, auneRange, prevRanks || {}, T) + '</span>' +
-    '<div class="aune-row-main">' + titleHtml +
-      '<div class="aune-row-meta">' + tagHtml + issueHtml +
-        '<span>' + escapeHtml(T('aune.blocks', { blocks: c.blocks })) + '</span>' + peakHtml +
-      '</div>' +
-    '</div>' +
-    '<div class="aune-row-score">' + scoreHtml +
-      '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + (c.barPct || 2) + '%"></div></div>' +
-    '</div>' +
-  '</li>';
-}
-function renderALaUne() {
-  var sec = document.getElementById('aune');
-  var grid = document.getElementById('aune-grid');
-  var sub = document.getElementById('aune-subtitle');
-  if (!sec || !grid) return;
-  var T = window.t || function(k) { return k; };
-  var lang = (document.documentElement.lang || 'fr').slice(0, 2);
-  sec.hidden = false;
-  var region = auneCountry;
-  var viewClass = 'aune-grid ' + (auneRange === 'today' ? 'view-cards' : 'view-list');
-  if (region !== 'QC' && region !== 'CAN') {
-    sub.textContent = T('aune.subtitle');
-    var f0 = document.getElementById('aune-foot'); if (f0) f0.textContent = '';
-    grid.className = viewClass;
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.usa')) + '</div>';
-    return;
-  }
-  var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null;
-  sub.textContent = T('aune.range_sub.' + auneRange);
-  var foot = document.getElementById('aune-foot');
-  if (foot) foot.textContent = (latest && latest.period && latest.period.key) ? T('aune.updated', { label: auneBlockLabel(latest.period.key, lang) }) : '';
-  grid.className = viewClass;
-  if (!auneReady(region, auneRange)) {
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
-    var r = auneRange, c = region;
-    auneLoad(c, r).then(function() { if (auneRange === r && auneCountry === c) renderALaUne(); });
-    return;
-  }
-  var items = auneIs24h(auneRange)
-    ? auneRanking24h(latest, AUNE_LIMIT[auneRange] || 10)
-    : auneRanking(region, auneRange, AUNE_LIMIT[auneRange] || 10);
-  var sums = auneSums(region, auneRange);
-  items.forEach(function(it) {
-    var o = sums[it.storyline] || { total: 0, gain: 0, peak: 0 };
-    it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakBand = auneBand(region, o.peak);
-  });
-  // Barre = mesure de classement de la vue, relative au 1er (comme le Hot 20)
-  var key = auneIs24h(auneRange) ? 'points' : 'gain';
-  var top = items.reduce(function(m, it) { return Math.max(m, it[key]); }, 0) || 1;
-  items.forEach(function(it) { it.barPct = Math.max(2, Math.round(100 * it[key] / top)); });
-  if (!items.length) {
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
-    return;
-  }
-  // Manchettes : les blocs des 24 dernières heures (fichiers du jour), sinon le dernier bloc.
-  var byStory = auneArticlesByStory(region);
-  ((latest && latest.events) || []).forEach(function(e) { if (e && e.storyline && !byStory[e.storyline]) byStory[e.storyline] = e; });
-  if (auneRange === 'today') {
-    grid.innerHTML = items.map(function(it, i) { return auneCardHtml(it, i, byStory, region, lang, T); }).join('');
-  } else {
-    var prevRanks = aunePrevRanks(region, auneRange, latest);
-    var header = '<li class="aune-list-header">' +
-      '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
-      '<span>' + escapeHtml(T('hot20.header_movement')) + '</span>' +
-      '<span>' + escapeHtml(T('hot20.header_subject')) + '</span>' +
-      '<span>' + escapeHtml(T(auneIs24h(auneRange) ? 'aune.header_index24h' : 'hot20.header_score_increase')) + '</span>' +
-    '</li>';
-    grid.innerHTML = '<ol class="aune-list">' + header + items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks); }).join('') + '</ol>';
-  }
-}
-(function() {
-  var grid = document.getElementById('aune-grid');
-  if (grid) grid.addEventListener('click', function(e) {
-    if (e.target.closest('a')) return; // manchettes et puces : liens normaux
-    var el = e.target.closest('.aune-clickable');
-    if (!el || !el.dataset.urls) return;
-    var urls = [];
-    try { urls = JSON.parse(el.dataset.urls); } catch (err) { urls = []; }
-    if (!urls.length) return;
-    window.open(urls[Math.floor(Math.random() * urls.length)], '_blank', 'noopener');
-  });
-  var tabs = document.getElementById('aune-tabs');
-  var countries = document.getElementById('aune-country-tabs');
-  if (tabs) tabs.addEventListener('click', function(e) {
-    var btn = e.target.closest('.aune-tab');
-    if (!btn) return;
-    tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    auneRange = btn.dataset.range;
-    renderALaUne();
-  });
-  if (countries) countries.addEventListener('click', function(e) {
-    var btn = e.target.closest('.country-tab');
-    if (!btn) return;
-    countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    auneCountry = btn.dataset.country;
-    renderALaUne();
-  });
-})();
+document.addEventListener('i18n:applied', setMethodoAnchors);
+setMethodoAnchors();
+// La Une des Unes : module partagé assets/js/aune.js (réglages de l'accueil = ceux par défaut).
+if (window.RadarAune) window.RadarAune.init({ range: 'today' }); // « Aujourd'hui » par défaut (Adrien, 31 oct. 2026)
 var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
@@ -2089,10 +1528,6 @@ async function loadData() {
   } catch (e) { console.error('Data load error', e); }
   buildPeriods();
   renderHot20(); // charge les articles du slot courant si besoin, puis se relance
-  renderALaUne();
-  window.radarData.eventsLatest()
-    .then(function(d) { eventsLatestData = d; renderALaUne(); })
-    .catch(function(e) { console.warn('À la Une : événements indisponibles', e); renderALaUne(); });
 }
 
 function buildPeriods() {
@@ -2290,8 +1725,26 @@ function renderHot20() {
   var nextBtn = document.getElementById('week-next');
   var subtitleEl = document.getElementById('hot20-subtitle');
 
-  // Update subtitle
-  subtitleEl.textContent = (window.t ? window.t('subtitle.' + currentGranularity) : '') || '';
+  // Sous-titre : la période exacte, comme le navigateur du Classement (Adrien, 31 oct. 2026) :
+  // « Semaine 44 · 26 oct. – 1 nov. 2026 » puis « Saillance cumulée depuis le 26 octobre 2026 ».
+  // Année et total : depuis la première date des données chargées (130 jours), jamais « 1er janvier ».
+  (function() {
+    var T = window.t || function(k) { return k; }, lang = (document.documentElement.lang || 'fr').slice(0, 2);
+    var u = window.RadarAune && window.RadarAune.util, slot0 = aggregatedSlots[currentSlotIdx];
+    var main = T('subtitle.' + currentGranularity) || '', detail = '';
+    if (u && slot0 && slot0.periodKeys && slot0.periodKeys.length) {
+      var loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+      var fmtDate = function(key) { return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(u.editionTime(key) + 12 * 3600e3)); };
+      var firstKey = slot0.periodKeys[0], lastKey = slot0.periodKeys[slot0.periodKeys.length - 1];
+      var map = { day: 'today', week: 'week', month: 'month' };
+      if (currentGranularity === '4h') { main = u.blockLabel(lastKey, lang); detail = T('hot20.sub_edition'); }
+      else if (currentGranularity === 'day') { main = u.navLabel('today', 0, lang, T); detail = T('hot20.sub_today', { n: slot0.periodKeys.length }); }
+      else if (map[currentGranularity]) { main = u.navLabel(map[currentGranularity], 0, lang, T); detail = u.navSub(map[currentGranularity], 0, lang, T); }
+      else if (currentGranularity === 'quarter') { main = u.navLabel('year', 0, lang, T); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_data_start'); }
+      else { main = T('subtitle.total'); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_days', { n: new Set(slot0.periodKeys.map(function(k) { return k.slice(0, 10); })).size }); }
+    }
+    subtitleEl.innerHTML = '<span class="sub-main">' + escapeHtml(main) + '</span>' + (detail ? '<span class="sub-detail">' + escapeHtml(detail) + '</span>' : '');
+  })();
 
   if (!aggregatedSlots.length) {
     grid.innerHTML = '<div class="hot20-empty">Données non disponibles</div>';
@@ -2310,7 +1763,7 @@ function renderHot20() {
 
   // Update date label
   if (currentGranularity === '4h') {
-    var pf = parsePeriodLabel(slot.label || slot.raw.key);
+    var pf = parsePeriodLabel((slot.raw && slot.raw.key) || slot.label);
     document.getElementById('wl-date').textContent = pf.date;
     document.getElementById('wl-interval').textContent = pf.interval;
   } else {
@@ -2347,7 +1800,7 @@ function renderHot20() {
     }
   }
 
-  var nodes = allNodes.slice(0, 20);
+  var nodes = allNodes.slice(0, 10); // Hot 10 sur l'accueil (Adrien, 31 oct. 2026) ; la suite dans Classement
   var totalSize = allNodes.reduce(function(acc, n) { return acc + (n.size || 0); }, 0) || 1;
 
   /* Trend: compare with previous slot */
@@ -2365,24 +1818,40 @@ function renderHot20() {
     prevNodes.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; prevIds[n.id] = true; });
   }
 
-  /* Consecutive slots: count how many recent slots each entity appears in top 20 */
+  /* Série : nombre de périodes consécutives (en remontant depuis celle-ci) où l'objet est dans
+     le top 10 de la période, le classement affiché ; les données gardent 30 objets par bloc,
+     « présent dans les données » ne voulait rien dire pour le lecteur (Adrien, 31 oct. 2026). */
+  // Paliers, du plus serré au plus large : première position, top 2, top 3, top 10. On affiche
+  // le palier le plus serré tenu au moins deux périodes de suite (« 2 jours de suite en
+  // première position » plutôt que « 15 jours de suite dans le top 10 » ; Adrien, 31 oct. 2026).
+  var STREAK_TIERS = [1, 2, 3, 10];
   var streaks = {};
-  nodes.forEach(function(node) {
-    var count = 0;
-    for (var si = currentSlotIdx; si >= 0; si--) {
-      var s = aggregatedSlots[si];
-      var sNodes;
-      if (currentGranularity === '4h') {
-        var pd = countryGraphs[s.periodKeys[0]];
-        sNodes = pd && pd.nodes ? pd.nodes : [];
-      } else {
-        sNodes = aggregateNodes(countryGraphs, s.periodKeys);
-      }
-      var found = sNodes.some(function(n) { return n.id === node.id; });
-      if (found) count++;
-      else break;
+  var slotRankCache = {};
+  function slotRanks(si) {
+    if (slotRankCache[si]) return slotRankCache[si];
+    var s = aggregatedSlots[si], sNodes;
+    if (currentGranularity === '4h') {
+      var pd = countryGraphs[s.periodKeys[0]];
+      sNodes = pd && pd.nodes ? pd.nodes : [];
+    } else {
+      sNodes = aggregateNodes(countryGraphs, s.periodKeys);
     }
-    streaks[node.id] = count;
+    var ranks = {};
+    sNodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }).slice(0, 10)
+      .forEach(function(n, idx) { ranks[n.id] = idx + 1; });
+    return (slotRankCache[si] = ranks);
+  }
+  nodes.forEach(function(node) {
+    var counts = STREAK_TIERS.map(function() { return 0; }), alive = STREAK_TIERS.map(function() { return true; });
+    for (var si = currentSlotIdx; si >= 0; si--) {
+      var r = slotRanks(si)[node.id] || 99, any = false;
+      STREAK_TIERS.forEach(function(t, k) { if (alive[k] && r <= t) { counts[k]++; any = true; } else alive[k] = false; });
+      if (!any) break;
+    }
+    var pick = null;
+    STREAK_TIERS.forEach(function(t, k) { if (pick === null && counts[k] > 1) pick = { top: t, n: counts[k] }; });
+    streaks[node.id] = pick ? pick.n : 0;
+    streaks[node.id + '|top'] = pick ? pick.top : 10;
   });
 
   /* Comeback detection */
@@ -2429,7 +1898,7 @@ function renderHot20() {
     if (!tiers) return null;
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
     return null;
   }
   try {
@@ -2476,7 +1945,9 @@ function renderHot20() {
     '</div>' +
     nodes.map(function(node, i) {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
-      var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
+      // Barre = part de l'objet dans la saillance de TOUS les objets de la période, comme la
+      // Une des Unes (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026).
+      var barPct = Math.max(1, pct);
       var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
       // Compteur d'articles fiable: agrège sur tous les blocs 4h du
       // slot via articles.json (dédupliqué par URL). Fallback sur
@@ -2509,32 +1980,35 @@ function renderHot20() {
           (mediaIds.length ? ' • ' + escapeHtml(T('hot20.media_tip', { list: mediaIds.join(', ') })) : '')
         : (slotArticlesReady ? T('common.no_articles_dataset') : T('common.loading'));
 
-      /* Trend badge (i18n) */
+      /* Trend badge (i18n) ; « / hier », « / sem. dernière »… dit toujours par rapport à quoi (Adrien, 31 oct. 2026) */
       var trendHtml = '';
+      var vsTxt = T('hot20.vs.' + currentGranularity);
+      var vs = vsTxt && vsTxt !== 'hot20.vs.' + currentGranularity ? '<span class="trend-vs">/ ' + escapeHtml(vsTxt) + '</span>' : '';
       if (currentSlotIdx > 0) {
         var prevRank = prevRanks[node.id];
         if (!prevRank && comebacks[node.id]) {
-          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('hot20.trend_return_tip', { gran: gl, grans: glp })) + '">&#128260; ' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('hot20.trend_return_tip', { gran: gl, grans: glp })) + '">' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
         } else if (!prevRank) {
-          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('hot20.trend_new_tip', { gran: gl, grans: glp })) + '">&#128293; ' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
+          trendHtml = '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('hot20.trend_new_tip', { gran: gl, grans: glp })) + '">' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
         } else {
           var diff = prevRank - (i + 1);
           if (diff > 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('hot20.trend_up_tip', { n: diff, gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9650;' + diff + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('hot20.trend_up_tip', { n: diff, gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9650;' + diff + vs + '</span>';
           } else if (diff < 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('hot20.trend_down_tip', { n: Math.abs(diff), gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9660;' + Math.abs(diff) + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('hot20.trend_down_tip', { n: Math.abs(diff), gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9660;' + Math.abs(diff) + vs + '</span>';
           } else {
-            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_stable_tip', { gran: gl, grans: glp, now: i + 1 })) + '">&mdash;</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_stable_tip', { gran: gl, grans: glp, now: i + 1 })) + '">&mdash;' + vs + '</span>';
           }
         }
       }
 
       /* Streak (i18n) */
-      var streak = streaks[node.id] || 0;
+      var streak = streaks[node.id] || 0, streakTop = streaks[node.id + '|top'] || 10;
       var streakHtml = '';
       if (streak > 1) {
-        var streakKey = streak > 1 ? 'homepage.streak_suffix_many' : 'homepage.streak_suffix_one';
-        streakHtml = '<div class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">&#128204; ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</div>';
+        var streakKey = streakTop === 1 ? 'homepage.streak_first_many' : 'homepage.streak_suffix_many';
+        var streakTipKey = streakTop === 1 ? 'hot20.streak_first_tip' : 'hot20.streak_tip';
+        streakHtml = '<span class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T(streakTipKey, { n: streak, grans: glp, top: streakTop })) + '">\uD83D\uDCCD ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp, top: streakTop })) + '</span>';
       }
 
       /* Rank class */
@@ -2565,9 +2039,9 @@ function renderHot20() {
         '<div class="hot20-row-info">' +
           '<div class="hot20-row-name-wrap">' +
             '<div class="hot20-row-name">' + escapeHtml(name) + '</div>' +
+            streakHtml +
             alertBadgeHtml +
           '</div>' +
-          streakHtml +
         '</div>' +
         '<div class="hot20-row-score">' +
           '<div class="hot20-row-pct">' +
@@ -2575,6 +2049,7 @@ function renderHot20() {
             (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
+          '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T(currentSlotIdx === aggregatedSlots.length - 1 ? 'hot20.share_label_gran.' + currentGranularity : 'hot20.share_label', { pct: pct })) + '</div>' +
         '</div>' +
         '<div class="hot20-row-media hot20-hint" data-tip="' + escapeHtml(articlesTip) + '">' + articleCount + ' ' + escapeHtml(articleLabel) + '</div>' +
       '</div>';
@@ -2696,7 +2171,6 @@ document.addEventListener('i18n:applied', function () {
   if (typeof renderHot20 === 'function' && (timeseriesData || graphData)) {
     renderHot20();
   }
-  if (typeof renderALaUne === 'function') renderALaUne();
 });
 
 /* Granularity tabs */
@@ -2856,7 +2330,7 @@ function openArticlePanel(node) {
     });
     if (fresh.length) {
       var per = allPeriods.find(function(p) { return p.key === pk; });
-      var pf = parsePeriodLabel((per && per.label) || pk);
+      var pf = parsePeriodLabel(pk || (per && per.label));
       currentGroups.push({ label: pf.date + ' \u00b7 ' + pf.interval, articles: fresh });
     }
   });
@@ -2903,7 +2377,7 @@ function openArticlePanel(node) {
     var fresh = arts.filter(function(a) { return a.url && !seenUrls[a.url]; });
     if (!fresh.length) continue;
     fresh.forEach(function(a) { seenUrls[a.url] = true; });
-    var pf = parsePeriodLabel(allPeriods[pi].label || pk);
+    var pf = parsePeriodLabel(pk || allPeriods[pi].label);
     prevGroups.push({ label: pf.date + ' · ' + pf.interval, articles: fresh });
     if (prevGroups.length >= 8) break;
   }
@@ -2951,192 +2425,26 @@ document.getElementById('hot20-grid').addEventListener('click', function(e) {
   if (node) openArticlePanel(node);
 });
 
-/* ===== SEARCH BAR ===== */
-var searchTimeout = null;
-document.getElementById('hot20-search-input').addEventListener('input', function(e) {
-  clearTimeout(searchTimeout);
-  var query = e.target.value.trim().toLowerCase();
-  var resultDiv = document.getElementById('search-result');
-
-  if (query.length < 2) {
-    resultDiv.classList.remove('radar-active', 'radar-inactive');
-    resultDiv.classList.remove('visible');
-    resultDiv.innerHTML = '';
-    return;
-  }
-
-  searchTimeout = setTimeout(function() {
-    var src = timeseriesData || graphData;
-    if (!src || !src.graphs) {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.remove('visible');
-      return;
-    }
-    var countryGraphs = src.graphs[currentCountry];
-    if (!countryGraphs) {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.remove('visible');
-      return;
-    }
-
-    var currentSlot = aggregatedSlots.length ? aggregatedSlots[currentSlotIdx] : null;
-    var currentPeriodKey = currentSlot ? currentSlot.periodKeys[currentSlot.periodKeys.length - 1] : (allPeriods.length ? allPeriods[allPeriods.length - 1].key : null);
-    function getSortedNodes(periodKey) {
-      var pd = countryGraphs[periodKey];
-      if (!pd || !pd.nodes) return [];
-      return pd.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-    }
-
-    function findFirstQueryMatch(sortedNodes) {
-      for (var i = 0; i < sortedNodes.length; i++) {
-        if (sortedNodes[i].id.toLowerCase().indexOf(query) !== -1) {
-          return { node: sortedNodes[i], rank: i + 1 };
-        }
-      }
-      return null;
-    }
-
-    function findRankById(sortedNodes, nodeId) {
-      for (var i = 0; i < sortedNodes.length; i++) {
-        if (sortedNodes[i].id === nodeId) return i + 1;
-      }
-      return -1;
-    }
-
-    function formatPeriodForSearch(periodObj) {
-      var raw = periodObj.label || periodObj.key;
-      var parsed = parsePeriodLabel(raw);
-      if (!parsed || !parsed.date) return raw;
-      return parsed.date + (parsed.interval ? ' &middot; ' + parsed.interval.replace('Saillant entre ', '') : '');
-    }
-
-    var currentSorted = currentPeriodKey ? getSortedNodes(currentPeriodKey) : [];
-    var currentQueryMatch = findFirstQueryMatch(currentSorted);
-
-    var targetId = currentQueryMatch ? currentQueryMatch.node.id : null;
-    var targetNodeName = currentQueryMatch ? currentQueryMatch.node.id : null;
-
-    if (!targetId) {
-      for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
-        var sortedAtPi = getSortedNodes(allPeriods[pi].key);
-        var queryMatchAtPi = findFirstQueryMatch(sortedAtPi);
-        if (queryMatchAtPi) {
-          targetId = queryMatchAtPi.node.id;
-          targetNodeName = queryMatchAtPi.node.id;
-          break;
-        }
-      }
-    }
-
-    if (targetId) {
-      var currentRank = findRankById(currentSorted, targetId);
-      var currentNode = currentRank > 0 ? currentSorted[currentRank - 1] : null;
-
-      var lastSeen = null;
-      var peakSeen = null;
-
-      for (var p = allPeriods.length - 1; p >= 0; p--) {
-        var periodObj = allPeriods[p];
-        var sortedNodes = getSortedNodes(periodObj.key);
-        var rank = findRankById(sortedNodes, targetId);
-        if (rank < 0) continue;
-
-        var nodeAtPeriod = sortedNodes[rank - 1];
-        var seen = {
-          rank: rank,
-          node: nodeAtPeriod,
-          period: periodObj,
-          periodIdx: p
-        };
-
-        if (!lastSeen) lastSeen = seen;
-        if (!peakSeen) {
-          peakSeen = seen;
-        } else {
-          var seenScore = Number(seen.node.size) || 0;
-          var peakScore = Number(peakSeen.node.size) || 0;
-          if (
-            seenScore > peakScore ||
-            (seenScore === peakScore && seen.rank < peakSeen.rank) ||
-            (seenScore === peakScore && seen.rank === peakSeen.rank && p > peakSeen.periodIdx)
-          ) {
-            peakSeen = seen;
-          }
-        }
-      }
-
-      var dName = targetNodeName.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
-
-      function formatArticleCount(value) {
-        var count = Number(value) || 0;
-        return count + ' article' + (count > 1 ? 's' : '');
-      }
-
-      var statusNow = currentNode
-        ? 'Actuellement&nbsp;: rang <strong>' + currentRank + '</strong>' +
-          (currentRank <= 20 ? ' (Top 20)' : ' (hors Top 20)') +
-          ' &middot; ' + formatArticleCount(currentNode.n) + ' &middot; score ' + (currentNode.size || 0).toFixed(1)
-        : 'Actuellement absent du radar';
-
-      var lastSeenText = lastSeen
-        ? 'Derni&egrave;re apparition&nbsp;: rang <strong>' + lastSeen.rank + '</strong> &middot; ' +
-          formatArticleCount(lastSeen.node.n) + ' &middot; ' + formatPeriodForSearch(lastSeen.period)
-        : 'Derni&egrave;re apparition&nbsp;: n/a';
-
-      var peakSeenText = peakSeen
-        ? 'Bloc horaire le plus saillant (4 h)&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(1) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
-          formatArticleCount(peakSeen.node.n) + ' &middot; ' + formatPeriodForSearch(peakSeen.period)
-        : 'Bloc horaire le plus saillant (4 h)&nbsp;: n/a';
-
-      var evolutionUrl = './evolution.html?country=' + encodeURIComponent(currentCountry) + '&node=' + encodeURIComponent(targetId);
-
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.add(currentNode ? 'radar-active' : 'radar-inactive');
-
-      resultDiv.innerHTML = '<div class="sr-name"><span class="sr-radar-dot" aria-hidden="true"></span><span class="sr-name-text">' + escapeHtml(dName) + '</span></div>' +
-        '<div class="sr-info">' +
-          statusNow +
-          '<br>' + lastSeenText +
-          '<br>' + peakSeenText +
-          '<div class="sr-actions">' +
-            '<a class="sr-evo-btn" href="' + evolutionUrl + '">Voir l&rsquo;&eacute;volution de la saillance</a>' +
-          '</div>' +
-        '</div>';
-      resultDiv.classList.add('visible');
-    } else {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.innerHTML = '<div class="sr-not-found">« ' + escapeHtml(query) + ' » n\'est pas dans le radar pour le moment.</div>';
-      resultDiv.classList.add('visible');
-    }
-  }, 250);
-});
-
 /* ===== INIT ===== */
 /* ===== PÉRIODE LABEL ===== */
 var FR_MONTHS_SHORT = {Jan:'janvier',Feb:'février',Mar:'mars',Apr:'avril',May:'mai',Jun:'juin',Jul:'juillet',Aug:'août',Sep:'septembre',Oct:'octobre',Nov:'novembre',Dec:'décembre'};
 
-/* Parse JSON label: "Apr 11 · 12-16 EDT" → {date, interval} en français */
-function parsePeriodLabel(label) {
-  var m = (label || '').match(/^([A-Za-z]+)\s+(\d+)\s*·\s*(\d+)-(\d+)/);
-  if (m) {
-    var month = FR_MONTHS_SHORT[m[1]] || m[1];
-    var day = parseInt(m[2], 10);
-    var h0 = m[3];
-    var h1 = m[4] === '0' ? 'minuit' : m[4] + 'h';
-    var year = allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear();
-    return { date: day + ' ' + month + ' ' + year, interval: 'Saillant entre ' + h0 + 'h et ' + h1 };
-  }
-  return parsePeriodKey(label);
+/* Libellé d'un bloc : sa date et son ÉDITION, l'heure où il sort (fin du bloc + 1 h), comme partout sur le
+   site : le bloc 15h-19h est « l'édition de 20h » (Adrien, 31 oct. 2026). Les clés sont en UTC. */
+function editionParts(key) {
+  var m = String(key || '').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})/);
+  if (!m) return null;
+  var t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4]) + 5 * 3600e3;
+  var d = new Date(t);
+  var h = +new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(d) % 24;
+  var date = new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  return { date: date, interval: 'édition de ' + (h === 0 ? 'minuit' : h === 12 ? 'midi' : h + 'h') };
 }
-
+function parsePeriodLabel(label) { return parsePeriodKey(label); }
 function parsePeriodKey(key) {
-  var parts = (key || '').split('_');
-  if (parts.length < 2) return { date: key, interval: '' };
-  var dp = parts[0].split('-');
-  var ip = parts[1].split('-');
-  var dateStr = parseInt(dp[2], 10) + ' ' + (FR_MONTHS[parseInt(dp[1], 10) - 1] || dp[1]) + ' ' + dp[0];
-  var h1 = ip[1] === '24' ? 'minuit' : ip[1] + 'h';
-  return { date: dateStr, interval: 'Saillant entre ' + ip[0] + 'h et ' + h1 };
+  var p = editionParts(key);
+  if (p) return p;
+  return { date: key, interval: '' };
 }
 
 /* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */

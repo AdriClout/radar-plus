@@ -33,6 +33,27 @@
   })();
 
   // Helper exposé pour les pages: window.radarTrack('event_name', { ... })
+  // ─── Les quatre symboles du robot (accueil) : une page chacun ─────────────────
+  // Épingle → Constellation, podium → Classement, chronomètre → Évolution,
+  // thermomètre → Alertes (Adrien, 31 oct. 2026). Même dessin partout : cartes
+  // « Outils d'analyse », menu et titre de la page. fill = currentColor.
+  var SYMBOLS = {
+    constellation: '<path d="M12 2a7 7 0 0 0-7 7c0 5.3 7 13 7 13s7-7.7 7-13a7 7 0 0 0-7-7zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2z"/>',
+    classement: '<path d="M8.5 7h7v15h-7zM1.5 12h6v10h-6zM16.5 10h6v12h-6z"/>',
+    evolution: '<path fill-rule="evenodd" d="M9.5 1h5v2h-1.5v1.6a8.5 8.5 0 1 1-2 0V3H9.5zm9.1 3.2 1.5 1.5-1.8 1.8a8.6 8.6 0 0 0-1.5-1.5zM12 6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zm-1 2.5h2v5h-2z"/>',
+    alertes: '<path fill-rule="evenodd" d="M12 1.5A3.5 3.5 0 0 0 8.5 5v8.6a5.5 5.5 0 1 0 7 0V5A3.5 3.5 0 0 0 12 1.5zm0 2A1.5 1.5 0 0 1 13.5 5v9.6l.7.5a3.5 3.5 0 1 1-4.4 0l.7-.5V5A1.5 1.5 0 0 1 12 3.5z"/><path d="M11 9h2v6.3a2.5 2.5 0 1 1-2 0z"/>'
+  };
+  function sym(page, cls) {
+    if (!SYMBOLS[page]) return '';
+    return '<svg class="radar-sym' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + SYMBOLS[page] + '</svg>';
+  }
+  window.radarSymbol = sym;
+  // Les pages posent <span class="page-sym" data-symbol="alertes"></span> dans leur titre.
+  function fillSymbols(root) {
+    (root || document).querySelectorAll('[data-symbol]').forEach(function (el) { if (!el.firstChild) el.innerHTML = sym(el.dataset.symbol); });
+  }
+  window.radarFillSymbols = fillSymbols;
+
   window.radarTrack = function(eventName, params) {
     if (typeof window.gtag !== 'function') return;
     try { window.gtag('event', eventName, params || {}); } catch (_) { /* noop */ }
@@ -80,6 +101,14 @@
   function injectSiteBar() {
     var page = currentPage();
     if (NO_BAR_PAGES[page] || document.getElementById('site-bar')) return null;
+    // Police du bandeau (Space Grotesk, 31 oct. 2026) : chargée ici pour que toutes les
+    // pages l'aient, même celles qui ne la demandent pas encore dans leur <head>.
+    if (!document.querySelector('link[href*="Space+Grotesk"]')) {
+      var font = document.createElement('link');
+      font.rel = 'stylesheet';
+      font.href = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap';
+      (document.head || document.documentElement).appendChild(font);
+    }
     var bar = document.createElement('header');
     bar.id = 'site-bar';
     bar.className = 'site-bar';
@@ -99,15 +128,33 @@
             '<a href="./index.html#hot20" data-i18n="nav.home_hot20">Hot 20</a>' +
           '</div>' +
         '</div>' +
-        '<a href="./evolution.html" data-page="evolution.html" data-i18n="nav.evolution">Évolution</a>' +
-        '<a href="./constellation.html" data-page="constellation.html" data-i18n="nav.constellation">Constellation</a>' +
-        '<a href="./alertes.html" data-page="alertes.html" data-i18n="nav.alertes">Alertes</a>' +
+        // Les quatre outils d'analyse (= les quatre symboles du robot) sous un seul menu (Adrien, 31 oct. 2026).
+        '<div class="site-bar-dropdown site-bar-home hoverable">' +
+          '<a href="./index.html#modules" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.tools">Outils d\u2019analyse</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</a>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./classement.html" data-page="classement.html">' + sym('classement') + '<span data-i18n="nav.classement">Classement</span></a>' +
+            '<a href="./evolution.html" data-page="evolution.html">' + sym('evolution') + '<span data-i18n="nav.evolution">Évolution</span></a>' +
+            '<a href="./constellation.html" data-page="constellation.html">' + sym('constellation') + '<span data-i18n="nav.constellation">Constellation</span></a>' +
+            '<a href="./alertes.html" data-page="alertes.html">' + sym('alertes') + '<span data-i18n="nav.alertes">Alertes</span></a>' +
+          '</div>' +
+        '</div>' +
         '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
         '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
         '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>' +
-        '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>' +
-        // Tout ce qui restait dans l'ancien tiroir : menu déroulant vers le bas.
-        '<div class="site-bar-dropdown">' +
+        // Méthodologie : la page, et dessous la page grand public des indices (Adrien, 31 oct. 2026).
+        '<div class="site-bar-dropdown site-bar-home hoverable">' +
+          '<a href="./methodologie.html" data-page="methodologie.html" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.methodologie">Méthodologie</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</a>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie_full">Méthodologie complète</a>' +
+            '<a href="./indices.html" data-page="indices.html" data-i18n="nav.indices">Les indices de saillance</a>' +
+          '</div>' +
+        '</div>' +
+        // Tout ce qui restait dans l'ancien tiroir : menu déroulant vers le bas, au survol comme les autres.
+        '<div class="site-bar-dropdown hoverable">' +
           '<button type="button" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
             '<span data-i18n="nav.section_about">À propos</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
           '</button>' +
@@ -146,13 +193,18 @@
     }
     ddWraps.forEach(function(wrap) {
       var b = wrap.querySelector('.site-bar-dropdown-btn');
-      if (!b || wrap.classList.contains('hoverable')) return;
+      // Un bouton (« À propos ») s'ouvre aussi au clic, pour les écrans tactiles ; un lien (« Accueil ») mène à sa page.
+      if (!b || (wrap.classList.contains('hoverable') && b.tagName === 'A')) return;
       b.addEventListener('click', function(e) { e.stopPropagation(); setDropdown(wrap, !wrap.classList.contains('open')); });
     });
     document.addEventListener('click', function(e) { ddWraps.forEach(function(w) { if (!w.contains(e.target)) setDropdown(w, false); }); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') ddWraps.forEach(function(w) { setDropdown(w, false); }); });
     // Au clavier, le menu Accueil s'ouvre quand un de ses éléments a le focus.
     ddWraps.filter(function(w) { return w.classList.contains('hoverable'); }).forEach(function(w) {
+      // Délai de fermeture : un mouvement en diagonale qui sort une fraction de seconde ne ferme plus le menu.
+      var closeT = null;
+      w.addEventListener('mouseenter', function() { clearTimeout(closeT); ddWraps.forEach(function(o) { if (o !== w) setDropdown(o, false); }); setDropdown(w, true); });
+      w.addEventListener('mouseleave', function() { clearTimeout(closeT); closeT = setTimeout(function() { setDropdown(w, false); }, 300); });
       w.addEventListener('focusin', function() { setDropdown(w, true); });
       w.addEventListener('focusout', function() { setTimeout(function() { if (!w.contains(document.activeElement)) setDropdown(w, false); }, 0); });
     });
@@ -199,9 +251,10 @@
       '</div>',
       '<h3 data-i18n="nav.section_navigation">Navigation</h3>',
       '<a href="./index.html" data-page="index.html" data-i18n="nav.home">Accueil</a>',
-      '<a href="./evolution.html" data-page="evolution.html"><span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
-      '<a href="./constellation.html" data-page="constellation.html"><span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
-      '<a href="./alertes.html" data-page="alertes.html"><span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
+      '<a href="./classement.html" data-page="classement.html">' + sym('classement') + '<span data-i18n="nav.classement">Classement</span></a>',
+      '<a href="./evolution.html" data-page="evolution.html">' + sym('evolution') + '<span data-i18n="nav.evolution">Évolution</span> <span class="nav-badge" data-i18n="nav.badge_timeline">TIMELINE</span></a>',
+      '<a href="./constellation.html" data-page="constellation.html">' + sym('constellation') + '<span data-i18n="nav.constellation">Constellation</span> <span class="nav-badge" data-i18n="nav.badge_live">LIVE</span></a>',
+      '<a href="./alertes.html" data-page="alertes.html">' + sym('alertes') + '<span data-i18n="nav.alertes">Alertes</span> <span class="nav-badge nav-badge-alert" id="nav-alert-badge" data-i18n="nav.alert_marker">!</span></a>',
       '<a href="./statistiques.html" data-page="statistiques.html"><span data-i18n="nav.statistiques">Statistiques</span> <span class="nav-badge" data-i18n="nav.badge_object">OBJET</span></a>',
       '<a href="./sonar.html" data-page="sonar.html"><span data-i18n="nav.sonar">Sonar</span> <span class="nav-badge" data-i18n="nav.badge_qualite">QUALITÉ</span></a>',
       '<a href="./index.html#hot20" data-i18n="nav.hot20">Hot 20</a>',
@@ -210,6 +263,7 @@
       '<h3 style="margin-top: 30px;" data-i18n="nav.section_about">À propos</h3>',
       '<a href="./radarplus.html" data-page="radarplus.html" data-i18n="nav.radarplus">Radar+</a>',
       '<a href="./methodologie.html" data-page="methodologie.html" data-i18n="nav.methodologie">Méthodologie</a>',
+      '<a href="./indices.html" data-page="indices.html" data-i18n="nav.indices">Les indices de saillance</a>',
       '<a href="./partenaires.html" data-page="partenaires.html" data-i18n="nav.partenaires">Partenaires &amp; contributeurs</a>',
       '<a href="./acces-donnees.html" data-page="acces-donnees.html" data-i18n="nav.acces_donnees">Accès aux données</a>',
       '<a href="#" id="nav-report-link" data-i18n="nav.report_issue">Signaler un problème</a>',
@@ -279,6 +333,7 @@
     });
     refreshLangButtons();
     document.addEventListener('i18n:applied', refreshLangButtons);
+    fillSymbols();
 
     var reportLink = document.getElementById('nav-report-link');
     if (reportLink) {
@@ -620,8 +675,8 @@
     bar.setAttribute('aria-label', 'Alertes de saillance actives');
     bar.innerHTML =
       '<a class="alert-bar-label" href="./alertes.html" data-i18n-aria-label="alertbar.view_alerts_aria" aria-label="Voir les alertes">' +
-        '<span class="alert-bar-dot" aria-hidden="true"></span>' +
-        '<span class="alert-bar-label-text" data-i18n="alertbar.label">ALERTE</span>' +
+        '<span class="alert-bar-dot" aria-hidden="true"></span>' + sym('alertes') +
+        '<span class="alert-bar-label-text" data-i18n="alertbar.label">Alerte de saillance</span>' +
       '</a>' +
       '<div class="alert-bar-track" id="alert-bar-track">' +
         '<div class="alert-bar-strip" id="alert-bar-strip"></div>' +
@@ -637,7 +692,8 @@
   // Clic sur l'événement : un des médias au hasard (comme la Vitrine).
   // Vitesse constante et lisible ; seule la couleur du bandeau change (niveau
   // le plus élevé parmi les événements affichés).
-  var EVENT_BAND_TO_LEVEL = { elevee: 'eleve', tres_elevee: 'tres_eleve', extreme: 'extreme' };
+  // Seules les Unes très élevées et extrêmes font une alerte ; « élevée » est trop fréquente (Adrien, 31 oct. 2026).
+  var EVENT_BAND_TO_LEVEL = { tres_elevee: 'tres_eleve', extreme: 'extreme' };
   var EVENT_BAR_PX_PER_SEC = 40;
   var EVENT_BAR_MAX_MEDIA = 6;
 
@@ -666,6 +722,32 @@
     return items;
   }
 
+  // États-Unis : pas d'événements (panel de deux médias) ; les objets de la dernière édition qui
+  // dépassent le palier très élevé ou extrême du pays font l'alerte (Adrien, 31 oct. 2026).
+  function objectBarItems(graph, countries) {
+    var items = [], tiersAll = graph && graph.meta && graph.meta.salience_tiers;
+    (countries || []).forEach(function(country) {
+      var per = graph && graph.graphs && graph.graphs[country], tiers = tiersAll && tiersAll[country];
+      if (!per || !tiers) return;
+      Object.keys(per).forEach(function(k) {
+        (per[k].nodes || []).forEach(function(n) {
+          var size = Number(n.size) || 0, level = size >= tiers.extreme ? 'extreme' : size >= tiers.very_high ? 'tres_eleve' : null;
+          if (!level) return;
+          var arts = (n.articles || []).filter(function(a) { return a && a.url; }), byMedia = {}, media = [];
+          arts.forEach(function(a) { var m = a.media_id || ''; if (!m || byMedia[m]) return; byMedia[m] = true; media.push({ media_id: m, url: a.url, title: a.title || '' }); });
+          var name = String(n.id || '').replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
+          items.push({ id: country + ':' + n.id, title: name, level: level, region: country, index: size,
+                       urls: arts.map(function(a) { return a.url; }), media: media.slice(0, EVENT_BAR_MAX_MEDIA) });
+        });
+      });
+    });
+    return items;
+  }
+  // Région en toutes lettres, au début : « Québec », « Canada (hors Québec) », « États-Unis ».
+  function regionName(code) {
+    var T = window.t || function(k) { return k; }, v = T('alertbar.region.' + code);
+    return v && v !== 'alertbar.region.' + code ? v : ({ QC: 'Québec', CAN: 'Canada (hors Québec)', USA: 'États-Unis' })[code] || code;
+  }
   function buildEventBarItems(items) {
     return items.map(function(it) {
       var lvlCss = levelCss(it.level);
@@ -675,9 +757,9 @@
       }).join('');
       return '<span class="alert-bar-item is-event level-' + escHtml(lvlCss) + '">' +
         '<a class="alert-bar-event-main" href="' + escHtml(urls[0] || '#') + '" target="_blank" rel="noopener" data-urls="' + escHtml(JSON.stringify(urls)) + '">' +
+          '<span class="alert-bar-item-country" data-region="' + escHtml(it.region) + '">' + escHtml(regionName(it.region)) + '</span>' +
           '<span class="alert-bar-item-badge" data-level="' + escHtml(it.level) + '">' + escHtml(alertBarLabel(it.level)) + '</span>' +
           '<span class="alert-bar-item-name">' + escHtml(it.title) + '</span>' +
-          '<span class="alert-bar-item-country">' + escHtml(it.region) + '</span>' +
         '</a>' +
         (chips ? '<span class="alert-bar-media">' + chips + '</span>' : '') +
       '</span>' +
@@ -685,13 +767,15 @@
     }).join('');
   }
 
-  function populateAlertBar(latest) {
+  function populateAlertBar(latest, graph) {
     var strip    = document.getElementById('alert-bar-strip');
     var bar      = document.getElementById('global-alert-bar');
     var navBadge = document.getElementById('nav-alert-badge');
     if (!strip || !bar) return;
 
-    var items = eventBarItems(latest);
+    var items = eventBarItems(latest).concat(objectBarItems(graph, ['USA']));
+    var rank = { extreme: 0, tres_eleve: 1 }, order = { QC: 0, CAN: 1, USA: 2 };
+    items.sort(function(a, b) { return (rank[a.level] - rank[b.level]) || (order[a.region] - order[b.region]) || (b.index - a.index); });
     if (navBadge) {
       if (items.length) { navBadge.textContent = String(items.length); navBadge.classList.add('active'); }
       else { navBadge.style.display = 'none'; }
@@ -750,10 +834,11 @@
     injectAlertBar();
     // Source : événements saillants du dernier bloc (v2/events/latest.json, ~15 ko).
     if (!(window.radarData && window.radarData.eventsLatest)) return;
-    window.radarData.eventsLatest()
-      .then(function(data) {
-        _lastAlertGraphData = data;
-        populateAlertBar(data);
+    // Événements du Québec et du reste du Canada ; objets en alerte pour les États-Unis.
+    Promise.all([window.radarData.eventsLatest(), window.radarData.latestAsGraph ? window.radarData.latestAsGraph().catch(function() { return null; }) : null])
+      .then(function(res) {
+        _lastAlertGraphData = res[0];
+        populateAlertBar(res[0], res[1]);
       })
       .catch(function() {
         var bar = document.getElementById('global-alert-bar');
@@ -775,6 +860,7 @@
     strip.querySelectorAll('.alert-bar-item-badge[data-level]').forEach(function (badge) {
       badge.textContent = alertBarLabel(badge.getAttribute('data-level'));
     });
+    strip.querySelectorAll('.alert-bar-item-country[data-region]').forEach(function (el) { el.textContent = regionName(el.getAttribute('data-region')); });
   });
 
   if (document.readyState === 'loading') {

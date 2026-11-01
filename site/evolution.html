@@ -38,7 +38,7 @@
     }
     #evo-titlebar {
       display: flex; align-items: center; gap: 10px;
-      margin-bottom: 22px;
+      margin-bottom: 14px;
     }
     #evo-logo {
       flex: 0 0 auto;
@@ -654,6 +654,8 @@
   </div>
 </div>
 <div id="left-panel">
+    <!-- Titre de la page avec son symbole (le chronomètre du robot), comme Constellation (Adrien, 31 oct. 2026) -->
+    <div id="evo-titlebar"><div id="evo-title"><span class="page-sym" data-symbol="evolution"></span><span data-i18n="evolution.title">Évolution</span></div></div>
     <div id="mode-tabs" class="lpanel-section">
       <div id="mode-tabs-row">
         <button class="mode-tab" data-mode="events" type="button" data-i18n="evolution.mode_events">ÉVÉNEMENTS</button>
@@ -1167,10 +1169,10 @@
 
   const RANKED_GRANULARITIES = {
     day:   { topN: 10, emptyLabel: 'Journée' },
-    week:  { topN: 12, emptyLabel: 'Semaine' },
-    month: { topN: 14, emptyLabel: 'Mois' },
-    year:  { topN: 16, emptyLabel: 'Année' },
-    total: { topN: 20, emptyLabel: 'Depuis le début' },
+    week:  { topN: 10, emptyLabel: 'Semaine' }, // Hot 10 partout : dix lignes, comme la liste de gauche
+    month: { topN: 10, emptyLabel: 'Mois' },
+    year:  { topN: 10, emptyLabel: 'Année' },
+    total: { topN: 10, emptyLabel: 'Depuis le début' },
   };
   // Mois / jours: lus dynamiquement depuis ui.{lang}.json via window.t.
   // Fallback FR si i18n pas chargé.
@@ -1515,11 +1517,13 @@
     if (nextBtn) nextBtn.disabled = currentMode === 'ranked' ? rankedSlotIdx >= rankedSlots.length - 1 : currentIdx >= periods.length - 1;
   }
 
+  // Un bloc se nomme par son édition : l'heure où il sort (fin du bloc + 1 h). Le bloc 15h-19h est
+  // « l'édition de 20h », comme sur l'accueil et le Classement (Adrien, 31 oct. 2026).
   const FR_BLOCK_SHORT = {}, FR_BLOCK_LONG = {};
   for (let h = 0; h < 24; h++) {
-    const shortOf = x => (x === 0 ? 'Minuit' : x === 12 ? 'Midi' : x + 'h');
-    FR_BLOCK_SHORT[h] = shortOf(h);
-    FR_BLOCK_LONG[h] = shortOf(h) + '–' + shortOf((h + 4) % 24);
+    const ed = (h + 5) % 24;
+    FR_BLOCK_SHORT[h] = ed === 0 ? 'Minuit' : ed === 12 ? 'Midi' : ed + 'h';
+    FR_BLOCK_LONG[h] = 'édition de ' + (ed === 0 ? 'minuit' : ed === 12 ? 'midi' : ed + 'h');
   }
 
   function blockStartFromPeriod(period) {
@@ -1744,7 +1748,7 @@
     if (!tiers) return 'none';
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
     return 'none';
   }
 
@@ -1926,7 +1930,7 @@
     const nodeAlertMap = new Map((curAlertGd.nodes || []).map(n => [n.id, n]));
     const ALERT_BADGE_LABELS = (function() {
       const out = {};
-      ['extreme','tres_eleve','eleve'].forEach(function(k) {
+      ['extreme','tres_eleve'].forEach(function(k) { // plus de niveau « élevé » (Adrien, 31 oct. 2026)
         const v = window.t ? window.t('alertes.level_short.' + k) : null;
         out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
       });
@@ -2175,7 +2179,10 @@
     // fullSeries contient déjà tous les unionIds (top 10 de chaque période), donc on
     // peut simplement prendre tous les IDs de fullSeries qui n'auraient pas été inclus
     // dans topSeries (qui slice à getRankedTopN). Évite un nouveau pass sur winPeriods.
-    fullSeries.forEach(s => requiredIds.add(s.id));
+    // Seulement pour la journée (6 éditions) : sur une semaine, un mois ou une année, l'union des top 10
+    // de chaque jour donnait des centaines de lignes illisibles (Adrien, 1er nov. 2026). Le graphique
+    // montre alors le Hot 10 de la période, plus les objets survolés, choisis ou suivis.
+    if (rankedGranularity === 'day') fullSeries.forEach(s => requiredIds.add(s.id));
 
     const out = [...topSeries];
     requiredIds.forEach(id => {
@@ -2335,9 +2342,9 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
-    // Étiquettes à la FIN de chaque bloc de la grille réelle (7h, 11h, 15h, 19h, 23h, 3h en EDT).
+    // Chaque point porte le nom de son édition (« 20h »), à la fin de son bloc.
     const DAY_LABELS = [{ h: 0, label: 'Hier', align: 'left' }].concat(
-      ACTIVE_DAY_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[(st + 4) % 24], align: i === ACTIVE_DAY_STARTS.length - 1 ? 'right' : 'center' }))
+      ACTIVE_DAY_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[st], align: i === ACTIVE_DAY_STARTS.length - 1 ? 'right' : 'center' }))
     );
     DAY_LABELS.forEach(({ h, label, align }) => {
       const x = xOfHour(h);
@@ -2514,7 +2521,7 @@
     if (rankedGranularity === 'day') {
       if (period?.isVeille) return { major: 'Hier', minor: '' };
       const start = blockStartFromPeriod(period);
-      return { major: FR_BLOCK_SHORT[start] ?? (String(start) + 'h'), minor: '' };
+      return { major: FR_BLOCK_SHORT[start] ?? (String(start) + 'h'), minor: '' }; // l'édition par son heure de sortie
     }
 
     const dateStr = periodDisplayDate(period);
@@ -2557,6 +2564,13 @@
       layout: getRankedChartLayout(rect), stars: STARS
     });
   }
+  // Mois, année, total : la courbe de chaque objet est son CUMUL de points (somme des éditions), la mesure
+  // du Hot 10 de la liste ; les maximums quotidiens sur cent jours faisaient un fouillis (Adrien, 1er nov. 2026).
+  function isCumulView() { return rankedGranularity === 'month' || rankedGranularity === 'year' || rankedGranularity === 'total'; }
+  // Cumul des valeurs mêmes de la liste (une par jour) : la courbe finit au total affiché à gauche.
+  function cumulSeries(series) {
+    return series.map(s => { let acc = 0; return { ...s, data: s.data.map(v => v === null ? null : (acc += v)) }; });
+  }
   function renderRankedChart(gd, hoverIdx = null, skipLegend = false) {
     if (currentMode === 'ranked' && rankedView === 'events') { renderEventsView(); return; }
     if (rankedGranularity === 'day') { renderDayModeChart(gd, hoverIdx, skipLegend); return; }
@@ -2588,7 +2602,8 @@
       : (hasPeriodSelectionInit2 ? selectedPeriodIdx : null);
     const hoverPeriod2 = (effectiveIdx2 !== null && effectiveIdx2 >= 0 && effectiveIdx2 < winPeriods.length)
       ? winPeriods[effectiveIdx2] : null;
-    const series = getRankedChartSeries(gd, winPeriods, hoverPeriod2);
+    const rawSeries = getRankedChartSeries(gd, winPeriods, hoverPeriod2);
+    const series = isCumulView() ? cumulSeries(rawSeries) : rawSeries;
     if (!series.length) return;
     const n = winPeriods.length;
     if (!n) return;
@@ -2622,7 +2637,11 @@
     // (pic atteint dans la fenêtre) et non en somme, donc les valeurs Y
     // restent comparables aux paliers calibrés sur saillance instantanée.
     const salienceTiersR = tsData?.meta?.salience_tiers?.[currentCountry];
-    if (salienceTiersR) {
+    if (isCumulView()) { // les paliers valent pour une édition, pas pour un cumul : on nomme l'axe à la place
+      ctx.font = '10px "Space Mono", monospace'; ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(150,185,235,0.75)';
+      ctx.fillText(((window.t && window.t('evolution.cumul_axis')) || 'Points cumulés').toUpperCase(), PAD.left, PAD.top - 12);
+    }
+    if (salienceTiersR && !isCumulView()) {
       const TIER_COLORS_R = {
         moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
         high:      { line: 'rgba(212,188,88,0.65)',  text: 'rgba(255,224,140,0.95)' },
@@ -2867,9 +2886,9 @@
       });
     });
 
-    // Appel légende dynamique avec effectiveHoverIdx (hover ou sélection)
+    // Appel légende dynamique avec effectiveHoverIdx (hover ou sélection) ; la liste garde les valeurs du jour
     if (!skipLegend) {
-      requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
+      requestAnimationFrame(() => renderRankedLegend(rawSeries, effectiveHoverIdx));
     }
 
     // Marqueur de période courante (discret)
@@ -3709,9 +3728,20 @@
     if (granBtn) granBtn.click();
   }
 
-  if (urlNode || urlNodes || urlMode || urlGran) {
+  // Lien depuis une fiche : ?date=AAAA-MM-JJ ouvre cette journée ; ?evenement=<histoire> la met en évidence.
+  const urlDate = urlParams.get('date'), urlEvent = urlParams.get('evenement');
+  if (urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate) && currentMode === 'ranked') {
+    let di = rankedSlots.findIndex(s => s.key === urlDate);
+    if (di < 0) di = rankedSlots.findIndex(s => (s.periodKeys || []).some(k => k.slice(0, 10) === urlDate));
+    if (di >= 0) { selectedPeriodIdx = null; rankedSlotIdx = di; slider.value = di; setCurrentPeriodFromRankedSlot(); loadPeriod(currentCountry, currentIdx); }
+  }
+  if (urlEvent && window.radarEvents && window.radarEvents.focus) [400, 1200, 2500].forEach(ms => setTimeout(() => window.radarEvents.focus(urlEvent), ms));
+
+  if (urlNode || urlNodes || urlMode || urlGran || urlDate || urlEvent) {
     try {
       const u = new URL(window.location.href);
+      u.searchParams.delete('date');
+      u.searchParams.delete('evenement');
       u.searchParams.delete('node');
       u.searchParams.delete('nodes');
       u.searchParams.delete('mode');
