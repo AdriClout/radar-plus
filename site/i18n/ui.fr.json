@@ -601,7 +601,9 @@
     "obj_total": "total (130 jours)",
     "scroll_hint": "Voir les autres colonnes",
     "nav_sub_24h": "Indice 24h à cette édition",
-    "nav_sub_cumul": "Saillance cumulée depuis le {date}"
+    "nav_sub_cumul": "Saillance cumulée depuis le {date}",
+    "status_final": "Classement final",
+    "status_live": "Classement en cours"
   },
   "csv": {
     "rank": "rang",

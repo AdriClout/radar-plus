@@ -44,6 +44,12 @@
     .cl-nav { display: flex; align-items: center; gap: 10px; margin-right: auto; }
     .cl-nav-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 260px; text-align: center; }
     .cl-nav-sub { font-family: var(--grotesk); font-size: 12px; color: var(--muted); }
+    /* Au-dessus de la date : « Classement final » (période close) ou « Classement en cours » (encore mis à jour) */
+    .cl-nav-status { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px; }
+    .cl-nav-status.final { color: #ffd98a; border: 1px solid rgba(255,200,87,0.5); }
+    .cl-nav-status.live { color: #9dd8ff; border: 1px solid rgba(95,168,255,0.5); }
+    .cl-nav-status.live::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #5fe08a; margin-right: 6px; vertical-align: middle; animation: cl-blink 1.6s ease-in-out infinite; }
+    @keyframes cl-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
     .cl-nav button { font-family: var(--grotesk); font-size: 18px; line-height: 1; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: rgba(10,18,50,0.7); color: #e8f0ff; cursor: pointer; }
     .cl-nav button:hover { border-color: var(--accent); }
     .cl-nav button:disabled { opacity: 0.3; cursor: default; }
@@ -91,7 +97,7 @@
   <div class="cl-toolbar">
     <div class="cl-nav" id="cl-nav">
       <button type="button" id="cl-nav-prev" data-i18n-title="homepage.previous_period_btn_title" title="Période précédente">&#8249;</button>
-      <div class="cl-nav-block"><span class="cl-nav-label" id="cl-nav-label"></span><span class="cl-nav-sub" id="cl-nav-sub"></span><span class="cl-count" id="cl-count"></span></div>
+      <div class="cl-nav-block"><span class="cl-nav-status" id="cl-nav-status"></span><span class="cl-nav-label" id="cl-nav-label"></span><span class="cl-nav-sub" id="cl-nav-sub"></span><span class="cl-count" id="cl-count"></span></div>
       <button type="button" id="cl-nav-next" data-i18n-title="homepage.next_period_btn_title" title="Période suivante" disabled>&#8250;</button>
     </div>
     <input class="cl-search" id="cl-search" type="search" data-i18n-placeholder="classement.search_placeholder" placeholder="Filtrer : un mot du titre ou du thème" autocomplete="off">

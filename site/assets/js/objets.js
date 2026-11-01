@@ -126,6 +126,7 @@ function render() {
     var lbl = document.getElementById(cfg.navId + '-label'), nxt = document.getElementById(cfg.navId + '-next');
     if (lbl) lbl.textContent = cfg.range === '24h' && keys.length ? u.navLabel('24h', cfg.offset, lang, T) : u.navLabel(cfg.range, cfg.offset, lang, T);
     var subEl = document.getElementById(cfg.navId + '-sub'); if (subEl) subEl.textContent = u.navSub(cfg.range, cfg.offset, lang, T);
+    u.navStatus(cfg, T);
     if (nxt) nxt.disabled = cfg.offset >= 0;
   }
   var items = ranked(graphs, keys), limit = cfg.limits[cfg.range] || 10;

@@ -601,7 +601,9 @@
     "obj_total": "total (130 days)",
     "scroll_hint": "See the other columns",
     "nav_sub_24h": "24h index at this edition",
-    "nav_sub_cumul": "Salience summed since {date}"
+    "nav_sub_cumul": "Salience summed since {date}",
+    "status_final": "Final ranking",
+    "status_live": "Ranking in progress"
   },
   "csv": {
     "rank": "rank",
