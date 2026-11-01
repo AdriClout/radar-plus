@@ -83,8 +83,11 @@ function chartFor(cs, offset, id) {
 function tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotal) {
   var esc = u.escapeHtml;
   var th = function(k, cls) { return '<th class="' + (cls || '') + '">' + esc(T(k)) + '</th>'; };
+  var per = T('aune.unit_many.' + cfg.range);
+  var thTxt = function(txt, cls) { return '<th class="' + (cls || '') + '">' + esc(txt) + '</th>'; };
   var head = '<tr>' + th('hot20.header_rank') + th('hot20.header_movement', 'center') + th('classement.header_object') +
-    th('csv.points', 'num') + th('csv.share', 'num') + th('classement.obj_total', 'num') + th('csv.editions', 'num') + th('csv.consec', 'num') + th('csv.on_chart', 'num') + '</tr>';
+    th('csv.points', 'num') + th('csv.share', 'num') + th('classement.obj_total', 'num') + th('csv.editions', 'num') +
+    thTxt(T('csv.consec_of', { per: per }), 'num') + thTxt(T('csv.on_chart_of', { per: per }), 'num') + '</tr>';
   var rows = items.map(function(it, i) {
     var band = LEVEL_BAND[it.level] || 'aucune', st = chartFor(cs, cfg.offset, it.id);
     return '<tr class="rank-' + (i + 1) + ' band-' + band + '">' +
@@ -92,14 +95,15 @@ function tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotal
       '<td class="center">' + trendHtml(prevRanks[it.id], i + 1, limit, T, esc) + '</td>' +
       '<td class="subject">' + (band === 'aucune' ? '' : '<span class="aune-band band-' + band + '">' + esc(T('alertes.level_short.' + it.level)) + '</span>') +
         '<span class="aune-row-title obj"><a href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' + esc(it.id) + '</a></span></td>' +
-      '<td class="num strong">' + it.points.toFixed(1) + '</td>' +
-      '<td class="num">' + Math.round(100 * it.points / total) + ' %</td>' +
-      '<td class="num">' + (allTotal[it.id] || 0).toFixed(1) + '</td>' +
-      '<td class="num">' + it.blocks + '</td>' +
-      '<td class="num">' + st.consec + '</td><td class="num">' + st.total + '</td>' +
+      '<td class="num strong">' + u.numUnit(it.points.toFixed(1), T('aune.points')) + '</td>' +
+      '<td class="num">' + u.numUnit(Math.round(100 * it.points / total), '%') + '</td>' +
+      '<td class="num">' + u.numUnit((allTotal[it.id] || 0).toFixed(1), T('aune.points')) + '</td>' +
+      '<td class="num">' + u.numUnit(it.blocks, T(it.blocks === 1 ? 'aune.unit_one.24h' : 'aune.unit_many.24h')) + '</td>' +
+      '<td class="num">' + u.numUnit(st.consec, u.unitPeriod(cfg.range, st.consec, T)) + '</td>' +
+      '<td class="num">' + u.numUnit(st.total, u.unitPeriod(cfg.range, st.total, T)) + '</td>' +
     '</tr>';
   }).join('');
-  return '<div class="aune-table-wrap"><table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table></div>';
+  return u.tableWrap('<table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>', T);
 }
 function render() {
   var A = window.RadarAune, cfg = A.cfg, u = A.util, esc = u.escapeHtml;
@@ -136,7 +140,7 @@ function render() {
   var allTotal = sums(graphs, allKeys), allTotalPts = {}; Object.keys(allTotal).forEach(function(id) { allTotalPts[id] = allTotal[id].points; });
   var cs = chartStats(graphs, allKeys, cfg.range, country, u);
   lastExport = { rows: full, prevRanks: prevRanks, total: total, country: country, lang: lang, cs: cs, allTotal: allTotalPts };
-  if (cfg.table) { grid.innerHTML = tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotalPts); return; }
+  if (cfg.table) { grid.innerHTML = tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotalPts); u.scrollCue(); return; }
   var header = '<li class="aune-list-header">' +
     '<span>' + esc(T('hot20.header_rank')) + '</span><span class="center">' + esc(T('hot20.header_movement')) + '</span>' +
     '<span>' + esc(T('classement.header_object')) + '</span><span class="right">' + esc(T('aune.header_points')) + '</span></li>';

@@ -547,7 +547,21 @@
     "count_many": "{n} stories",
     "see_all": "See the full ranking →",
     "count_shown": "first {shown} stories of {n}",
-    "week_label": "Week {n}"
+    "week_label": "Week {n}",
+    "unit_one": {
+      "24h": "edition",
+      "today": "day",
+      "week": "week",
+      "month": "month",
+      "year": "year"
+    },
+    "unit_many": {
+      "24h": "editions",
+      "today": "days",
+      "week": "weeks",
+      "month": "months",
+      "year": "years"
+    }
   },
   "article_panel": {
     "current": "Current period",
@@ -584,7 +598,8 @@
     },
     "download": "Download (CSV)",
     "download_tip": "The displayed ranking, with its filters, as a CSV file readable in Excel",
-    "obj_total": "total (130 days)"
+    "obj_total": "total (130 days)",
+    "scroll_hint": "Scroll right to see everything →"
   },
   "csv": {
     "rank": "rank",
@@ -611,6 +626,8 @@
     "url_first": "link first front page",
     "url_peak": "link at peak",
     "url_last": "link last front page",
-    "media_urls": "links by outlet (latest article)"
+    "media_urls": "links by outlet (latest article)",
+    "consec_of": "consecutive {per} in top 20",
+    "on_chart_of": "{per} in top 20 overall"
   }
 }

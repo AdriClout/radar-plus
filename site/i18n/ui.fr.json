@@ -547,7 +547,21 @@
     "count_many": "{n} histoires",
     "see_all": "Voir le classement complet →",
     "count_shown": "{shown} premières histoires sur {n}",
-    "week_label": "Semaine {n}"
+    "week_label": "Semaine {n}",
+    "unit_one": {
+      "24h": "édition",
+      "today": "jour",
+      "week": "semaine",
+      "month": "mois",
+      "year": "année"
+    },
+    "unit_many": {
+      "24h": "éditions",
+      "today": "jours",
+      "week": "semaines",
+      "month": "mois",
+      "year": "années"
+    }
   },
   "article_panel": {
     "current": "Période courante",
@@ -584,7 +598,8 @@
     },
     "download": "Télécharger (CSV)",
     "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel",
-    "obj_total": "total (130 jours)"
+    "obj_total": "total (130 jours)",
+    "scroll_hint": "Défiler vers la droite pour tout voir →"
   },
   "csv": {
     "rank": "rang",
@@ -611,6 +626,8 @@
     "url_first": "lien première Une",
     "url_peak": "lien au sommet",
     "url_last": "lien dernière Une",
-    "media_urls": "liens par média (dernier article)"
+    "media_urls": "liens par média (dernier article)",
+    "consec_of": "{per} consécutives au top 20",
+    "on_chart_of": "{per} au top 20 au total"
   }
 }

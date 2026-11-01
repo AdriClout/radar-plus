@@ -464,12 +464,18 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   '</li>';
 }
 // Table large de la page Classement : toutes les colonnes, défilable sur téléphone.
+// Unité des périodes de la vue (« 13 semaines ») et nombre avec unité (« 669.1 points »).
+function auneUnitPeriod(range, n, T) { return T((n === 1 ? 'aune.unit_one.' : 'aune.unit_many.') + range); }
+function auneNumUnit(v, unit) { return '<span class="val">' + v + '</span> <span class="unit">' + escapeHtml(unit) + '</span>'; }
 function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is24h) {
   var esc = escapeHtml;
   var th = function(k, cls) { return '<th class="' + (cls || '') + '">' + esc(T(k)) + '</th>'; };
+  var per = T('aune.unit_many.' + cfg.range);
+  var thTxt = function(txt, cls) { return '<th class="' + (cls || '') + '">' + esc(txt) + '</th>'; };
   var head = '<tr>' + th('hot20.header_rank') + th('hot20.header_movement', 'center') + th('aune.header_subject') +
     th(is24h ? 'aune.index24h_label' : 'csv.points', 'num') + (is24h ? th('csv.delta4h', 'num') : th('csv.total', 'num')) +
-    th('csv.share', 'num') + th('csv.peak_points', 'num') + th('csv.since') + th('csv.consec', 'num') + th('csv.on_chart', 'num') + '</tr>';
+    th('csv.share', 'num') + th('csv.peak_points', 'num') + th('csv.since') +
+    thTxt(T('csv.consec_of', { per: per }), 'num') + thTxt(T('csv.on_chart_of', { per: per }), 'num') + '</tr>';
   var rows = items.map(function(c, i) {
     var ev = byStory && byStory[c.storyline], urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
     var band = is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
@@ -483,16 +489,28 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
       '<td class="subject"><span class="aune-band band-' + esc(band) + '">' + esc(bandLabel) + '</span>' +
         '<span class="aune-row-title' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' + esc(c.title) + '</span>' +
         '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</td>' +
-      '<td class="num strong">' + c.points.toFixed(1) + '</td>' +
-      (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + (delta > 0 ? '+' : '') + delta.toFixed(1) + '</td>'
-             : '<td class="num">' + (c.total || 0).toFixed(1) + '</td>') +
-      '<td class="num">' + Math.round(c.sharePct || 0) + ' %</td>' +
-      '<td class="num">' + (c.peak || 0).toFixed(1) + '<span class="sub">' + esc(auneWhen(c.peakKey, lang)) + '</span></td>' +
+      '<td class="num strong">' + auneNumUnit(c.points.toFixed(1), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
+      (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + auneNumUnit((delta > 0 ? '+' : '') + delta.toFixed(1), T('aune.points')) + '</td>'
+             : '<td class="num">' + auneNumUnit((c.total || 0).toFixed(1), T('aune.points')) + '</td>') +
+      '<td class="num">' + auneNumUnit(Math.round(c.sharePct || 0), '%') + '</td>' +
+      '<td class="num">' + auneNumUnit((c.peak || 0).toFixed(1), T('aune.points')) + '<span class="sub">' + esc(auneWhen(c.peakKey, lang)) + '</span></td>' +
       '<td>' + esc(c.firstKey ? auneWhen(c.firstKey, lang) : '') + '</td>' +
-      '<td class="num">' + stats.consec + '</td><td class="num">' + stats.total + '</td>' +
+      '<td class="num">' + auneNumUnit(stats.consec, auneUnitPeriod(cfg.range, stats.consec, T)) + '</td>' +
+      '<td class="num">' + auneNumUnit(stats.total, auneUnitPeriod(cfg.range, stats.total, T)) + '</td>' +
     '</tr>';
   }).join('');
-  return '<div class="aune-table-wrap"><table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table></div>';
+  return auneTableWrap('<table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>', T);
+}
+// Enveloppe défilable avec, à droite, un voile et un repère « défiler → » tant que tout n'est pas visible.
+function auneTableWrap(tableHtml, T) {
+  return '<div class="aune-table-outer"><div class="aune-table-hint">' + escapeHtml(T('classement.scroll_hint')) + '</div><div class="aune-table-wrap">' + tableHtml + '</div></div>';
+}
+function auneTableScrollCue() {
+  document.querySelectorAll('.aune-table-outer').forEach(function(outer) {
+    var wrap = outer.querySelector('.aune-table-wrap'); if (!wrap) return;
+    var update = function() { outer.classList.toggle('has-more', wrap.scrollWidth - wrap.clientWidth - wrap.scrollLeft > 8); };
+    wrap.addEventListener('scroll', update); window.addEventListener('resize', update); update();
+  });
 }
 function renderALaUne() {
   if (cfg.type === 'objets' && window.RadarObjets) { window.RadarObjets.render(); return; }
@@ -578,7 +596,7 @@ function renderALaUne() {
     '<span>' + escapeHtml(T('aune.header_subject')) + '</span>' +
     '<span class="right">' + escapeHtml(T(is24h ? 'aune.header_score24h' : 'aune.header_points')) + '</span>' +
   '</li>';
-  if (cfg.table) { grid.innerHTML = auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is24h); return; }
+  if (cfg.table) { grid.innerHTML = auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is24h); auneTableScrollCue(); return; }
   grid.innerHTML = '<ol class="aune-list' + (proportional ? ' proportional' : ' dense') + '">' + header +
     items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks, prevStart, !proportional, latest); }).join('') + '</ol>';
 }
@@ -614,167 +632,6 @@ function auneChartFor(region, range, offset, sid) {
   var all = auneChartStats(region, range), i = -offset, n = 0;
   while (i < all.tops.length && all.tops[i][sid]) { n++; i++; }
   return { consec: n, total: all.stats[sid] ? all.stats[sid].total : 0 };
-}
-// Table large de la page Classement : toutes les colonnes, défilable sur téléphone.
-function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is24h) {
-  var esc = escapeHtml;
-  var th = function(k, cls) { return '<th class="' + (cls || '') + '">' + esc(T(k)) + '</th>'; };
-  var head = '<tr>' + th('hot20.header_rank') + th('hot20.header_movement', 'center') + th('aune.header_subject') +
-    th(is24h ? 'aune.index24h_label' : 'csv.points', 'num') + (is24h ? th('csv.delta4h', 'num') : th('csv.total', 'num')) +
-    th('csv.share', 'num') + th('csv.peak_points', 'num') + th('csv.since') + th('csv.consec', 'num') + th('csv.on_chart', 'num') + '</tr>';
-  var rows = items.map(function(c, i) {
-    var ev = byStory && byStory[c.storyline], urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
-    var band = is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
-    var bandLabel = (!is24h && band !== 'aucune') ? T('aune.peak_prefix') + ' ' + T('aune.band.' + band) : T('aune.band.' + band);
-    var arts = auneHeadlines(c, ev, 12);
-    var stats = auneChartFor(region, cfg.range, cfg.offset, c.storyline);
-    var delta = is24h ? c.points - (c.prev24h || 0) : null;
-    return '<tr class="rank-' + (i + 1) + ' band-' + esc(band) + '">' +
-      '<td class="rank">' + (i + 1) + '</td>' +
-      '<td class="center">' + auneTrendHtml(c, i, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
-      '<td class="subject"><span class="aune-band band-' + esc(band) + '">' + esc(bandLabel) + '</span>' +
-        '<span class="aune-row-title' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' + esc(c.title) + '</span>' +
-        '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</td>' +
-      '<td class="num strong">' + c.points.toFixed(1) + '</td>' +
-      (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + (delta > 0 ? '+' : '') + delta.toFixed(1) + '</td>'
-             : '<td class="num">' + (c.total || 0).toFixed(1) + '</td>') +
-      '<td class="num">' + Math.round(c.sharePct || 0) + ' %</td>' +
-      '<td class="num">' + (c.peak || 0).toFixed(1) + '<span class="sub">' + esc(auneWhen(c.peakKey, lang)) + '</span></td>' +
-      '<td>' + esc(c.firstKey ? auneWhen(c.firstKey, lang) : '') + '</td>' +
-      '<td class="num">' + stats.consec + '</td><td class="num">' + stats.total + '</td>' +
-    '</tr>';
-  }).join('');
-  return '<div class="aune-table-wrap"><table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table></div>';
-}
-function renderALaUne() {
-  if (cfg.type === 'objets' && window.RadarObjets) { window.RadarObjets.render(); return; }
-  var sec = document.getElementById(cfg.sectionId);
-  var grid = document.getElementById(cfg.gridId);
-  var sub = document.getElementById(cfg.subtitleId);
-  if (!sec || !grid) return;
-  var T = window.t || function(k) { return k; };
-  var lang = (document.documentElement.lang || 'fr').slice(0, 2);
-  sec.hidden = false;
-  var region = cfg.country;
-  if (region !== 'QC' && region !== 'CAN') {
-    sub.textContent = T('aune.subtitle');
-    var f0 = document.getElementById(cfg.footId); if (f0) f0.textContent = '';
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.usa')) + '</div>';
-    return;
-  }
-  var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null;
-  sub.textContent = T(cfg.subtitleKeys + cfg.range);
-  var seeAll = document.getElementById('aune-see-all');
-  if (seeAll) seeAll.href = './classement.html?range=' + encodeURIComponent(cfg.range) + '&country=' + encodeURIComponent(region);
-  var foot = document.getElementById(cfg.footId);
-  if (foot) foot.textContent = '';
-  if (!auneReady(region, cfg.range)) {
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('common.loading')) + '</div>';
-    var r = cfg.range, c = region;
-    auneLoad(c, r).then(function() { if (cfg.range === r && cfg.country === c) renderALaUne(); });
-    return;
-  }
-  var is24h = auneIs24h(cfg.range), limit = AUNE_LIMIT[cfg.range] || 10, proportional = limit <= cfg.proportionalMax;
-  // Navigateur de période (page Classement) : libellé et bouton « suivant » bloqué sur la période courante.
-  if (cfg.navId) {
-    var lbl = document.getElementById(cfg.navId + '-label'), nxt = document.getElementById(cfg.navId + '-next');
-    if (lbl) lbl.textContent = auneNavLabel(cfg.range, cfg.offset, lang, T);
-    if (nxt) nxt.disabled = cfg.offset >= 0;
-  }
-  var past24h = is24h && cfg.offset < 0;
-  var items = past24h ? auneRanking24hAt(region, auneEditionStart(cfg.offset), 1e9)
-            : is24h ? auneRanking24h(latest, 1e9) : auneRanking(region, cfg.range, 1e9);
-  // Filtre de recherche (page Classement) : titre ou thème, sans accents ni casse.
-  var q = auneQuery();
-  if (q) items = items.filter(function(it) { return auneNorm(it.title + ' ' + auneIssue(it, lang)).indexOf(q) !== -1; });
-  var countEl = cfg.countId ? document.getElementById(cfg.countId) : null;
-  var full = items, nAll = full.length; // liste complète filtrée : affichage coupé à `limit`, export CSV entier
-  items = full.slice(0, limit);
-  if (countEl) countEl.textContent = nAll > items.length ? T('aune.count_shown', { shown: items.length, n: nAll }) : T(nAll === 1 ? 'aune.count_one' : 'aune.count_many', { n: nAll });
-  var sums = auneSums(region, cfg.range);
-  full.forEach(function(it) {
-    var o = sums[it.storyline] || { total: 0, gain: 0, peak: 0 };
-    it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakKey = o.peakKey; it.peakBand = auneBand(region, o.peak);
-    it.firstKey = it.first_key || auneFirstKey(region, it.storyline);
-  });
-  // Barre et libellé = part de l'événement dans la saillance totale de TOUS les
-  // événements de la période (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026) :
-  // une barre pleine au rang 1 = seul dans l'actualité ; à moitié = d'autres compétitionnent.
-  var all = past24h ? Object.keys(auneSum24hAt(region, auneEditionStart(cfg.offset))).map(function(sid) { return auneSum24hAt(region, auneEditionStart(cfg.offset))[sid]; })
-          : is24h ? ((latest && latest.current) || []).map(function(c) { return Number(c.sum24h) || 0; })
-                  : auneRanking(region, cfg.range, 1e9).map(function(it) { return it.points; });
-  var total = all.reduce(function(m, v) { return m + v; }, 0) || 1;
-  full.forEach(function(it) { it.sharePct = 100 * it.points / total; it.barPct = Math.max(1, Math.round(it.sharePct)); });
-  if (!items.length) {
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
-    return;
-  }
-  var prevStart = is24h ? aunePrevEditionStart() : aunePrevWindow(cfg.range)[0];
-  if (proportional) {
-    // Hauteur de chaque rang proportionnelle à sa mesure (flex-grow), avec un plancher
-    // (CSS) qui garde toujours les trois lignes : badge, titre, détails et médias.
-    items.forEach(function(it) { it.grow = Math.max(it.points, 0.01).toFixed(3); });
-  }
-  if (is24h) {
-    var prev24h = aunePrevEdition24h(region);
-    full.forEach(function(it) { it.prev24h = typeof prev24h[it.storyline] === 'number' ? prev24h[it.storyline] : 0; });
-  }
-  // Manchettes : les blocs des 24 dernières heures (fichiers du jour), sinon le dernier bloc.
-  var byStory = auneArticlesByStory(region);
-  ((latest && latest.events) || []).forEach(function(e) { if (e && e.storyline && !byStory[e.storyline]) byStory[e.storyline] = e; });
-  var prevRanks = aunePrevRanks(region, cfg.range);
-  lastExport = { rows: full, prevRanks: prevRanks, byStory: byStory, is24h: is24h, region: region, lang: lang };
-  var header = '<li class="aune-list-header">' +
-    '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
-    '<span class="center">' + escapeHtml(T('hot20.header_movement')) + '</span>' +
-    '<span>' + escapeHtml(T('aune.header_subject')) + '</span>' +
-    '<span class="right">' + escapeHtml(T(is24h ? 'aune.header_score24h' : 'aune.header_points')) + '</span>' +
-  '</li>';
-  if (cfg.table) { grid.innerHTML = auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is24h); return; }
-  grid.innerHTML = '<ol class="aune-list' + (proportional ? ' proportional' : ' dense') + '">' + header +
-    items.map(function(it, i) { return auneRowHtml(it, i, region, lang, T, byStory, prevRanks, prevStart, !proportional, latest); }).join('') + '</ol>';
-}
-var lastExport = null;
-var chartCache = {};
-// Statistiques d'archive, comme le Hot 20 : pour chaque histoire du classement, nombre de
-// périodes CONSÉCUTIVES (en remontant depuis la période affichée) où elle est dans le top 20,
-// et nombre TOTAL de périodes où elle y a été, depuis le début des données. Une période =
-// la vue (édition, jour, semaine, mois, année). Mémorisé par vue et région.
-function auneTopIds(region, range, offset) {
-  var list = auneIs24h(range) ? auneRanking24hAt(region, auneEditionStart(offset), CHART_N)
-                              : auneRanking(region, range, CHART_N, auneWindow(range, offset));
-  var ids = {}; list.forEach(function(it) { ids[it.storyline] = true; }); return ids;
-}
-function auneChartStats(region, range) {
-  var key = region + '|' + range + '|' + (auneLatestKey(eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null) || '');
-  if (chartCache[key]) return chartCache[key];
-  var tops = [], offset = 0, guard = 0;
-  while (guard++ < 2000) {
-    var w = auneWindow(range, offset);
-    if (w[1] <= AUNE_FIRST_DATE) break;
-    tops.push(auneTopIds(region, range, offset));
-    offset -= 1;
-  }
-  var stats = {};
-  tops.forEach(function(ids) { Object.keys(ids).forEach(function(sid) { var s = stats[sid] || (stats[sid] = { total: 0 }); s.total++; }); });
-  chartCache[key] = { stats: stats, tops: tops };
-  return chartCache[key];
-}
-// Statistiques d'archive pour la période AFFICHÉE (offset courant) : consécutives = nombre de
-// périodes d'affilée au top 20 en remontant depuis celle-ci ; total = depuis le début.
-function auneChartFor(region, range, offset, sid) {
-  var all = auneChartStats(region, range), out = { consec: 0, total: 0 };
-  var tops = null; // recalcul local : consécutives à partir de l'offset affiché
-  var o = offset, n = 0;
-  while (true) {
-    var w = auneWindow(range, o); if (w[1] <= AUNE_FIRST_DATE) break;
-    var ids = auneTopIds(region, range, o);
-    if (!ids[sid]) break;
-    n++; o -= 1; if (n > 2000) break;
-  }
-  out.consec = n;
-  out.total = all.stats[sid] ? all.stats[sid].total : 0;
-  return out;
 }
 // ── Export CSV du classement affiché (filtres compris, liste entière) ──────────
 // Français : point-virgule et virgule décimale (Excel FR) ; anglais : virgule et point.
@@ -885,5 +742,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, csvFile: csvFile, periodSlug: periodSlug, trendHtmlSimple: null, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { window: auneWindow, navLabel: auneNavLabel, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();

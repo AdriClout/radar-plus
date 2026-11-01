@@ -156,14 +156,23 @@
   .aune-row.rank-1 .aune-row-score .num { font-size: 26px; }
 }
 
-/* ── Table large de la page Classement (toutes les colonnes ; défile sur téléphone) ── */
-.aune-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.aune-table { width: 100%; min-width: 960px; border-collapse: collapse; font-size: 13px; }
-.aune-table th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 10px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 400; }
+/* ── Table large de la page Classement : toutes les colonnes, défilable, les trois premières
+   colonnes (rang, mouvement, sujet) figées, le rang 1 plus gros, l'unité derrière chaque chiffre. ── */
+.aune-table-outer { position: relative; }
+.aune-table-hint { display: none; position: absolute; right: 0; top: -22px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #9dbcff; }
+.aune-table-outer.has-more .aune-table-hint { display: block; }
+.aune-table-outer.has-more::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 70px; pointer-events: none; background: linear-gradient(90deg, rgba(2,0,16,0), rgba(2,0,16,0.9)); }
+.aune-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.aune-table { width: 100%; min-width: 1320px; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.aune-table th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 10px 8px; border-bottom: 1px solid var(--border); font-weight: 400; vertical-align: bottom; line-height: 1.35; max-width: 150px; }
 .aune-table th.num, .aune-table td.num { text-align: right; }
 .aune-table th.center, .aune-table td.center { text-align: center; }
-.aune-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.aune-table tr { border-left: 3px solid transparent; }
+.aune-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; background: #020010; }
+/* Colonnes figées : rang 52 px, mouvement 96 px, sujet 320 px */
+.aune-table th:nth-child(1), .aune-table td:nth-child(1) { position: sticky; left: 0; z-index: 2; width: 52px; min-width: 52px; background: #020010; }
+.aune-table th:nth-child(2), .aune-table td:nth-child(2) { position: sticky; left: 52px; z-index: 2; width: 96px; min-width: 96px; background: #020010; }
+.aune-table th:nth-child(3), .aune-table td:nth-child(3) { position: sticky; left: 148px; z-index: 2; width: 320px; min-width: 320px; background: #020010; box-shadow: 6px 0 10px -6px rgba(0,0,0,0.7); }
+.aune-table th:nth-child(-n+3) { background: #020010; z-index: 3; }
 .aune-table td:first-child { border-left: 3px solid transparent; }
 .aune-table tr.band-faible td:first-child { border-left-color: #7f93b8; }
 .aune-table tr.band-moderee td:first-child { border-left-color: #5fa8ff; }
@@ -171,15 +180,24 @@
 .aune-table tr.band-tres_elevee td:first-child { border-left-color: #ff9f43; }
 .aune-table tr.band-extreme td:first-child { border-left-color: #ff4d4d; }
 .aune-table tr.band-aucune td:first-child { border-left-color: rgba(127,147,184,0.3); }
-.aune-table td.rank { font-family: var(--mono); font-size: 16px; font-weight: 700; color: rgba(120,165,255,0.75); width: 44px; }
-.aune-table tr.rank-1 td.rank { color: #ffc857; } .aune-table tr.rank-2 td.rank { color: #d9e2f5; } .aune-table tr.rank-3 td.rank { color: #d9a86c; }
-.aune-table td.subject { min-width: 300px; }
+.aune-table td.rank { font-family: var(--mono); font-size: 16px; font-weight: 700; color: rgba(120,165,255,0.75); }
+.aune-table tr.rank-1 td.rank { color: #ffc857; font-size: 24px; text-shadow: 0 0 14px rgba(255,200,87,0.4); }
+.aune-table tr.rank-2 td.rank { color: #d9e2f5; } .aune-table tr.rank-3 td.rank { color: #d9a86c; }
 .aune-table td.subject .aune-band { display: inline-block; margin-bottom: 4px; }
 .aune-table td.subject .aune-row-title { display: block; font-size: 14px; white-space: normal; -webkit-line-clamp: unset; }
+.aune-table tr.rank-1 td.subject .aune-row-title { font-size: 18px; line-height: 1.25; }
+.aune-table tr.rank-1 td.subject .aune-band { font-size: 12px; padding: 3px 10px; }
+.aune-table tr.rank-1 td { background: rgba(10,18,50,0.7); }
+.aune-table tr.rank-1 td.num.strong .val { font-size: 20px; }
 .aune-table td.subject .sub { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
 .aune-table td.subject .aune-chips { margin-top: 4px; }
 .aune-table td.num { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
-.aune-table td.num.strong { font-size: 15px; font-weight: 700; color: #fff; }
+.aune-table td.num.strong .val { font-size: 15px; font-weight: 700; color: #fff; }
+.aune-table td.num .unit { font-family: var(--grotesk); font-size: 11px; color: var(--muted); }
 .aune-table td.num .sub { display: block; font-family: var(--grotesk); font-size: 10.5px; color: var(--muted); }
-.aune-table td.up { color: #4ade80; } .aune-table td.down { color: #f87171; }
-.aune-table tr:hover td { background: rgba(40,70,160,0.12); }
+.aune-table td.up .val { color: #4ade80; } .aune-table td.down .val { color: #f87171; }
+.aune-table tr:hover td { background: rgba(14,24,64,0.95); }
+@media (max-width: 760px) {
+  .aune-table th:nth-child(3), .aune-table td:nth-child(3) { position: static; width: 220px; min-width: 220px; box-shadow: none; }
+  .aune-table th:nth-child(2), .aune-table td:nth-child(2) { position: static; }
+}
