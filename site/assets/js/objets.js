@@ -167,6 +167,23 @@ function render() {
   }).join('');
   grid.innerHTML = '<ol class="aune-list dense">' + header + rows + '</ol>';
 }
+function stripHtml(h) { var d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); }
+function exportData(n) {
+  if (!lastExport) return null;
+  var cfg = window.RadarAune.cfg, u = window.RadarAune.util;
+  var T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang, hot = ['week', 'month', 'year'].indexOf(cfg.range) !== -1;
+  var limit = (cfg.limits[cfg.range] || 10) + (cfg.extra || 0);
+  var rows = x.rows.slice(0, n || 20).map(function(it, i) {
+    var band = LEVEL_BAND[it.level] || 'aucune', rank = it.rank || (i + 1);
+    return { rank: rank, title: it.id.replace(/(^|\s)\S/g, function(ch) { return ch.toUpperCase(); }), issue: '', points: it.points, sharePct: 100 * it.points / (x.total || 1),
+      band: band, bandLabel: band === 'aucune' ? '' : T('alertes.level_short.' + it.level), trend: stripHtml(trendHtml(x.prevRanks[it.id], rank, limit, T, u.escapeHtml)).split('/')[0].trim(),
+      blocks: it.blocks, media: [] };
+  });
+  return { type: 'objets', region: x.country, range: cfg.range, offset: cfg.offset, lang: lang, is24h: cfg.range === '24h', hot: hot, final: cfg.offset < 0,
+    period: u.navLabel(cfg.range, cfg.offset, lang, T), sub: u.navSub(cfg.range, cfg.offset, lang, T),
+    status: T('classement.' + (hot ? 'hot20_' : '') + (cfg.offset < 0 ? 'status_final' : 'status_live')),
+    nAll: x.rows.length, totalPoints: x.total || 0, rows: rows, slug: u.periodSlug(cfg.range, cfg.offset) };
+}
 function download() {
   if (!lastExport) return;
   var A = window.RadarAune, cfg = A.cfg, u = A.util, T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang;
@@ -178,5 +195,5 @@ function download() {
   });
   u.csvFile(headers, rows, 'radarplus_objets_' + x.country + '_' + u.periodSlug(cfg.range, cfg.offset) + '.csv', lang, T);
 }
-window.RadarObjets = { render: render, load: load, download: download };
+window.RadarObjets = { render: render, load: load, download: download, exportData: exportData };
 })();

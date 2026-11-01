@@ -687,7 +687,8 @@
   // Clic sur l'événement : un des médias au hasard (comme la Vitrine).
   // Vitesse constante et lisible ; seule la couleur du bandeau change (niveau
   // le plus élevé parmi les événements affichés).
-  var EVENT_BAND_TO_LEVEL = { elevee: 'eleve', tres_elevee: 'tres_eleve', extreme: 'extreme' };
+  // Seules les Unes très élevées et extrêmes font une alerte ; « élevée » est trop fréquente (Adrien, 31 oct. 2026).
+  var EVENT_BAND_TO_LEVEL = { tres_elevee: 'tres_eleve', extreme: 'extreme' };
   var EVENT_BAR_PX_PER_SEC = 40;
   var EVENT_BAR_MAX_MEDIA = 6;
 

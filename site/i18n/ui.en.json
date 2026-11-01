@@ -682,7 +682,29 @@
     "status_live": "Ranking in progress",
     "hot20_status_final": "Final Hot 20",
     "hot20_status_live": "Hot 20 in progress",
-    "more": "Show {n} more ({left} left)"
+    "more": "Show {n} more ({left} left)",
+    "png": {
+      "download": "Download (PNG)",
+      "tip": "Official image of the displayed ranking, ready to share",
+      "title_events_hot": "Events Hot 20",
+      "title_events": "Events ranking",
+      "title_objects_hot": "Objects Hot 20",
+      "title_objects": "Objects ranking",
+      "generated": "Image generated on {date}",
+      "pts": "pts",
+      "stat_stories": "stories ranked",
+      "stat_objects": "objects ranked",
+      "stat_theme": "dominant theme · {pct}% of top 20 points",
+      "stat_media": "outlets on the front page (top 20)",
+      "stat_top3": "share of the top 3 in the radar",
+      "stat_top3_obj": "share of the top 3 in the radar",
+      "stat_points": "points summed, all objects",
+      "foot_method": "Radar+ saliency index · how it is computed: radarplus.org/indices",
+      "foot_reuse": "Free to reuse with the mention \"Radar+ (radarplus.org)\".",
+      "foot_data": "Data: major media front pages photographed every ten minutes · full ranking and CSV: radarplus.org/classement",
+      "foot_source": "© CLESSN · Université Laval",
+      "foot_scan": "See the ranking online"
+    }
   },
   "csv": {
     "rank": "rank",

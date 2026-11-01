@@ -830,6 +830,29 @@ function auneEventAt(region, sid, key) {
   return null;
 }
 function auneEventUrl(ev) { return ev ? ((ev.articles && ev.articles[0] && ev.articles[0].url) || ev.url || '') : ''; }
+// Données du classement affiché pour l'image officielle (assets/js/classement-png.js) : les N premiers
+// rangs avec leur étiquette, leur mouvement et leurs médias, la période, le statut, les totaux.
+function stripHtml(h) { var d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); }
+function exportData(n) {
+  if (cfg.type === 'objets') return (window.RadarObjets && window.RadarObjets.exportData) ? window.RadarObjets.exportData(n) : null;
+  if (!lastExport) return null;
+  var T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang, region = x.region;
+  var hot = ['week', 'month', 'year'].indexOf(cfg.range) !== -1;
+  var prevStart = x.is24h ? aunePrevEditionStart() : aunePrevWindow(cfg.range)[0];
+  var rows = x.rows.slice(0, n || 20).map(function(c, i) {
+    var band = x.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
+    var media = [];
+    auneHeadlines(c, x.byStory && x.byStory[c.storyline], 50).forEach(function(a) { if (a.media_id && media.indexOf(a.media_id) === -1) media.push(a.media_id); });
+    return { rank: c.rank || (i + 1), title: c.title, issue: auneIssue(c, lang), points: c.points || 0, sharePct: c.sharePct || 0,
+      band: band, bandLabel: T('aune.band.' + band), trend: stripHtml(auneTrendHtml(c, (c.rank || (i + 1)) - 1, region, cfg.range, x.prevRanks || {}, prevStart, T)).split('/')[0].trim(),
+      peak: c.peak || 0, media: media };
+  });
+  return { type: 'evenements', region: region, range: cfg.range, offset: cfg.offset, lang: lang, is24h: x.is24h, hot: hot, final: cfg.offset < 0,
+    period: auneNavLabel(cfg.range, cfg.offset, lang, T), sub: auneNavSub(cfg.range, cfg.offset, lang, T),
+    status: T('classement.' + (hot ? 'hot20_' : '') + (cfg.offset < 0 ? 'status_final' : 'status_live')),
+    nAll: x.rows.length, totalPoints: x.rows.reduce(function(m, c) { return m + (c.points || 0); }, 0), rows: rows,
+    slug: periodSlug(cfg.range, cfg.offset) };
+}
 function downloadCsv() {
   if (cfg.type === 'objets') { if (window.RadarObjets) window.RadarObjets.download(); return; }
   if (!lastExport) return;
@@ -902,7 +925,7 @@ function init(opts) {
       .catch(function(e) { console.warn('La Une des Unes : événements indisponibles', e); renderALaUne(); });
   }
 }
-window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, cfg: cfg,
+window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, exportData: exportData, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
   util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, when: auneWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();

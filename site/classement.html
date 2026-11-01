@@ -105,6 +105,7 @@
     </div>
     <input class="cl-search" id="cl-search" type="search" data-i18n-placeholder="classement.search_placeholder" placeholder="Filtrer : un mot du titre ou du thème" autocomplete="off">
     <button type="button" class="cl-download" id="cl-download" data-i18n="classement.download" data-i18n-title="classement.download_tip" title="Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel">Télécharger (CSV)</button>
+    <button type="button" class="cl-download" id="cl-download-png" data-i18n="classement.png.download" data-i18n-title="classement.png.tip" title="Image officielle du classement affiché, prête à partager">Télécharger (PNG)</button>
   </div>
   <div class="aune-grid view-list" id="aune-grid"></div>
   <!-- « Voir plus » : +50 rangs par clic, jusqu'au bout de la liste ; le CSV a toujours tout (Adrien, 31 oct. 2026) -->
@@ -129,11 +130,14 @@
 <script src="./assets/js/shared-ticker.js"></script>
 <script src="./assets/js/aune.js"></script>
 <script src="./assets/js/objets.js"></script>
+  <script src="./assets/js/vendor/qrcode.js"></script>
+  <script src="./assets/js/classement-png.js"></script>
 <script>
 (function() {
   // Vue et région depuis l'adresse (liens « Voir tout » de l'accueil) : ?range=week&country=CAN
   var q = new URLSearchParams(window.location.search);
   var range = q.get('range'), country = q.get('country'), type = q.get('type') === 'objets' ? 'objets' : 'evenements';
+  var offset = Math.min(0, parseInt(q.get('offset'), 10) || 0); // ?offset=-1 : la période précédente (code QR de l'image officielle)
   var tabs = document.getElementById('aune-tabs'), countries = document.getElementById('aune-country-tabs');
   if (range && tabs.querySelector('[data-range="' + range + '"]')) {
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.range === range); });
@@ -147,7 +151,7 @@
     proportionalMax: 0, // jamais de hauteur proportionnelle ni d'illustration : liste serrée
     searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav', table: true, moreId: 'cl-more',
     subtitleKeys: 'classement.range_sub.',
-    range: range, country: country, type: type
+    range: range, country: country, type: type, offset: offset
   });
   // Événements ou objets : même grille, même navigateur, même filtre ; le titre et la
   // région (États-Unis seulement pour les objets) suivent.
@@ -165,6 +169,7 @@
   }
   typeBtns.forEach(function(b) { b.addEventListener('click', function() { applyType(b.dataset.type); }); });
   document.getElementById('cl-download').addEventListener('click', function() { window.RadarAune.download(); });
+  document.getElementById('cl-download-png').addEventListener('click', function() { window.RadarClassementPng.download(); });
   if (type === 'objets') applyType('objets');
   document.addEventListener('i18n:applied', function() { if (accent) accent.textContent = window.t(accent.getAttribute('data-i18n')); });
 })();
