@@ -255,7 +255,9 @@
     "ev_facts": "The event",
     "ev_best": "Best edition: {pts} points ({when})",
     "ev_linked": "Linked objects (shared articles)",
-    "ev_articles": "Articles"
+    "ev_articles": "Articles",
+    "edition": "edition",
+    "editions": "editions"
   },
   "evolution": {
     "title": "Evolution",
