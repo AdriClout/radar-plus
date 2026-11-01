@@ -266,6 +266,10 @@ function render(sec, data) {
   var evFirst = eventAt(data.days, st.first_key), evPeak = eventAt(data.days, st.peak_key), evLast = eventAt(data.days, st.last_key);
   if (evFirst) evFirst.period_key = st.first_key; if (evPeak) evPeak.period_key = st.peak_key; if (evLast) evLast.period_key = st.last_key;
   var when = function(k, now) { return u.editionWhen ? u.editionWhen(k, L, now) : u.when(k, L); };
+  // Titre en tête : celui de la meilleure édition (Adrien, 1er nov. 2026) ; le dernier titre en sous-ligne.
+  var evBest = eventsAt(data.days, best.key);
+  var bestTitle = (evBest.length ? evBest.slice().sort(function(a, b) { return (b.index || 0) - (a.index || 0); })[0].title : '') || st.title_peak || st.title_last || st.title || sid;
+  var lastTitle = st.title_last || st.title || '';
   var b24 = live ? band(th.sum24h, cur) : 'aucune', bPeak = band(th.sum24h, peak24.v), bBest = band(th.block, best.v);
   var B = function(v) { return '<b>' + esc(v) + '</b>'; };
   var story = T('fiche.story_since', { since: esc(when(firstKey)), editions: B(plural(sKeys.length, 'fiche.n_edition', 'fiche.n_editions')), days: B(plural(nDays, 'fiche.n_day', 'fiche.n_days')), media: B(plural(mediaList.length, 'fiche.n_medium', 'fiche.n_media')) }) + ' ' +
@@ -277,8 +281,8 @@ function render(sec, data) {
   };
   var html = '<div class="ev-head">' +
       '<div class="ev-top">' + (issue ? '<span class="ev-issue">' + esc(issue) + '</span>' : '') + '<span class="ev-region">' + esc(T('fiche.region_' + region)) + '</span></div>' +
-      '<h2 class="ev-title">' + esc(st.title_last || st.title || sid) + '</h2>' +
-      (st.title_peak && st.title_peak !== (st.title_last || st.title) ? '<p class="ev-alt">' + esc(T('fiche.title_peak')) + ' : ' + esc(st.title_peak) + '</p>' : '') +
+      '<h2 class="ev-title">' + esc(bestTitle) + '</h2>' +
+      (lastTitle && lastTitle !== bestTitle ? '<p class="ev-alt">' + esc(T('fiche.title_last')) + ' : ' + esc(lastTitle) + '</p>' : '') +
     '</div>' +
     '<div class="ev-hero">' +
       '<a class="ev-hero-num" href="./classement.html?range=year&country=' + region + '">' +

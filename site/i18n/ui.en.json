@@ -239,7 +239,23 @@
     "loading_text": "initializing · constellation",
     "tooltip_saliency": "saliency",
     "tooltip_mentions": "mentions",
-    "tooltip_articles": "articles"
+    "tooltip_articles": "articles",
+    "mode_label": "Show",
+    "mode_objects": "Objects",
+    "mode_events": "Events",
+    "events_hint": "Large stars: events, coloured by level. Small stars: the objects linking them, through shared articles.",
+    "events_list_label": "Events",
+    "event": "event",
+    "events": "events",
+    "no_events": "No event in this period.",
+    "no_events_usa": "No events for the United States (two-outlet panel).",
+    "loading_events": "Loading events…",
+    "ev_points": "cumulative points",
+    "ev_fiche": "See the event card →",
+    "ev_facts": "The event",
+    "ev_best": "Best edition: {pts} points ({when})",
+    "ev_linked": "Linked objects (shared articles)",
+    "ev_articles": "Articles"
   },
   "evolution": {
     "title": "Evolution",
@@ -863,7 +879,8 @@
     "legend_line": "24h index",
     "tip_edition": "this edition",
     "tip_24h": "24h index",
-    "tip_absent": "Not on the front page this edition"
+    "tip_absent": "Not on the front page this edition",
+    "title_last": "Latest headline"
   },
   "stats": {
     "lead": "An object or an event: its path through the front pages, edition by edition."

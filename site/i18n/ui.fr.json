@@ -239,7 +239,23 @@
     "loading_text": "initialisation · constellation",
     "tooltip_saliency": "saillance",
     "tooltip_mentions": "mentions",
-    "tooltip_articles": "articles"
+    "tooltip_articles": "articles",
+    "mode_label": "Afficher",
+    "mode_objects": "Objets",
+    "mode_events": "Événements",
+    "events_hint": "Grosses étoiles : les événements, colorés selon leur niveau. Petits astres : les objets qui les relient, par leurs articles communs.",
+    "events_list_label": "Événements",
+    "event": "événement",
+    "events": "événements",
+    "no_events": "Aucun événement pour ce créneau.",
+    "no_events_usa": "Pas d'événements pour les États-Unis (panel de deux médias).",
+    "loading_events": "Chargement des événements…",
+    "ev_points": "points cumulés",
+    "ev_fiche": "Voir la fiche de l'événement →",
+    "ev_facts": "L'événement",
+    "ev_best": "Meilleure édition : {pts} points ({when})",
+    "ev_linked": "Objets reliés (articles communs)",
+    "ev_articles": "Articles"
   },
   "evolution": {
     "title": "Évolution",
@@ -863,7 +879,8 @@
     "legend_line": "indice 24h",
     "tip_edition": "à cette édition",
     "tip_24h": "indice 24h",
-    "tip_absent": "Pas en Une à cette édition"
+    "tip_absent": "Pas en Une à cette édition",
+    "title_last": "Dernier titre"
   },
   "stats": {
     "lead": "Un objet ou un événement : son parcours dans les Unes, édition par édition."
