@@ -72,6 +72,14 @@
     .cl-more { text-align: center; margin: 22px 0 8px; }
     .aune-tab.cl-tab-elec { color: #ffd98a; } .aune-tab.cl-tab-elec.active { background: rgba(255,200,87,0.18); color: #ffe7b0; }
     .aune-tabs { flex-wrap: wrap; justify-content: flex-end; }
+    /* Filtres à droite du titre ; périodes sur deux lignes (4 + 3) dans le même cadre (Adrien, 31 oct. 2026). */
+    @media (min-width: 1000px) {
+      .aune-head { flex-wrap: nowrap; align-items: flex-start; }
+      .aune-head > div:first-child { flex: 1 1 auto; }
+      .aune-head .aune-controls { flex: 0 0 auto; }
+      .aune-tabs { display: grid; grid-template-columns: repeat(4, auto); justify-content: end; }
+      .aune-tabs .aune-tab { text-align: center; }
+    }
     .cl-custom { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(10,18,50,0.7); font-family: var(--grotesk); font-size: 13px; color: var(--muted); }
     .cl-custom[hidden] { display: none; }
     .cl-custom input { font-family: var(--grotesk); font-size: 13px; color: #e8f0ff; background: rgba(5,10,30,0.9); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; color-scheme: dark; }
