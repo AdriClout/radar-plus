@@ -1778,7 +1778,10 @@ function renderHot20() {
     prevNodes.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; prevIds[n.id] = true; });
   }
 
-  /* Consecutive slots: count how many recent slots each entity appears in top 20 */
+  /* Série : nombre de périodes consécutives (en remontant depuis celle-ci) où l'objet est dans
+     le top 10 de la période, le classement affiché ; les données gardent 30 objets par bloc,
+     « présent dans les données » ne voulait rien dire pour le lecteur (Adrien, 31 oct. 2026). */
+  var STREAK_TOP = 10;
   var streaks = {};
   nodes.forEach(function(node) {
     var count = 0;
@@ -1791,7 +1794,8 @@ function renderHot20() {
       } else {
         sNodes = aggregateNodes(countryGraphs, s.periodKeys);
       }
-      var found = sNodes.some(function(n) { return n.id === node.id; });
+      var top = sNodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }).slice(0, STREAK_TOP);
+      var found = top.some(function(n) { return n.id === node.id; });
       if (found) count++;
       else break;
     }
@@ -1951,7 +1955,7 @@ function renderHot20() {
       var streakHtml = '';
       if (streak > 1) {
         var streakKey = streak > 1 ? 'homepage.streak_suffix_many' : 'homepage.streak_suffix_one';
-        streakHtml = '<span class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">\uD83D\uDCCD ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</span>';
+        streakHtml = '<span class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp, top: STREAK_TOP })) + '">\uD83D\uDCCD ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp, top: STREAK_TOP })) + '</span>';
       }
 
       /* Rank class */
