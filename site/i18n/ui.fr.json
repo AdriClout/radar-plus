@@ -531,7 +531,7 @@
       "year": "Cette année",
       "today": "Aujourd'hui",
       "elecqc2026": "Élections QC 2026",
-      "custom": "Période…"
+      "custom": "Période personnalisée"
     },
     "range_sub": {
       "24h": "Les trois histoires qui dominent les Unes des 24 dernières heures.",
@@ -556,7 +556,7 @@
       "month": "Points gagnés ce mois-ci (somme des éditions).",
       "year": "Points gagnés cette année (somme des éditions).",
       "today": "Points gagnés depuis minuit (somme des éditions).",
-      "elecqc2026": "Points cumulés par édition pendant la campagne électorale, du 27 août au 5 octobre 2026.",
+      "elecqc2026": "Points cumulés par édition pendant la campagne électorale, du 27 août au 6 octobre 2026 (lendemain du scrutin).",
       "custom": "Points cumulés par édition sur la période choisie."
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
@@ -678,7 +678,14 @@
       "elecqc2026": "{pct} % du radar pendant la campagne",
       "custom": "{pct} % du radar sur la période"
     },
-    "elec_label": "Élections québécoises 2026"
+    "elec_label": "Élections québécoises 2026",
+    "empty_period": "Aucune histoire en Une pour cette période.",
+    "fallback": {
+      "today": "Pas encore d'édition publiée aujourd'hui : voici les trois histoires qui ont dominé les Unes hier.",
+      "week": "Pas encore d'édition cette semaine : voici les trois histoires qui ont dominé les Unes la semaine dernière.",
+      "month": "Pas encore d'édition ce mois-ci : voici les trois histoires qui ont dominé les Unes le mois dernier.",
+      "year": "Pas encore d'édition cette année : voici les trois histoires qui ont dominé les Unes l'an dernier."
+    }
   },
   "article_panel": {
     "current": "Période courante",
@@ -696,7 +703,7 @@
       "week": "Le Hot 20 de la semaine : les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
       "month": "Le Hot 20 du mois : les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
       "year": "Le Hot 20 de l'année : les histoires qui ont fait les Unes cette année, classées par points cumulés par édition.",
-      "elecqc2026": "Le Hot 20 de la campagne électorale québécoise 2026 : du déclenchement (27 août) au scrutin (5 octobre), classé par points cumulés par édition.",
+      "elecqc2026": "Le Hot 20 de la campagne électorale québécoise 2026 : du déclenchement (27 août) au lendemain du scrutin (6 octobre), classé par points cumulés par édition.",
       "custom": "Les histoires de la période choisie, classées par points cumulés par édition."
     },
     "title_accent_objects": "des objets",
@@ -714,7 +721,7 @@
       "week": "Le Hot 20 officiel de la semaine : les sujets, acteurs et lieux en Une depuis lundi, classés par points cumulés par édition.",
       "month": "Le Hot 20 du mois : les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
       "year": "Le Hot 20 de l'année : les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition.",
-      "elecqc2026": "Le Hot 20 des sujets, acteurs et lieux de la campagne électorale québécoise 2026, du 27 août au 5 octobre.",
+      "elecqc2026": "Le Hot 20 des sujets, acteurs et lieux de la campagne électorale québécoise 2026, du 27 août au lendemain du scrutin (6 octobre).",
       "custom": "Les sujets, acteurs et lieux de la période choisie, classés par points cumulés par édition."
     },
     "download": "Télécharger (CSV)",
@@ -725,8 +732,8 @@
     "nav_sub_cumul": "Saillance cumulée depuis le {date}",
     "status_final": "Classement final",
     "status_live": "Classement en cours",
-    "hot20_status_final": "Hot 20 final",
-    "hot20_status_live": "Hot 20 en cours",
+    "hot20_status_final": "Classement Hot 20 final",
+    "hot20_status_live": "Classement Hot 20 en cours",
     "more": "Voir {n} de plus ({left} restantes)",
     "png": {
       "download": "Télécharger (PNG)",
@@ -750,7 +757,7 @@
       "foot_source": "© CLESSN · Université Laval",
       "foot_scan": "Voir le classement en ligne"
     },
-    "nav_sub_elec": "Du déclenchement (27 août) au scrutin (5 octobre), soirée électorale comprise",
+    "nav_sub_elec": "Du déclenchement (27 août) au lendemain du scrutin (6 octobre)",
     "nav_sub_custom": "Points cumulés du {from} au {to} · {days} jours",
     "custom_from": "Du",
     "custom_to": "au",

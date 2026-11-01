@@ -228,6 +228,9 @@
 .aune-table-outer.has-more .aune-table-arrow { display: block; }
 .aune-table-outer.has-more::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 70px; pointer-events: none; background: linear-gradient(90deg, rgba(2,0,16,0), rgba(2,0,16,0.9)); }
 .aune-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+/* En-tête qui suit le défilement (voir auneStickyHead) : fond opaque pour couvrir les rangées. */
+.aune-table thead { position: relative; z-index: 4; }
+.aune-table thead.stuck th { background: rgba(3,6,22,0.96); box-shadow: 0 6px 12px -6px rgba(0,0,0,0.7); padding-top: 8px; }
 .aune-table { width: 100%; min-width: 1320px; border-collapse: separate; border-spacing: 0; font-size: 13px; }
 /* Dans le tableau du Classement, la place ne manque pas : étiquette sur une seule ligne,
    « ACTUELLEMENT · SAILLANCE ÉLEVÉE (i) » (Adrien, 31 oct. 2026). */

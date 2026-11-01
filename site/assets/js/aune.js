@@ -74,9 +74,9 @@ function auneDayStart(t) { var q = mtlParts(new Date(t)); return mtlMidnightUtc(
 // Fenêtre [début, fin[ en ms UTC d'une vue, décalée de `offset` périodes (0 = courante,
 // −1 = précédente…). Les bornes suivent l'heure de Montréal (jour, lundi, 1er du mois).
 // Périodes FIXES (Classement) : la campagne électorale québécoise 2026, du déclenchement (jeudi 27 août)
-// au scrutin (lundi 5 octobre) soirée électorale comprise, et la période choisie au calendrier.
+// au lendemain du scrutin (mardi 6 octobre : résultats et réactions ; Adrien, 1er nov. 2026), et la période choisie au calendrier.
 // offset −1 = la période de même durée juste avant (sert au mouvement), comme les autres vues.
-var AUNE_FIXED = { elecqc2026: ['2026-08-27', '2026-10-05'], custom: null };
+var AUNE_FIXED = { elecqc2026: ['2026-08-27', '2026-10-06'], custom: null };
 function auneIsFixed(range) { return Object.prototype.hasOwnProperty.call(AUNE_FIXED, range); }
 function auneFixedSpan(range) {
   var span = range === 'custom' ? (cfg.customFrom && cfg.customTo ? [cfg.customFrom, cfg.customTo] : null) : AUNE_FIXED[range];
@@ -91,7 +91,13 @@ function auneIsHot(range, offset) {
   if (range !== 'custom') return false;
   var w = auneWindow(range, offset || 0); return w[1] - w[0] >= 7 * 86400e3 - 3 * 3600e3;
 }
-function auneWindow(range, offset) {
+// Une journée regroupe les éditions qui SORTENT ce jour-là, de l'édition de minuit à celle de 20h,
+// comme on les nomme partout (Adrien, 1er nov. 2026). Les clés se comparent par leur début de bloc,
+// 5 h avant la sortie : les fenêtres calendaires sont donc décalées de −5 h. Sans ce décalage, la
+// première édition d'un jour n'arrivait qu'à 8h et « Aujourd'hui » restait vide toute la nuit.
+var AUNE_EDITION_LAG = 5 * 3600e3;
+function auneWindow(range, offset) { var w = auneWindowCal(range, offset); return range === '24h' ? w : [w[0] - AUNE_EDITION_LAG, w[1] - AUNE_EDITION_LAG]; }
+function auneWindowCal(range, offset) {
   offset = offset || 0;
   var now = Date.now(), p = mtlParts(new Date(now)), s, e;
   if (auneIsFixed(range)) {
@@ -727,6 +733,23 @@ function auneTableScrollCue() {
     if (arrow) arrow.addEventListener('click', function() { wrap.scrollBy({ left: Math.max(300, wrap.clientWidth * 0.6), behavior: 'smooth' }); });
     wrap.addEventListener('scroll', update); window.addEventListener('resize', update); update();
   });
+  auneStickyHead();
+}
+// En-tête du tableau collé sous le menu quand on descend (Adrien, 1er nov. 2026). Le cadre défile à
+// l'horizontale, ce qui neutralise position: sticky ; on déplace donc l'en-tête au défilement.
+var auneStickyBound = false;
+function auneStickyHead() {
+  var apply = function() {
+    var table = document.querySelector('.aune-table'); if (!table) return;
+    var head = table.tHead; if (!head) return;
+    var bar = document.getElementById('site-bar'), top = bar ? Math.max(0, bar.getBoundingClientRect().bottom) : 0;
+    var r = table.getBoundingClientRect(), hh = head.getBoundingClientRect().height;
+    var off = Math.max(0, Math.min(top - r.top, r.height - hh * 2));
+    head.style.transform = off > 0 ? 'translateY(' + off.toFixed(1) + 'px)' : '';
+    head.classList.toggle('stuck', off > 0);
+  };
+  if (!auneStickyBound) { auneStickyBound = true; window.addEventListener('scroll', apply, { passive: true }); window.addEventListener('resize', apply); }
+  apply();
 }
 function renderALaUne() {
   if (cfg.type === 'objets' && window.RadarObjets) { window.RadarObjets.render(); return; }
@@ -745,7 +768,7 @@ function renderALaUne() {
     return;
   }
   var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null;
-  sub.textContent = T(cfg.subtitleKeys + cfg.range);
+  sub.textContent = (cfg.todayFallback && cfg.offset === -1) ? T('aune.fallback.' + cfg.range) : T(cfg.subtitleKeys + cfg.range);
   var seeAll = document.getElementById('aune-see-all');
   if (seeAll) seeAll.href = './classement.html?range=' + encodeURIComponent(cfg.range) + '&country=' + encodeURIComponent(region);
   var foot = document.getElementById(cfg.footId);
@@ -800,8 +823,11 @@ function renderALaUne() {
                   : auneRanking(region, cfg.range, 1e9).map(function(it) { return it.points; });
   var total = all.reduce(function(m, v) { return m + v; }, 0) || 1;
   full.forEach(function(it) { it.sharePct = 100 * it.points / total; it.barPct = Math.max(1, Math.round(it.sharePct)); });
+  // Accueil : au tout début d'une période (minuit, lundi, le 1er), avant sa première édition, on montre la
+  // période précédente en le disant, plutôt qu'un module vide.
+  if (!items.length && ['today', 'week', 'month', 'year'].indexOf(cfg.range) !== -1 && cfg.offset === 0 && !cfg.navId && !q) { cfg.offset = -1; cfg.todayFallback = true; renderALaUne(); return; }
   if (!items.length) {
-    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T('aune.empty')) + '</div>';
+    grid.innerHTML = '<div class="aune-empty">' + escapeHtml(T(cfg.range === '24h' ? 'aune.empty' : 'aune.empty_period')) + '</div>';
     return;
   }
   var prevStart = is24h ? aunePrevEditionStart() : aunePrevWindow(cfg.range)[0];
@@ -972,7 +998,7 @@ function init(opts) {
     if (btn.dataset.range === 'custom' && !(cfg.customFrom && cfg.customTo)) return; // le formulaire de dates prend la main
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    cfg.range = btn.dataset.range; cfg.offset = 0; cfg.extra = 0;
+    cfg.range = btn.dataset.range; cfg.offset = 0; cfg.extra = 0; cfg.todayFallback = false;
     renderALaUne();
   });
   if (countries) countries.addEventListener('click', function(e) {

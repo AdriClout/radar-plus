@@ -531,7 +531,7 @@
       "year": "This year",
       "today": "Today",
       "elecqc2026": "QC election 2026",
-      "custom": "Custom…"
+      "custom": "Custom period"
     },
     "range_sub": {
       "24h": "The three stories dominating the front pages over the last 24 hours.",
@@ -556,7 +556,7 @@
       "month": "Points gained this month (sum of editions).",
       "year": "Points gained this year (sum of editions).",
       "today": "Points gained since midnight (sum of editions).",
-      "elecqc2026": "Points summed by edition during the election campaign, August 27 to October 5, 2026.",
+      "elecqc2026": "Points summed by edition during the election campaign, August 27 to October 6, 2026 (the day after the vote).",
       "custom": "Points summed by edition over the chosen period."
     },
     "open_random": "Open one of the outlets that covered this front page (at random)",
@@ -678,7 +678,14 @@
       "elecqc2026": "{pct}% of the radar during the campaign",
       "custom": "{pct}% of the radar over the period"
     },
-    "elec_label": "2026 Quebec election"
+    "elec_label": "2026 Quebec election",
+    "empty_period": "No story on the front pages for this period.",
+    "fallback": {
+      "today": "No edition published yet today: here are the three stories that dominated the front pages yesterday.",
+      "week": "No edition yet this week: here are the three stories that dominated the front pages last week.",
+      "month": "No edition yet this month: here are the three stories that dominated the front pages last month.",
+      "year": "No edition yet this year: here are the three stories that dominated the front pages last year."
+    }
   },
   "article_panel": {
     "current": "Current period",
@@ -696,7 +703,7 @@
       "week": "This week's Hot 20: the stories that made the front pages since Monday, ranked by points summed by edition.",
       "month": "This month's Hot 20: the stories that made the front pages this month, ranked by points summed by edition.",
       "year": "This year's Hot 20: the stories that made the front pages this year, ranked by points summed by edition.",
-      "elecqc2026": "The Hot 20 of the 2026 Quebec election campaign: from the writ (August 27) to election day (October 5), ranked by points summed by edition.",
+      "elecqc2026": "The Hot 20 of the 2026 Quebec election campaign: from the writ (August 27) to the day after the vote (October 6), ranked by points summed by edition.",
       "custom": "The stories of the chosen period, ranked by points summed by edition."
     },
     "title_accent_objects": "of objects",
@@ -714,7 +721,7 @@
       "week": "The official Hot 20 of the week: the topics, actors and places on the front pages since Monday, ranked by points summed by edition.",
       "month": "This month's Hot 20: the topics, actors and places on the front pages this month, ranked by points summed by edition.",
       "year": "This year's Hot 20: the topics, actors and places on the front pages this year, ranked by points summed by edition.",
-      "elecqc2026": "The Hot 20 topics, actors and places of the 2026 Quebec election campaign, August 27 to October 5.",
+      "elecqc2026": "The Hot 20 topics, actors and places of the 2026 Quebec election campaign, August 27 to the day after the vote (October 6).",
       "custom": "The topics, actors and places of the chosen period, ranked by points summed by edition."
     },
     "download": "Download (CSV)",
@@ -725,8 +732,8 @@
     "nav_sub_cumul": "Salience summed since {date}",
     "status_final": "Final ranking",
     "status_live": "Ranking in progress",
-    "hot20_status_final": "Final Hot 20",
-    "hot20_status_live": "Hot 20 in progress",
+    "hot20_status_final": "Final Hot 20 ranking",
+    "hot20_status_live": "Hot 20 ranking in progress",
     "more": "Show {n} more ({left} left)",
     "png": {
       "download": "Download (PNG)",
@@ -750,7 +757,7 @@
       "foot_source": "© CLESSN · Université Laval",
       "foot_scan": "See the ranking online"
     },
-    "nav_sub_elec": "From the writ (August 27) to election day (October 5), election night included",
+    "nav_sub_elec": "From the writ (August 27) to the day after the vote (October 6)",
     "nav_sub_custom": "Points summed from {from} to {to} · {days} days",
     "custom_from": "From",
     "custom_to": "to",
