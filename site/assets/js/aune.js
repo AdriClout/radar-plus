@@ -375,6 +375,7 @@ function auneNavLabel(range, offset, lang, T) {
 }
 function auneNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 function auneQuery() { var el = cfg.searchId ? document.getElementById(cfg.searchId) : null; return el ? auneNorm(el.value.trim()) : ''; }
+function auneFicheUrl(c, region) { return './statistiques.html?evenement=' + encodeURIComponent(c.storyline || '') + '&region=' + encodeURIComponent(region || 'QC'); }
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
 function auneHeadlines(c, ev, max) {
   var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, max) : [];
@@ -419,7 +420,8 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   var issue = auneIssue(c, lang);
   var ev = byStory && byStory[c.storyline];
   var urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
-  var titleHtml = '<h3 class="aune-row-title' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' + escapeHtml(c.title) + '</h3>';
+  // Le titre mène à la fiche de l'événement (Statistiques) ; les puces, aux articles.
+  var titleHtml = '<h3 class="aune-row-title"><a href="' + auneFicheUrl(c, region) + '">' + escapeHtml(c.title) + '</a></h3>';
   var titleTip = c.titleFrom && c.titleKey
     ? ' ' + T('aune.title_from.' + c.titleFrom, { label: auneBlockLabel(c.titleKey, lang) })
     : '';
@@ -487,7 +489,7 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
       '<td class="rank">' + (i + 1) + '</td>' +
       '<td class="center">' + auneTrendHtml(c, i, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
       '<td class="subject"><span class="aune-band band-' + esc(band) + '">' + esc(bandLabel) + '</span>' +
-        '<span class="aune-row-title' + (urls.length ? ' aune-clickable' : '') + '"' + rnd + '>' + esc(c.title) + '</span>' +
+        '<span class="aune-row-title"><a href="' + auneFicheUrl(c, region) + '">' + esc(c.title) + '</a></span>' +
         '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</td>' +
       '<td class="num strong">' + auneNumUnit(c.points.toFixed(1), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
       (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + auneNumUnit((delta > 0 ? '+' : '') + delta.toFixed(1), T('aune.points')) + '</td>'
@@ -744,5 +746,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { window: auneWindow, navLabel: auneNavLabel, when: auneWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();
