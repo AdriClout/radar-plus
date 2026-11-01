@@ -495,11 +495,11 @@
       "today": "Aujourd'hui"
     },
     "range_sub": {
-      "24h": "Les cinq histoires qui dominent les Unes des 24 dernières heures.",
+      "24h": "Les trois histoires qui dominent les Unes des 24 dernières heures.",
       "week": "Le top 10 depuis lundi (points cumulés par édition).",
       "month": "Le top 10 du mois (points cumulés par édition).",
       "year": "Le top 10 de l'année (points cumulés par édition).",
-      "today": "Les cinq histoires qui dominent les Unes depuis minuit (points cumulés par édition)."
+      "today": "Les trois histoires qui dominent les Unes depuis minuit (points cumulés par édition)."
     },
     "meta_range": "{blocks} blocs en Une · {points} points",
     "blocks": "{blocks} blocs",
@@ -534,8 +534,8 @@
     "trend_up_tip_24h": "Gagne {n} rang(s) : {prev}e à l'édition précédente, {now}e maintenant",
     "trend_down_tip_24h": "Perd {n} rang(s) : {prev}e à l'édition précédente, {now}e maintenant",
     "trend_stable_tip_24h": "Même rang qu'à l'édition précédente ({now}e)",
-    "trend_new_tip_24h": "Nouvelle histoire : absente du top 5 de l'édition précédente",
-    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top 5 de l'édition précédente",
+    "trend_new_tip_24h": "Nouvelle histoire : absente du top {n} de l'édition précédente",
+    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top {n} de l'édition précédente",
     "header_subject": "Saillance · sujet",
     "header_score24h": "Indice 24h · variation 4h",
     "header_points": "Points",

@@ -11,11 +11,11 @@
 // (décision d'Adrien, 31 oct. 2026 : plus de cartes). Fenêtres en heure de Montréal :
 //   Dernières heures (défaut) = la mesure de la Vitrine : cumul 24h glissant avec
 //   décroissance (sum24h / band24h de events/latest.json « current »), pour que la
-//   Une n° 1 soit la même que celle de la Vitrine (et son illustration). Top 5 ;
+//   Une n° 1 soit la même que celle de la Vitrine (et son illustration). Top 3 (Adrien, 31 oct. 2026) ;
 //   la hauteur de chaque rang est proportionnelle à son indice 24h ; la colonne
 //   « Variation 4h » = indice 24h courant moins celui de l'édition précédente (le
 //   bloc de 4h d'avant) ; le mouvement = rang à cette même édition précédente.
-//   Aujourd'hui (depuis minuit, top 5, décision d'Adrien du 31 oct.), Cette semaine
+//   Aujourd'hui (depuis minuit, top 3, décision d'Adrien du 31 oct.), Cette semaine
 //   (depuis lundi 0h), Ce mois-ci, Cette année (top 10) = points cumulés par édition ;
 //   classement = somme de l'indice des blocs de la fenêtre ; tag = bande du
 //   meilleur bloc (seuils Vitrine) ; mouvement = rang dans la fenêtre précédente.
@@ -25,13 +25,13 @@
 // et reste du Canada ; panel américain de 2 médias) : le bouton n'est pas offert,
 // le message « aune.usa » reste en garde-fou. Le module garde la même hauteur
 // quelle que soit la vue.
-// Réglages par page (RadarAune.init) : l'accueil = 5 rangs proportionnels pour les vues
+// Réglages par page (RadarAune.init) : l'accueil = 3 rangs proportionnels pour les vues
 // courtes, 10 rangs serrés pour les longues ; la page Classement = 50 rangs serrés
 // partout, avec un filtre de recherche.
 var cfg = {
   sectionId: 'aune', gridId: 'aune-grid', subtitleId: 'aune-subtitle', footId: 'aune-foot',
   tabsId: 'aune-tabs', countriesId: 'aune-country-tabs', searchId: null, countId: null,
-  limits: { '24h': 5, today: 5, week: 10, month: 10, year: 10 },
+  limits: { '24h': 3, today: 3, week: 10, month: 10, year: 10 },
   proportionalMax: 5,   // au plus N rangs : hauteur proportionnelle, illustration au rang 1
   range: '24h', country: 'QC', // sélecteur propre au module, indépendant de celui du Hot 20
   loadLatest: true,     // le module charge lui-même events/latest.json
@@ -278,9 +278,9 @@ function auneTrendHtml(c, i, region, range, prevRanks, prevStart, T) {
   // Absente du classement précédent : « Retour » si l'histoire existait déjà avant la période précédente, sinon « Nouveau ».
   var fk = auneFirstKey(region, c.storyline);
   if (fk && prevStart !== null && periodStartUtc(fk) < prevStart) {
-    return '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('aune.trend_return_tip' + sfx)) + '">' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
+    return '<span class="hot20-trend hot20-hint comeback" data-tip="' + escapeHtml(T('aune.trend_return_tip' + sfx, { n: limit })) + '">' + escapeHtml(T('homepage.trend_return_label')) + '</span>';
   }
-  return '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('aune.trend_new_tip' + sfx)) + '">' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
+  return '<span class="hot20-trend hot20-hint new" data-tip="' + escapeHtml(T('aune.trend_new_tip' + sfx, { n: limit })) + '">' + escapeHtml(T('homepage.trend_new_label')) + '</span>';
 }
 // Variation 4h (vue Dernières heures) : indice 24h courant moins celui de l'édition
 // précédente, affichée à côté de l'indice comme la hausse du Hot 20.

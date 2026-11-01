@@ -495,11 +495,11 @@
       "today": "Today"
     },
     "range_sub": {
-      "24h": "The five stories dominating the front pages over the last 24 hours.",
+      "24h": "The three stories dominating the front pages over the last 24 hours.",
       "week": "Top 10 since Monday (points summed by edition).",
       "month": "Top 10 of the month (points summed by edition).",
       "year": "Top 10 of the year (points summed by edition).",
-      "today": "The five stories dominating the front pages since midnight (points summed by edition)."
+      "today": "The three stories dominating the front pages since midnight (points summed by edition)."
     },
     "meta_range": "{blocks} blocks on front pages · {points} points",
     "blocks": "{blocks} blocks",
@@ -534,8 +534,8 @@
     "trend_up_tip_24h": "Up {n} rank(s): {prev} at the previous edition, {now} now",
     "trend_down_tip_24h": "Down {n} rank(s): {prev} at the previous edition, {now} now",
     "trend_stable_tip_24h": "Same rank as at the previous edition ({now})",
-    "trend_new_tip_24h": "New story: absent from the previous edition's top 5",
-    "trend_return_tip_24h": "Back: a story seen before, absent from the previous edition's top 5",
+    "trend_new_tip_24h": "New story: absent from the previous edition's top {n}",
+    "trend_return_tip_24h": "Back: a story seen before, absent from the previous edition's top {n}",
     "header_subject": "Salience · subject",
     "header_score24h": "24h index · 4h change",
     "header_points": "Points",

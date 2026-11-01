@@ -24,7 +24,7 @@
 .aune-section {
   position: relative; z-index: 1;
   max-width: 1040px; margin: 0 auto;
-  padding: 22px 28px 14px;
+  padding: 48px 28px 14px; /* de l'air au-dessus du titre (Adrien, 31 oct. 2026) */
   display: flex; flex-direction: column;
   /* Hauteur = l'écran moins le bandeau d'alertes (fixé, 32 px de marge du body), le menu
      (collant, en flux) et le bandeau « Dans le radar » fixé en bas. Plancher 640 px : en
@@ -143,7 +143,7 @@
 .aune-foot-links a:first-child { display: inline-block; font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
 .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
 @media (max-width: 760px) {
-  .aune-section { height: auto; padding: 16px 16px 24px; }
+  .aune-section { height: auto; padding: 28px 16px 24px; }
   .aune-head { flex-direction: column; align-items: flex-start; }
   .aune-controls { align-items: flex-start; }
   .aune-tabs { flex-wrap: wrap; }
