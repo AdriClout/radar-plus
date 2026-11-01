@@ -594,7 +594,8 @@
       "month": "prev. month",
       "year": "prev. year"
     },
-    "art_info": "Illustration credit"
+    "art_info": "Illustration credit",
+    "points_short": "pts"
   },
   "article_panel": {
     "current": "Current period",

@@ -292,7 +292,8 @@ function auneDeltaHtml(c, T) {
   var cls = d >= 0.05 ? 'up' : d <= -0.05 ? 'down' : 'stable';
   var txt = cls === 'stable' ? '0.0' : (d > 0 ? '+' : '&minus;') + Math.abs(d).toFixed(1);
   var tip = T('aune.delta_tip', { prev: prev.toFixed(1), now: c.points.toFixed(1) });
-  return '<span class="inc ' + cls + ' hot20-hint" data-tip="' + escapeHtml(tip) + '">' + txt + '</span>';
+  // L'unité suit toujours le chiffre (Adrien, 31 oct. 2026)
+  return '<span class="inc ' + cls + ' hot20-hint" data-tip="' + escapeHtml(tip) + '">' + txt + ' <span class="pts">' + escapeHtml(T('aune.points_short')) + '</span></span>';
 }
 function auneRanking24h(latest, limit) {
   var cur = (latest && latest.current) || [];
@@ -465,10 +466,10 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   var shareHtml = '<span class="unit hot20-hint" data-tip="' + escapeHtml(T('aune.share_tip')) + '">' + escapeHtml(T('aune.share_label', { pct: Math.round(c.sharePct || 0) })) + '</span>';
   var scoreHtml = c.is24h
     // Dernières heures : indice 24h de la Vitrine + variation depuis l'édition précédente
-    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + '</span>' + auneDeltaHtml(c, T)
+    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points')) + '</span>' + '</span>' + auneDeltaHtml(c, T)
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
-    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + '</span>';
+    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points')) + '</span>' + '</span>';
   var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T, latest) : '';
   var rank = c.rank || (i + 1);
   var cls = 'aune-row rank-' + rank + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');

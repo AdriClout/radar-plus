@@ -594,7 +594,8 @@
       "month": "mois préc.",
       "year": "an préc."
     },
-    "art_info": "Crédit de l'illustration"
+    "art_info": "Crédit de l'illustration",
+    "points_short": "pts"
   },
   "article_panel": {
     "current": "Période courante",
