@@ -90,7 +90,7 @@ function tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotal
     thTxt(T('csv.consec_of', { per: per }), 'num') + thTxt(T('csv.on_chart_of', { per: per }), 'num') + '</tr>';
   var rows = items.map(function(it, i) {
     var band = LEVEL_BAND[it.level] || 'aucune', st = chartFor(cs, cfg.offset, it.id);
-    return '<tr class="rank-' + (i + 1) + ' band-' + band + '">' +
+    return '<tr class="rank-' + (i + 1) + ' band-' + band + ' aune-go" data-href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' +
       '<td class="rank">' + (i + 1) + '</td>' +
       '<td class="center">' + trendHtml(prevRanks[it.id], i + 1, limit, T, esc) + '</td>' +
       '<td class="subject">' + (band === 'aucune' ? '' : '<span class="aune-band band-' + band + '">' + esc(T('alertes.level_short.' + it.level)) + '</span>') +
@@ -150,7 +150,7 @@ function render() {
     var band = LEVEL_BAND[it.level] || 'aucune';
     var bandLabel = band === 'aucune' ? '' : T('alertes.level_short.' + it.level);
     var share = 100 * it.points / total;
-    return '<li class="aune-row rank-' + (i + 1) + ' band-' + band + '">' +
+    return '<li class="aune-row rank-' + (i + 1) + ' band-' + band + ' aune-go" data-href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' +
       '<span class="aune-row-rank">' + (i + 1) + '</span>' +
       '<span class="aune-row-trend">' + trendHtml(prevRanks[it.id], i + 1, limit, T, esc) + '</span>' +
       '<div class="aune-row-main">' +

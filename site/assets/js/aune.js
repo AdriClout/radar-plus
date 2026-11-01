@@ -468,7 +468,7 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T, latest) : '';
   var cls = 'aune-row rank-' + (i + 1) + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
-  return '<li class="' + cls + '"' + style + '>' +
+  return '<li class="' + cls + ' aune-go" data-href="' + auneFicheUrl(c, region) + '"' + style + '>' +
     '<span class="aune-row-rank">' + (i + 1) + '</span>' +
     '<span class="aune-row-trend">' + auneTrendHtml(c, i, region, cfg.range, prevRanks || {}, prevStart, T) + '</span>' +
     art +
@@ -501,7 +501,7 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
     var arts = auneHeadlines(c, ev, 12);
     var stats = auneChartFor(region, cfg.range, cfg.offset, c.storyline);
     var delta = is24h ? c.points - (c.prev24h || 0) : null;
-    return '<tr class="rank-' + (i + 1) + ' band-' + esc(band) + '">' +
+    return '<tr class="rank-' + (i + 1) + ' band-' + esc(band) + ' aune-go" data-href="' + auneFicheUrl(c, region) + '">' +
       '<td class="rank">' + (i + 1) + '</td>' +
       '<td class="center">' + auneTrendHtml(c, i, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
       '<td class="subject"><span class="aune-band band-' + esc(band) + '">' + esc(bandLabel) + '</span>' +
@@ -721,8 +721,9 @@ function init(opts) {
   AUNE_LIMIT = cfg.limits;
   var grid = document.getElementById(cfg.gridId);
   if (grid) grid.addEventListener('click', function(e) {
-    if (e.target.closest('a')) return; // manchettes et puces : liens normaux
+    if (e.target.closest('a, button')) return; // manchettes, puces, boutons : liens normaux
     var el = e.target.closest('.aune-clickable');
+    if (!el) { var row = e.target.closest('.aune-go'); if (row && row.dataset.href) { window.location.href = row.dataset.href; } return; }
     if (!el || !el.dataset.urls) return;
     var urls = [];
     try { urls = JSON.parse(el.dataset.urls); } catch (err) { urls = []; }
