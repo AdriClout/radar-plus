@@ -645,11 +645,11 @@
     "type_objects": "Objets",
     "search_placeholder": "Filtrer : un mot du titre ou du thème",
     "range_sub": {
-      "24h": "Toutes les histoires qui ont fait les Unes des 24 dernières heures, classées par l'indice 24h.",
-      "today": "Toutes les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition.",
-      "week": "Toutes les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
-      "month": "Toutes les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
-      "year": "Toutes les histoires qui ont fait les Unes cette année, classées par points cumulés par édition."
+      "24h": "Les histoires en Une des 24 dernières heures, classées par l'indice 24h.",
+      "today": "Les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition.",
+      "week": "Le Hot 20 de la semaine : les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
+      "month": "Le Hot 20 du mois : les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
+      "year": "Le Hot 20 de l'année : les histoires qui ont fait les Unes cette année, classées par points cumulés par édition."
     },
     "title_accent_objects": "des objets",
     "header_object": "Objet",
@@ -661,11 +661,11 @@
     "obj_points_tip": "Somme de l'indice de saillance de l'objet sur les éditions de la période (le calcul du Hot 20).",
     "obj_band_tip": "Plus haut palier d'alerte atteint par l'objet dans la période (paliers calibrés par pays).",
     "obj_sub": {
-      "24h": "Tous les sujets, acteurs et lieux en Une à la dernière édition, classés par indice de saillance.",
-      "today": "Tous les sujets, acteurs et lieux en Une depuis minuit, classés par points cumulés par édition.",
-      "week": "Le Hot 20 officiel de la semaine : tous les sujets, acteurs et lieux en Une, classés par points cumulés par édition.",
-      "month": "Tous les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
-      "year": "Tous les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition."
+      "24h": "Les sujets, acteurs et lieux en Une à la dernière édition, classés par indice de saillance.",
+      "today": "Les sujets, acteurs et lieux en Une depuis minuit, classés par points cumulés par édition.",
+      "week": "Le Hot 20 officiel de la semaine : les sujets, acteurs et lieux en Une depuis lundi, classés par points cumulés par édition.",
+      "month": "Le Hot 20 du mois : les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
+      "year": "Le Hot 20 de l'année : les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition."
     },
     "download": "Télécharger (CSV)",
     "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel",
@@ -674,7 +674,9 @@
     "nav_sub_24h": "Indice 24h à cette édition",
     "nav_sub_cumul": "Saillance cumulée depuis le {date}",
     "status_final": "Classement final",
-    "status_live": "Classement en cours"
+    "status_live": "Classement en cours",
+    "hot20_status_final": "Hot 20 final",
+    "hot20_status_live": "Hot 20 en cours"
   },
   "csv": {
     "rank": "rang",
@@ -761,5 +763,13 @@
     "chart_title": "Où se situe une nouvelle parmi les Unes d'une année",
     "scale_24h": "Indice 24h",
     "scale_block": "Une édition (4 h)"
+  },
+  "period_tab": {
+    "4h": "Dernière édition",
+    "day": "Aujourd’hui",
+    "week": "Cette semaine",
+    "month": "Ce mois-ci",
+    "quarter": "Cette année",
+    "total": "Depuis le début"
   }
 }

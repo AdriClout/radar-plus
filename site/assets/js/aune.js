@@ -390,7 +390,10 @@ function auneNavSub(range, offset, lang, T) {
 function auneNavStatus(cfg, T) {
   var el = document.getElementById(cfg.navId + '-status'); if (!el) return;
   var final = cfg.offset < 0;
-  el.textContent = T(final ? 'classement.status_final' : 'classement.status_live');
+  // « Hot 20 » seulement pour la semaine, le mois et l'année : il n'y a souvent pas vingt événements
+  // dans une journée (Adrien, 31 oct. 2026).
+  var hot = ['week', 'month', 'year'].indexOf(cfg.range) !== -1;
+  el.textContent = T('classement.' + (hot ? 'hot20_' : '') + (final ? 'status_final' : 'status_live'));
   el.className = 'cl-nav-status ' + (final ? 'final' : 'live');
 }
 function auneNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }

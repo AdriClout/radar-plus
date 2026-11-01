@@ -645,11 +645,11 @@
     "type_objects": "Objects",
     "search_placeholder": "Filter: a word from the title or the theme",
     "range_sub": {
-      "24h": "Every story that made the front pages over the last 24 hours, ranked by the 24h index.",
-      "today": "Every story that made the front pages since midnight, ranked by points summed by edition.",
-      "week": "Every story that made the front pages since Monday, ranked by points summed by edition.",
-      "month": "Every story that made the front pages this month, ranked by points summed by edition.",
-      "year": "Every story that made the front pages this year, ranked by points summed by edition."
+      "24h": "The stories on the front pages over the last 24 hours, ranked by the 24h index.",
+      "today": "The stories that made the front pages since midnight, ranked by points summed by edition.",
+      "week": "This week's Hot 20: the stories that made the front pages since Monday, ranked by points summed by edition.",
+      "month": "This month's Hot 20: the stories that made the front pages this month, ranked by points summed by edition.",
+      "year": "This year's Hot 20: the stories that made the front pages this year, ranked by points summed by edition."
     },
     "title_accent_objects": "of objects",
     "header_object": "Object",
@@ -661,11 +661,11 @@
     "obj_points_tip": "Sum of the object's salience index over the period's editions (the Hot 20 calculation).",
     "obj_band_tip": "Highest alert tier reached by the object in the period (tiers calibrated by country).",
     "obj_sub": {
-      "24h": "Every topic, actor and place on the front pages at the latest edition, ranked by salience index.",
-      "today": "Every topic, actor and place on the front pages since midnight, ranked by points summed by edition.",
-      "week": "The official Hot 20 of the week: every topic, actor and place on the front pages, ranked by points summed by edition.",
-      "month": "Every topic, actor and place on the front pages this month, ranked by points summed by edition.",
-      "year": "Every topic, actor and place on the front pages this year, ranked by points summed by edition."
+      "24h": "The topics, actors and places on the front pages at the latest edition, ranked by saliency index.",
+      "today": "The topics, actors and places on the front pages since midnight, ranked by points summed by edition.",
+      "week": "The official Hot 20 of the week: the topics, actors and places on the front pages since Monday, ranked by points summed by edition.",
+      "month": "This month's Hot 20: the topics, actors and places on the front pages this month, ranked by points summed by edition.",
+      "year": "This year's Hot 20: the topics, actors and places on the front pages this year, ranked by points summed by edition."
     },
     "download": "Download (CSV)",
     "download_tip": "The displayed ranking, with its filters, as a CSV file readable in Excel",
@@ -674,7 +674,9 @@
     "nav_sub_24h": "24h index at this edition",
     "nav_sub_cumul": "Salience summed since {date}",
     "status_final": "Final ranking",
-    "status_live": "Ranking in progress"
+    "status_live": "Ranking in progress",
+    "hot20_status_final": "Final Hot 20",
+    "hot20_status_live": "Hot 20 in progress"
   },
   "csv": {
     "rank": "rank",
@@ -761,5 +763,13 @@
     "chart_title": "Where a story stands among a year of front pages",
     "scale_24h": "24h index",
     "scale_block": "One edition (4 h)"
+  },
+  "period_tab": {
+    "4h": "Latest edition",
+    "day": "Today",
+    "week": "This week",
+    "month": "This month",
+    "quarter": "This year",
+    "total": "Since the start"
   }
 }
