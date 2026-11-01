@@ -50,28 +50,12 @@
     }
     #cst-titlebar {
       display: flex; align-items: center; gap: 10px;
-      margin-bottom: 22px;
-    }
-    #cst-logo {
-      flex: 0 0 auto;
-      display: inline-flex; align-items: center;
-      width: 36px; height: 36px;
-      text-decoration: none;
-      transition: transform 0.2s ease;
-    }
-    #cst-logo:hover { transform: scale(1.06); }
-    #cst-logo:focus-visible { outline: 2px solid rgba(120,170,255,0.6); outline-offset: 3px; border-radius: 4px; }
-    #cst-logo svg { width: 100%; height: 100%; display: block; }
-    #cst-logo .rp-r { fill: rgba(195, 220, 255, 0.92); }
-    #cst-logo .rp-plus { fill: #dde64a; animation: rpPulse 1.6s ease-in-out infinite; transform-origin: 70% 30%; }
-    @keyframes rpPulse {
-      0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px rgba(221,230,74,0.55)); }
-      50%      { opacity: 0.45; filter: drop-shadow(0 0 1px rgba(221,230,74,0.10)); }
+      margin-bottom: 14px;
     }
     #cst-title {
       font-family: 'Orbitron', 'Space Mono', monospace;
-      font-size: 16px;
-      letter-spacing: 2.5px;
+      font-size: 20px;
+      letter-spacing: 2px; /* comme Évolution (sans le R+ devant), resserré pour que CONSTELLATION tienne */
       color: rgba(195, 220, 255, 0.92);
       text-transform: uppercase;
       text-shadow: 0 0 10px rgba(90,140,255,0.36), 0 0 26px rgba(70,110,230,0.22);
@@ -154,6 +138,51 @@
 
     /* ── Période (calque sur evolution.html) ── */
     #window-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    /* Barre de filtres propre à la page, sous le menu du site, comme Évolution (Adrien, 1er nov. 2026) */
+    :root { --filter-bar-h: 52px; }
+    #filter-bar {
+      position: absolute; top: 0; left: 0; right: 0; height: var(--filter-bar-h);
+      display: flex; align-items: center; gap: 28px; padding: 0 22px;
+      background: rgba(3,6,24,0.92); border-bottom: 1px solid rgba(80,130,255,0.18);
+      z-index: 21; pointer-events: all; overflow: hidden;
+    }
+    .fbar-group { display: flex; align-items: center; gap: 10px; }
+    .fbar-label { font-size: 9px; letter-spacing: 1.6px; text-transform: uppercase; color: rgba(100,140,200,0.55); white-space: nowrap; }
+    #filter-bar #window-row { display: flex; flex-wrap: nowrap; gap: 5px; }
+    #filter-bar #window-row .win-btn { flex: 0 0 auto; width: auto; padding: 6px 13px; font-size: 11px; letter-spacing: 1px; }
+    #filter-bar #country-tabs .tab { padding: 6px 14px; }
+    #period-nav-row { display: flex; align-items: center; gap: 12px; margin-left: auto; pointer-events: all; }
+    #period-nav-row #prev-btn, #period-nav-row #next-btn { background: none; border: 1px solid rgba(100,150,255,0.3); border-radius: 3px; color: #6080a0; font-size: 16px; padding: 2px 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; line-height: 1.3; }
+    #period-nav-row #prev-btn:hover, #period-nav-row #next-btn:hover { border-color: rgba(120,180,255,0.8); color: #b0d0ff; }
+    #period-nav-row #prev-btn:disabled, #period-nav-row #next-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    #period-nav-label { font-family: 'Space Mono', monospace; text-align: center; min-width: 220px; white-space: nowrap; line-height: 1.3; }
+    #period-label { display: flex; flex-direction: column; align-items: center; }
+    #period-label .pn-date { font-size: 12px; letter-spacing: 1px; color: rgba(175,208,255,0.95); }
+    #period-label .pn-sub { font-size: 9.5px; letter-spacing: 0.8px; color: rgba(110,150,210,0.65); }
+    @media (max-width: 900px) { #filter-bar { flex-wrap: wrap; gap: 8px 18px; padding: 8px 14px; height: auto; } #period-nav-row { margin-left: 0; } }
+    .cst-ev-art { display: none; margin: 4px 0 14px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(120,170,255,0.25); }
+    .cst-ev-art.ok { display: block; }
+    .cst-ev-art img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+    .cst-ev-art figcaption { font-size: 9px; color: rgba(160,190,240,0.75); padding: 5px 8px; background: rgba(2,0,16,0.6); }
+    .mode-btn { padding: 8px 10px; border: 1px solid rgba(100,150,255,0.25); border-radius: 3px; background: rgba(10,20,50,0.5); color: rgba(100,140,200,0.7); font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: left; width: 100%; }
+    .mode-btn:hover { border-color: rgba(100,150,255,0.6); color: #a0c0ff; }
+    .mode-btn[data-mode="objects"].active { background: rgba(40,80,180,0.35); border-color: rgba(120,180,255,0.7); color: #d0e8ff; box-shadow: 0 0 10px rgba(80,130,255,0.25); }
+    .mode-btn[data-mode="search"].active { background: rgba(20,72,52,0.38); border-color: rgba(80,200,140,0.65); color: rgba(140,230,185,0.95); box-shadow: 0 0 10px rgba(60,180,110,0.22); }
+    /* Panneau de gauche selon le mode, comme Évolution : Événements = la liste des grandes histoires ;
+       Hot 10 = la recherche puis le Hot 10 ; Recherche = la recherche et les objets suivis. */
+    body.pm-events #search-section, body.pm-search #top10-section { display: none; }
+    body.pm-events #top10-head, body:not(.pm-events) #events-head { display: none !important; }
+    body.pm-events #events-head { display: block; }
+    #mode-row { display: flex; flex-direction: column; gap: 4px; }
+    .evt-row { display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; border: 1px solid rgba(90,130,250,0.18); border-radius: 5px; background: rgba(8,18,48,0.5); cursor: pointer; transition: border-color 0.15s, background 0.15s, opacity 0.15s; margin-bottom: 5px; }
+    .evt-row:hover, .evt-row.focused { border-color: rgba(140,180,255,0.6); background: rgba(14,28,70,0.7); }
+    .evt-rank { flex: 0 0 18px; height: 18px; border-radius: 50%; color: #00000f; font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .evt-main { flex: 1; min-width: 0; }
+    .evt-title { font-size: 11px; line-height: 1.3; color: rgba(225,235,255,0.95); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .evt-meta { font-size: 9px; color: rgba(130,165,220,0.7); margin-top: 2px; }
+    .evt-link { flex: 0 0 auto; color: rgba(140,180,255,0.7); text-decoration: none; font-size: 12px; padding: 0 2px; }
+    .evt-link:hover { color: #fff; }
+    .mode-btn[data-mode="events"].active { background: rgba(120,70,20,0.35); border-color: rgba(255,170,80,0.7); color: #ffe0b8; box-shadow: 0 0 10px rgba(255,160,60,0.22); }
     .win-btn {
       flex: 1 1 calc(50% - 2px);
       min-width: 0;
@@ -171,6 +200,7 @@
       text-align: center;
     }
     .win-btn:hover  { border-color: rgba(120,170,255,0.55); color: rgba(180,210,255,0.95); }
+    .tab:disabled { opacity: 0.35; cursor: not-allowed; }
     .win-btn.active { border-color: rgba(120,180,255,0.75); background: rgba(30,60,150,0.40); color: #d0e8ff; box-shadow: 0 0 8px rgba(80,130,255,0.2); }
     #window-meta {
       font-size: 9px;
@@ -506,32 +536,22 @@
     #search-status.notfound { color: rgba(200,80,80,0.85); }
   </style>
 </head>
-<body>
+<body class="has-filter-bar">
   <div id="constellation-bg" aria-hidden="true"></div>
   <div id="loading"><div id="loading-text" data-i18n="constellation.loading_text">initialisation · constellation</div></div>
   <div id="graph"></div>
-  <div id="left-panel">
-    <div id="cst-titlebar">
-      <a id="cst-logo" href="./" data-i18n-aria-label="nav.home_logo_aria" aria-label="Retour à l'accueil Radar+">
-        <svg viewBox="0 0 700 700" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g transform="translate(0,700) scale(0.1,-0.1)" stroke="none">
-            <path class="rp-r" d="M262 3666 l3 -2051 338 0 c292 0 340 2 346 15 4 8 6 385 6 838 -1 821 -1 823 20 827 11 2 274 3 585 2 505 -3 572 -5 630 -21 94 -25 178 -70 235 -124 65 -60 98 -111 126 -192 24 -70 23 -50 33 -715 3 -265 5 -285 30 -380 15 -55 43 -134 63 -175 l36 -75 356 2 c196 0 366 1 379 2 22 1 22 3 -17 73 -59 108 -110 232 -136 333 -23 86 -24 105 -25 460 -1 204 -3 381 -5 395 -15 113 -25 159 -51 239 -62 187 -206 360 -361 436 -46 22 -83 43 -83 47 0 3 17 16 38 29 57 35 171 128 231 188 186 192 291 453 286 716 -4 164 -43 323 -120 481 -122 251 -309 434 -580 566 -127 62 -251 99 -420 124 -27 4 -476 8 -998 9 l-947 1 2 -2050z m1682 1463 c123 -1 174 -5 228 -20 271 -75 448 -306 451 -589 1 -101 -7 -159 -32 -231 -63 -182 -198 -310 -401 -381 -64 -22 -73 -22 -651 -26 l-585 -3 0 623 c-1 343 3 625 7 628 6 4 471 4 983 -1z"/>
-            <path class="rp-plus" d="M5000 4840 l-55 -5 1 -590 c0 -324 -1 -595 -3 -600 -2 -7 -214 -10 -618 -10 -405 0 -616 -3 -618 -10 -3 -9 -1 -493 2 -505 0 -3 279 -5 619 -5 l617 0 1 -590 c1 -325 2 -597 3 -605 1 -14 39 -16 294 -16 l293 0 -1 599 c0 389 4 601 10 605 6 4 287 7 625 7 l615 0 0 257 c1 171 -3 259 -10 261 -5 2 -286 3 -622 3 -401 -1 -614 2 -616 9 -1 5 -2 275 -2 599 1 405 -2 589 -9 592 -17 6 -464 10 -526 4z"/>
-          </g>
-        </svg>
-      </a>
-      <div id="cst-title" data-i18n="constellation.title">Constellation</div>
-    </div>
-    <div class="lpanel-section">
-      <div class="lpanel-label" data-i18n="hot20.country_label">Pays</div>
-      <div id="country-tabs">
-        <button class="tab" data-country="QC">QC</button>
-        <button class="tab active" data-country="CAN">CAN</button>
-        <button class="tab" data-country="USA">USA</button>
+  <!-- Barre de filtres sous le menu, comme Évolution : Pays · Période · période affichée (Adrien, 1er nov. 2026) -->
+  <div id="filter-bar" role="toolbar" aria-label="Filtres">
+    <div class="fbar-group">
+      <span class="fbar-label" data-i18n="hot20.country_label">Pays</span>
+      <div id="country-tabs" role="tablist" aria-label="Sélection du pays">
+        <button class="tab" data-country="QC" role="tab" aria-label="Québec">QC</button>
+        <button class="tab active" data-country="CAN" role="tab" aria-label="Canada">CAN</button>
+        <button class="tab" data-country="USA" role="tab" aria-label="États-Unis">USA</button>
       </div>
     </div>
-    <div class="lpanel-section" id="window-section">
-      <div class="lpanel-label" data-i18n="period.label">Période</div>
+    <div class="fbar-group" id="window-section">
+      <span class="fbar-label" data-i18n="period.label">Période</span>
       <div id="window-row">
         <button class="win-btn active" data-gran="day"   type="button" data-i18n="period.day">Jour</button>
         <button class="win-btn"        data-gran="week"  type="button" data-i18n="period.week">Semaine</button>
@@ -539,10 +559,27 @@
         <button class="win-btn"        data-gran="year"  type="button" data-i18n="period.year">Année</button>
         <button class="win-btn"        data-gran="total" type="button" data-i18n="period.total">Total</button>
       </div>
-      <div id="window-meta"></div>
     </div>
-    <div class="lpanel-section">
-      <div class="lpanel-label" data-i18n="constellation.search_label">Recherche</div>
+    <div id="period-nav-row">
+      <button id="prev-btn" type="button" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Période précédente">‹</button>
+      <span id="period-nav-label"><span id="period-label">—</span></span>
+      <button id="next-btn" type="button" data-i18n-aria-label="evolution.next_period_aria" aria-label="Période suivante">›</button>
+    </div>
+  </div>
+  <div id="left-panel">
+    <div id="cst-titlebar">
+      <div id="cst-title"><span class="page-sym" data-symbol="constellation"></span><span data-i18n="constellation.title">Constellation</span></div>
+    </div>
+    <!-- Événements | Hot 10, comme Évolution (Adrien, 1er nov. 2026) : la carte mixte relie les histoires
+         par leurs acteurs ; le Hot 10 est la carte des objets. -->
+    <div class="lpanel-section" id="mode-section">
+      <div id="mode-row">
+        <button class="mode-btn active" data-mode="events" type="button" data-i18n="evolution.mode_events">Événements</button>
+        <button class="mode-btn" data-mode="objects" type="button" data-i18n="evolution.mode_hot10">Hot 10</button>
+        <button class="mode-btn" data-mode="search" type="button" data-i18n="evolution.mode_search">Recherche</button>
+      </div>
+    </div>
+    <div class="lpanel-section" id="search-section">
       <div id="search-wrap">
         <input type="text" id="search-input" data-i18n-placeholder="common.search_placeholder" placeholder="Rechercher un objet…" autocomplete="off" spellcheck="false" />
         <div id="search-results"></div>
@@ -550,7 +587,8 @@
       </div>
     </div>
     <div class="lpanel-section" id="top10-section">
-      <div class="lpanel-label"><span data-i18n="constellation.hot10_label">Hot 10</span> <span id="top10-country">CAN</span></div>
+      <div class="lpanel-label" id="top10-head"><span id="top10-title" data-i18n="constellation.hot10_label">Hot 10</span> <span id="top10-country">CAN</span></div>
+      <div class="lpanel-label" id="events-head" hidden></div>
       <div id="top10-list"></div>
     </div>
   </div>
@@ -567,14 +605,8 @@
     <div id="object-panel-body"></div>
   </aside>
   <div id="tooltip"></div>
-  <div id="controls">
-    <div id="period-label">—</div>
-    <div id="slider-row">
-      <button id="prev-btn" type="button" data-i18n-aria-label="evolution.previous_period_aria" aria-label="Créneau précédent">‹</button>
-      <input type="range" id="timeline" min="0" value="0" step="1" />
-      <button id="next-btn" type="button" data-i18n-aria-label="evolution.next_period_aria" aria-label="Créneau suivant">›</button>
-    </div>
-  </div>
+  <!-- Plus de barre en bas : la navigation dans le temps est dans la barre du haut, comme Évolution (Adrien, 1er nov. 2026). -->
+  <input type="range" id="timeline" min="0" value="0" step="1" hidden />
   <section class="ticker-section" id="ticker-section" aria-live="polite">
     <a class="ticker-label ticker-label-link" href="./unes.html" data-i18n-aria-label="ticker.view_aria" aria-label="Voir toutes les dernières Unes">
       <span class="ticker-label-title" data-i18n="ticker.label_arrow">Dans le radar ↗</span>
@@ -628,7 +660,18 @@
     return Math.max(0, Math.min(1, ((Number(s) || 0) - sizeScale.min) / span));
   }
   function sizeToT(s) { return Math.pow(relSize(s), 0.7); }
-  function nodeRadius(n) { return 5 + 27 * Math.pow(relSize(n.size), 1.5); }
+  let evScale = { min: 0, max: 1 }, obScale = { min: 0, max: 1 };
+  function relIn(sc, s) { const span = sc.max - sc.min; if (!(span > 0)) return 1; return Math.max(0, Math.min(1, ((Number(s) || 0) - sc.min) / span)); }
+  function scaleOf(list) { const v = list.map(n => Number(n.size) || 0); return v.length ? { min: Math.min(...v), max: Math.max(...v) } : { min: 0, max: 1 }; }
+  function nodeRadius(n) {
+    if (n.kind === 'event') return 10 + 15 * Math.pow(relIn(evScale, n.size), 1.1);
+    if (n.kind === 'object') return 3 + 3.5 * Math.pow(relIn(obScale, n.size), 1.1);
+    return 5 + 27 * Math.pow(relSize(n.size), 1.5);
+  }
+  // Couleurs de la carte mixte : un événement prend la couleur de son niveau (meilleure édition),
+  // un objet reste un petit astre bleu pâle.
+  const BAND_RGB = { aucune: [140,155,190], faible: [127,147,184], moderee: [95,168,255], elevee: [242,201,76], tres_elevee: [255,159,67], extreme: [255,77,77] };
+  function kindRGB(n) { return n.kind === 'event' ? (BAND_RGB[n.band] || BAND_RGB.aucune) : [175,195,255]; }
 
   function nodeRGB(size) {
     const t = sizeToT(size);
@@ -775,8 +818,9 @@
       return;
     }
 
+    if (node.kind === 'event') { renderEventPanel(node, panel, overlay, titleEl, metaEl, linksEl, bodyEl); return; }
     const articles = Array.isArray(node.articles) ? node.articles : [];
-    titleEl.textContent = node.id;
+    titleEl.textContent = node.label || node.id;
     metaEl.textContent  = `${(Number(node.size) || 0).toFixed(1)} pts · ${node.n || 0} mentions · ${articles.length} article${articles.length > 1 ? 's' : ''}`;
 
     const evolutionUrl = `./evolution.html?country=${encodeURIComponent(currentCountry)}&gran=${encodeURIComponent(rankedGranularity)}&nodes=${encodeURIComponent(node.id)}&mode=tracking`;
@@ -883,15 +927,19 @@
     // Couleur distincte pour les objets comparés (cyan ou rose)
     const c = compareColor(n.id);
     if (c) return c;
+    if (n.kind) { if (n._highlighted === false) return 'rgba(25,30,60,0.5)'; const [r, g, b] = kindRGB(n); return n.kind === 'object' ? `rgba(${r},${g},${b},0.85)` : `rgb(${r},${g},${b})`; }
     return nodeColorStr(n.size, n._highlighted);
   });
   setIfFn('nodeVal', n => Math.pow(nodeRadius(n) / 3, 2));
   setIfFn('nodeRelSize', 3);
   setIfFn('nodeLabel', () => '');
   // Liens
-  setIfFn('linkColor', l => linkColorStr(l.value, l._highlighted));
-  setIfFn('linkWidth', l => l._highlighted === false ? 0.7 : Math.max(1, Math.log((l.value||1)+1) * 1.1));
-  setIfFn('linkDirectionalParticles', l => (l.value||0) >= 3 ? 2 : 0);
+  setIfFn('linkColor', l => {
+    if (viewMode === 'events') return l._highlighted === false ? 'rgba(40,55,110,0.08)' : (hoverDim ? 'rgba(200,215,255,0.75)' : 'rgba(150,170,235,0.20)');
+    return linkColorStr(l.value, l._highlighted);
+  });
+  setIfFn('linkWidth', l => viewMode === 'events' ? (l._highlighted === false ? 0.5 : (hoverDim ? 1.6 : 0.8)) : (l._highlighted === false ? 0.7 : Math.max(1, Math.log((l.value||1)+1) * 1.1)));
+  setIfFn('linkDirectionalParticles', l => viewMode === 'events' ? 0 : ((l.value||0) >= 3 ? 2 : 0));
   setIfFn('linkDirectionalParticleWidth', 2);
   setIfFn('linkDirectionalParticleSpeed', 0.005);
   setIfFn('linkDirectionalParticleColor', l => { const t=Math.min(1,Math.log((l.value||1)+1)/Math.log(12)); return `rgba(${Math.round(100+t*155)},${Math.round(100+t*100)},255,0.9)`; });
@@ -941,9 +989,9 @@
       // 2. Halos en coords monde (dessinés avant les cercles par défaut)
       const { nodes } = Graph.graphData();
       nodes.forEach(n => {
-        if (n.x == null || n._highlighted === false) return;
-        const r  = nodeRadius(n);
-        const [nr, ng, nb] = nodeRGB(n.size);
+        if (n.x == null || n._highlighted === false || n.kind === 'object') return;
+        const r  = nodeRadius(n) * (n.kind === 'event' ? 0.6 : 1);
+        const [nr, ng, nb] = n.kind ? kindRGB(n) : nodeRGB(n.size);
         // Halo extérieur
         const g1 = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4);
         g1.addColorStop(0, `rgba(${nr},${ng},${nb},0.12)`);
@@ -972,6 +1020,8 @@
       // d'œil les nœuds qui tutoient les paliers absolus de l'agenda.
       nodes.forEach(n => {
         if (n.x == null || n._highlighted === false) return;
+        if (n.kind === 'event') { ctx.beginPath(); ctx.arc(n.x, n.y, nodeRadius(n) + 2, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1.4 / Math.max(0.5, gs); ctx.stroke(); return; }
+        if (n.kind) return;
         const tier = getSalienceTier(n.size);
         if (!tier) return;
         const r = nodeRadius(n);
@@ -997,14 +1047,15 @@
       }
       if (cn > 0) { cx /= cn; cy /= cn; }
 
+      if (viewMode === 'events') { drawEventLabels(ctx, gs, nodes, cx); return; }
       nodes.forEach(n => {
         if (n._rank >= TOP_LABELS || n.x == null || n._highlighted === false) return;
         const t   = sizeToT(n.size);
         const r   = nodeRadius(n);
-        const fs  = Math.max(2, 11 / gs);
-        ctx.font  = `${fs}px 'SF Mono', monospace`;
+        const fs  = Math.max(2, (n.kind === 'event' ? 12.5 : n.kind === 'object' ? 9.5 : 11) / gs);
+        ctx.font  = n.kind === 'event' ? `600 ${fs}px 'Space Grotesk', sans-serif` : `${fs}px 'SF Mono', monospace`;
         ctx.textBaseline = 'middle';
-        const lbl = n.id;
+        const lbl = n.kind === 'event' ? (n.label.length > 34 ? n.label.slice(0, 33).replace(/[\s,:;–-]+$/, '') + '…' : n.label) : (n.label || n.id);
         const tw  = ctx.measureText(lbl).width;
         const pad = 2 / gs;
         // Label à l'extérieur du centroïde: si le nœud est à gauche
@@ -1025,10 +1076,58 @@
         }
         ctx.fillStyle = 'rgba(0,3,22,0.80)';
         ctx.fillRect(alignedX - pad, ly - fs / 2 - pad, tw + pad * 2, fs + pad * 2);
-        ctx.fillStyle = `rgba(${Math.round(175 + t * 75)},215,255,0.92)`;
+        ctx.fillStyle = n.kind === 'event' ? 'rgba(245,248,255,0.98)' : n.kind === 'object' ? 'rgba(170,190,230,0.85)' : `rgba(${Math.round(175 + t * 75)},215,255,0.92)`;
         ctx.fillText(lbl, lx, ly);
       });
     });
+  // Carte des événements : titre coupé en deux lignes au plus (≈ 24 caractères chacune).
+  function wrapTitle(s, max) {
+    const words = String(s || '').split(/\s+/).filter(Boolean), lines = [''];
+    for (const w of words) {
+      const cur = lines[lines.length - 1];
+      if (!cur) lines[lines.length - 1] = w;
+      else if ((cur + ' ' + w).length <= max) lines[lines.length - 1] = cur + ' ' + w;
+      else if (lines.length < 2) lines.push(w);
+      else { lines[1] = (lines[1] + ' ' + w); break; }
+    }
+    if (lines[1] && lines[1].length > max) lines[1] = lines[1].slice(0, max - 1).replace(/[\s,:;–-]+$/, '') + '…';
+    else if (words.join(' ').length > lines.join(' ').length) lines[lines.length - 1] = lines[lines.length - 1].replace(/[\s,:;–-]+$/, '') + '…';
+    return lines.filter(Boolean);
+  }
+  function drawEventLabels(ctx, gs, nodes, cx) {
+    const k = Math.max(0.5, gs);
+    nodes.forEach(n => {
+      if (n.x == null || n._highlighted === false) return;
+      const r = nodeRadius(n);
+      if (n.kind === 'event') {
+        // Numéro de la liste au cœur de l'étoile
+        const fn = Math.max(2, Math.min(13, r * 0.95) / gs);
+        ctx.font = `700 ${fn}px 'Space Grotesk', sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(8,10,28,0.92)'; ctx.fillText(String(n._rank + 1), n.x, n.y + 0.5 / k);
+        // Titre sur deux lignes, du côté extérieur de la carte
+        if (!n._lines || n._linesFor !== n.label) { n._lines = wrapTitle(n.label, 24); n._linesFor = n.label; }
+        const fs = Math.max(2, 12 / gs), lh = fs * 1.2, pad = 3 / gs;
+        ctx.font = `600 ${fs}px 'Space Grotesk', sans-serif`;
+        const tw = Math.max(...n._lines.map(l => ctx.measureText(l).width));
+        const onLeft = n.x < cx, x0 = onLeft ? n.x - r - 6 / gs : n.x + r + 6 / gs;
+        const top = n.y - (n._lines.length * lh) / 2;
+        ctx.fillStyle = 'rgba(0,3,22,0.72)';
+        ctx.fillRect(onLeft ? x0 - tw - pad : x0 - pad, top - pad, tw + pad * 2, n._lines.length * lh + pad * 2);
+        ctx.textAlign = onLeft ? 'right' : 'left'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(245,248,255,0.97)';
+        n._lines.forEach((l, i) => ctx.fillText(l, x0, top + lh * (i + 0.5)));
+        return;
+      }
+      // Objets : nommés s'ils sont parmi les grands ponts, ou reliés à l'étoile survolée
+      if (!(hoverDim ? true : n.named)) return;
+      const fs = Math.max(2, 9.5 / gs);
+      ctx.font = `${fs}px 'SF Mono', monospace`; ctx.textBaseline = 'middle';
+      const onLeft = n.x < cx, x0 = onLeft ? n.x - r - 3 / gs : n.x + r + 3 / gs;
+      ctx.textAlign = onLeft ? 'right' : 'left';
+      ctx.fillStyle = hoverDim ? 'rgba(205,220,255,0.95)' : 'rgba(150,172,220,0.70)';
+      ctx.fillText(n.label || n.id, x0, n.y);
+    });
+  }
   setIfFn('onNodeHover', handleHover);
   setIfFn('onNodeClick', handleClick);
 
@@ -1050,12 +1149,47 @@
   // constante. Empêche concrètement les labels de se chevaucher dans
   // les clusters denses, sans exploser le layout des nœuds courts.
   function labelPadX(n) {
-    const labelW = (n.id || '').length * 5; // ≈ 5px/char en SF Mono 11px
-    return Math.min(30, 10 + labelW * 0.18);
+    const labelW = Math.min(n.kind === 'event' ? 24 : 34, (n.label || n.id || '').length) * (n.kind === 'event' ? 6.5 : 5); // ≈ 5px/char en SF Mono 11px
+    return n.kind === 'event' ? 20 + labelW * 0.55 : Math.min(30, 10 + labelW * 0.18); // titres d'événements sur deux lignes
   }
   const LABEL_PAD_Y = 10;
+  const labelPadY = n => n.kind === 'event' ? 26 : LABEL_PAD_Y;
 
+  // Carte des événements : chaque étoile occupe une boîte qui comprend son titre, du côté où il est
+  // écrit (vers l'extérieur de la carte, comme dans drawEventLabels). Deux boîtes ne se chevauchent pas :
+  // on les écarte sur l'axe où elles se recouvrent le moins.
+  function eventBoxes(nodes) {
+    let cx = 0, cn = 0;
+    for (const n of nodes) if (n.x != null) { cx += n.x; cn++; }
+    cx = cn ? cx / cn : 0;
+    return nodes.map(n => {
+      if (n.x == null) return null;
+      const r = nodeRadius(n);
+      if (n.kind === 'event') {
+        const lw = Math.min(24, (n.label || '').length) * 6.6 + 8, side = n.x < cx ? -1 : 1;
+        return { n, dx: side * lw / 2, hw: r + lw / 2, hh: Math.max(r, 17) + 3 };
+      }
+      const lw = n.named ? (n.label || n.id || '').length * 5.8 + 4 : 0, side = n.x < cx ? -1 : 1;
+      return { n, dx: side * lw / 2, hw: r + 3 + lw / 2, hh: r + 5 };
+    });
+  }
+  function eventsCollide(alpha) {
+    const boxes = eventBoxes(Graph.graphData().nodes), k = Math.min(1, 0.25 + alpha * 4);
+    for (let i = 0; i < boxes.length; i++) {
+      const A = boxes[i]; if (!A) continue;
+      for (let j = i + 1; j < boxes.length; j++) {
+        const B = boxes[j]; if (!B) continue;
+        if (A.n.kind === 'object' && B.n.kind === 'object' && !A.n.named && !B.n.named) continue;
+        const ax = A.n.x + A.dx, bx = B.n.x + B.dx, ay = A.n.y, by = B.n.y;
+        const ox = A.hw + B.hw - Math.abs(bx - ax), oy = A.hh + B.hh - Math.abs(by - ay);
+        if (ox <= 0 || oy <= 0) continue;
+        if (ox < oy) { const m = (ox / 2) * k * (bx >= ax ? 1 : -1); A.n.x -= m; B.n.x += m; }
+        else { const m = (oy / 2) * k * (by >= ay ? 1 : -1); A.n.y -= m; B.n.y += m; }
+      }
+    }
+  }
   function collideForce(alpha) {
+    if (viewMode === 'events') { eventsCollide(alpha); return; }
     const nodes = Graph.graphData().nodes;
     const n = nodes.length;
     for (let i = 0; i < n; i++) {
@@ -1067,7 +1201,7 @@
         // Distances minimum asymétriques — plus larges en X qu'en Y
         // car les labels sont rendus horizontalement à droite du nœud.
         const minDx = ra + rb + (labelPadX(a) + labelPadX(b)) * 0.5;
-        const minDy = ra + rb + LABEL_PAD_Y;
+        const minDy = ra + rb + (labelPadY(a) + labelPadY(b)) * 0.5;
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         // Test ellipse: (dx/minDx)² + (dy/minDy)² < 1 ⇒ collision.
@@ -1081,6 +1215,11 @@
           a.y -= dy * push;
           b.x += dx * push;
           b.y += dy * push;
+        }
+        // Deux étoiles d'événements ne se recouvrent jamais, même en fin de simulation.
+        if (a.kind === 'event' && b.kind === 'event') {
+          const d = Math.hypot(dx, dy) || 0.01, need = ra + rb + 14;
+          if (d < need) { const k = (need - d) / d / 2; a.x -= dx * k; a.y -= dy * k; b.x += dx * k; b.y += dy * k; }
         }
       }
     }
@@ -1135,6 +1274,10 @@
   // périodes disponibles.
   const GRAN_SET = ['day', 'week', 'month', 'year', 'total'];
   let rankedGranularity = GRAN_SET.includes(urlGran) ? urlGran : 'day';
+  // Par défaut : Événements, comme Évolution. Hot 10 (objets) avec ?mode=objets (ou l'ancien ?vue=objets),
+  // un lien vers un objet (?node=) ou les États-Unis, qui n'ont pas d'événements.
+  const urlModeQ = ((urlParams.get('mode') || urlParams.get('vue') || '') + '').toLowerCase();
+  let viewMode = (urlModeQ === 'objets' || urlModeQ === 'hot10' || urlModeQ === 'recherche' || urlParams.get('node') || (urlParams.get('country') || '').toUpperCase() === 'USA') ? 'objects' : 'events';
 
   // Mois/jours FR pour les labels de slots
   const FR_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -1210,7 +1353,7 @@
     if (!tiers) return 'none';
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
     return 'none';
   }
   function aggregateSlot(country, slot) {
@@ -1291,8 +1434,8 @@
   // BOTTOM_OVERLAY couvre: ticker (44) + controls timeline (~80) +
   // ligne "May 08 · X objets · Y liens · convergence Z" (~30) + marge.
   const LEFT_PANEL_W   = 280;
-  const BOTTOM_OVERLAY = 175;
-  const TOP_MARGIN     = 60;
+  const BOTTOM_OVERLAY = 70; // plus de barre en bas : le bandeau des Unes et une marge
+  const TOP_MARGIN     = 60 + 52; // + barre de filtres
   const SIDE_MARGIN    = 60;
 
   function fitGraphToView(durationMs = 0) {
@@ -1315,11 +1458,14 @@
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const n of nodes) {
       if (!Number.isFinite(n.x) || !Number.isFinite(n.y)) continue;
-      const r = 3 * Math.sqrt(Math.max(4, (Number(n.size) || 0) * 0.5));
-      const labelW = (n.id || '').length * 6 + 8;
+      // Carte des événements : vrai rayon, titre sur deux lignes (≈ 24 caractères), objets peu nommés.
+      const ev = viewMode === 'events';
+      const r = ev ? nodeRadius(n) : 3 * Math.sqrt(Math.max(4, (Number(n.size) || 0) * 0.5));
+      const labelW = !ev ? (n.id || '').length * 6 + 8 : n.kind === 'event' ? Math.min(24, (n.label || '').length) * 6.6 + 14 : (n.named ? (n.label || n.id || '').length * 5.8 + 6 : 0);
       let nx0 = n.x - r, nx1 = n.x + r;
       if (n.x < cx0) nx0 -= labelW; else nx1 += labelW;
-      const ny0 = n.y - r - 6, ny1 = n.y + r + 6;
+      const hy = ev && n.kind === 'event' ? Math.max(r, 17) : r;
+      const ny0 = n.y - hy - 6, ny1 = n.y + hy + 6;
       if (nx0 < minX) minX = nx0;
       if (nx1 > maxX) maxX = nx1;
       if (ny0 < minY) minY = ny0;
@@ -1390,12 +1536,147 @@
   // Charge un slot (créneau à la granularité courante) dans le graphe.
   // Le slot est agrégé sur tous ses blocs 4h: nodes (somme size, n,
   // pire alert_level) et liens (somme value).
+  // ── Mode Événements : carte mixte (Adrien, 1er nov. 2026) ─────────────────────────────────
+  // Étoiles = événements (fichiers v2/events/{région}/{jour}), taille = points cumulés dans la période,
+  // couleur = niveau de leur meilleure édition ; petits astres = objets ; un lien = des articles communs
+  // à l'événement et à l'objet dans la même édition. Pas d'événements pour les États-Unis.
+  const evStore = { idx: null, days: {}, loading: {} };
+  function evDates(country) {
+    const all = [...new Set(periods.map(p => p.key.slice(0, 10)))];
+    const known = evStore.idx && evStore.idx.dates && evStore.idx.dates[country];
+    return Array.isArray(known) ? all.filter(d => known.indexOf(d) !== -1) : all; // journées publiées seulement
+  }
+  function eventsReady(country) { return !!evStore.idx && evDates(country).every(d => evStore.days[country] && (d in evStore.days[country])); }
+  function ensureEvents(country) {
+    const rd = window.radarData;
+    if (evStore.loading[country]) return evStore.loading[country];
+    evStore.days[country] = evStore.days[country] || {};
+    const idxP = evStore.idx ? Promise.resolve() : rd.eventsIndex().then(i => { evStore.idx = i; }).catch(() => { evStore.idx = { thresholds: {} }; });
+    evStore.loading[country] = idxP.then(() => Promise.all(evDates(country).map(d => rd.eventsDay(country, d).then(f => { evStore.days[country][d] = f; }).catch(() => { evStore.days[country][d] = null; }))))
+      .then(() => { evStore.loading[country] = null; });
+    return evStore.loading[country];
+  }
+  const BANDS_ORDER = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
+  function bandOfBlock(country, v) {
+    const th = evStore.idx && evStore.idx.thresholds && evStore.idx.thresholds[country] && evStore.idx.thresholds[country].block;
+    let b = 'aucune'; if (!th) return b; BANDS_ORDER.forEach(k => { if (typeof th[k] === 'number' && v >= th[k]) b = k; }); return b;
+  }
+  // Carte allégée (Adrien, 1er nov. 2026 : « c'est trop ») : les dix événements de la liste, pas plus.
+  const EV_TOP = { day: 8, week: 10, month: 10, year: 10, total: 10 };
+  function aggregateEvents(country, slot) {
+    const days = evStore.days[country] || {};
+    const evMap = new Map(), objMap = new Map(), weights = new Map();
+    for (const pk of slot.periodKeys) {
+      const g = graphs[country]?.[pk], url2obj = new Map();
+      for (const n of (g && g.nodes) || []) {
+        const o = objMap.get(n.id) || { id: n.id, kind: 'object', label: n.id, size: 0, n: 0, articles: [], media_ids: [] };
+        o.size += Number(n.size) || 0; o.n += Number(n.n) || 0;
+        if (Array.isArray(n.articles)) o.articles.push(...n.articles);
+        objMap.set(n.id, o);
+        for (const a of n.articles || []) if (a && a.url) { if (!url2obj.has(a.url)) url2obj.set(a.url, new Set()); url2obj.get(a.url).add(n.id); }
+      }
+      const f = days[pk.slice(0, 10)], evs = (f && f.periods && f.periods[pk]) || [];
+      for (const e of evs) {
+        const sid = e.storyline; if (!sid) continue;
+        const v = Number(e.index) || 0;
+        let ev = evMap.get(sid);
+        if (!ev) { ev = { id: 'ev:' + sid, sid, kind: 'event', label: e.title || sid, size: 0, peak: -1, peakKey: pk, issue_fr: e.issue_fr, issue_en: e.issue_en, media: new Set(), articles: [], n: 0 }; evMap.set(sid, ev); }
+        ev.size += v; ev.n += 1;
+        if (v > ev.peak) { ev.peak = v; ev.peakKey = pk; ev.label = e.title || ev.label; ev.url = e.url || ev.url; }
+        (e.media_ids || []).forEach(m => ev.media.add(m));
+        for (const a of e.articles || []) {
+          if (!a || !a.url) continue;
+          ev.articles.push(a);
+          for (const oid of url2obj.get(a.url) || []) { if (!weights.has(sid)) weights.set(sid, new Map()); const m = weights.get(sid); m.set(oid, (m.get(oid) || 0) + 1); }
+        }
+      }
+    }
+    const events = [...evMap.values()].sort((a, b) => b.size - a.size).slice(0, EV_TOP[rankedGranularity] || 10);
+    // Objets gardés : ceux qui relient au moins deux événements (les ponts), puis les deux objets
+    // les plus liés à chaque événement, pour que chaque étoile ait son contexte.
+    const bridge = new Map();
+    events.forEach(e => (weights.get(e.sid) || new Map()).forEach((c, oid) => bridge.set(oid, (bridge.get(oid) || 0) + 1)));
+    const osz = oid => (objMap.get(oid) || { size: 0 }).size;
+    const keep = new Set();
+    const bridges = [...bridge.entries()].filter(([, b]) => b >= 2).sort((a, b) => b[1] - a[1] || osz(b[0]) - osz(a[0])).slice(0, 10);
+    bridges.forEach(([oid]) => keep.add(oid));
+    // Peu de ponts (une journée calme) : l'objet principal de chaque événement, pour que la carte ne soit pas vide.
+    if (keep.size < 4) events.forEach(e => { const m = weights.get(e.sid); if (m && keep.size < 10) { const top = [...m.entries()].sort((a, b) => b[1] - a[1] || osz(b[0]) - osz(a[0]))[0]; if (top) keep.add(top[0]); } });
+    const objects = [...keep].map(oid => objMap.get(oid)).filter(Boolean).sort((a, b) => (bridge.get(b.id) || 0) - (bridge.get(a.id) || 0) || b.size - a.size);
+    const objIds = new Set(objects.map(o => o.id)), links = [];
+    events.forEach(e => { const m = weights.get(e.sid); if (m) m.forEach((c, oid) => { if (objIds.has(oid)) links.push({ source: e.id, target: oid, value: c }); }); });
+    events.forEach((e, i) => { e._rank = i; e.band = bandOfBlock(country, e.peak); e.media = [...e.media].sort(); e.bridges = 0; });
+    objects.forEach((o, i) => { o._rank = 100 + i; o.bridges = bridge.get(o.id) || 0; o.named = i < 5; }); // seuls les 5 plus grands ponts sont nommés d'emblée
+    evScale = scaleOf(events); obScale = scaleOf(objects);
+    return { nodes: events.concat(objects), links, nEvents: events.length, nObjects: objects.length };
+  }
+  // Nom d'une édition : son heure de sortie (fin du bloc + 1 h), comme partout sur le site.
+  function editionName(pk) {
+    const m = String(pk || '').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})/); if (!m) return '';
+    const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4]) + 5 * 3600e3);
+    const lang = (document.documentElement.lang || 'fr').slice(0, 2), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+    const h = +new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(d) % 24;
+    const day = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(d);
+    return lang === 'en' ? `${day}, ${h}h edition` : `${day}, édition de ${h === 0 ? 'minuit' : h === 12 ? 'midi' : h + 'h'}`;
+  }
+  function renderEventPanel(node, panel, overlay, titleEl, metaEl, linksEl, bodyEl) {
+    const T0 = window.t || (k => k), lang = (document.documentElement.lang || 'fr').slice(0, 2);
+    titleEl.textContent = node.label;
+    metaEl.textContent = `${node.size.toFixed(1)} ${T0('constellation.ev_points')} · ${T0('aune.band.' + node.band)}`;
+    linksEl.innerHTML = `<a class="panel-link" href="./statistiques.html?evenement=${encodeURIComponent(node.sid)}&region=${encodeURIComponent(currentCountry)}">${escapeHtml(T0('constellation.ev_fiche'))}</a>`;
+    const gd = Graph.graphData(), linked = [];
+    (gd.links || []).forEach(l => { const s = l.source?.id ?? l.source, t = l.target?.id ?? l.target; if (s === node.id) linked.push([t, l.value]); });
+    linked.sort((a, b) => b[1] - a[1]);
+    const issue = lang === 'en' ? (node.issue_en || node.issue_fr) : (node.issue_fr || node.issue_en);
+    const artSrc = window.radarData.base + '/events/art/' + encodeURIComponent(node.sid) + '.webp';
+    let html = `<figure class="cst-ev-art"><img src="${escapeHtml(artSrc)}" alt="" onload="this.parentNode.classList.add('ok')" onerror="this.parentNode.remove()"><figcaption>${escapeHtml(T0('aune.art_credit'))}</figcaption></figure>` +
+      '<div class="article-section-header">' + escapeHtml(T0('constellation.ev_facts')) + '</div>' +
+      '<div class="article-item-title" style="margin:6px 0 4px">' + escapeHtml(T0('constellation.ev_best', { pts: node.peak.toFixed(1), when: editionName(node.peakKey) })) + '</div>' +
+      (issue ? '<div class="article-item-title" style="margin:4px 0">' + escapeHtml(issue) + '</div>' : '') +
+      '<div class="article-item-title" style="margin:4px 0 10px">' + escapeHtml((node.media || []).join(' · ')) + '</div>';
+    if (linked.length) html += '<div class="article-section-header">' + escapeHtml(T0('constellation.ev_linked')) + '</div><div class="article-item-title" style="margin:6px 0 10px">' + linked.map(([oid, c]) => escapeHtml(oid) + ' <span style="opacity:.6">(' + c + ')</span>').join(' · ') + '</div>';
+    const seen = new Set(), arts = (node.articles || []).filter(a => a && a.url && !seen.has(a.url) && seen.add(a.url));
+    html += '<div class="article-section-header">' + escapeHtml(T0('constellation.ev_articles')) + '</div>' +
+      arts.map(a => `<a class="article-item" href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">${a.media_id ? `<div class="article-item-media">${escapeHtml(a.media_id)}</div>` : ''}<div class="article-item-title">${escapeHtml(a.title || a.url)}</div></a>`).join('');
+    bodyEl.innerHTML = html;
+    panel.classList.add('open'); overlay.classList.add('open'); panel.setAttribute('aria-hidden', 'false');
+  }
+  function renderEventsList(gd) {
+    const list = document.getElementById('top10-list'), T0 = window.t || (k => k);
+    const slot = slots[currentSlotIdx];
+    const head = document.getElementById('events-head');
+    if (head) head.textContent = T0('evolution.events_head', { label: slot ? slot.label : '' });
+    const evs = (gd.nodes || []).filter(n => n.kind === 'event').slice(0, 10);
+    if (!evs.length) { list.innerHTML = '<div id="top10-empty">' + escapeHtml(T0(currentCountry === 'USA' ? 'constellation.no_events_usa' : 'constellation.no_events')) + '</div>'; return; }
+    const f1 = v => (Math.round(v * 10) / 10).toFixed(1);
+    list.innerHTML = '';
+    evs.forEach((n, i) => {
+      const item = document.createElement('div');
+      item.className = 'evt-row' + (focusedNode === n.id ? ' focused' : '');
+      item.dataset.nodeId = n.id;
+      const [r, g, b] = kindRGB(n);
+      const meta = T0('evolution.events_peak', { v: f1(n.peak), when: editionName(n.peakKey) }) + ' · ' + T0('evolution.events_cumul', { v: f1(n.size) });
+      item.innerHTML = `<span class="evt-rank" style="background:rgb(${r},${g},${b})">${i + 1}</span>` +
+        `<div class="evt-main"><div class="evt-title">${escapeHtml(n.label)}</div><div class="evt-meta">${escapeHtml(meta)}</div></div>` +
+        (n.url ? `<a class="evt-link" href="${escapeHtml(n.url)}" target="_blank" rel="noopener" title="${escapeHtml(T0('evolution.events_open'))}">↗</a>` : '');
+      item.addEventListener('click', e => { if (e.target.closest('a')) return; e.stopPropagation(); focusNodeById(n.id); });
+      item.addEventListener('mouseenter', () => { if (!focusedNode && !comparedNodes.size) setHoverDim(n); });
+      item.addEventListener('mouseleave', () => { if (!focusedNode && !comparedNodes.size) setHoverDim(null); });
+      list.appendChild(item);
+    });
+  }
+
   function loadSlot(country, slotIdx) {
     const slot = slots[slotIdx];
     if (!slot) return;
     currentSlotIdx = slotIdx;
-    const gd = aggregateSlot(country, slot);
-    updateSizeScale(gd.nodes);
+    if (viewMode === 'events' && country !== 'USA' && !eventsReady(country)) {
+      document.getElementById('period-label').textContent = (window.t || (k => k))('constellation.loading_events');
+      ensureEvents(country).then(() => { if (viewMode === 'events' && currentCountry === country) loadSlot(currentCountry, currentSlotIdx); });
+      return;
+    }
+    const gd = viewMode === 'events' ? (country === 'USA' ? { nodes: [], links: [], nEvents: 0, nObjects: 0 } : aggregateEvents(country, slot)) : aggregateSlot(country, slot);
+    if (viewMode !== 'events') updateSizeScale(gd.nodes);
 
     // Réutilise les positions précédentes pour les nœuds persistants —
     // évite de relancer un layout from-scratch entre deux slots adjacents.
@@ -1422,6 +1703,15 @@
     gd.nodes.forEach(n => { n._highlighted = true; });
     gd.links.forEach(l => { l._highlighted = true; });
     focusedNode = null;
+    // Carte mixte : les événements se repoussent fort (leurs titres sont longs), les objets restent
+    // près des étoiles qu'ils relient ; mode objets : les réglages d'origine.
+    if (viewMode === 'events') {
+      Graph.d3Force('charge').strength(n => n.kind === 'event' ? -520 : -90);
+      Graph.d3Force('link').distance(l => 80 + 0.6 * nodeRadius(l.source && l.source.kind ? l.source : (gd.nodes.find(x => x.id === l.source) || {}))).strength(0.35);
+    } else {
+      Graph.d3Force('charge').strength(-110);
+      Graph.d3Force('link').distance(65).strength(null);
+    }
     Graph.graphData(gd);
     // Si on a des objets comparés, ré-applique le highlight.
     if (comparedNodes.size) applyComparisonHighlight();
@@ -1430,16 +1720,19 @@
     // Convergence du créneau (cohérente avec la heat de la timeline)
     const convAvg = slotConvergenceScore(country, slot);
     var Tlbl = window.t || function(k){ return k; };
-    document.getElementById('period-label').innerHTML =
-      `<span>${escapeHtml(slot.label)}</span> &nbsp;·&nbsp; ${gd.nodes.length} ${escapeHtml(gd.nodes.length === 1 ? Tlbl('common.object') : Tlbl('common.objects'))} &nbsp;·&nbsp; ${gd.links.length} ${escapeHtml(Tlbl('common.links'))} &nbsp;·&nbsp; ${escapeHtml(Tlbl('common.convergence'))} ${convAvg.toFixed(1)}`;
+    const edTxt = slot.periods.length + ' ' + escapeHtml(Tlbl(slot.periods.length > 1 ? 'constellation.editions' : 'constellation.edition'));
+    if (viewMode === 'events') document.getElementById('period-label').innerHTML =
+      `<span class="pn-date">${escapeHtml(slot.label)}</span><span class="pn-sub">${edTxt} · ${gd.nEvents} ${escapeHtml(Tlbl(gd.nEvents === 1 ? 'constellation.event' : 'constellation.events'))} · ${gd.nObjects} ${escapeHtml(Tlbl('common.objects'))}</span>`;
+    else document.getElementById('period-label').innerHTML =
+      `<span class="pn-date">${escapeHtml(slot.label)}</span><span class="pn-sub">${edTxt} · ${gd.nodes.length} ${escapeHtml(gd.nodes.length === 1 ? Tlbl('common.object') : Tlbl('common.objects'))} · ${gd.links.length} ${escapeHtml(Tlbl('common.links'))} · ${escapeHtml(Tlbl('common.convergence'))} ${convAvg.toFixed(1)}</span>`;
 
     const metaEl = document.getElementById('window-meta');
     if (metaEl) {
       const blocks = slot.periods.length;
-      metaEl.textContent = `${slot.label} · ${blocks} bloc${blocks > 1 ? 's' : ''} 4h`;
+      metaEl.textContent = `${slot.label} · ${blocks} ${(window.t || (k => k))(blocks > 1 ? 'constellation.editions' : 'constellation.edition')}`;
     }
 
-    renderHot10(gd, country);
+    if (viewMode === 'events') renderEventsList(gd); else renderHot10(gd, country);
     document.getElementById('focus-hint').classList.remove('visible');
     renderArticlesPanel(null);
   }
@@ -1466,7 +1759,7 @@
   // précédent.
   const ALERT_BADGE_LABELS = (function() {
     const out = {};
-    ['extreme','tres_eleve','eleve'].forEach(function(k) {
+    ['extreme','tres_eleve'].forEach(function(k) { // plus de niveau « élevé » (Adrien, 31 oct. 2026)
       const v = window.t ? window.t('alertes.level_short.' + k) : null;
       out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
     });
@@ -1559,7 +1852,7 @@
       l._highlighted=(s===node.id||t===node.id);
     });
 
-    document.getElementById('focus-name').textContent = node.id;
+    document.getElementById('focus-name').textContent = node.label || node.id;
     document.getElementById('focus-hint').classList.add('visible');
     document.getElementById('tooltip').style.display = 'none';
     renderArticlesPanel(node);
@@ -1569,11 +1862,23 @@
     panToNodeLeftCenter(node, 500);
   }
 
+  let hoverDim = false;
+  function setHoverDim(node) {
+    const gd = Graph.graphData();
+    if (!node) { if (hoverDim) { gd.nodes.forEach(n => { n._highlighted = true; }); gd.links.forEach(l => { l._highlighted = true; }); } hoverDim = false; return; }
+    const nb = new Set([node.id]);
+    gd.links.forEach(l => { const s = l.source?.id ?? l.source, t = l.target?.id ?? l.target; if (s === node.id) nb.add(t); if (t === node.id) nb.add(s); });
+    gd.nodes.forEach(n => { n._highlighted = nb.has(n.id); });
+    gd.links.forEach(l => { const s = l.source?.id ?? l.source, t = l.target?.id ?? l.target; l._highlighted = s === node.id || t === node.id; });
+    hoverDim = true;
+  }
   function handleHover(node) {
     const tt = document.getElementById('tooltip');
+    if (viewMode === 'events' && !focusedNode && !comparedNodes.size) setHoverDim(node);
     if (!node || focusedNode) { tt.style.display='none'; return; }
     tt.style.display = 'block';
-    tt.innerHTML = `<div class="n">${node.id}</div>
+    if (node.kind === 'event') { const T0 = window.t || (k => k); tt.innerHTML = `<div class="n">${escapeHtml(node.label)}</div><div class="s">${node.size.toFixed(1)} ${escapeHtml(T0('constellation.ev_points'))}</div><div class="m">${escapeHtml(T0('aune.band.' + node.band))}</div><div class="m">${escapeHtml((node.media || []).join(' · '))}</div>`; return; }
+    tt.innerHTML = `<div class="n">${escapeHtml(node.label || node.id)}</div>
       <div class="s">saillance &nbsp;${node.size.toFixed(2)}</div>
       <div class="m">mentions &nbsp;&nbsp;${node.n}</div>
       <div class="m">articles &nbsp;&nbsp;&nbsp;${(node.articles || []).length}</div>`;
@@ -1862,6 +2167,41 @@
     tab.classList.toggle('active', tab.dataset.country === currentCountry);
   });
 
+  // Événements | Hot 10. Les États-Unis n'ont pas d'événements : le bouton se grise et on passe au Québec.
+  let panelMode = 'events';
+  function setViewMode(m, noLoad) {
+    const prevGraph = viewMode;
+    panelMode = m;
+    m = m === 'search' ? 'objects' : m; // Recherche = la carte des objets, avec la recherche en avant
+    viewMode = m;
+    document.body.classList.remove('pm-events', 'pm-objects', 'pm-search');
+    document.body.classList.add('pm-' + panelMode);
+    if (prevGraph === m && !noLoad) {
+      // Hot 10 ↔ Recherche : même carte, seul le panneau change
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === panelMode));
+      try { const u = new URL(location.href); u.searchParams.set('mode', panelMode === 'search' ? 'recherche' : 'objets'); history.replaceState(null, '', u.toString()); } catch (e) { /* ignore */ }
+      if (panelMode === 'search') { const si = document.getElementById('search-input'); if (si) si.focus(); }
+      return;
+    }
+    const T0 = window.t || (k => k);
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === panelMode));
+    const usa = document.querySelector('.tab[data-country="USA"]');
+    if (usa) { usa.disabled = m === 'events'; usa.title = m === 'events' ? T0('constellation.no_events_usa') : ''; }
+    if (m === 'events' && currentCountry === 'USA') {
+      currentCountry = 'QC';
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.country === 'QC'));
+      applyTimelineHeat(currentCountry);
+    }
+    const title = document.getElementById('top10-title');
+    if (title) { const key = m === 'events' ? 'constellation.events_list_label' : 'constellation.hot10_label'; title.setAttribute('data-i18n', key); title.textContent = T0(key); }
+    comparedNodes.clear(); renderCompareList();
+    try { const u = new URL(location.href); u.searchParams.delete('vue'); if (m === 'objects') u.searchParams.set('mode', panelMode === 'search' ? 'recherche' : 'objets'); else u.searchParams.delete('mode'); history.replaceState(null, '', u.toString()); } catch (e) { /* ignore */ }
+    if (panelMode === 'search') { const si = document.getElementById('search-input'); if (si) setTimeout(() => si.focus(), 0); }
+    if (!noLoad) { Graph.graphData({ nodes: [], links: [] }); loadSlot(currentCountry, currentSlotIdx); }
+  }
+  document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => { if (b.dataset.mode !== panelMode) setViewMode(b.dataset.mode); }));
+  setViewMode(urlModeQ === 'recherche' ? 'search' : viewMode, true); // boutons, légende et adresse alignés sur le mode de départ
+
   // Loading masqué tout de suite: l'utilisateur voit la simulation
   // placer les nœuds intelligemment dans l'espace, puis onEngineStop
   // cadre le tout dans la zone visible.
@@ -1872,7 +2212,22 @@
   document.addEventListener('i18n:applied', function () {
     if (slots && slots.length) loadSlot(currentCountry, currentSlotIdx);
   });
+  // Lien depuis une fiche : ?date=AAAA-MM-JJ ouvre cette journée ; ?evenement=<histoire> met son étoile en évidence.
+  const urlDate = urlParams.get('date'), urlEvent = urlParams.get('evenement');
+  if (urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate)) {
+    let di = slots.findIndex(s => s.key === urlDate);
+    if (di < 0) di = slots.findIndex(s => (s.periodKeys || []).some(k => k.slice(0, 10) === urlDate));
+    if (di >= 0) { currentSlotIdx = di; refreshSliderRange(); }
+  }
   loadSlot(currentCountry, currentSlotIdx);
+  if (urlEvent) {
+    let tries = 0;
+    const ti = setInterval(() => {
+      const id = 'ev:' + urlEvent, gd = Graph.graphData();
+      if ((gd.nodes || []).some(n => n.id === id)) { clearInterval(ti); focusNodeById(id); }
+      else if (++tries > 30) clearInterval(ti);
+    }, 300);
+  }
 
   // ── Lien entrant ?node= ───────────────────────────────────────────────────
   const urlNode = urlParams.get('node');

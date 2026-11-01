@@ -618,12 +618,7 @@ a.alert-bar-item:hover { filter: brightness(1.15); }
   color: rgba(255,170,170,0.3);
 }
 
-.alert-bar-item-country {
-  font-size: 7px;
-  letter-spacing: 1px;
-  color: rgba(255,170,170,0.45);
-  text-transform: uppercase;
-}
+.alert-bar-item-country { font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,230,200,0.95); margin-right: 8px; white-space: nowrap; }
 
 .alert-bar-sep {
   color: rgba(242,205,80,0.28);
@@ -742,6 +737,13 @@ body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
   font-size: 19px; letter-spacing: 1px; line-height: 1;
 }
 .site-bar-plus { color: #e6ff8a; }
+/* Le « + » du logo clignote, comme sur Évolution et Constellation (Adrien, 31 oct. 2026). */
+.site-bar-plus { display: inline-block; animation: sbPlusPulse 1.6s ease-in-out infinite; }
+@keyframes sbPlusPulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(221,230,74,0.6); }
+  50%      { opacity: 0.45; text-shadow: 0 0 1px rgba(221,230,74,0.1); }
+}
+@media (prefers-reduced-motion: reduce) { .site-bar-plus { animation: none; } }
 .site-bar-beta {
   font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1.5px;
   padding: 2px 6px; border-radius: 3px;
@@ -759,6 +761,14 @@ body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
   transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
 .site-bar-nav a:hover { color: #fff; background: rgba(40, 70, 160, 0.35); }
+/* Symboles des quatre outils (épingle, podium, chronomètre, thermomètre) : menu, tiroir, titres. */
+.radar-sym { display: inline-block; width: 1em; height: 1em; fill: currentColor; vertical-align: -0.12em; }
+.site-bar-nav a .radar-sym { width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; opacity: 0.85; }
+.site-bar-nav a:hover .radar-sym, .site-bar-nav a.current .radar-sym { opacity: 1; }
+.nav-drawer a .radar-sym, .site-drawer a .radar-sym, #nav-drawer a .radar-sym { width: 15px; height: 15px; margin-right: 8px; vertical-align: -2px; opacity: 0.85; }
+.page-sym { display: inline-block; margin-right: 0.35em; line-height: 0; }
+.alert-bar-label .radar-sym { width: 12px; height: 12px; margin: 0 5px 0 2px; vertical-align: -2px; }
+.page-sym .radar-sym { width: 0.95em; height: 0.95em; vertical-align: -0.1em; }
 .site-bar-nav a.current { color: #fff; border-color: rgba(120, 170, 255, 0.55); background: rgba(40, 70, 160, 0.45); }
 .site-bar-right { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; margin-left: auto; }
 .site-bar-lang { position: static; margin: 0; }
@@ -790,9 +800,13 @@ body.has-site-bar .nav-toggle { display: none; }
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45); z-index: 240;
 }
 .site-bar-dropdown.open .site-bar-dropdown-menu, .site-bar-dropdown.hoverable:hover .site-bar-dropdown-menu { display: flex; }
+/* Pont invisible entre le bouton et la liste : la souris peut descendre sans que le menu se ferme
+   (l'espace de 8 px le fermait ; Adrien, 31 oct. 2026). */
+.site-bar-dropdown-menu::before { content: ''; position: absolute; left: 0; right: 0; top: -12px; height: 12px; }
 /* « Accueil » : le bouton est un lien (va à l'accueil), le menu liste ses modules */
 .site-bar-home .site-bar-dropdown-btn { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .site-bar-home .site-bar-dropdown-menu { min-width: 200px; }
+.site-bar-dropdown-menu a .radar-sym { width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; opacity: 0.85; }
 /* Ancres des modules de l'accueil : dégager le menu (et le bandeau) */
 #aune, #hot20 { scroll-margin-top: calc(var(--site-bar-h, 58px) + 12px); }
 body.has-alert-bar #aune, body.has-alert-bar #hot20 { scroll-margin-top: calc(var(--alert-bar-h, 32px) + var(--site-bar-h, 58px) + 12px); }

@@ -28,6 +28,8 @@
     #wrap { max-width: 1440px; margin: 0 auto; padding: 24px 28px calc(var(--ticker-height) + 60px); }
     /* Page longue : le classement n'est pas contraint à l'écran, chaque rang garde sa hauteur. */
     .aune-section { height: auto; min-height: 0; padding: 0; display: block; }
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #wrap { position: relative; z-index: 1; }
     .aune-grid { display: block; margin-top: 36px; }
     .aune-list { overflow: visible; display: block; }
     .aune-row, .aune-list.dense .aune-row, .aune-list.dense .aune-row.rank-1 { flex: 0 0 auto; min-height: 0; }
@@ -39,10 +41,14 @@
     .cl-type button { font-family: var(--grotesk); font-size: 12.5px; padding: 6px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
     .cl-type button.active { background: rgba(85,136,255,0.22); color: #fff; }
     body:not(.type-objets) .country-tab.obj-only { display: none; } /* pas d'événements pour les États-Unis */
-    .aune-head > div:first-child { flex: 1 1 300px; min-width: 0; }
+    .aune-head > div:first-child { flex: 1 1 460px; min-width: 0; }
+    /* Titre sur deux lignes : « Classement officiel » / « des événements » (Adrien, 31 oct. 2026) */
+    .aune-head h1.aune-title > span:not(.accent) { white-space: nowrap; }
+    .aune-head h1.aune-title .accent { display: block; }
     /* Remonter dans le temps : ‹ Semaine 44 · 26 oct. – 1 nov. 2026 › */
     .cl-nav { display: flex; align-items: center; gap: 10px; margin-right: auto; }
-    .cl-nav-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 260px; text-align: center; }
+    .cl-nav-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 260px; max-width: 460px; text-align: center; }
+    .cl-nav-sub { white-space: normal; }
     .cl-nav-sub { font-family: var(--grotesk); font-size: 12px; color: var(--muted); }
     /* Au-dessus de la date : « Classement final » (période close) ou « Classement en cours » (encore mis à jour) */
     .cl-nav-status { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px; }
@@ -56,7 +62,7 @@
     .cl-nav-label { font-family: var(--grotesk); font-size: 15px; font-weight: 600; color: #f1f5ff; white-space: nowrap; }
     .cl-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 14px 0 12px; }
     .cl-search {
-      flex: 1 1 220px; max-width: 360px; font-family: var(--grotesk); font-size: 14px; color: #e8f0ff;
+      flex: 1 1 160px; min-width: 140px; max-width: 360px; font-family: var(--grotesk); font-size: 14px; color: #e8f0ff;
       background: rgba(10,18,50,0.7); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; outline: none;
     }
     .cl-search:focus { border-color: var(--accent); }
@@ -64,15 +70,33 @@
     .cl-download { font-family: var(--grotesk); font-size: 12px; font-weight: 600; color: #e8f0ff; background: rgba(40,70,160,0.22); border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
     .cl-download:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     .cl-count { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+    .cl-more { text-align: center; margin: 22px 0 8px; }
+    .aune-tab.cl-tab-elec { color: #ffd98a; } .aune-tab.cl-tab-elec.active { background: rgba(255,200,87,0.18); color: #ffe7b0; }
+    .aune-tabs { flex-wrap: wrap; justify-content: flex-end; }
+    /* Filtres à droite du titre ; périodes sur deux lignes (4 + 3) dans le même cadre (Adrien, 31 oct. 2026). */
+    @media (min-width: 1000px) {
+      .aune-head { flex-wrap: nowrap; align-items: flex-start; }
+      .aune-head > div:first-child { flex: 1 1 auto; }
+      .aune-head .aune-controls { flex: 0 0 auto; }
+      .aune-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); justify-content: end; }
+      .aune-tabs .aune-tab { text-align: center; white-space: nowrap; padding-left: 12px; padding-right: 12px; }
+    }
+    .cl-custom { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(10,18,50,0.7); font-family: var(--grotesk); font-size: 13px; color: var(--muted); }
+    .cl-custom[hidden] { display: none; }
+    .cl-custom input { font-family: var(--grotesk); font-size: 13px; color: #e8f0ff; background: rgba(5,10,30,0.9); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; color-scheme: dark; }
+    .cl-custom button { font-family: var(--grotesk); font-size: 13px; font-weight: 700; color: #fff; background: rgba(40,70,160,0.35); border: 1px solid rgba(120,170,255,0.5); border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+    .cl-more button { font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); cursor: pointer; }
+    .cl-more button:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     @media (max-width: 760px) { #wrap { padding: 16px 16px calc(var(--ticker-height) + 40px); } .aune-head > div:first-child { flex: 0 0 auto; } .cl-nav { margin-right: 0; width: 100%; justify-content: space-between; } .cl-nav-block { min-width: 0; } .cl-nav-label { white-space: normal; } }
   </style>
 </head>
 <body>
+<canvas id="stars" aria-hidden="true"></canvas>
 <div id="wrap">
 <section class="aune-section" id="aune" hidden>
   <div class="aune-head">
     <div>
-      <h1 class="aune-title"><span data-i18n="classement.title">Classement officiel</span> <span class="accent" id="cl-title-accent" data-i18n="classement.title_accent">des événements</span></h1>
+      <h1 class="aune-title"><span class="page-sym" data-symbol="classement"></span><span data-i18n="classement.title">Classement officiel</span> <span class="accent" id="cl-title-accent" data-i18n="classement.title_accent">des événements</span></h1>
       <p class="aune-lede" id="aune-subtitle"></p>
     </div>
     <div class="aune-controls">
@@ -91,7 +115,15 @@
         <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
         <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
         <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
+        <button type="button" class="aune-tab cl-tab-elec" data-range="elecqc2026" data-i18n="aune.range.elecqc2026">Élections QC 2026</button>
+        <button type="button" class="aune-tab cl-tab-custom" data-range="custom" id="cl-custom-btn" data-i18n="aune.range.custom">Période personnalisée</button>
       </div>
+      <!-- Période personnalisée : deux dates, fin incluse ; le classement additionne les points de chaque édition de la période (Adrien, 31 oct. 2026) -->
+      <form class="cl-custom" id="cl-custom" hidden>
+        <label><span data-i18n="classement.custom_from">Du</span> <input type="date" id="cl-from" min="2026-07-15" required></label>
+        <label><span data-i18n="classement.custom_to">au</span> <input type="date" id="cl-to" min="2026-07-15" required></label>
+        <button type="submit" data-i18n="classement.custom_apply">Afficher</button>
+      </form>
     </div>
   </div>
   <div class="cl-toolbar">
@@ -102,8 +134,11 @@
     </div>
     <input class="cl-search" id="cl-search" type="search" data-i18n-placeholder="classement.search_placeholder" placeholder="Filtrer : un mot du titre ou du thème" autocomplete="off">
     <button type="button" class="cl-download" id="cl-download" data-i18n="classement.download" data-i18n-title="classement.download_tip" title="Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel">Télécharger (CSV)</button>
+    <button type="button" class="cl-download" id="cl-download-png" data-i18n="classement.png.download" data-i18n-title="classement.png.tip" title="Image officielle du classement affiché, prête à partager">Télécharger (PNG)</button>
   </div>
   <div class="aune-grid view-list" id="aune-grid"></div>
+  <!-- « Voir plus » : +50 rangs par clic, jusqu'au bout de la liste ; le CSV a toujours tout (Adrien, 31 oct. 2026) -->
+  <div class="cl-more" id="cl-more" hidden><button type="button" data-i18n="classement.more">Voir plus</button></div>
   <div class="aune-foot"><span id="aune-foot"></span><a href="./methodologie.html" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
 </div>
@@ -124,11 +159,35 @@
 <script src="./assets/js/shared-ticker.js"></script>
 <script src="./assets/js/aune.js"></script>
 <script src="./assets/js/objets.js"></script>
+  <script>
+    // Ciel étoilé, comme Méthodologie et la page des indices (Adrien, 31 oct. 2026).
+    (function() {
+      var canvas = document.getElementById('stars'); if (!canvas) return;
+      var ctx = canvas.getContext('2d'), stars = [], tick = 0;
+      function resize() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        var count = Math.floor((canvas.width * canvas.height) / 3200);
+        stars = Array.from({ length: count }, function() { return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.1 + 0.25, a: Math.random() * 0.5 + 0.18, s: Math.random() * 0.03 + 0.004, p: Math.random() * Math.PI * 2 }; });
+      }
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); tick += 0.016;
+        for (var i = 0; i < stars.length; i++) { var st = stars[i], a = st.a + Math.sin(tick * st.s + st.p) * 0.14; ctx.fillStyle = 'rgba(180, 205, 255, ' + Math.max(0, a) + ')'; ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2); ctx.fill(); }
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize); resize(); draw();
+    })();
+  </script>
+  <script src="./assets/js/vendor/qrcode.js"></script>
+  <script src="./assets/js/classement-png.js"></script>
 <script>
 (function() {
   // Vue et région depuis l'adresse (liens « Voir tout » de l'accueil) : ?range=week&country=CAN
   var q = new URLSearchParams(window.location.search);
   var range = q.get('range'), country = q.get('country'), type = q.get('type') === 'objets' ? 'objets' : 'evenements';
+  var offset = Math.min(0, parseInt(q.get('offset'), 10) || 0); // ?offset=-1 : la période précédente (code QR de l'image officielle)
+  var isoOk = function(v) { return /^\d{4}-\d{2}-\d{2}$/.test(v || ''); };
+  var from = isoOk(q.get('from')) ? q.get('from') : null, to = isoOk(q.get('to')) ? q.get('to') : null;
+  if (range === 'custom' && !(from && to && from <= to)) range = null; // ?range=custom&from=AAAA-MM-JJ&to=AAAA-MM-JJ
   var tabs = document.getElementById('aune-tabs'), countries = document.getElementById('aune-country-tabs');
   if (range && tabs.querySelector('[data-range="' + range + '"]')) {
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.range === range); });
@@ -138,12 +197,40 @@
     countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.country === country); });
   } else country = 'QC';
   window.RadarAune.init({
-    limits: { '24h': 50, today: 50, week: 50, month: 50, year: 50 },
+    limits: { '24h': 20, today: 20, week: 20, month: 20, year: 20, elecqc2026: 20, custom: 20 }, // Hot 20, événements et objets (Adrien, 31 oct. 2026) ; la recherche fouille toute la liste
     proportionalMax: 0, // jamais de hauteur proportionnelle ni d'illustration : liste serrée
-    searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav', table: true,
+    searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav', table: true, moreId: 'cl-more',
     subtitleKeys: 'classement.range_sub.',
-    range: range, country: country, type: type
+    range: range, country: country, type: type, offset: offset, customFrom: from, customTo: to
   });
+  // Période personnalisée : le bouton ouvre deux dates ; « Afficher » classe la période, fin incluse.
+  // L'adresse garde la vue (?range=…&from=…&to=…) pour qu'on puisse la partager.
+  var form = document.getElementById('cl-custom'), fromIn = document.getElementById('cl-from'), toIn = document.getElementById('cl-to');
+  var today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Montreal' });
+  fromIn.max = today; toIn.max = today;
+  fromIn.value = from || '2026-08-27'; toIn.value = to || today;
+  function syncUrl() {
+    var c = window.RadarAune.cfg;
+    try { var u = new URL(location.href); u.searchParams.set('range', c.range); u.searchParams.set('country', c.country); u.searchParams.set('type', c.type);
+      if (c.range === 'custom') { u.searchParams.set('from', c.customFrom); u.searchParams.set('to', c.customTo); } else { u.searchParams.delete('from'); u.searchParams.delete('to'); }
+      u.searchParams.delete('offset'); history.replaceState(null, '', u.toString()); } catch (e) { /* ignore */ }
+  }
+  tabs.addEventListener('click', function(e) {
+    var b = e.target.closest('.aune-tab'); if (!b) return;
+    if (b.dataset.range === 'custom') { form.hidden = false; if (!window.RadarAune.cfg.customFrom) { fromIn.focus(); } }
+    else form.hidden = true;
+    setTimeout(syncUrl, 0);
+  }, true);
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var a = fromIn.value, z = toIn.value; if (!isoOk(a) || !isoOk(z)) return;
+    if (a > z) { var t = a; a = z; z = t; fromIn.value = a; toIn.value = z; }
+    var c = window.RadarAune.cfg; c.customFrom = a; c.customTo = z; c.range = 'custom'; c.offset = 0; c.extra = 0;
+    tabs.querySelectorAll('.aune-tab').forEach(function(x) { x.classList.toggle('active', x.dataset.range === 'custom'); });
+    window.RadarAune.render(); syncUrl();
+  });
+  if (range === 'custom') form.hidden = false;
+  document.getElementById('aune-country-tabs').addEventListener('click', function() { setTimeout(syncUrl, 0); });
   // Événements ou objets : même grille, même navigateur, même filtre ; le titre et la
   // région (États-Unis seulement pour les objets) suivent.
   var typeBtns = document.querySelectorAll('.cl-type button'), accent = document.getElementById('cl-title-accent');
@@ -158,8 +245,9 @@
     }
     window.RadarAune.render();
   }
-  typeBtns.forEach(function(b) { b.addEventListener('click', function() { applyType(b.dataset.type); }); });
+  typeBtns.forEach(function(b) { b.addEventListener('click', function() { applyType(b.dataset.type); syncUrl(); }); });
   document.getElementById('cl-download').addEventListener('click', function() { window.RadarAune.download(); });
+  document.getElementById('cl-download-png').addEventListener('click', function() { window.RadarClassementPng.download(); });
   if (type === 'objets') applyType('objets');
   document.addEventListener('i18n:applied', function() { if (accent) accent.textContent = window.t(accent.getAttribute('data-i18n')); });
 })();

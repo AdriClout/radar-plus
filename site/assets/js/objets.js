@@ -61,6 +61,7 @@ function topIds(graphs, allKeys, range, offset, u) {
   return ids;
 }
 function chartStats(graphs, allKeys, range, country, u) {
+  if (u.isFixed && u.isFixed(range)) return { tops: [], total: {} }; // sans objet pour une période fixe
   var key = country + '|' + range + '|' + (allKeys[allKeys.length - 1] || '');
   if (chartCache[key]) return chartCache[key];
   var firstT = allKeys.length ? u.periodStartUtc(allKeys[0]) : Date.now();
@@ -99,8 +100,9 @@ function tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotal
       '<td class="num">' + u.numUnit(Math.round(100 * it.points / total), '%') + '</td>' +
       '<td class="num">' + u.numUnit((allTotal[it.id] || 0).toFixed(1), T('aune.points')) + '</td>' +
       '<td class="num">' + u.numUnit(it.blocks, T(it.blocks === 1 ? 'aune.unit_one.24h' : 'aune.unit_many.24h')) + '</td>' +
+      (u.isFixed(cfg.range) ? '<td class="num">—</td><td class="num">—</td>' :
       '<td class="num">' + u.numUnit(st.consec, u.unitPeriod(cfg.range, st.consec, T)) + '</td>' +
-      '<td class="num">' + u.numUnit(st.total, u.unitPeriod(cfg.range, st.total, T)) + '</td>' +
+      '<td class="num">' + u.numUnit(st.total, u.unitPeriod(cfg.range, st.total, T)) + '</td>') +
     '</tr>';
   }).join('');
   return u.tableWrap('<table class="aune-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>', T);
@@ -112,7 +114,7 @@ function render() {
   var sec = document.getElementById(cfg.sectionId), grid = document.getElementById(cfg.gridId), sub = document.getElementById(cfg.subtitleId);
   if (!sec || !grid) return;
   sec.hidden = false;
-  if (sub) sub.textContent = T('classement.obj_sub.' + cfg.range);
+  if (sub) { var U0 = window.RadarAune && window.RadarAune.util; if (U0 && U0.setSub) U0.setSub(sub, T('classement.obj_sub.' + cfg.range)); else sub.textContent = T('classement.obj_sub.' + cfg.range); }
   var foot = document.getElementById(cfg.footId); if (foot) foot.textContent = '';
   if (!data) {
     grid.innerHTML = '<div class="aune-empty">' + esc(T('common.loading')) + '</div>';
@@ -129,12 +131,13 @@ function render() {
     u.navStatus(cfg, T);
     if (nxt) nxt.disabled = cfg.offset >= 0;
   }
-  var items = ranked(graphs, keys), limit = cfg.limits[cfg.range] || 10;
+  var items = ranked(graphs, keys), limit = (cfg.limits[cfg.range] || 10) + (cfg.extra || 0);
   items.forEach(function(it, i) { it.rank = i + 1; }); // rang réel, gardé même quand un filtre réduit la liste
   var q = u.query();
   if (q) items = items.filter(function(it) { return u.norm(it.id).indexOf(q) !== -1; });
   var total = items.reduce(function(m, it) { return m + it.points; }, 0) || 1;
   var full = items, nAll = full.length; items = full.slice(0, limit);
+  if (u.moreButton) u.moreButton(nAll, items.length, T);
   var countEl = cfg.countId ? document.getElementById(cfg.countId) : null;
   if (countEl) countEl.textContent = nAll > items.length ? T('classement.obj_count_shown', { shown: items.length, n: nAll }) : T(nAll === 1 ? 'classement.obj_count_one' : 'classement.obj_count_many', { n: nAll });
   if (!items.length) { grid.innerHTML = '<div class="aune-empty">' + esc(T('aune.empty')) + '</div>'; return; }
@@ -166,6 +169,23 @@ function render() {
   }).join('');
   grid.innerHTML = '<ol class="aune-list dense">' + header + rows + '</ol>';
 }
+function stripHtml(h) { var d = document.createElement('div'); d.innerHTML = h || ''; return (d.textContent || '').replace(/\s+/g, ' ').trim(); }
+function exportData(n) {
+  if (!lastExport) return null;
+  var cfg = window.RadarAune.cfg, u = window.RadarAune.util;
+  var T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang, hot = u.isHot(cfg.range, cfg.offset), fixedFinal = u.isFixed(cfg.range) && u.window(cfg.range, 0)[1] <= Date.now();
+  var limit = (cfg.limits[cfg.range] || 10) + (cfg.extra || 0);
+  var rows = x.rows.slice(0, n || 20).map(function(it, i) {
+    var band = LEVEL_BAND[it.level] || 'aucune', rank = it.rank || (i + 1);
+    return { rank: rank, title: it.id.replace(/(^|\s)\S/g, function(ch) { return ch.toUpperCase(); }), issue: '', points: it.points, sharePct: 100 * it.points / (x.total || 1),
+      band: band, bandLabel: band === 'aucune' ? '' : T('alertes.level_short.' + it.level), trend: stripHtml(trendHtml(x.prevRanks[it.id], rank, limit, T, u.escapeHtml)).split('/')[0].trim(),
+      blocks: it.blocks, media: [] };
+  });
+  return { type: 'objets', region: x.country, range: cfg.range, offset: cfg.offset, lang: lang, is24h: cfg.range === '24h', hot: hot, final: cfg.offset < 0,
+    period: u.navLabel(cfg.range, cfg.offset, lang, T), sub: u.navSub(cfg.range, cfg.offset, lang, T),
+    status: T('classement.' + (hot ? 'hot20_' : '') + (cfg.offset < 0 || fixedFinal ? 'status_final' : 'status_live')),
+    nAll: x.rows.length, totalPoints: x.total || 0, rows: rows, slug: u.periodSlug(cfg.range, cfg.offset), from: cfg.customFrom, to: cfg.customTo };
+}
 function download() {
   if (!lastExport) return;
   var A = window.RadarAune, cfg = A.cfg, u = A.util, T = window.t || function(k) { return k; }, x = lastExport, lang = x.lang;
@@ -177,5 +197,5 @@ function download() {
   });
   u.csvFile(headers, rows, 'radarplus_objets_' + x.country + '_' + u.periodSlug(cfg.range, cfg.offset) + '.csv', lang, T);
 }
-window.RadarObjets = { render: render, load: load, download: download };
+window.RadarObjets = { render: render, load: load, download: download, exportData: exportData };
 })();

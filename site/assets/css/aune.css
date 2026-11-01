@@ -14,6 +14,7 @@
 .hot20-hint::before { content: ''; left: 50%; bottom: calc(100% + 4px); transform: translateX(-50%) translateY(4px); border: 6px solid transparent; border-top-color: rgba(130,170,255,0.32); }
 .hot20-hint:hover::before, .hot20-hint:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
 .hot20-trend { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.trend-vs { font-family: var(--grotesk); font-size: 10.5px; font-weight: 400; color: var(--muted); margin-left: 3px; }
 .hot20-trend.up { color: #4ade80; } .hot20-trend.down { color: #f87171; } .hot20-trend.new { color: #fbbf24; } .hot20-trend.comeback { color: #c084fc; } .hot20-trend.stable { color: var(--muted); }
 .hot20-bar-track { height: 3px; background: rgba(60,100,200,0.15); border-radius: 2px; overflow: hidden; }
 .hot20-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8)); transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
@@ -24,17 +25,24 @@
 .aune-section {
   position: relative; z-index: 1;
   max-width: 1040px; margin: 0 auto;
-  padding: 22px 28px 14px;
+  padding: clamp(24px, 5vh, 48px) 28px 14px; /* de l'air au-dessus du titre, selon la hauteur d'écran (Adrien, 31 oct. 2026) */
   display: flex; flex-direction: column;
   /* Hauteur = l'écran moins le bandeau d'alertes (fixé, 32 px de marge du body), le menu
-     (collant, en flux) et le bandeau « Dans le radar » fixé en bas. Plancher 640 px : en
-     dessous, la page défile un peu plutôt que d'écraser les rangs. */
-  height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 740px);
+     (collant, en flux) et le bandeau « Dans le radar » fixé en bas. Plancher 540 px (un
+     portable à 680 px de haut tient : trois rangs au plancher) ; en dessous, la page défile
+     un peu plutôt que d'écraser les rangs. Hauteur MINIMALE, pas fixe : si les rangées (plancher
+     120 px) et le pied ne tiennent pas, le module s'allonge au lieu que le pied chevauche la
+     dernière rangée (Adrien, 31 oct. 2026). */
+  min-height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 540px);
 }
 .aune-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
+/* Le bloc titre + phrase rétrécit (la phrase se replie) pour que les contrôles restent à droite, quelle
+   que soit la longueur de la phrase de la vue (Adrien, 31 oct. 2026). */
+.aune-head > :first-child { flex: 1 1 280px; min-width: 0; }
+.aune-head .aune-controls { flex: 0 0 auto; margin-left: auto; }
 .aune-title { font-family: var(--grotesk); font-size: clamp(24px, 3.2vw, 37px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #f1f5ff; }
 .aune-title .accent { color: var(--accent); }
-.aune-lede { font-size: 13px; color: var(--muted); margin-top: 8px; max-width: 600px; line-height: 1.45; min-height: 1.45em; }
+.aune-lede { font-size: 13px; color: var(--muted); margin-top: 8px; max-width: 520px; line-height: 1.45; min-height: 1.45em; }
 .aune-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .aune-controls .country-tabs, .aune-tabs { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); margin: 0; }
 .aune-controls .country-tab, .aune-tab {
@@ -45,7 +53,7 @@
 .aune-controls .country-tab:hover, .aune-tab:hover { color: #fff; background: transparent; border: 0; }
 .aune-controls .country-tab.active, .aune-tab.active { background: rgba(85,136,255,0.22); color: #fff; border: 0; box-shadow: none; }
 .aune-grid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-.aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.aune-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; flex: 1 1 auto; min-height: auto; }
 .aune-list-header {
   display: grid; grid-template-columns: 48px 72px minmax(0, 1fr) 210px; gap: 16px; flex: 0 0 auto;
   padding: 0 14px 7px 17px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px;
@@ -60,6 +68,10 @@
   flex: var(--grow, 1) 1 0px;
 }
 .aune-row.has-art { grid-template-columns: 48px 72px minmax(160px, 22%) minmax(0, 1fr) 210px; }
+/* Rangs 2 et 3 : une illustration plus petite, la carte du n° 1 garde la grande (Adrien, 1er nov. 2026). */
+.aune-row.has-art:not(.rank-1) { grid-template-columns: 48px 72px 140px minmax(0, 1fr) 210px; }
+.aune-row:not(.rank-1) .aune-row-art { align-self: center; height: 86px; }
+.aune-row:not(.rank-1) .aune-row-art figcaption { font-size: 7.5px; }
 .aune-row.rank-1 { background: var(--card-bg); border: 1px solid rgba(120,170,255,0.35); border-left-width: 3px; border-radius: 10px; margin: 10px 0 8px; padding: 11px 15px; }
 /* Filet de gauche = niveau de saillance (mêmes couleurs que le badge) */
 .aune-row.band-faible { border-left-color: #7f93b8; }
@@ -72,7 +84,10 @@
 .aune-row-art { display: none; position: relative; align-self: stretch; min-height: 0; margin: 0; border-radius: 6px; overflow: hidden; background: rgba(20,40,110,0.3); }
 .aune-row.has-art .aune-row-art { display: block; }
 .aune-row-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.aune-row-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.3px; padding: 3px 6px; background: rgba(2,0,16,0.6); color: #cfe1ff; }
+/* Crédit de l'illustration : un « i » dans un rond au coin de l'image ; la légende n'apparaît qu'au survol du « i » (Adrien, 31 oct. 2026). */
+.aune-art-i { position: absolute; right: 6px; bottom: 6px; width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(207,225,255,0.7); background: rgba(2,0,16,0.35); color: #cfe1ff; font-family: var(--mono); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; cursor: help; z-index: 2; }
+.aune-row-art figcaption { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.3px; padding: 3px 30px 3px 6px; background: rgba(2,0,16,0.7); color: #cfe1ff; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.aune-art-i:hover + figcaption, .aune-art-i:focus + figcaption { opacity: 1; }
 .aune-row-rank { font-family: var(--mono); font-size: 18px; font-weight: 700; color: rgba(120,165,255,0.75); }
 .aune-row.rank-1 .aune-row-rank { font-size: 28px; color: #ffc857; text-shadow: 0 0 18px rgba(255,200,87,0.45); }
 .aune-row.rank-2 .aune-row-rank { font-size: 21px; color: #d9e2f5; }
@@ -120,16 +135,67 @@
 }
 .aune-media-chip:hover { border-color: var(--accent); color: #fff; }
 /* Score comme le Hot 20 : chiffre et variation, la barre, puis la part de l'actualité sous la barre */
-.aune-row-score { justify-self: end; width: 190px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: baseline; }
-.aune-row-score .num { font-family: var(--mono); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+.aune-row-score { justify-self: end; width: 210px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: baseline; }
+/* Le nombre et son unité restent sur une ligne, même à quatre chiffres (« 1110.2 points cumulés »). */
+.aune-row-score .num { font-family: var(--mono); font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; white-space: nowrap; }
 .aune-row.rank-1 .aune-row-score .num { font-size: 24px; }
 .aune-row-score .inc { font-family: var(--mono); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.aune-row-score .pts { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+.aune-row-score .inc .pts { font-size: 10px; }
 .aune-row.rank-1 .aune-row-score .inc { font-size: 13px; }
 .aune-row-score .inc.up { color: #4ade80; }
 .aune-row-score .inc.down { color: #f87171; }
 .aune-row-score .inc.stable { color: var(--muted); font-weight: 400; }
 .aune-row-score .hot20-bar-track { grid-column: 1 / -1; margin-top: 4px; }
 .aune-row-score .unit { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+/* Étiquette de saillance : un rectangle de couleur sur deux lignes, « ACTUELLEMENT » (ou « SOMMET ») et
+   le « i » en haut, le niveau dessous ; à droite, au-dessus des points (Adrien, 31 oct. 2026). */
+.aune-row-score .sal-tag { grid-column: 1 / -1; justify-self: start; margin-bottom: 4px; }
+.sal-tag {
+  display: inline-flex; flex-direction: column; gap: 0; padding: 3px 8px 4px; border-radius: 6px; min-width: 150px; max-width: 100%;
+  font-family: var(--grotesk); color: #060d22; background: #6b7fa8; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.2;
+}
+.sal-tag-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 8.5px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.85; }
+.sal-level { font-size: 10.5px; font-weight: 800; color: inherit; text-decoration: none; white-space: nowrap; }
+.sal-level:hover { text-decoration: underline; }
+.sal-i { width: 14px; height: 14px; border-radius: 50%; border: 1.3px solid currentColor; background: transparent; color: inherit; font-family: var(--mono); font-size: 9px; font-weight: 700; line-height: 11px; padding: 0; cursor: help; flex: 0 0 auto; opacity: 0.9; }
+.sal-i:hover, .sal-i:focus { background: rgba(0,0,0,0.18); outline: none; opacity: 1; }
+.sal-tag.band-faible { background: #7f93b8; --pulse: rgba(127,147,184,0.55); }
+.sal-tag.band-moderee { background: #5fa8ff; --pulse: rgba(95,168,255,0.7); }
+.sal-tag.band-elevee { background: #f2c94c; --pulse: rgba(242,201,76,0.8); --pulse-r: 14px; }
+.sal-tag.band-tres_elevee { background: #ff9f43; --pulse: rgba(255,159,67,0.85); --pulse-r: 16px; }
+.sal-tag.band-extreme { background: #ff4d4d; color: #fff; --pulse: rgba(255,77,77,0.9); --pulse-r: 18px; }
+.sal-tag.band-aucune { background: transparent; border: 1px solid rgba(127,147,184,0.45); color: #9fb0cf; }
+.sal-tag:not(.band-aucune) { animation: aune-pulse 2.2s ease-in-out infinite; }
+.sal-tag.band-extreme { animation-duration: 1.4s; }
+@media (prefers-reduced-motion: reduce) { .sal-tag { animation: none; } }
+/* Plancher des rangées = leur contenu (min-height auto d'un élément flex) : ni la colonne des points
+   (étiquette sur deux lignes, nombre, barre, part), ni la carte du rang 1 (illustration, titre sur
+   deux lignes, puces) ne peuvent déborder de leur rangée (Adrien, 31 oct. 2026). */
+.aune-row { min-height: auto; }
+.aune-row-score { align-self: center; }
+.sal-pop { position: fixed; z-index: 400; background: rgba(8,16,46,0.97); border: 1px solid rgba(120,170,255,0.4); border-radius: 10px; padding: 14px 16px 12px; box-shadow: 0 12px 40px rgba(0,0,20,0.6); font-family: var(--grotesk); color: #dbe6ff; text-align: left; }
+.sal-pop p { margin: 0 0 8px; }
+.sal-kicker { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sal-pop .aune-band { animation: none; font-size: 10.5px; }
+.sal-note, .sal-sub { font-size: 12px; color: var(--muted); }
+.sal-sub { margin-top: -4px; }
+.sal-lede { font-size: 13px; line-height: 1.45; color: #f1f5ff; }
+.sal-curve { display: block; margin: 4px 0 0; }
+.sal-zone { opacity: 0.26; }
+.sal-zone.on { opacity: 0.85; animation: sal-blink 0.9s ease-in-out 3; }
+@keyframes sal-blink { 50% { opacity: 0.4; } }
+.sal-zone.band-aucune { fill: #55658a; } .sal-zone.band-faible { fill: #7f93b8; } .sal-zone.band-moderee { fill: #5fa8ff; }
+.sal-zone.band-elevee { fill: #f2c94c; } .sal-zone.band-tres_elevee { fill: #ff9f43; } .sal-zone.band-extreme { fill: #ff4d4d; }
+.sal-line { fill: none; stroke: #fff; stroke-opacity: 0.8; stroke-width: 1.4; }
+.sal-marker { stroke: #fff; stroke-width: 1.6; } .sal-dot { fill: #fff; }
+.sal-marker.sal-peak { stroke-dasharray: 3 2; stroke-opacity: 0.7; } .sal-dot.sal-peak { fill: #050a1e; stroke: #fff; stroke-width: 1.2; }
+.sal-marker-label.sal-peak { fill: #cfe1ff; opacity: 0.85; }
+.sal-marker-label { font-family: var(--mono); font-size: 9px; fill: #fff; letter-spacing: 0.6px; text-transform: uppercase; }
+.sal-axis { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
+.sal-scale { font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: 0.3px; }
+.sal-def { font-size: 12px; line-height: 1.45; color: #b9c8e8; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 2px; }
+.sal-more { font-size: 12.5px; color: #9dbcff; }
 .aune-clickable { cursor: pointer; }
 .aune-go { cursor: pointer; } /* tout le rang mène à la fiche */
 .aune-row.aune-go:hover { background: rgba(40,70,160,0.14); }
@@ -143,7 +209,7 @@
 .aune-foot-links a:first-child { display: inline-block; font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
 .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
 @media (max-width: 760px) {
-  .aune-section { height: auto; padding: 16px 16px 24px; }
+  .aune-section { height: auto; padding: 28px 16px 24px; }
   .aune-head { flex-direction: column; align-items: flex-start; }
   .aune-controls { align-items: flex-start; }
   .aune-tabs { flex-wrap: wrap; }
@@ -167,7 +233,17 @@
 .aune-table-outer.has-more .aune-table-arrow { display: block; }
 .aune-table-outer.has-more::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 70px; pointer-events: none; background: linear-gradient(90deg, rgba(2,0,16,0), rgba(2,0,16,0.9)); }
 .aune-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+/* En-tête qui suit le défilement (voir auneStickyHead) : fond opaque pour couvrir les rangées. */
+.aune-table thead { position: relative; z-index: 4; }
+.aune-table thead.stuck th { background: rgba(3,6,22,0.96); box-shadow: 0 6px 12px -6px rgba(0,0,0,0.7); padding-top: 8px; }
 .aune-table { width: 100%; min-width: 1320px; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+/* Dans le tableau du Classement, la place ne manque pas : étiquette sur une seule ligne,
+   « ACTUELLEMENT · SAILLANCE ÉLEVÉE (i) » (Adrien, 31 oct. 2026). */
+.aune-table .sal-tag { flex-direction: row; align-items: center; gap: 6px; min-width: 0; padding: 3px 9px 3px 8px; margin-bottom: 4px; }
+.aune-table .sal-tag-top { display: contents; }
+.aune-table .sal-prefix::after { content: ' ·'; }
+.aune-table .sal-level { order: 1; }
+.aune-table .sal-i { order: 2; margin-left: 4px; }
 .aune-table th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 10px 8px; border-bottom: 1px solid var(--border); font-weight: 400; vertical-align: bottom; line-height: 1.35; max-width: 150px; }
 .aune-table th.num, .aune-table td.num { text-align: right; }
 .aune-table th.center, .aune-table td.center { text-align: center; }
@@ -188,6 +264,14 @@
 .aune-table tr.rank-1 td.rank { color: #ffc857; font-size: 24px; text-shadow: 0 0 14px rgba(255,200,87,0.4); }
 .aune-table tr.rank-2 td.rank { color: #d9e2f5; } .aune-table tr.rank-3 td.rank { color: #d9a86c; }
 .aune-table td.subject .aune-band { display: inline-block; margin-bottom: 4px; }
+.aune-table td.subject .subj-wrap { display: flex; gap: 12px; align-items: flex-start; }
+.aune-table td.subject .subj-text { min-width: 0; flex: 1 1 auto; }
+.aune-thumb { position: relative; flex: 0 0 auto; width: 96px; height: 60px; border-radius: 6px; overflow: hidden; background: rgba(20,40,110,0.3); display: none; }
+.aune-thumb.ok { display: block; }
+.aune-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.aune-thumb .aune-art-i { width: 14px; height: 14px; line-height: 12px; font-size: 9px; right: 4px; bottom: 4px; }
+.aune-thumb-credit { position: absolute; left: 0; right: 0; bottom: 0; font-family: var(--mono); font-size: 7px; padding: 2px 20px 2px 4px; background: rgba(2,0,16,0.75); color: #cfe1ff; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.aune-thumb .aune-art-i:hover + .aune-thumb-credit, .aune-thumb .aune-art-i:focus + .aune-thumb-credit { opacity: 1; }
 .aune-table td.subject .aune-row-title { display: block; font-size: 14px; white-space: normal; -webkit-line-clamp: unset; }
 .aune-table tr.rank-1 td.subject .aune-row-title { font-size: 18px; line-height: 1.25; }
 .aune-table tr.rank-1 td.subject .aune-band { font-size: 12px; padding: 3px 10px; }

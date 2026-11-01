@@ -126,7 +126,7 @@
     /* Scroll indicator — au-dessus du ticker, mais un peu plus bas qu'avant
        (signalement #25 : « descendre un peu le Explorer ») */
     .scroll-hint {
-      position: absolute; bottom: calc(var(--ticker-height) + 56px); left: 50%;
+      position: absolute; bottom: calc(var(--ticker-height) + 18px); left: 50%; /* plus bas, détaché des symboles (Adrien, 31 oct. 2026) */
       transform: translateX(-50%); text-align: center;
       animation: float 2.5s ease-in-out infinite;
       z-index: 5;
@@ -442,6 +442,7 @@
       background: linear-gradient(90deg, var(--accent), rgba(120,80,255,0.8));
       transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
+    .hot20-row-share { font-family: var(--grotesk); font-size: 11px; color: var(--muted); margin-top: 5px; }
     .hot20-row-media { font-size: 10px; color: var(--muted); text-align: right; white-space: nowrap; }
 
     .hot20-hint {
@@ -521,139 +522,6 @@
     .hot20-trend.new { color: #fbbf24; }
     .hot20-trend.comeback { color: #c084fc; }
     .hot20-trend.stable { color: var(--muted); }
-
-    /* Search bar */
-    .hot20-search {
-      width: 100%; margin-bottom: 20px;
-      position: relative;
-    }
-    .hot20-search input {
-      width: 100%; padding: 12px 16px 12px 42px;
-      background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 6px; color: var(--text); font-family: var(--mono);
-      font-size: 14px; outline: none; transition: border-color 0.3s;
-    }
-    .hot20-search input::placeholder { color: var(--muted); }
-    .hot20-search input:focus { border-color: var(--accent); }
-    .hot20-search-icon {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--muted); font-size: 16px; pointer-events: none;
-    }
-    .hot20-search-result {
-      margin-bottom: 20px; padding: 16px 20px;
-      background: linear-gradient(135deg, rgba(40,70,160,0.3), rgba(20,30,80,0.4));
-      border: 1px solid rgba(100,160,255,0.35); border-radius: 6px;
-      display: none;
-      position: relative;
-      overflow: hidden;
-    }
-    .hot20-search-result::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -45%;
-      width: 40%;
-      height: 100%;
-      background: linear-gradient(90deg, rgba(84,255,165,0), rgba(84,255,165,0.16), rgba(84,255,165,0));
-      opacity: 0;
-      pointer-events: none;
-    }
-    .hot20-search-result.visible { display: block; }
-    .hot20-search-result.visible::before {
-      animation: radarSweep 4.2s ease-in-out infinite;
-    }
-    @keyframes radarSweep {
-      0% { transform: translateX(0); opacity: 0; }
-      15% { opacity: 0.62; }
-      70% { opacity: 0.26; }
-      100% { transform: translateX(360%); opacity: 0; }
-    }
-    .hot20-search-result .sr-name {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 18px; font-weight: 700; color: #e8f0ff;
-      text-transform: capitalize; margin-bottom: 4px;
-    }
-    .hot20-search-result .sr-name-text {
-      line-height: 1.1;
-    }
-    .hot20-search-result .sr-radar-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #44ff9a;
-      position: relative;
-      box-shadow: 0 0 0 0 rgba(68,255,154,0.55), 0 0 8px rgba(68,255,154,0.55);
-      flex: 0 0 auto;
-    }
-    .hot20-search-result .sr-radar-dot::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 50%;
-      border: 1px solid rgba(68,255,154,0.65);
-      opacity: 0;
-      transform: scale(0.7);
-    }
-    .hot20-search-result.radar-active .sr-radar-dot {
-      animation: radarDotPulse 2.2s ease-out infinite;
-    }
-    .hot20-search-result.radar-active .sr-radar-dot::after {
-      animation: radarRing 2.2s ease-out infinite;
-    }
-    .hot20-search-result.radar-inactive .sr-radar-dot {
-      background: rgba(116,206,164,0.78);
-      box-shadow: 0 0 0 0 rgba(116,206,164,0.35), 0 0 6px rgba(116,206,164,0.35);
-    }
-    .hot20-search-result.radar-inactive .sr-radar-dot::after {
-      border-color: rgba(116,206,164,0.55);
-      animation: radarRingSoft 3.4s ease-out infinite;
-    }
-    @keyframes radarDotPulse {
-      0% { box-shadow: 0 0 0 0 rgba(68,255,154,0.6), 0 0 10px rgba(68,255,154,0.5); }
-      60% { box-shadow: 0 0 0 8px rgba(68,255,154,0), 0 0 12px rgba(68,255,154,0.25); }
-      100% { box-shadow: 0 0 0 0 rgba(68,255,154,0), 0 0 8px rgba(68,255,154,0.18); }
-    }
-    @keyframes radarRing {
-      0% { opacity: 0.65; transform: scale(0.75); }
-      70% { opacity: 0; transform: scale(1.8); }
-      100% { opacity: 0; transform: scale(1.8); }
-    }
-    @keyframes radarRingSoft {
-      0% { opacity: 0.5; transform: scale(0.75); }
-      70% { opacity: 0; transform: scale(1.5); }
-      100% { opacity: 0; transform: scale(1.5); }
-    }
-    .hot20-search-result .sr-info {
-      font-size: 12px; color: var(--text); line-height: 1.6;
-    }
-    .hot20-search-result .sr-actions {
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .hot20-search-result .sr-evo-btn {
-      display: inline;
-      padding: 0;
-      border: none;
-      background: none;
-      color: rgba(170, 210, 255, 0.95);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      text-transform: none;
-      transition: color 0.25s;
-    }
-    .hot20-search-result .sr-evo-btn:hover {
-      color: #eaf3ff;
-    }
-    .hot20-search-result .sr-not-found {
-      font-size: 13px; color: var(--muted); font-style: italic;
-    }
 
     /* Article panel */
     .article-overlay {
@@ -874,9 +742,10 @@
     }
     .modules-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 18px;
     }
+    @media (max-width: 980px) { .modules-grid { grid-template-columns: repeat(2, 1fr); } }
     .module-card {
       display: flex; flex-direction: column; gap: 10px;
       padding: 22px 20px;
@@ -898,8 +767,10 @@
       box-shadow: 0 0 22px rgba(60,100,200,0.12);
     }
     .module-card-icon {
-      font-size: 20px; color: var(--accent); opacity: 0.75; line-height: 1;
+      font-size: 20px; color: var(--accent); opacity: 0.75; line-height: 0;
     }
+    .module-card-icon .radar-sym { width: 26px; height: 26px; }
+    .module-card:hover .module-card-icon { opacity: 1; }
     .module-card-featured .module-card-icon { opacity: 1; }
     .module-card-name {
       font-family: var(--orbitron); font-size: 13px;
@@ -964,6 +835,8 @@
     .week-nav { display: none; } /* remonter dans le temps : sur la page Classement, pas sur l'accueil (Adrien, 31 oct.) */
     .hot20-title { font-size: clamp(24px, 3.2vw, 37px); }
     .hot20-title .hot20-subtitle { font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 400; margin-top: 8px; }
+    .hot20-subtitle .sub-main { display: block; color: #e8f0ff; font-weight: 600; }
+    .hot20-subtitle .sub-detail { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
     .hot20-evolution-cta, .hot20-evolution-cta:hover { padding: 0; background: none; border: 0; box-shadow: none; transform: none; font-family: var(--grotesk); font-size: 13.5px; letter-spacing: 0; text-transform: none; font-weight: 600; color: #9dbcff; }
     .hot20-evolution-cta:hover { color: #fff; }
     .hot20-controls { grid-template-columns: 1fr auto; align-items: center; }
@@ -975,8 +848,6 @@
     .week-label-date { font-size: 14px; font-weight: 600; }
     .week-label-interval, .week-label-countdown { font-size: 12px; }
     .week-btn { font-family: var(--grotesk); border-radius: 6px; }
-    .hot20-search { margin: 18px 0 10px; }
-    .hot20-search input { font-family: var(--grotesk); font-size: 14px; padding: 9px 12px; border-radius: 8px; letter-spacing: 0; }
     .hot20-list { border: 0; border-radius: 0; }
     .hot20-list-header { background: transparent; padding: 0 14px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; border-bottom: 1px solid var(--border); }
     .hot20-row { padding: 11px 14px; border-bottom: 1px solid var(--border); }
@@ -986,16 +857,19 @@
     .hot20-row.alert-eleve, .hot20-row.alert-tres-eleve, .hot20-row.alert-extreme { background: transparent; box-shadow: none; }
     .hot20-row.alert-eleve:hover, .hot20-row.alert-tres-eleve:hover, .hot20-row.alert-extreme:hover { background: rgba(40,70,160,0.14); }
     .hot20-row-rank { font-family: var(--mono); font-size: 18px; color: rgba(120,165,255,0.75); }
-    .hot20-row-name { font-size: 14.5px; font-weight: 600; }
-    .hot20-row-streak { font-family: var(--grotesk); font-size: 11.5px; margin-top: 2px; }
+    .hot20-row-name { font-size: 19px; font-weight: 700; }
+    /* « N jours de suite » à la suite du nom, avec 📍 (Adrien, 31 oct. 2026) */
+    .hot20-row-name-wrap .hot20-row-name { flex: 0 1 auto; }
+    .hot20-row-streak { font-family: var(--grotesk); font-size: 12.5px; margin: 0 0 0 12px; white-space: nowrap; flex: 0 0 auto; }
     .hot20-row-pct strong { font-size: 17px; }
     .hot20-row-increase { font-size: 13px; font-weight: 700; color: #4ade80; }
     /* Colonne « articles » retirée de l'accueil (Adrien, 31 oct.) ; le compte reste dans l'info-bulle du sujet. */
     .hot20-row-media, .hot20-list-header span:last-child { display: none; }
     .hot20-list-header, .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 210px; }
-    .hot20-more { margin-top: 22px; text-align: center; }
-    .hot20-more a, .aune-foot-links a:first-child { display: inline-block; font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
-    .hot20-more a:hover, .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
+    .hot20-more { margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: var(--grotesk); font-size: 12px; }
+    .hot20-more .methodo-how { color: #9dbcff; }
+    .hot20-more a:first-child, .aune-foot-links a:first-child { display: inline-block; font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); }
+    .hot20-more a:first-child:hover, .aune-foot-links a:first-child:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     @media (max-width: 760px) { .hot20-section { margin-top: 48px; padding: 0 16px 60px; } }
     @media (max-width: 700px) {
       .hot20-header { flex-direction: column; align-items: flex-start; }
@@ -1005,7 +879,7 @@
       .hot20-row-pct { gap: 6px; }
       .hot20-row-pct strong { font-size: 14px; }
       .hot20-row-increase { font-size: 11px; }
-      .hot20-row-name { font-size: 14.5px; }
+      .hot20-row-name { font-size: 16px; }
     }
   </style>
 </head>
@@ -1031,8 +905,8 @@
              au postdoc d'Adrien (avec Soroka). -->
       </div>
       <div class="aune-tabs" id="aune-tabs" role="tablist">
-        <button type="button" class="aune-tab active" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
-        <button type="button" class="aune-tab" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
+        <button type="button" class="aune-tab" data-range="24h" data-i18n="aune.range.24h">Dernières heures</button>
+        <button type="button" class="aune-tab active" data-range="today" data-i18n="aune.range.today">Aujourd'hui</button>
         <button type="button" class="aune-tab" data-range="week" data-i18n="aune.range.week">Cette semaine</button>
         <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
         <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
@@ -1040,7 +914,7 @@
     </div>
   </div>
   <div class="aune-grid view-list" id="aune-grid"></div>
-  <div class="aune-foot"><span id="aune-foot"></span><span class="aune-foot-links"><a href="./classement.html" id="aune-see-all" data-i18n="aune.see_all">Voir tout le classement →</a><a href="./methodologie.html" data-i18n="aune.how">Comment l'indice est calculé →</a></span></div>
+  <div class="aune-foot"><span id="aune-foot"></span><span class="aune-foot-links"><a href="./classement.html" id="aune-see-all" data-i18n="aune.see_all">Voir tout le classement →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></span></div>
 </section>
 
 <!-- ========== HOT 20 ========== -->
@@ -1061,12 +935,12 @@
           <button class="country-tab" data-country="USA" data-i18n="country.USA">États-Unis</button>
         </div>
         <div class="granularity-tabs" id="granularity-tabs">
-          <button class="granularity-tab" data-gran="4h" data-i18n="period.4h">4 h</button>
-          <button class="granularity-tab active" data-gran="day" data-i18n="period.day">Jour</button>
-          <button class="granularity-tab" data-gran="week" data-i18n="period.week">Semaine</button>
-          <button class="granularity-tab" data-gran="month" data-i18n="period.month">Mois</button>
-          <button class="granularity-tab" data-gran="quarter" data-i18n="period.quarter">Année</button>
-          <button class="granularity-tab" data-gran="total" data-i18n="period.total">Total</button>
+          <button class="granularity-tab" data-gran="4h" data-i18n="period_tab.4h">Dernière édition</button>
+          <button class="granularity-tab active" data-gran="day" data-i18n="period_tab.day">Aujourd’hui</button>
+          <button class="granularity-tab" data-gran="week" data-i18n="period_tab.week">Cette semaine</button>
+          <button class="granularity-tab" data-gran="month" data-i18n="period_tab.month">Ce mois-ci</button>
+          <button class="granularity-tab" data-gran="quarter" data-i18n="period_tab.quarter">Cette année</button>
+          <button class="granularity-tab" data-gran="total" data-i18n="period_tab.total">Depuis le début</button>
         </div>
       </div>
       <div class="week-nav">
@@ -1080,14 +954,10 @@
       </div>
     </div>
   </div>
-  <div class="hot20-search">
-    <input type="text" id="hot20-search-input" data-i18n-placeholder="common.search_radar_placeholder" placeholder="Est-ce que X est dans le radar ?" autocomplete="off">
-  </div>
-  <div class="hot20-search-result" id="search-result"></div>
   <div class="hot20-list" id="hot20-grid">
     <div class="hot20-empty" data-i18n="homepage.loading_hot20">Chargement&hellip;</div>
   </div>
-  <div class="hot20-more"><a href="./classement.html" data-i18n="hot20.see_more">Voir plus →</a></div>
+  <div class="hot20-more"><a href="./classement.html?type=objets" id="hot20-more-link" data-i18n="hot20.see_more">Voir plus →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
 
 <!-- ========== MODULES ========== -->
@@ -1152,44 +1022,71 @@
   </button>
 </section>
 
-<!-- Dotted bridge -->
+<!-- Pont pointillé : une ligne par outil, du symbole du robot à sa carte (positions mesurées
+     par layoutBridge(), donc justes à toute largeur d'écran ; Adrien, 31 oct. 2026). -->
 <div class="dotted-bridge">
-  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <line x1="350" y1="0" x2="300" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="500" y1="0" x2="500" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <line x1="650" y1="0" x2="700" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2s" repeatCount="indefinite" path="M350,0 L300,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.3s" repeatCount="indefinite" path="M500,0 L500,120"/>
-    </circle>
-    <circle r="3" fill="rgba(80,130,255,0.7)">
-      <animateMotion dur="2.6s" repeatCount="indefinite" path="M650,0 L700,120"/>
-    </circle>
+  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" id="dotted-bridge-svg">
+    <line x1="340" y1="0" x2="280" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="450" y1="0" x2="427" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="550" y1="0" x2="573" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <line x1="660" y1="0" x2="720" y2="120" stroke="rgba(80,130,255,0.3)" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2s" repeatCount="indefinite" path="M340,0 L280,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.3s" repeatCount="indefinite" path="M450,0 L427,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.6s" repeatCount="indefinite" path="M550,0 L573,120"/></circle>
+    <circle r="3" fill="rgba(80,130,255,0.7)"><animateMotion dur="2.9s" repeatCount="indefinite" path="M660,0 L720,120"/></circle>
   </svg>
 </div>
+<script>
+// Chaque pointillé relie un symbole du robot (.page-hotspot, dans l'ordre des cartes) au centre
+// de sa carte « Outils d'analyse » ; recalculé au chargement et au redimensionnement.
+(function () {
+  function layoutBridge() {
+    var svg = document.getElementById('dotted-bridge-svg'); if (!svg) return;
+    var box = svg.getBoundingClientRect(), w = Math.round(box.width) || 1000;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' 120');
+    var spots = document.querySelectorAll('.page-hotspot'), cards = document.querySelectorAll('.module-card');
+    var lines = svg.querySelectorAll('line'), motions = svg.querySelectorAll('animateMotion');
+    lines.forEach(function (l, i) {
+      var s = spots[i], c = cards[i]; if (!s || !c) { l.style.display = 'none'; return; }
+      var sb = s.getBoundingClientRect(), cb = c.getBoundingClientRect();
+      var x1 = Math.round(sb.left + sb.width / 2 - box.left), x2 = Math.round(cb.left + cb.width / 2 - box.left);
+      l.setAttribute('x1', x1); l.setAttribute('x2', x2);
+      if (motions[i]) motions[i].setAttribute('path', 'M' + x1 + ',0 L' + x2 + ',120');
+    });
+  }
+  window.addEventListener('resize', layoutBridge);
+  window.addEventListener('load', layoutBridge);
+  if (document.readyState !== 'loading') layoutBridge(); else document.addEventListener('DOMContentLoaded', layoutBridge);
+})();
+</script>
 
 <section class="modules-section" id="modules">
   <h2 class="modules-title" data-i18n="modules.title">Outils d&rsquo;analyse</h2>
+  <!-- Quatre outils = les quatre symboles du robot, dans leur ordre (Adrien, 31 oct. 2026). -->
   <div class="modules-grid">
     <a class="module-card" href="./constellation.html">
-      <div class="module-card-icon">&#9678;</div>
+      <div class="module-card-icon" data-symbol="constellation"></div>
       <div class="module-card-name" data-i18n="modules.constellation.name">Constellation</div>
       <div class="module-card-desc" data-i18n="modules.constellation.desc">Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques.</div>
       <div class="module-card-cta" data-i18n="modules.explore">Explorer &rarr;</div>
     </a>
-    <a class="module-card module-card-featured" href="./evolution.html">
-      <div class="module-card-icon">&#9672;</div>
+    <a class="module-card" href="./classement.html">
+      <div class="module-card-icon" data-symbol="classement"></div>
+      <div class="module-card-name" data-i18n="modules.classement.name">Classement</div>
+      <div class="module-card-desc" data-i18n="modules.classement.desc">Le classement officiel des événements et des objets, par édition, jour, semaine, mois ou année, et tout son historique.</div>
+      <div class="module-card-cta" data-i18n="modules.see_ranking">Voir le classement &rarr;</div>
+    </a>
+    <a class="module-card" href="./evolution.html">
+      <div class="module-card-icon" data-symbol="evolution"></div>
       <div class="module-card-name" data-i18n="modules.evolution.name">Évolution</div>
       <div class="module-card-desc" data-i18n="modules.evolution.desc">Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n&rsquo;importe quel sujet sur l&rsquo;ensemble de l&rsquo;historique.</div>
       <div class="module-card-cta" data-i18n="modules.view_evolution">Voir l&rsquo;évolution &rarr;</div>
     </a>
-    <a class="module-card" href="./statistiques.html">
-      <div class="module-card-icon">&#9638;</div>
-      <div class="module-card-name" data-i18n="modules.statistiques.name">Statistiques</div>
-      <div class="module-card-desc" data-i18n="modules.statistiques.desc">Analyse détaillée par objet&nbsp;: pics de saillance, distribution médiatique, historique complet et articles associés.</div>
-      <div class="module-card-cta" data-i18n="modules.analyze">Analyser &rarr;</div>
+    <a class="module-card" href="./alertes.html">
+      <div class="module-card-icon" data-symbol="alertes"></div>
+      <div class="module-card-name" data-i18n="modules.alertes.name">Alertes</div>
+      <div class="module-card-desc" data-i18n="modules.alertes.desc">Les sujets dont la saillance dépasse les seuils calibrés par pays&nbsp;: élevé, très élevé, extrême, et leurs épisodes.</div>
+      <div class="module-card-cta" data-i18n="modules.see_alerts">Voir les alertes &rarr;</div>
     </a>
   </div>
 </section>
@@ -1597,8 +1494,15 @@ function getArticlesFor(country, periodKey, nodeId, fallback) {
 var allPeriods = [];
 var currentCountry = 'QC';
 
+// Liens « Comment l'indice est calculé » → § 5.2 de la méthodologie (indice v1, par objet et par événement) ; ancre EN propre.
+function setMethodoAnchors() {
+  var en = (document.documentElement.lang || 'fr').slice(0, 2) === 'en';
+  document.querySelectorAll('a.methodo-how').forEach(function(a) { a.setAttribute('href', './methodologie.html#' + (en ? 'en-indice-absolu' : 'indice-de-saillance-absolu')); });
+}
+document.addEventListener('i18n:applied', setMethodoAnchors);
+setMethodoAnchors();
 // La Une des Unes : module partagé assets/js/aune.js (réglages de l'accueil = ceux par défaut).
-if (window.RadarAune) window.RadarAune.init({});
+if (window.RadarAune) window.RadarAune.init({ range: 'today' }); // « Aujourd'hui » par défaut (Adrien, 31 oct. 2026)
 var currentPeriodIdx = 0;
 var currentGranularity = 'day'; // '4h','day','week','month','quarter'
 var aggregatedSlots = [];      // [{label, dateLabel, interval, periodKeys: [...]}]
@@ -1821,8 +1725,26 @@ function renderHot20() {
   var nextBtn = document.getElementById('week-next');
   var subtitleEl = document.getElementById('hot20-subtitle');
 
-  // Update subtitle
-  subtitleEl.textContent = (window.t ? window.t('subtitle.' + currentGranularity) : '') || '';
+  // Sous-titre : la période exacte, comme le navigateur du Classement (Adrien, 31 oct. 2026) :
+  // « Semaine 44 · 26 oct. – 1 nov. 2026 » puis « Saillance cumulée depuis le 26 octobre 2026 ».
+  // Année et total : depuis la première date des données chargées (130 jours), jamais « 1er janvier ».
+  (function() {
+    var T = window.t || function(k) { return k; }, lang = (document.documentElement.lang || 'fr').slice(0, 2);
+    var u = window.RadarAune && window.RadarAune.util, slot0 = aggregatedSlots[currentSlotIdx];
+    var main = T('subtitle.' + currentGranularity) || '', detail = '';
+    if (u && slot0 && slot0.periodKeys && slot0.periodKeys.length) {
+      var loc = lang === 'en' ? 'en-CA' : 'fr-CA';
+      var fmtDate = function(key) { return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(u.editionTime(key) + 12 * 3600e3)); };
+      var firstKey = slot0.periodKeys[0], lastKey = slot0.periodKeys[slot0.periodKeys.length - 1];
+      var map = { day: 'today', week: 'week', month: 'month' };
+      if (currentGranularity === '4h') { main = u.blockLabel(lastKey, lang); detail = T('hot20.sub_edition'); }
+      else if (currentGranularity === 'day') { main = u.navLabel('today', 0, lang, T); detail = T('hot20.sub_today', { n: slot0.periodKeys.length }); }
+      else if (map[currentGranularity]) { main = u.navLabel(map[currentGranularity], 0, lang, T); detail = u.navSub(map[currentGranularity], 0, lang, T); }
+      else if (currentGranularity === 'quarter') { main = u.navLabel('year', 0, lang, T); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_data_start'); }
+      else { main = T('subtitle.total'); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_days', { n: new Set(slot0.periodKeys.map(function(k) { return k.slice(0, 10); })).size }); }
+    }
+    subtitleEl.innerHTML = '<span class="sub-main">' + escapeHtml(main) + '</span>' + (detail ? '<span class="sub-detail">' + escapeHtml(detail) + '</span>' : '');
+  })();
 
   if (!aggregatedSlots.length) {
     grid.innerHTML = '<div class="hot20-empty">Données non disponibles</div>';
@@ -1841,7 +1763,7 @@ function renderHot20() {
 
   // Update date label
   if (currentGranularity === '4h') {
-    var pf = parsePeriodLabel(slot.label || slot.raw.key);
+    var pf = parsePeriodLabel((slot.raw && slot.raw.key) || slot.label);
     document.getElementById('wl-date').textContent = pf.date;
     document.getElementById('wl-interval').textContent = pf.interval;
   } else {
@@ -1896,24 +1818,40 @@ function renderHot20() {
     prevNodes.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; prevIds[n.id] = true; });
   }
 
-  /* Consecutive slots: count how many recent slots each entity appears in top 20 */
+  /* Série : nombre de périodes consécutives (en remontant depuis celle-ci) où l'objet est dans
+     le top 10 de la période, le classement affiché ; les données gardent 30 objets par bloc,
+     « présent dans les données » ne voulait rien dire pour le lecteur (Adrien, 31 oct. 2026). */
+  // Paliers, du plus serré au plus large : première position, top 2, top 3, top 10. On affiche
+  // le palier le plus serré tenu au moins deux périodes de suite (« 2 jours de suite en
+  // première position » plutôt que « 15 jours de suite dans le top 10 » ; Adrien, 31 oct. 2026).
+  var STREAK_TIERS = [1, 2, 3, 10];
   var streaks = {};
-  nodes.forEach(function(node) {
-    var count = 0;
-    for (var si = currentSlotIdx; si >= 0; si--) {
-      var s = aggregatedSlots[si];
-      var sNodes;
-      if (currentGranularity === '4h') {
-        var pd = countryGraphs[s.periodKeys[0]];
-        sNodes = pd && pd.nodes ? pd.nodes : [];
-      } else {
-        sNodes = aggregateNodes(countryGraphs, s.periodKeys);
-      }
-      var found = sNodes.some(function(n) { return n.id === node.id; });
-      if (found) count++;
-      else break;
+  var slotRankCache = {};
+  function slotRanks(si) {
+    if (slotRankCache[si]) return slotRankCache[si];
+    var s = aggregatedSlots[si], sNodes;
+    if (currentGranularity === '4h') {
+      var pd = countryGraphs[s.periodKeys[0]];
+      sNodes = pd && pd.nodes ? pd.nodes : [];
+    } else {
+      sNodes = aggregateNodes(countryGraphs, s.periodKeys);
     }
-    streaks[node.id] = count;
+    var ranks = {};
+    sNodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }).slice(0, 10)
+      .forEach(function(n, idx) { ranks[n.id] = idx + 1; });
+    return (slotRankCache[si] = ranks);
+  }
+  nodes.forEach(function(node) {
+    var counts = STREAK_TIERS.map(function() { return 0; }), alive = STREAK_TIERS.map(function() { return true; });
+    for (var si = currentSlotIdx; si >= 0; si--) {
+      var r = slotRanks(si)[node.id] || 99, any = false;
+      STREAK_TIERS.forEach(function(t, k) { if (alive[k] && r <= t) { counts[k]++; any = true; } else alive[k] = false; });
+      if (!any) break;
+    }
+    var pick = null;
+    STREAK_TIERS.forEach(function(t, k) { if (pick === null && counts[k] > 1) pick = { top: t, n: counts[k] }; });
+    streaks[node.id] = pick ? pick.n : 0;
+    streaks[node.id + '|top'] = pick ? pick.top : 10;
   });
 
   /* Comeback detection */
@@ -1960,7 +1898,7 @@ function renderHot20() {
     if (!tiers) return null;
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
     return null;
   }
   try {
@@ -2007,7 +1945,9 @@ function renderHot20() {
     '</div>' +
     nodes.map(function(node, i) {
       var pct = Math.round(((node.size || 0) / totalSize) * 100);
-      var barPct = Math.round(((node.size || 0) / (nodes[0].size || 1)) * 100);
+      // Barre = part de l'objet dans la saillance de TOUS les objets de la période, comme la
+      // Une des Unes (indice relatif, méthodologie § 5.3 ; Adrien, 31 oct. 2026).
+      var barPct = Math.max(1, pct);
       var name = node.id.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
       // Compteur d'articles fiable: agrège sur tous les blocs 4h du
       // slot via articles.json (dédupliqué par URL). Fallback sur
@@ -2040,8 +1980,10 @@ function renderHot20() {
           (mediaIds.length ? ' • ' + escapeHtml(T('hot20.media_tip', { list: mediaIds.join(', ') })) : '')
         : (slotArticlesReady ? T('common.no_articles_dataset') : T('common.loading'));
 
-      /* Trend badge (i18n) */
+      /* Trend badge (i18n) ; « / hier », « / sem. dernière »… dit toujours par rapport à quoi (Adrien, 31 oct. 2026) */
       var trendHtml = '';
+      var vsTxt = T('hot20.vs.' + currentGranularity);
+      var vs = vsTxt && vsTxt !== 'hot20.vs.' + currentGranularity ? '<span class="trend-vs">/ ' + escapeHtml(vsTxt) + '</span>' : '';
       if (currentSlotIdx > 0) {
         var prevRank = prevRanks[node.id];
         if (!prevRank && comebacks[node.id]) {
@@ -2051,21 +1993,22 @@ function renderHot20() {
         } else {
           var diff = prevRank - (i + 1);
           if (diff > 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('hot20.trend_up_tip', { n: diff, gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9650;' + diff + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint up" data-tip="' + escapeHtml(T('hot20.trend_up_tip', { n: diff, gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9650;' + diff + vs + '</span>';
           } else if (diff < 0) {
-            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('hot20.trend_down_tip', { n: Math.abs(diff), gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9660;' + Math.abs(diff) + '</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint down" data-tip="' + escapeHtml(T('hot20.trend_down_tip', { n: Math.abs(diff), gran: gl, grans: glp, prev: prevRank, now: i + 1 })) + '">&#9660;' + Math.abs(diff) + vs + '</span>';
           } else {
-            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_stable_tip', { gran: gl, grans: glp, now: i + 1 })) + '">&mdash;</span>';
+            trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_stable_tip', { gran: gl, grans: glp, now: i + 1 })) + '">&mdash;' + vs + '</span>';
           }
         }
       }
 
       /* Streak (i18n) */
-      var streak = streaks[node.id] || 0;
+      var streak = streaks[node.id] || 0, streakTop = streaks[node.id + '|top'] || 10;
       var streakHtml = '';
       if (streak > 1) {
-        var streakKey = streak > 1 ? 'homepage.streak_suffix_many' : 'homepage.streak_suffix_one';
-        streakHtml = '<div class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp })) + '">' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp })) + '</div>';
+        var streakKey = streakTop === 1 ? 'homepage.streak_first_many' : 'homepage.streak_suffix_many';
+        var streakTipKey = streakTop === 1 ? 'hot20.streak_first_tip' : 'hot20.streak_tip';
+        streakHtml = '<span class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T(streakTipKey, { n: streak, grans: glp, top: streakTop })) + '">\uD83D\uDCCD ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp, top: streakTop })) + '</span>';
       }
 
       /* Rank class */
@@ -2096,9 +2039,9 @@ function renderHot20() {
         '<div class="hot20-row-info">' +
           '<div class="hot20-row-name-wrap">' +
             '<div class="hot20-row-name">' + escapeHtml(name) + '</div>' +
+            streakHtml +
             alertBadgeHtml +
           '</div>' +
-          streakHtml +
         '</div>' +
         '<div class="hot20-row-score">' +
           '<div class="hot20-row-pct">' +
@@ -2106,6 +2049,7 @@ function renderHot20() {
             (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
+          '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T(currentSlotIdx === aggregatedSlots.length - 1 ? 'hot20.share_label_gran.' + currentGranularity : 'hot20.share_label', { pct: pct })) + '</div>' +
         '</div>' +
         '<div class="hot20-row-media hot20-hint" data-tip="' + escapeHtml(articlesTip) + '">' + articleCount + ' ' + escapeHtml(articleLabel) + '</div>' +
       '</div>';
@@ -2386,7 +2330,7 @@ function openArticlePanel(node) {
     });
     if (fresh.length) {
       var per = allPeriods.find(function(p) { return p.key === pk; });
-      var pf = parsePeriodLabel((per && per.label) || pk);
+      var pf = parsePeriodLabel(pk || (per && per.label));
       currentGroups.push({ label: pf.date + ' \u00b7 ' + pf.interval, articles: fresh });
     }
   });
@@ -2433,7 +2377,7 @@ function openArticlePanel(node) {
     var fresh = arts.filter(function(a) { return a.url && !seenUrls[a.url]; });
     if (!fresh.length) continue;
     fresh.forEach(function(a) { seenUrls[a.url] = true; });
-    var pf = parsePeriodLabel(allPeriods[pi].label || pk);
+    var pf = parsePeriodLabel(pk || allPeriods[pi].label);
     prevGroups.push({ label: pf.date + ' · ' + pf.interval, articles: fresh });
     if (prevGroups.length >= 8) break;
   }
@@ -2481,192 +2425,26 @@ document.getElementById('hot20-grid').addEventListener('click', function(e) {
   if (node) openArticlePanel(node);
 });
 
-/* ===== SEARCH BAR ===== */
-var searchTimeout = null;
-document.getElementById('hot20-search-input').addEventListener('input', function(e) {
-  clearTimeout(searchTimeout);
-  var query = e.target.value.trim().toLowerCase();
-  var resultDiv = document.getElementById('search-result');
-
-  if (query.length < 2) {
-    resultDiv.classList.remove('radar-active', 'radar-inactive');
-    resultDiv.classList.remove('visible');
-    resultDiv.innerHTML = '';
-    return;
-  }
-
-  searchTimeout = setTimeout(function() {
-    var src = timeseriesData || graphData;
-    if (!src || !src.graphs) {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.remove('visible');
-      return;
-    }
-    var countryGraphs = src.graphs[currentCountry];
-    if (!countryGraphs) {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.remove('visible');
-      return;
-    }
-
-    var currentSlot = aggregatedSlots.length ? aggregatedSlots[currentSlotIdx] : null;
-    var currentPeriodKey = currentSlot ? currentSlot.periodKeys[currentSlot.periodKeys.length - 1] : (allPeriods.length ? allPeriods[allPeriods.length - 1].key : null);
-    function getSortedNodes(periodKey) {
-      var pd = countryGraphs[periodKey];
-      if (!pd || !pd.nodes) return [];
-      return pd.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); });
-    }
-
-    function findFirstQueryMatch(sortedNodes) {
-      for (var i = 0; i < sortedNodes.length; i++) {
-        if (sortedNodes[i].id.toLowerCase().indexOf(query) !== -1) {
-          return { node: sortedNodes[i], rank: i + 1 };
-        }
-      }
-      return null;
-    }
-
-    function findRankById(sortedNodes, nodeId) {
-      for (var i = 0; i < sortedNodes.length; i++) {
-        if (sortedNodes[i].id === nodeId) return i + 1;
-      }
-      return -1;
-    }
-
-    function formatPeriodForSearch(periodObj) {
-      var raw = periodObj.label || periodObj.key;
-      var parsed = parsePeriodLabel(raw);
-      if (!parsed || !parsed.date) return raw;
-      return parsed.date + (parsed.interval ? ' &middot; ' + parsed.interval.replace('Saillant entre ', '') : '');
-    }
-
-    var currentSorted = currentPeriodKey ? getSortedNodes(currentPeriodKey) : [];
-    var currentQueryMatch = findFirstQueryMatch(currentSorted);
-
-    var targetId = currentQueryMatch ? currentQueryMatch.node.id : null;
-    var targetNodeName = currentQueryMatch ? currentQueryMatch.node.id : null;
-
-    if (!targetId) {
-      for (var pi = allPeriods.length - 1; pi >= 0; pi--) {
-        var sortedAtPi = getSortedNodes(allPeriods[pi].key);
-        var queryMatchAtPi = findFirstQueryMatch(sortedAtPi);
-        if (queryMatchAtPi) {
-          targetId = queryMatchAtPi.node.id;
-          targetNodeName = queryMatchAtPi.node.id;
-          break;
-        }
-      }
-    }
-
-    if (targetId) {
-      var currentRank = findRankById(currentSorted, targetId);
-      var currentNode = currentRank > 0 ? currentSorted[currentRank - 1] : null;
-
-      var lastSeen = null;
-      var peakSeen = null;
-
-      for (var p = allPeriods.length - 1; p >= 0; p--) {
-        var periodObj = allPeriods[p];
-        var sortedNodes = getSortedNodes(periodObj.key);
-        var rank = findRankById(sortedNodes, targetId);
-        if (rank < 0) continue;
-
-        var nodeAtPeriod = sortedNodes[rank - 1];
-        var seen = {
-          rank: rank,
-          node: nodeAtPeriod,
-          period: periodObj,
-          periodIdx: p
-        };
-
-        if (!lastSeen) lastSeen = seen;
-        if (!peakSeen) {
-          peakSeen = seen;
-        } else {
-          var seenScore = Number(seen.node.size) || 0;
-          var peakScore = Number(peakSeen.node.size) || 0;
-          if (
-            seenScore > peakScore ||
-            (seenScore === peakScore && seen.rank < peakSeen.rank) ||
-            (seenScore === peakScore && seen.rank === peakSeen.rank && p > peakSeen.periodIdx)
-          ) {
-            peakSeen = seen;
-          }
-        }
-      }
-
-      var dName = targetNodeName.replace(/(^|\s)\S/g, function(c) { return c.toUpperCase(); });
-
-      function formatArticleCount(value) {
-        var count = Number(value) || 0;
-        return count + ' article' + (count > 1 ? 's' : '');
-      }
-
-      var statusNow = currentNode
-        ? 'Actuellement&nbsp;: rang <strong>' + currentRank + '</strong>' +
-          (currentRank <= 20 ? ' (Top 20)' : ' (hors Top 20)') +
-          ' &middot; ' + formatArticleCount(currentNode.n) + ' &middot; score ' + (currentNode.size || 0).toFixed(1)
-        : 'Actuellement absent du radar';
-
-      var lastSeenText = lastSeen
-        ? 'Derni&egrave;re apparition&nbsp;: rang <strong>' + lastSeen.rank + '</strong> &middot; ' +
-          formatArticleCount(lastSeen.node.n) + ' &middot; ' + formatPeriodForSearch(lastSeen.period)
-        : 'Derni&egrave;re apparition&nbsp;: n/a';
-
-      var peakSeenText = peakSeen
-        ? 'Bloc horaire le plus saillant (4 h)&nbsp;: score <strong>' + (Number(peakSeen.node.size) || 0).toFixed(1) + '</strong> &middot; rang <strong>' + peakSeen.rank + '</strong> &middot; ' +
-          formatArticleCount(peakSeen.node.n) + ' &middot; ' + formatPeriodForSearch(peakSeen.period)
-        : 'Bloc horaire le plus saillant (4 h)&nbsp;: n/a';
-
-      var evolutionUrl = './evolution.html?country=' + encodeURIComponent(currentCountry) + '&node=' + encodeURIComponent(targetId);
-
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.classList.add(currentNode ? 'radar-active' : 'radar-inactive');
-
-      resultDiv.innerHTML = '<div class="sr-name"><span class="sr-radar-dot" aria-hidden="true"></span><span class="sr-name-text">' + escapeHtml(dName) + '</span></div>' +
-        '<div class="sr-info">' +
-          statusNow +
-          '<br>' + lastSeenText +
-          '<br>' + peakSeenText +
-          '<div class="sr-actions">' +
-            '<a class="sr-evo-btn" href="' + evolutionUrl + '">Voir l&rsquo;&eacute;volution de la saillance</a>' +
-          '</div>' +
-        '</div>';
-      resultDiv.classList.add('visible');
-    } else {
-      resultDiv.classList.remove('radar-active', 'radar-inactive');
-      resultDiv.innerHTML = '<div class="sr-not-found">« ' + escapeHtml(query) + ' » n\'est pas dans le radar pour le moment.</div>';
-      resultDiv.classList.add('visible');
-    }
-  }, 250);
-});
-
 /* ===== INIT ===== */
 /* ===== PÉRIODE LABEL ===== */
 var FR_MONTHS_SHORT = {Jan:'janvier',Feb:'février',Mar:'mars',Apr:'avril',May:'mai',Jun:'juin',Jul:'juillet',Aug:'août',Sep:'septembre',Oct:'octobre',Nov:'novembre',Dec:'décembre'};
 
-/* Parse JSON label: "Apr 11 · 12-16 EDT" → {date, interval} en français */
-function parsePeriodLabel(label) {
-  var m = (label || '').match(/^([A-Za-z]+)\s+(\d+)\s*·\s*(\d+)-(\d+)/);
-  if (m) {
-    var month = FR_MONTHS_SHORT[m[1]] || m[1];
-    var day = parseInt(m[2], 10);
-    var h0 = m[3];
-    var h1 = m[4] === '0' ? 'minuit' : m[4] + 'h';
-    var year = allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear();
-    return { date: day + ' ' + month + ' ' + year, interval: 'Saillant entre ' + h0 + 'h et ' + h1 };
-  }
-  return parsePeriodKey(label);
+/* Libellé d'un bloc : sa date et son ÉDITION, l'heure où il sort (fin du bloc + 1 h), comme partout sur le
+   site : le bloc 15h-19h est « l'édition de 20h » (Adrien, 31 oct. 2026). Les clés sont en UTC. */
+function editionParts(key) {
+  var m = String(key || '').match(/^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})/);
+  if (!m) return null;
+  var t = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4]) + 5 * 3600e3;
+  var d = new Date(t);
+  var h = +new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(d) % 24;
+  var date = new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  return { date: date, interval: 'édition de ' + (h === 0 ? 'minuit' : h === 12 ? 'midi' : h + 'h') };
 }
-
+function parsePeriodLabel(label) { return parsePeriodKey(label); }
 function parsePeriodKey(key) {
-  var parts = (key || '').split('_');
-  if (parts.length < 2) return { date: key, interval: '' };
-  var dp = parts[0].split('-');
-  var ip = parts[1].split('-');
-  var dateStr = parseInt(dp[2], 10) + ' ' + (FR_MONTHS[parseInt(dp[1], 10) - 1] || dp[1]) + ' ' + dp[0];
-  var h1 = ip[1] === '24' ? 'minuit' : ip[1] + 'h';
-  return { date: dateStr, interval: 'Saillant entre ' + ip[0] + 'h et ' + h1 };
+  var p = editionParts(key);
+  if (p) return p;
+  return { date: key, interval: '' };
 }
 
 /* ===== COUNTDOWN PROCHAINE MISE À JOUR ===== */

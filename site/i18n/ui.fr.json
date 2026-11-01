@@ -36,10 +36,13 @@
     "alert_marker": "!",
     "home_une": "La Une des Unes",
     "home_hot20": "Hot 10",
-    "classement": "Classement"
+    "classement": "Classement",
+    "methodologie_full": "Méthodologie complète",
+    "indices": "Les indices de saillance",
+    "tools": "Outils d’analyse"
   },
   "alertbar": {
-    "label": "ALERTE",
+    "label": "Alerte de saillance",
     "view_alerts_aria": "Voir les alertes",
     "active_aria": "Alertes de saillance actives",
     "event_tag": "Événement",
@@ -48,6 +51,11 @@
       "extreme": "Saillance extrême",
       "tres_eleve": "Saillance très élevée",
       "eleve": "Saillance élevée"
+    },
+    "region": {
+      "QC": "Québec",
+      "CAN": "Canada (hors Québec)",
+      "USA": "États-Unis"
     }
   },
   "report": {
@@ -111,7 +119,8 @@
     "sonar": "SONAR",
     "statistiques": "Statistiques",
     "methodologie": "Méthodologie",
-    "radarplus": "Radar+"
+    "radarplus": "Radar+",
+    "indices": "Les indices de saillance"
   },
   "country": {
     "QC": "Québec",
@@ -182,19 +191,41 @@
     "trend_return": "Retour",
     "trend_new_tip": "Nouvelle entrée dans le Hot 10 pour cette {gran}.",
     "trend_return_tip": "Retour dans le Hot 10 après au moins 2 {grans} d’absence.",
-    "trend_up_tip": "Gagne {n} rang(s) par rapport à la {gran} précédente (de {prev} à {now}).",
-    "trend_down_tip": "Perd {n} rang(s) par rapport à la {gran} précédente (de {prev} à {now}).",
-    "trend_stable_tip": "Position inchangée: rang {now} comme à la {gran} précédente.",
-    "streak_tip": "Présent dans le Top 20 depuis {n} {grans} consécutifs.",
+    "trend_up_tip": "Gagne {n} rang(s) par rapport à la période précédente ({gran}) : de {prev} à {now}.",
+    "trend_down_tip": "Perd {n} rang(s) par rapport à la période précédente ({gran}) : de {prev} à {now}.",
+    "trend_stable_tip": "Position inchangée : rang {now}, comme à la période précédente ({gran}).",
+    "streak_tip": "Dans le top {top} depuis {n} {grans} d'affilée.",
     "score_tip": "Saillance cumulée depuis le début de la collecte (toutes périodes confondues).",
-    "share_label": "du radar",
+    "share_label": "{pct} % du radar",
+    "share_tip": "Part de cet objet dans la saillance de tous les objets de la période. La barre la dessine : pleine, il est seul dans l'actualité.",
     "points_label": "points",
     "no_data_period": "Aucune donnée pour cette {label}",
     "no_data": "Aucune donnée disponible",
     "media_tip": "Médias en cause: {list}",
     "media_tip_none": "Aucun média identifié.",
     "articles_tip": "{count} article(s) associé(s)",
-    "see_more": "Voir le classement complet →"
+    "see_more": "Voir le classement complet →",
+    "vs": {
+      "4h": "édition préc.",
+      "day": "hier",
+      "week": "sem. dernière",
+      "month": "mois dernier",
+      "quarter": "an dernier",
+      "total": ""
+    },
+    "streak_first_tip": "En première position depuis {n} {grans} d'affilée.",
+    "sub_edition": "Saillance gagnée pendant cette édition de 4 heures",
+    "sub_data_start": "début des données chargées",
+    "sub_days": "{n} jours de données",
+    "sub_today": "Saillance cumulée depuis minuit · {n} éditions",
+    "share_label_gran": {
+      "4h": "{pct} % du radar à cette édition",
+      "day": "{pct} % du radar aujourd'hui",
+      "week": "{pct} % du radar cette semaine",
+      "month": "{pct} % du radar ce mois-ci",
+      "quarter": "{pct} % du radar cette année",
+      "total": "{pct} % du radar depuis le début"
+    }
   },
   "constellation": {
     "title": "Constellation",
@@ -208,7 +239,24 @@
     "loading_text": "initialisation · constellation",
     "tooltip_saliency": "saillance",
     "tooltip_mentions": "mentions",
-    "tooltip_articles": "articles"
+    "tooltip_articles": "articles",
+    "mode_label": "Afficher",
+    "mode_objects": "Objets",
+    "mode_events": "Événements",
+    "events_list_label": "Événements",
+    "event": "événement",
+    "events": "événements",
+    "no_events": "Aucun événement pour ce créneau.",
+    "no_events_usa": "Pas d'événements pour les États-Unis (panel de deux médias).",
+    "loading_events": "Chargement des événements…",
+    "ev_points": "points cumulés",
+    "ev_fiche": "Voir la fiche de l'événement →",
+    "ev_facts": "L'événement",
+    "ev_best": "Meilleure édition : {pts} points ({when})",
+    "ev_linked": "Objets reliés (articles communs)",
+    "ev_articles": "Articles",
+    "edition": "édition",
+    "editions": "éditions"
   },
   "evolution": {
     "title": "Évolution",
@@ -239,12 +287,13 @@
     "events_empty": "Aucun événement saillant dans cette période.",
     "events_peak": "sommet {v} pts · {when}",
     "events_cumul": "{v} pts au cumul",
-    "events_open": "Ouvrir l'article représentatif"
+    "events_open": "Ouvrir l'article représentatif",
+    "cumul_axis": "Points cumulés depuis le début de la période"
   },
   "alertes": {
     "title": "Alertes",
     "title_accent": "médiatiques",
-    "subtitle_3lvl": "Trois niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours",
+    "subtitle_3lvl": "Deux niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours",
     "filter_country": "Pays",
     "methodo_link": "Méthodologie →",
     "level_extreme": "Extrême",
@@ -293,8 +342,49 @@
     "total_days": "jours cumulés",
     "day": "jour",
     "days": "jours",
-    "methodology_intro": "Une alerte signale un sujet dont le pic de saillance dépasse le seuil <em>élevé</em> (p80) calibré pour ce pays. Trois niveaux sont dérivés du pic atteint au cours de l’épisode : <strong>Élevé</strong> (pic dans [p80, p95[), <strong>Très élevé</strong> (pic dans [p95, p99[), <strong>Extrême</strong> (pic ≥ p99). Un épisode est une période continue au-dessus du seuil ; les épisodes qui se chevauchent dans le temps sont regroupés en clusters.",
-    "methodology_link": "Voir la méthodologie complète"
+    "methodology_intro": "Une alerte signale un sujet dont le pic de saillance dépasse le seuil <em>très élevé</em> (p95) calibré pour ce pays. Deux niveaux sont dérivés du pic atteint au cours de l’épisode : <strong>Très élevé</strong> (pic dans [p95, p99[), <strong>Extrême</strong> (pic ≥ p99). Le palier élevé (p80) reste visible sur la page Évolution mais ne déclenche plus d’alerte, trop fréquent. Un épisode est une période continue au-dessus du seuil ; les épisodes qui se chevauchent dans le temps sont regroupés en clusters.",
+    "methodology_link": "Voir la méthodologie complète",
+    "p_title": "Alertes",
+    "p_title_accent": "de saillance",
+    "p_lede": "Les histoires qui ont atteint un niveau très élevé ou extrême dans une édition, région par région.",
+    "p_loading": "Chargement des alertes…",
+    "p_error": "Les alertes n'ont pas pu être chargées.",
+    "p_status_final": "Période terminée",
+    "p_status_live": "En cours",
+    "p_count": "{n} histoires en alerte",
+    "p_count_one": "1 histoire en alerte",
+    "p_count_obj": "{n} sujets en alerte",
+    "p_count_obj_one": "1 sujet en alerte",
+    "p_count_ext": "dont {n} au niveau extrême",
+    "p_sort_recent": "Plus récentes",
+    "p_sort_peak": "Plus fortes",
+    "p_filter": "Filtré : {label}",
+    "p_filter_clear": "Tout voir",
+    "p_pulse_ed": "Histoires en alerte, par édition",
+    "p_pulse_day": "Histoires en alerte, par jour",
+    "p_pulse_ed_obj": "Sujets en alerte, par édition",
+    "p_pulse_day_obj": "Sujets en alerte, par jour",
+    "p_pulse_hint": "Cliquez une barre pour ne garder que ses alertes. Sous le graphique, chaque ligne suit une histoire : un point par édition en Une, un bloc de couleur par édition en alerte.",
+    "p_tip_n": "{n} histoires en alerte",
+    "p_tip_n_one": "1 histoire en alerte",
+    "p_tip_n_obj": "{n} sujets en alerte",
+    "p_tip_n_obj_one": "1 sujet en alerte",
+    "p_tip_none": "Aucune alerte",
+    "p_tip_click": "Cliquer pour filtrer",
+    "p_row_meta": "{n} éditions en alerte · première : {when}",
+    "p_row_meta_one": "1 édition en alerte · {when}",
+    "p_peak": "sommet · {when}",
+    "p_object_sub": "Personne, lieu ou sujet",
+    "p_empty": "Aucune alerte dans cette période.",
+    "p_focus_none": "Cette histoire n'a déclenché aucune alerte cette année.",
+    "p_focus_none_obj": "Ce sujet n'a déclenché aucune alerte dans cette période.",
+    "p_how_title": "Comment naît une alerte",
+    "p_how_1": "À chaque édition, Radar+ mesure la place que prend chaque histoire dans les Unes : c'est l'indice de saillance, en points.",
+    "p_how_2": "Une histoire est en alerte quand ses points d'une seule édition atteignent le niveau {tres} : {qc} points au Québec, {can} points au Canada (hors Québec). Ce niveau réunit les 20 % d'apparitions les plus fortes d'une année de Unes. Au-delà de {qcx} et {canx} points, les 5 % les plus fortes, l'alerte devient {ext}.",
+    "p_how_3": "Aux États-Unis, Radar+ suit deux médias et ne forme pas d'histoires : l'alerte porte sur les personnes, les lieux et les sujets. Elle est très élevée au-delà de {us} points, extrême au-delà de {usx}.",
+    "p_how_link_indices": "Les indices de saillance →",
+    "p_how_link_methodo": "Méthodologie des alertes →",
+    "evo_cta": "Voir l'évolution dans le temps"
   },
   "alertes_pill": {
     "none_active": "Aucune alerte en cours",
@@ -342,7 +432,6 @@
     "title": "Outils d’analyse",
     "explore": "Explorer →",
     "view_evolution": "Voir l’évolution →",
-    "analyze": "Analyser →",
     "constellation": {
       "name": "Constellation",
       "desc": "Carte des co-occurrences pour une période donnée. Explorez les connexions entre sujets médiatiques et découvrez les regroupements thématiques."
@@ -351,9 +440,15 @@
       "name": "Évolution",
       "desc": "Classement évolutif des objets saillants dans le temps. Suivez la trajectoire de n’importe quel sujet sur l’ensemble de l’historique."
     },
-    "statistiques": {
-      "name": "Statistiques",
-      "desc": "Analyse détaillée par objet : pics de saillance, distribution médiatique, historique complet et articles associés."
+    "see_ranking": "Voir le classement →",
+    "see_alerts": "Voir les alertes →",
+    "classement": {
+      "name": "Classement",
+      "desc": "Le classement officiel des événements et des objets, par édition, jour, semaine, mois ou année, et tout son historique."
+    },
+    "alertes": {
+      "name": "Alertes",
+      "desc": "Les sujets dont la saillance dépasse les seuils calibrés par pays : élevé, très élevé, extrême, et leurs épisodes."
     }
   },
   "homepage": {
@@ -366,18 +461,19 @@
     "next_update_label": "Prochaine mise à jour",
     "trend_new_label": "Nouveau",
     "trend_return_label": "Retour",
-    "streak_suffix_one": "{n} {gran} de suite",
-    "streak_suffix_many": "{n} {grans} de suite",
+    "streak_suffix_one": "{n} {gran} de suite dans le top {top}",
+    "streak_suffix_many": "{n} {grans} de suite dans le top {top}",
     "no_data_for": "Aucune donnée pour {label}",
     "no_data_4h": "Aucune donnée pour ce bloc horaire (4 h)",
     "wl_until_24h": "Affichage 24h",
     "wl_label_day": "Jour",
     "wl_label_week": "Semaine",
     "wl_label_month": "Mois",
-    "wl_label_quarter": "Année"
+    "wl_label_quarter": "Année",
+    "streak_first_many": "{n} {grans} de suite en première position"
   },
   "gran_singular": {
-    "4h": "bloc horaire (4 h)",
+    "4h": "édition (4 h)",
     "day": "journée",
     "week": "semaine",
     "month": "mois",
@@ -385,7 +481,7 @@
     "total": "période totale"
   },
   "gran_plural": {
-    "4h": "blocs horaires",
+    "4h": "éditions",
     "day": "jours",
     "week": "semaines",
     "month": "mois",
@@ -492,14 +588,16 @@
       "week": "Cette semaine",
       "month": "Ce mois-ci",
       "year": "Cette année",
-      "today": "Aujourd'hui"
+      "today": "Aujourd'hui",
+      "elecqc2026": "Élections QC 2026",
+      "custom": "Période personnalisée"
     },
     "range_sub": {
-      "24h": "Les cinq histoires qui dominent les Unes des 24 dernières heures.",
-      "week": "Le top 10 depuis lundi (points cumulés par édition).",
-      "month": "Le top 10 du mois (points cumulés par édition).",
-      "year": "Le top 10 de l'année (points cumulés par édition).",
-      "today": "Les cinq histoires qui dominent les Unes depuis minuit (points cumulés par édition)."
+      "24h": "Les trois histoires qui dominent les Unes des 24 dernières heures.",
+      "week": "Les trois histoires qui dominent les Unes depuis lundi (points cumulés par édition).",
+      "month": "Les trois histoires qui dominent les Unes ce mois-ci (points cumulés par édition).",
+      "year": "Les trois histoires qui dominent les Unes cette année (points cumulés par édition).",
+      "today": "Les trois histoires qui dominent les Unes depuis minuit (points cumulés par édition)."
     },
     "meta_range": "{blocks} blocs en Une · {points} points",
     "blocks": "{blocks} blocs",
@@ -510,13 +608,15 @@
     "band24h_tip": "Niveau de l'indice 24h.",
     "peak_label": "Sommet : {points} points ({when})",
     "peak_prefix": "Pic ·",
-    "peak_tip": "L'édition où l'histoire a eu son indice le plus élevé dans la période.",
+    "peak_tip": "L'édition où l'histoire a eu son meilleur indice dans la période (indice d'une seule édition de 4 heures).",
     "score_tip": "Total des points depuis la première Une de l'histoire.",
     "gain_tip": {
       "week": "Points gagnés depuis lundi (somme des éditions).",
       "month": "Points gagnés ce mois-ci (somme des éditions).",
       "year": "Points gagnés cette année (somme des éditions).",
-      "today": "Points gagnés depuis minuit (somme des éditions)."
+      "today": "Points gagnés depuis minuit (somme des éditions).",
+      "elecqc2026": "Points cumulés par édition pendant la campagne électorale, du 27 août au 6 octobre 2026 (lendemain du scrutin).",
+      "custom": "Points cumulés par édition sur la période choisie."
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
     "title_from": {
@@ -534,14 +634,14 @@
     "trend_up_tip_24h": "Gagne {n} rang(s) : {prev}e à l'édition précédente, {now}e maintenant",
     "trend_down_tip_24h": "Perd {n} rang(s) : {prev}e à l'édition précédente, {now}e maintenant",
     "trend_stable_tip_24h": "Même rang qu'à l'édition précédente ({now}e)",
-    "trend_new_tip_24h": "Nouvelle histoire : absente du top 5 de l'édition précédente",
-    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top 5 de l'édition précédente",
-    "header_subject": "Saillance · sujet",
+    "trend_new_tip_24h": "Nouvelle histoire : absente du top {n} de l'édition précédente",
+    "trend_return_tip_24h": "De retour : histoire déjà vue, absente du top {n} de l'édition précédente",
+    "header_subject": "Sujet",
     "header_score24h": "Indice 24h · variation 4h",
-    "header_points": "Points",
+    "header_points": "Points cumulés",
     "medias_one": "{n} média",
     "medias_many": "{n} médias",
-    "total_label": "total {points}",
+    "total_label": "total : {points} points",
     "how": "Comment l'indice est calculé →",
     "share_label": "{pct} % du radar",
     "share_tip": "Part de cet événement dans la saillance de tous les événements de la période. La barre la dessine : pleine, il est seul dans l'actualité.",
@@ -557,14 +657,93 @@
       "today": "jour",
       "week": "semaine",
       "month": "mois",
-      "year": "année"
+      "year": "année",
+      "elecqc2026": "période",
+      "custom": "période"
     },
     "unit_many": {
       "24h": "éditions",
       "today": "jours",
       "week": "semaines",
       "month": "mois",
-      "year": "années"
+      "year": "années",
+      "elecqc2026": "périodes",
+      "custom": "périodes"
+    },
+    "vs": {
+      "24h": "édition préc.",
+      "today": "hier",
+      "week": "sem. dernière",
+      "month": "mois dernier",
+      "year": "an dernier",
+      "elecqc2026": "40 jours avant",
+      "custom": "période préc."
+    },
+    "vs_prev": {
+      "24h": "édition préc.",
+      "today": "veille",
+      "week": "sem. préc.",
+      "month": "mois préc.",
+      "year": "an préc.",
+      "elecqc2026": "période préc.",
+      "custom": "période préc."
+    },
+    "art_info": "Crédit de l'illustration",
+    "points_short": "pts",
+    "sal": {
+      "now_prefix": "Actuellement :",
+      "peak_prefix": "Sommet :",
+      "i_label": "Expliquer l'étiquette de saillance",
+      "points_100": "({points} points)",
+      "peak_at": "({points} points, {when})",
+      "cumul": "Points cumulés sur la période : {points}",
+      "adj": {
+        "QC": "québécoises",
+        "CAN": "canadiennes"
+      },
+      "micro": {
+        "aucune": "Sous le radar : sur un an de Unes {adj}, 19 sur 20 attirent plus d'attention que celle-ci.",
+        "faible": "Sous la Une typique : 4 Unes {adj} sur 5 de l'année attirent plus d'attention que celle-ci.",
+        "moderee": "Le niveau d'une Une typique : la moitié des Unes {adj} de l'année en attire plus, l'autre moitié moins.",
+        "elevee": "Au-dessus de la Une typique : plus saillante que la moitié des Unes {adj} de l'année.",
+        "tres_elevee": "Dans le cinquième le plus marquant des Unes {adj} de l'année.",
+        "extreme": "Le sommet de l'échelle : sur un an de Unes {adj}, à peine 1 sur 20 attire autant d'attention que celle-ci."
+      },
+      "curve_now": "Maintenant",
+      "curve_peak": "Sommet",
+      "axis_less": "← moins d'attention",
+      "axis_more": "plus d'attention →",
+      "scale_24h": "Courbe : indice 24h des Unes {adj} d'une année (échelle logarithmique)",
+      "scale_block": "Courbe : indice d'une édition (4 h) des Unes {adj} d'une année (échelle logarithmique)",
+      "def": "L'indice de saillance Radar+ mesure la place qu'une nouvelle prend à la Une des médias : combien de médias l'y mettent, pendant combien de temps et avec quelle intensité. Chaque événement est noté de 0 à 100 par édition de 4 heures ; une histoire additionne ses événements de l'édition (presque toujours un seul). L'indice 24h est la moyenne des six dernières éditions, les plus récentes comptant davantage. L'étiquette situe la nouvelle parmi les Unes d'une année entière.",
+      "more": "Comprendre les indices de saillance →",
+      "partial_one": "Apparue à la dernière édition seulement : l'indice 24h ne compte encore qu'une édition sur les six qu'il moyenne. Il monte si l'histoire reste en Une.",
+      "partial_many": "Présente dans {n} des six éditions que moyenne l'indice 24h : il monte si l'histoire reste en Une.",
+      "now_word": "Actuellement",
+      "peak_word": "Sommet"
+    },
+    "points_cumul": "points cumulés",
+    "when_now": "maintenant",
+    "edition_today": "édition de {hour}",
+    "edition_recent": "édition de {day} {hour}",
+    "edition_date": "édition du {date}, {hour}",
+    "peak_tip_24h": "Le plus haut indice 24h atteint par l'histoire, sur la même échelle que le nombre affiché.",
+    "share_label_range": {
+      "24h": "{pct} % du radar en ce moment",
+      "today": "{pct} % du radar aujourd'hui",
+      "week": "{pct} % du radar cette semaine",
+      "month": "{pct} % du radar ce mois-ci",
+      "year": "{pct} % du radar cette année",
+      "elecqc2026": "{pct} % du radar pendant la campagne",
+      "custom": "{pct} % du radar sur la période"
+    },
+    "elec_label": "Élections québécoises 2026",
+    "empty_period": "Aucune histoire en Une pour cette période.",
+    "fallback": {
+      "today": "Pas encore d'édition publiée aujourd'hui : voici les trois histoires qui ont dominé les Unes hier.",
+      "week": "Pas encore d'édition cette semaine : voici les trois histoires qui ont dominé les Unes la semaine dernière.",
+      "month": "Pas encore d'édition ce mois-ci : voici les trois histoires qui ont dominé les Unes le mois dernier.",
+      "year": "Pas encore d'édition cette année : voici les trois histoires qui ont dominé les Unes l'an dernier."
     }
   },
   "article_panel": {
@@ -578,11 +757,13 @@
     "type_objects": "Objets",
     "search_placeholder": "Filtrer : un mot du titre ou du thème",
     "range_sub": {
-      "24h": "Toutes les histoires qui ont fait les Unes des 24 dernières heures, classées par l'indice 24h.",
-      "today": "Toutes les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition.",
-      "week": "Toutes les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
-      "month": "Toutes les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
-      "year": "Toutes les histoires qui ont fait les Unes cette année, classées par points cumulés par édition."
+      "24h": "Les histoires en Une des 24 dernières heures, classées par l'indice 24h.",
+      "today": "Les histoires qui ont fait les Unes depuis minuit, classées par points cumulés par édition.",
+      "week": "Le Hot 20 de la semaine : les histoires qui ont fait les Unes depuis lundi, classées par points cumulés par édition.",
+      "month": "Le Hot 20 du mois : les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
+      "year": "Le Hot 20 de l'année : les histoires qui ont fait les Unes cette année, classées par points cumulés par édition.",
+      "elecqc2026": "Le Hot 20 de la campagne électorale québécoise 2026 : du déclenchement (27 août) au lendemain du scrutin (6 octobre), classé par points cumulés par édition.",
+      "custom": "Les histoires de la période choisie, classées par points cumulés par édition."
     },
     "title_accent_objects": "des objets",
     "header_object": "Objet",
@@ -594,11 +775,13 @@
     "obj_points_tip": "Somme de l'indice de saillance de l'objet sur les éditions de la période (le calcul du Hot 20).",
     "obj_band_tip": "Plus haut palier d'alerte atteint par l'objet dans la période (paliers calibrés par pays).",
     "obj_sub": {
-      "24h": "Tous les sujets, acteurs et lieux en Une à la dernière édition, classés par indice de saillance.",
-      "today": "Tous les sujets, acteurs et lieux en Une depuis minuit, classés par points cumulés par édition.",
-      "week": "Le Hot 20 officiel de la semaine : tous les sujets, acteurs et lieux en Une, classés par points cumulés par édition.",
-      "month": "Tous les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
-      "year": "Tous les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition."
+      "24h": "Les sujets, acteurs et lieux en Une à la dernière édition, classés par indice de saillance.",
+      "today": "Les sujets, acteurs et lieux en Une depuis minuit, classés par points cumulés par édition.",
+      "week": "Le Hot 20 officiel de la semaine : les sujets, acteurs et lieux en Une depuis lundi, classés par points cumulés par édition.",
+      "month": "Le Hot 20 du mois : les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
+      "year": "Le Hot 20 de l'année : les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition.",
+      "elecqc2026": "Le Hot 20 des sujets, acteurs et lieux de la campagne électorale québécoise 2026, du 27 août au lendemain du scrutin (6 octobre).",
+      "custom": "Les sujets, acteurs et lieux de la période choisie, classés par points cumulés par édition."
     },
     "download": "Télécharger (CSV)",
     "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel",
@@ -607,7 +790,38 @@
     "nav_sub_24h": "Indice 24h à cette édition",
     "nav_sub_cumul": "Saillance cumulée depuis le {date}",
     "status_final": "Classement final",
-    "status_live": "Classement en cours"
+    "status_live": "Classement en cours",
+    "hot20_status_final": "Classement Hot 20 final",
+    "hot20_status_live": "Classement Hot 20 en cours",
+    "more": "Voir {n} de plus ({left} restantes)",
+    "png": {
+      "download": "Télécharger (PNG)",
+      "tip": "Image officielle du classement affiché, prête à partager",
+      "title_events_hot": "Hot 20 des événements",
+      "title_events": "Classement des événements",
+      "title_objects_hot": "Hot 20 des objets",
+      "title_objects": "Classement des objets",
+      "generated": "Image générée le {date}",
+      "pts": "pts",
+      "stat_stories": "histoires classées",
+      "stat_objects": "objets classés",
+      "stat_theme": "thème dominant · {pct} % des points du top 20",
+      "stat_media": "médias en Une (top 20)",
+      "stat_top3": "part des 3 premières dans le radar",
+      "stat_top3_obj": "part des 3 premiers dans le radar",
+      "stat_points": "points cumulés, tous objets",
+      "foot_method": "Indice de saillance Radar+ · comment il est calculé : radarplus.org/indices",
+      "foot_reuse": "Image libre de reprise avec la mention « Radar+ (radarplus.org) ».",
+      "foot_data": "Données : Unes des grands médias photographiées toutes les dix minutes · classement complet et CSV : radarplus.org/classement",
+      "foot_source": "© CLESSN · Université Laval",
+      "foot_scan": "Voir le classement en ligne"
+    },
+    "nav_sub_elec": "Du déclenchement (27 août) au lendemain du scrutin (6 octobre)",
+    "nav_sub_custom": "Points cumulés du {from} au {to} · {days} jours",
+    "custom_from": "Du",
+    "custom_to": "au",
+    "custom_apply": "Afficher",
+    "nav_sub_custom_day": "Points cumulés des six éditions de la journée"
   },
   "csv": {
     "rank": "rang",
@@ -649,8 +863,8 @@
     "editions": "éditions en Une",
     "media": "médias",
     "points": "points",
-    "chart": "Indice par édition et indice 24h",
-    "chart_tip": "Barres : indice de chaque édition de 4h. Ligne : indice 24h (moyenne des 6 dernières éditions, les plus récentes comptant davantage).",
+    "chart": "Son parcours dans les Unes",
+    "chart_tip": "Chaque barre : les points de l'histoire à une édition de 4 heures, colorée selon son niveau. La ligne : l'indice 24h, la moyenne des six dernières éditions. Survolez pour lire une édition.",
     "links": "Les Unes, par les liens",
     "links_first": "Première Une",
     "links_peak": "Au sommet",
@@ -681,9 +895,78 @@
     "page_title_events": "Statistiques",
     "page_lead_events": "Un objet ou un événement : son parcours dans les Unes, édition par édition.",
     "no_usa": "Pas d'événements pour les États-Unis : le panel américain ne compte que deux médias. Québec ou Canada.",
-    "type_label": "Je cherche"
+    "type_label": "Je cherche",
+    "points_cumul": "points cumulés",
+    "rank_line": "<b>{rank}</b> au classement {year} · {region}<br>sur {n} histoires",
+    "story_since": "En Une depuis l'{since} : {editions} sur {days}, portée par {media}.",
+    "story_peak": "Elle a culminé à l'{when} avec {pts} en une seule édition.",
+    "story_now": "Aujourd'hui, son indice 24h est de {pts}.",
+    "story_out": "Elle a quitté les Unes après l'{when}.",
+    "n_edition": "{n} édition",
+    "n_editions": "{n} éditions",
+    "n_day": "{n} jour",
+    "n_days": "{n} jours",
+    "n_medium": "{n} média",
+    "n_media": "{n} médias",
+    "m_now": "Actuellement",
+    "m_now_sub": "indice 24h",
+    "m_out": "Hors des Unes",
+    "m_out_sub": "depuis l'{when}",
+    "m_peak": "Sommet",
+    "m_peak_sub": "indice 24h · {when}",
+    "m_best": "Meilleure édition",
+    "m_media": "Médias qui l'ont mise en Une",
+    "chart_best": "Meilleure édition",
+    "chart_now": "Maintenant",
+    "legend_bars": "points de l'édition",
+    "legend_line": "indice 24h",
+    "tip_edition": "à cette édition",
+    "tip_24h": "indice 24h",
+    "tip_absent": "Pas en Une à cette édition",
+    "title_last": "Dernier titre",
+    "records": "Ses meilleures positions",
+    "records_note": "Le meilleur rang tenu dans chaque classement, et quand. Cliquez pour ouvrir ce classement.",
+    "rec_h24": "Dernières heures",
+    "rec_day": "Journée",
+    "rec_week": "Semaine",
+    "rec_month": "Mois",
+    "rec_year": "Année",
+    "rec_of": "sur {n}",
+    "rec_times": "{n} fois",
+    "tools": "Voir cette histoire dans les outils",
+    "tool_constellation": "Constellation",
+    "tool_constellation_sub": "Ses liens avec les autres histoires, le jour de son sommet",
+    "tool_evolution": "Évolution",
+    "tool_evolution_sub": "Sa courbe parmi les grandes histoires du jour",
+    "tool_alertes": "Alertes",
+    "tool_alertes_sub": "Ses éditions en alerte dans l'année",
+    "tool_classement": "Classement",
+    "tool_classement_sub": "Son rang parmi les histoires de l'année",
+    "tools_obj": "Voir cet objet dans les outils",
+    "tool_constellation_sub_obj": "Ses liens avec les autres objets",
+    "tool_evolution_sub_obj": "Sa courbe dans le temps",
+    "tool_alertes_sub_obj": "Ses passages au-dessus des paliers",
+    "tool_classement_sub_obj": "Son rang parmi les objets de l'année",
+    "tool_alertes_sub_region": "Les histoires en alerte dans sa région"
   },
   "stats": {
     "lead": "Un objet ou un événement : son parcours dans les Unes, édition par édition."
+  },
+  "indices": {
+    "title": "Les indices",
+    "title_accent": "de saillance",
+    "full_metho": "Méthodologie complète →",
+    "lead": "Ce que Radar+ mesure quand il dit qu'une nouvelle est « saillante », comment les points sont calculés, et ce que veulent dire les étiquettes, de « Sous le radar » à « Saillance extrême ».",
+    "chart_title": "Où se situe une nouvelle parmi les Unes d'une année",
+    "scale_24h": "Indice 24h",
+    "scale_block": "Une édition (4 h)"
+  },
+  "period_tab": {
+    "4h": "Dernière édition",
+    "day": "Aujourd’hui",
+    "week": "Cette semaine",
+    "month": "Ce mois-ci",
+    "quarter": "Cette année",
+    "total": "Depuis le début"
   }
 }
