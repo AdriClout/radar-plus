@@ -285,14 +285,14 @@
               micro: { aucune: 'sur un an de Unes {adj}, 19 sur 20 attirent plus d\'attention', faible: '4 Unes {adj} sur 5 de l\'année attirent plus d\'attention', moderee: 'le niveau d\'une Une typique : la moitié des Unes {adj} en attire plus, l\'autre moitié moins', elevee: 'plus saillante que la moitié des Unes {adj} de l\'année', tres_elevee: 'dans le cinquième le plus marquant des Unes {adj} de l\'année', extreme: 'à peine 1 Une {adj} sur 20 attire autant d\'attention' },
               foot: function(r, s, when) { return 'Seuils publiés avec les données · ' + (s === 'sum24h' ? 'indice 24h' : 'indice d\'une édition (4 h)') + ' · Unes ' + (r === 'QC' ? 'québécoises' : 'canadiennes') + ' · échelle logarithmique'; },
               footRight: function(n) { return n ? 'Exemples : le sommet d\'une histoire de ' + new Date().getFullYear() + ' par niveau' : ''; },
-              tag: { least: 'La moins saillante de l\'année', most: 'La plus saillante de l\'année' }, go: 'Voir sa fiche →' },
+              tag: { most: 'La plus saillante de l\'année' }, go: 'Voir sa fiche →' },
         en: { names: { aucune: 'Under the radar', faible: 'Low', moderee: 'Moderate', elevee: 'High', tres_elevee: 'Very high', extreme: 'Extreme' },
               share: function(p) { return p + '% of front pages'; }, less: '← less attention', more: 'more attention →',
               pts: 'points', now: 'Current front pages', adj: { QC: 'Quebec', CAN: 'Canadian' },
               micro: { aucune: 'over a year of {adj} front pages, 19 in 20 draw more attention', faible: '4 in 5 {adj} front pages of the year draw more attention', moderee: 'the level of a typical front page: half the {adj} front pages draw more, half less', elevee: 'more salient than half the {adj} front pages of the year', tres_elevee: 'in the most striking fifth of the year\'s {adj} front pages', extreme: 'barely 1 in 20 {adj} front pages draws as much attention' },
               foot: function(r, s) { return 'Thresholds published with the data · ' + (s === 'sum24h' ? '24h index' : 'single-edition (4 h) index') + ' · ' + (r === 'QC' ? 'Quebec' : 'Canadian') + ' front pages · log scale'; },
               footRight: function(n) { return n ? 'Examples: one story peak of ' + new Date().getFullYear() + ' per level' : ''; },
-              tag: { least: 'Least salient of the year', most: 'Most salient of the year' }, go: 'See its card →' }
+              tag: { most: 'Most salient of the year' }, go: 'See its card →' }
       };
       var W = 1000, H = 440, TOP = 70, BOT = 70, PH = H - TOP - BOT;
       var svg = document.getElementById('big'), readout = document.getElementById('readout'), wrap = document.getElementById('chart-wrap');
@@ -323,22 +323,32 @@
           var st = f.storylines[sid], v = 0, key = null;
           if (state.scale === 'block') { v = Number(st.peak) || 0; key = st.peak_key; }
           else Object.keys(st.sum24h || {}).forEach(function(k) { if (st.sum24h[k] > v) { v = st.sum24h[k]; key = k; } });
-          return { sid: sid, v: v, key: key, title: st.title_peak || st.title_last || st.title || sid };
+          return { sid: sid, v: v, key: key, title: st.title_peak || st.title_last || st.title || sid, nb: Number(st.n_blocks) || 0, first: st.first_key || '' };
         }).filter(function(x) { return x.v > 0; });
       }
       function examples(t) {
         var all = peaks(); if (!all.length) return [];
         all.sort(function(a, b) { return a.v - b.v; });
+        // Écartés (Adrien, 1er nov. 2026, sur « Trump impose de nouveaux tarifs » à 0.7 point) :
+        // - à l'échelle 24h, les histoires du premier jour de la série : leur indice 24h est tronqué,
+        //   la série commence au milieu de leur journée ;
+        // - autant que possible, les histoires d'un seul article dans une seule édition : ce sont des
+        //   fragments, souvent titrés comme la grande histoire dont ils se sont détachés.
+        var start = all.reduce(function(m, x) { return x.first && (!m || x.first < m) ? x.first : m; }, '');
+        var cut = start ? new Date(Date.parse(start.slice(0, 10) + 'T' + start.slice(11, 13) + ':00:00Z') + 24 * 3600e3).toISOString().slice(0, 13).replace('T', '_') : '';
+        if (state.scale !== 'block' && cut) all = all.filter(function(x) { return !x.first || x.first >= cut; });
         var used = {}, out = [], lim = [0].concat(t).concat([Infinity]);
         BANDS.forEach(function(b, k) {
           var lo = lim[k], hi = lim[k + 1], inBand = all.filter(function(x) { return x.v >= lo && x.v < hi && !used[x.sid]; });
+          var real = inBand.filter(function(x) { return x.nb >= 2; });
+          if (real.length) inBand = real;
           if (!inBand.length) return;
           var pick;
-          if (k === 0) pick = inBand[0];                                   // le moins saillant de l'année
+          if (k === 0) pick = inBand[Math.floor(inBand.length / 2)];          // une histoire typique sous le radar
           else if (k === BANDS.length - 1) pick = inBand[inBand.length - 1]; // le plus saillant de l'année
           else { var mid = Math.sqrt(lo * hi); pick = inBand.slice().sort(function(a, c) { return Math.abs(Math.log(a.v / mid)) - Math.abs(Math.log(c.v / mid)); })[0]; }
           used[pick.sid] = true;
-          out.push({ sid: pick.sid, v: pick.v, key: pick.key, title: pick.title, band: b, tag: k === 0 ? 'least' : (k === BANDS.length - 1 ? 'most' : ''),
+          out.push({ sid: pick.sid, v: pick.v, key: pick.key, title: pick.title, band: b, tag: k === BANDS.length - 1 ? 'most' : '',
                      href: './statistiques.html?evenement=' + encodeURIComponent(pick.sid) + '&region=' + state.region });
         });
         return out;
@@ -378,8 +388,8 @@
         var L = TXT[lang()], t = thresholds();
         if (!t) { svg.innerHTML = ''; return; }
         var ex = examples(t), vmin = ex.length ? ex[0].v : t[0], vmax = ex.length ? ex[ex.length - 1].v : t[4];
-        // Axe d'origine à gauche (le moins saillant de l'année, très bas, écraserait la courbe : son point se pose
-        // au bord gauche, sa valeur exacte est dans sa carte) ; à droite, assez de place pour le plus saillant.
+        // Axe d'origine à gauche (un exemple très bas écraserait la courbe : son point se pose au bord
+        // gauche, sa valeur exacte est dans sa carte) ; à droite, assez de place pour le plus saillant.
         var x0 = l10(t[0] / 2), x1 = l10(Math.max(t[4] * 2, vmax * 1.15)), px = function(v) { return (l10(v) - x0) / (x1 - x0) * W; };
         var mu = l10(t[2]), sR = Math.max((l10(t[4]) - mu) / 1.645, 1e-3), sL = Math.max((mu - l10(t[0])) / 1.645, 1e-3);
         var g = function(lx) { var s = lx < mu ? sL : sR; return Math.exp(-0.5 * Math.pow((lx - mu) / s, 2)); };
@@ -406,9 +416,9 @@
         h += '<text class="axis-label" x="4" y="' + (TOP + PH + 48) + '">' + esc(L.less) + '</text>';
         h += '<text class="axis-label" x="' + (W - 4) + '" y="' + (TOP + PH + 48) + '" text-anchor="end">' + esc(L.more) + '</text>';
         h += '<text class="axis-label" x="' + (W / 2) + '" y="' + (TOP + PH + 48) + '" text-anchor="middle">' + esc(L.pts) + '</text>';
-        // Un exemple par niveau, choisi parmi les SOMMETS des histoires de l'année : le moins saillant de
-        // l'année (sous le radar), le plus saillant (extrême), et pour chaque niveau entre les deux,
-        // l'histoire dont le sommet tombe au milieu de la bande (Adrien, 1er nov. 2026). Les titres
+        // Un exemple par niveau, choisi parmi les SOMMETS des histoires de l'année : une histoire typique
+        // sous le radar (la médiane de la bande), le plus saillant (extrême), et pour chaque niveau entre
+        // les deux, l'histoire dont le sommet tombe au milieu de la bande (Adrien, 1er nov. 2026). Les titres
         // entiers sont dans les cartes sous la courbe ; chaque point y est relié par un trait.
         var n = ex.length;
         ex.forEach(function(it, k) {

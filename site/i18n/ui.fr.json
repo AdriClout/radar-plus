@@ -243,7 +243,6 @@
     "mode_label": "Afficher",
     "mode_objects": "Objets",
     "mode_events": "Événements",
-    "events_hint": "Grosses étoiles : les événements, colorés selon leur niveau. Petits astres : les objets qui les relient, par leurs articles communs.",
     "events_list_label": "Événements",
     "event": "événement",
     "events": "événements",

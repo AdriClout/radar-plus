@@ -243,7 +243,6 @@
     "mode_label": "Show",
     "mode_objects": "Objects",
     "mode_events": "Events",
-    "events_hint": "Large stars: events, coloured by level. Small stars: the objects linking them, through shared articles.",
     "events_list_label": "Events",
     "event": "event",
     "events": "events",

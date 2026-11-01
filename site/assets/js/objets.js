@@ -114,7 +114,7 @@ function render() {
   var sec = document.getElementById(cfg.sectionId), grid = document.getElementById(cfg.gridId), sub = document.getElementById(cfg.subtitleId);
   if (!sec || !grid) return;
   sec.hidden = false;
-  if (sub) sub.textContent = T('classement.obj_sub.' + cfg.range);
+  if (sub) { var U0 = window.RadarAune && window.RadarAune.util; if (U0 && U0.setSub) U0.setSub(sub, T('classement.obj_sub.' + cfg.range)); else sub.textContent = T('classement.obj_sub.' + cfg.range); }
   var foot = document.getElementById(cfg.footId); if (foot) foot.textContent = '';
   if (!data) {
     grid.innerHTML = '<div class="aune-empty">' + esc(T('common.loading')) + '</div>';

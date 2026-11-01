@@ -562,8 +562,9 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
     : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points_cumul')) + '</span>' + '</span>';
-  var art = !dense ? auneArtHtml(c, rnd, urls, T, latest) : ''; // l'illustration de chaque histoire qui en a une (Adrien, 1er nov. 2026)
   var rank = c.rank || (i + 1);
+  // Image : la première position seulement, partout (Adrien, 1er nov. 2026).
+  var art = !dense && rank === 1 ? auneArtHtml(c, rnd, urls, T, latest) : '';
   var cls = 'aune-row rank-' + rank + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
   return '<li class="' + cls + ' aune-go" data-href="' + auneFicheUrl(c, region) + '"' + style + '>' +
@@ -715,7 +716,7 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
     return '<tr class="rank-' + rank + ' band-' + esc(band) + ' aune-go" data-href="' + auneFicheUrl(c, region) + '">' +
       '<td class="rank">' + rank + '</td>' +
       '<td class="center">' + auneTrendHtml(c, rank - 1, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
-      '<td class="subject"><div class="subj-wrap">' + auneThumbHtml(c, T) + '<div class="subj-text">' + salBadgeHtml(c, region, T) +
+      '<td class="subject"><div class="subj-wrap">' + (rank === 1 ? auneThumbHtml(c, T) : '') + '<div class="subj-text">' + salBadgeHtml(c, region, T) +
         '<span class="aune-row-title"><a href="' + auneFicheUrl(c, region) + '">' + esc(c.title) + '</a></span>' +
         '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</div></div></td>' +
       '<td class="num strong">' + auneNumUnit(c.points.toFixed(1), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
@@ -761,6 +762,18 @@ function auneStickyHead() {
   if (!auneStickyBound) { auneStickyBound = true; window.addEventListener('scroll', apply, { passive: true }); window.addEventListener('resize', apply); }
   apply();
 }
+// Phrase sous le titre sur deux lignes, coupée à la dernière virgule (« …24 dernières heures, »
+// puis « classées par l'indice 24h. ») — Adrien, 1er nov. 2026.
+function auneSetSub(el, txt) {
+  if (!el) return;
+  txt = String(txt || '');
+  var i = txt.lastIndexOf(', ');
+  if (i <= 0) { el.textContent = txt; return; }
+  el.textContent = '';
+  el.appendChild(document.createTextNode(txt.slice(0, i + 1)));
+  el.appendChild(document.createElement('br'));
+  el.appendChild(document.createTextNode(txt.slice(i + 2)));
+}
 function renderALaUne() {
   if (cfg.type === 'objets' && window.RadarObjets) { window.RadarObjets.render(); return; }
   var sec = document.getElementById(cfg.sectionId);
@@ -778,7 +791,7 @@ function renderALaUne() {
     return;
   }
   var latest = eventsLatestData && eventsLatestData.by_region ? eventsLatestData.by_region[region] : null;
-  sub.textContent = (cfg.todayFallback && cfg.offset === -1) ? T('aune.fallback.' + cfg.range) : T(cfg.subtitleKeys + cfg.range);
+  auneSetSub(sub, (cfg.todayFallback && cfg.offset === -1) ? T('aune.fallback.' + cfg.range) : T(cfg.subtitleKeys + cfg.range));
   var seeAll = document.getElementById('aune-see-all');
   if (seeAll) seeAll.href = './classement.html?range=' + encodeURIComponent(cfg.range) + '&country=' + encodeURIComponent(region);
   var foot = document.getElementById(cfg.footId);
@@ -1036,5 +1049,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, exportData: exportData, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, artUrl: auneArtUrl, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { setSub: auneSetSub, window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, artUrl: auneArtUrl, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();
