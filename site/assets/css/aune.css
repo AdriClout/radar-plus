@@ -211,6 +211,7 @@
 @media (max-width: 760px) {
   .aune-section { height: auto; padding: 28px 16px 24px; }
   .aune-head { flex-direction: column; align-items: flex-start; }
+  .aune-head > :first-child { flex-basis: auto; } /* en colonne, la base de 280 px devenait une hauteur : grand vide sous la phrase */
   .aune-controls { align-items: flex-start; }
   .aune-tabs { flex-wrap: wrap; }
   .aune-list-header { display: none; }

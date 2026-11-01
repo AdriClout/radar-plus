@@ -170,7 +170,12 @@
     "icon_constellation": "Constellation : la carte des sujets",
     "icon_classement": "Classement officiel",
     "icon_evolution": "Évolution dans le temps",
-    "icon_alertes": "Alertes de saillance"
+    "icon_alertes": "Alertes de saillance",
+    "panels_aria": "Modules de l'accueil",
+    "panel_prev": "Module précédent",
+    "panel_next": "Module suivant",
+    "panel_aune": "La Une des Unes",
+    "panel_hot10": "Hot 10"
   },
   "hot20": {
     "title": "Hot",
