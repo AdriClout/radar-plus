@@ -203,7 +203,8 @@
       "month": "last month",
       "quarter": "last year",
       "total": ""
-    }
+    },
+    "streak_first_tip": "In first place for {n} consecutive {grans}."
   },
   "constellation": {
     "title": "Constellation",
@@ -388,7 +389,8 @@
     "wl_label_day": "Day",
     "wl_label_week": "Week",
     "wl_label_month": "Month",
-    "wl_label_quarter": "Year"
+    "wl_label_quarter": "Year",
+    "streak_first_many": "{n} consecutive {grans} in first place"
   },
   "gran_singular": {
     "4h": "4h block",
@@ -522,9 +524,9 @@
     "index24h_label": "24h index",
     "index24h_tip": "24h index: average of the index over the last 6 editions, the most recent counting more.",
     "band24h_tip": "Level of the 24h index.",
-    "peak_label": "Peak: {points} points ({when})",
+    "peak_label": "Peak: {points} points/100 ({when})",
     "peak_prefix": "Peak ·",
-    "peak_tip": "The edition where the story had its highest index in the period.",
+    "peak_tip": "The edition where the story had its highest index in the period. This is the index of ONE edition (0 to 100), not the 24h index, which averages the last six editions.",
     "score_tip": "Total points since the story's first front page.",
     "gain_tip": {
       "week": "Points gained since Monday (sum of editions).",
@@ -595,7 +597,37 @@
       "year": "prev. year"
     },
     "art_info": "Illustration credit",
-    "points_short": "pts"
+    "points_short": "pts",
+    "sal": {
+      "now_prefix": "Now:",
+      "peak_prefix": "Peak:",
+      "i_label": "Explain the saliency label",
+      "points_100": "({points} points/100)",
+      "peak_at": "({points} points/100, {when})",
+      "cumul": "Points over the period: {points}",
+      "adj": {
+        "QC": "Quebec",
+        "CAN": "Canadian"
+      },
+      "micro": {
+        "aucune": "Under the radar: over a year of {adj} front pages, 19 in 20 draw more attention than this one.",
+        "faible": "Below the typical front page: 4 in 5 {adj} front pages of the year draw more attention than this one.",
+        "moderee": "The level of a typical front page: half the {adj} front pages of the year draw more, the other half less.",
+        "elevee": "Above the typical front page: more salient than half the {adj} front pages of the year.",
+        "tres_elevee": "In the most striking fifth of the year's {adj} front pages.",
+        "extreme": "The top of the scale: over a year of {adj} front pages, barely 1 in 20 draws as much attention as this one."
+      },
+      "curve_now": "Now",
+      "curve_peak": "Peak",
+      "axis_less": "← less attention",
+      "axis_more": "more attention →",
+      "scale_24h": "Curve: 24h index of a year of {adj} front pages (log scale)",
+      "scale_block": "Curve: single-edition (4 h) index of a year of {adj} front pages (log scale)",
+      "def": "The Radar+ saliency index measures the room a story takes on media front pages: how many outlets put it there, for how long and how intensely. Each 4-hour edition is scored from 0 to 100; the 24h index averages the last six editions, the most recent counting more. The label places the story among a full year of front pages.",
+      "more": "Understanding the saliency indices →",
+      "partial_one": "Appeared in the latest edition only: the 24h index so far counts one of the six editions it averages. It rises if the story stays on the front page.",
+      "partial_many": "Present in {n} of the six editions averaged by the 24h index: it rises if the story stays on the front page."
+    }
   },
   "article_panel": {
     "current": "Current period",

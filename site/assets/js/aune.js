@@ -449,9 +449,8 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   // Badge : niveau de l'indice 24h (Dernières heures) ou du pic de la fenêtre (cumuls).
   // Sous le premier palier : « Sous le radar » (Adrien, 31 oct. 2026).
   var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
-  var bandLabel = (!c.is24h && band !== 'aucune') ? T('aune.peak_prefix') + ' ' + T('aune.band.' + band) : T('aune.band.' + band);
-  var bandTip = c.is24h ? T('aune.band24h_tip') : T('aune.peak_tip');
-  var tagHtml = '<span class="aune-band band-' + escapeHtml(band) + ' hot20-hint" data-tip="' + escapeHtml(bandTip) + '">' + escapeHtml(bandLabel) + '</span>';
+  // Étiquette « Actuellement : … » / « Sommet : … » + « i » : à droite, au-dessus des points (Adrien, 31 oct. 2026).
+  var tagHtml = salBadgeHtml(c, region, T);
   var arts = auneHeadlines(c, ev, 12);
   var metaHtml = '<div class="aune-row-meta">' +
       // « Dans le radar depuis … » (première Une captée) et « sommet … » (meilleur bloc de la
@@ -479,13 +478,118 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
     '<span class="aune-row-trend">' + auneTrendHtml(c, rank - 1, region, cfg.range, prevRanks || {}, prevStart, T) + '</span>' +
     art +
     '<div class="aune-row-main">' +
-      '<div class="aune-row-top">' + tagHtml + (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') + '</div>' +
+      (issue ? '<div class="aune-row-top"><span class="aune-issue">' + escapeHtml(issue) + '</span></div>' : '') +
       titleHtml + metaHtml +
     '</div>' +
-    '<div class="aune-row-score">' + scoreHtml +
+    '<div class="aune-row-score">' + tagHtml + scoreHtml +
       '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + (c.barPct || 2) + '%"></div></div>' + shareHtml +
     '</div>' +
   '</li>';
+}
+
+// ─── Étiquette de saillance « Actuellement : … » / « Sommet : … » + fenêtre « i » ──────────
+// (Adrien, 31 oct. 2026.) Deux étiquettes partout : le niveau ACTUEL de l'indice 24h et le
+// niveau au SOMMET de l'histoire. L'étiquette mène à la page des indices ; le « i » ouvre une
+// fenêtre : les deux niveaux avec leurs points, la phrase qui situe la nouvelle parmi les Unes
+// de l'année, la courbe des Unes (ajustement log-normal à deux pentes sur les seuils publiés,
+// comme la Vitrine : p5, p20, p50, p80, p95), la définition et le lien vers la page.
+var SAL_BANDS = ['aucune'].concat(AUNE_BANDS); // six zones : sous le radar + cinq étiquettes
+var salRows = {}; // storyline → { c, region } de la dernière rangée rendue, pour la fenêtre
+function salThresholds(region, scale) {
+  var th = auneStore.index && auneStore.index.thresholds && auneStore.index.thresholds[region];
+  th = th && th[scale];
+  if (!th) return null;
+  var t = AUNE_BANDS.map(function(b) { return Number(th[b]); });
+  return (t.every(function(v) { return isFinite(v) && v > 0; }) && t[4] > t[0]) ? t : null;
+}
+function salBandOf(value, t) { var band = 'aucune'; if (!t) return band; AUNE_BANDS.forEach(function(b, i) { if (value >= t[i]) band = b; }); return band; }
+function salPill(band, T) { return '<span class="aune-band band-' + escapeHtml(band) + '">' + escapeHtml(T('aune.band.' + band)) + '</span>'; }
+function salBadgeHtml(c, region, T) {
+  var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
+  salRows[c.storyline] = { c: c, region: region };
+  return '<span class="sal-wrap">' +
+    '<a class="sal-badge" href="./indices.html#etiquettes"><span class="sal-prefix">' + escapeHtml(T(c.is24h ? 'aune.sal.now_prefix' : 'aune.sal.peak_prefix')) + '</span> ' + salPill(band, T) + '</a>' +
+    '<button type="button" class="sal-i" data-sid="' + escapeHtml(c.storyline) + '" aria-label="' + escapeHtml(T('aune.sal.i_label')) + '">i</button>' +
+  '</span>';
+}
+function salCurveSvg(value, t, band, markerLabel, T) {
+  var W = 320, PH = 56, TOP = 14, BOT = 16, H = TOP + PH + BOT;
+  var l10 = function(v) { return Math.log10(Math.max(v, 0.5)); };
+  var x0 = l10(t[0] / 2), x1 = l10(t[4] * 2), px = function(v) { return (l10(v) - x0) / (x1 - x0) * W; };
+  // Médiane au centre ; p5 pour la pente de gauche, p95 pour celle de droite (1,645 σ chacune).
+  var mu = l10(t[2]), sR = Math.max((l10(t[4]) - mu) / 1.645, 1e-3), sL = Math.max((mu - l10(t[0])) / 1.645, 1e-3);
+  var g = function(lx) { var s = lx < mu ? sL : sR; return Math.exp(-0.5 * Math.pow((lx - mu) / s, 2)); };
+  var pts = [];
+  for (var i = 0; i <= 120; i++) { var lx = x0 + (x1 - x0) * i / 120; pts.push(((lx - x0) / (x1 - x0) * W).toFixed(1) + ',' + (PH - 2 - g(lx) * (PH - 10)).toFixed(1)); }
+  var edges = [0].concat(t.map(px)).concat([W]);
+  var zones = SAL_BANDS.map(function(b, k) { return '<rect class="sal-zone band-' + b + (b === band ? ' on' : '') + '" x="' + edges[k].toFixed(1) + '" y="0" width="' + Math.max(0, edges[k + 1] - edges[k]).toFixed(1) + '" height="' + PH + '"/>'; }).join('');
+  var mx = (typeof value === 'number' && value > 0) ? Math.min(W - 1, Math.max(1, px(value))) : null;
+  var my = mx != null ? (PH - 2 - g(l10(value)) * (PH - 10)) : null;
+  var lab = mx != null ? Math.min(W - 42, Math.max(42, mx)) : null;
+  return '<svg class="sal-curve" viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' + escapeHtml(markerLabel) + '">' +
+    '<g transform="translate(0,' + TOP + ')">' + zones + '<polyline class="sal-line" points="' + pts.join(' ') + '"/>' +
+    (mx != null ? '<line class="sal-marker" x1="' + mx.toFixed(1) + '" y1="0" x2="' + mx.toFixed(1) + '" y2="' + PH + '"/><circle class="sal-dot" cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="3.2"/>' : '') +
+    '</g>' +
+    (mx != null ? '<text class="sal-marker-label" x="' + lab.toFixed(1) + '" y="' + (TOP - 4) + '" text-anchor="middle">' + escapeHtml(markerLabel) + '</text>' : '') +
+    '<text class="sal-axis" x="2" y="' + (H - 4) + '">' + escapeHtml(T('aune.sal.axis_less')) + '</text>' +
+    '<text class="sal-axis" x="' + (W - 2) + '" y="' + (H - 4) + '" text-anchor="end">' + escapeHtml(T('aune.sal.axis_more')) + '</text>' +
+  '</svg>';
+}
+function salPopHtml(sid, lang, T) {
+  var row = salRows[sid]; if (!row) return '';
+  var c = row.c, region = row.region, adj = T('aune.sal.adj.' + region);
+  var scale = c.is24h ? 'sum24h' : 'block', t = salThresholds(region, scale);
+  var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
+  var peakBand = c.peakBand || salBandOf(c.peak || 0, salThresholds(region, 'block'));
+  var html = '';
+  if (c.is24h) html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.now_prefix')) + ' ' + salPill(band, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.points_100', { points: (c.points || 0).toFixed(1) })) + '</span></p>';
+  html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.peak_prefix')) + ' ' + salPill(peakBand, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.peak_at', { points: (c.peak || 0).toFixed(1), when: auneWhen(c.peakKey, lang) })) + '</span></p>';
+  if (!c.is24h) html += '<p class="sal-note sal-sub">' + escapeHtml(T('aune.sal.cumul', { points: (c.points || 0).toFixed(1) })) + '</p>';
+  // Une histoire présente dans moins de six éditions a un indice 24h encore partiel : « 13.1 » à côté
+  // d'un sommet d'édition à « 43.9 » se lit comme une erreur si on ne le dit pas (Adrien, 31 oct. 2026).
+  if (c.is24h && c.blocks > 0 && c.blocks < 6) html += '<p class="sal-note sal-partial">' + escapeHtml(T(c.blocks === 1 ? 'aune.sal.partial_one' : 'aune.sal.partial_many', { n: c.blocks })) + '</p>';
+  html += '<p class="sal-lede">' + escapeHtml(T('aune.sal.micro.' + band, { adj: adj })) + '</p>';
+  if (t) html += salCurveSvg(c.is24h ? c.points : c.peak, t, band, T(c.is24h ? 'aune.sal.curve_now' : 'aune.sal.curve_peak'), T) +
+    '<p class="sal-scale">' + escapeHtml(T(c.is24h ? 'aune.sal.scale_24h' : 'aune.sal.scale_block', { adj: adj })) + '</p>';
+  html += '<p class="sal-def">' + escapeHtml(T('aune.sal.def')) + '</p>' +
+    '<a class="sal-more" href="./indices.html">' + escapeHtml(T('aune.sal.more')) + '</a>';
+  return html;
+}
+var salLayer = null, salTimer = null, salOpenFor = null;
+function salEnsureLayer() {
+  if (salLayer) return salLayer;
+  salLayer = document.createElement('div'); salLayer.id = 'sal-pop'; salLayer.className = 'sal-pop'; salLayer.hidden = true;
+  salLayer.addEventListener('mouseenter', function() { clearTimeout(salTimer); });
+  salLayer.addEventListener('mouseleave', salScheduleHide);
+  document.body.appendChild(salLayer);
+  return salLayer;
+}
+function salShow(btn) {
+  var T = window.t || function(k) { return k; }, lang = (document.documentElement.lang || 'fr').slice(0, 2);
+  var html = salPopHtml(btn.dataset.sid, lang, T); if (!html) return;
+  var layer = salEnsureLayer(); clearTimeout(salTimer);
+  layer.innerHTML = html; layer.hidden = false; salOpenFor = btn;
+  var r = btn.getBoundingClientRect(), w = Math.min(360, window.innerWidth - 16);
+  layer.style.width = w + 'px';
+  layer.style.left = Math.min(Math.max(8, r.right - w), window.innerWidth - w - 8) + 'px';
+  var h = layer.offsetHeight, top = r.bottom + 8;
+  if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+  layer.style.top = top + 'px';
+}
+function salHide() { if (salLayer) salLayer.hidden = true; salOpenFor = null; }
+function salScheduleHide() { clearTimeout(salTimer); salTimer = setTimeout(salHide, 200); }
+function salInit() {
+  var at = function(e) { return e.target && e.target.closest ? e.target.closest('.sal-i') : null; };
+  document.addEventListener('mouseover', function(e) { var b = at(e); if (b) salShow(b); });
+  document.addEventListener('mouseout', function(e) { if (at(e)) salScheduleHide(); });
+  document.addEventListener('focusin', function(e) { var b = at(e); if (b) salShow(b); });
+  document.addEventListener('click', function(e) {
+    var b = at(e);
+    if (b) { e.preventDefault(); e.stopPropagation(); if (salOpenFor === b && salLayer && !salLayer.hidden) salHide(); else salShow(b); return; }
+    if (salLayer && !salLayer.hidden && !(e.target.closest && e.target.closest('#sal-pop'))) salHide();
+  }, true);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') salHide(); });
+  window.addEventListener('scroll', function() { if (salOpenFor) salHide(); }, { passive: true });
 }
 // Table large de la page Classement : toutes les colonnes, défilable sur téléphone.
 // Unité des périodes de la vue (« 13 semaines ») et nombre avec unité (« 669.1 points »).
@@ -503,7 +607,6 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
   var rows = items.map(function(c, i) {
     var ev = byStory && byStory[c.storyline], urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
     var band = is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
-    var bandLabel = (!is24h && band !== 'aucune') ? T('aune.peak_prefix') + ' ' + T('aune.band.' + band) : T('aune.band.' + band);
     var arts = auneHeadlines(c, ev, 12);
     var stats = auneChartFor(region, cfg.range, cfg.offset, c.storyline);
     var delta = is24h ? c.points - (c.prev24h || 0) : null;
@@ -511,7 +614,7 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
     return '<tr class="rank-' + rank + ' band-' + esc(band) + ' aune-go" data-href="' + auneFicheUrl(c, region) + '">' +
       '<td class="rank">' + rank + '</td>' +
       '<td class="center">' + auneTrendHtml(c, rank - 1, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
-      '<td class="subject"><span class="aune-band band-' + esc(band) + '">' + esc(bandLabel) + '</span>' +
+      '<td class="subject">' + salBadgeHtml(c, region, T) +
         '<span class="aune-row-title"><a href="' + auneFicheUrl(c, region) + '">' + esc(c.title) + '</a></span>' +
         '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</td>' +
       '<td class="num strong">' + auneNumUnit(c.points.toFixed(1), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
@@ -726,6 +829,7 @@ function downloadCsv() {
 }
 function init(opts) {
   Object.keys(opts || {}).forEach(function(k) { cfg[k] = opts[k]; });
+  salInit();
   AUNE_LIMIT = cfg.limits;
   var grid = document.getElementById(cfg.gridId);
   if (grid) grid.addEventListener('click', function(e) {

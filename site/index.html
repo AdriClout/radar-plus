@@ -1801,25 +1801,37 @@ function renderHot20() {
   /* Série : nombre de périodes consécutives (en remontant depuis celle-ci) où l'objet est dans
      le top 10 de la période, le classement affiché ; les données gardent 30 objets par bloc,
      « présent dans les données » ne voulait rien dire pour le lecteur (Adrien, 31 oct. 2026). */
-  var STREAK_TOP = 10;
+  // Paliers, du plus serré au plus large : première position, top 2, top 3, top 10. On affiche
+  // le palier le plus serré tenu au moins deux périodes de suite (« 2 jours de suite en
+  // première position » plutôt que « 15 jours de suite dans le top 10 » ; Adrien, 31 oct. 2026).
+  var STREAK_TIERS = [1, 2, 3, 10];
   var streaks = {};
-  nodes.forEach(function(node) {
-    var count = 0;
-    for (var si = currentSlotIdx; si >= 0; si--) {
-      var s = aggregatedSlots[si];
-      var sNodes;
-      if (currentGranularity === '4h') {
-        var pd = countryGraphs[s.periodKeys[0]];
-        sNodes = pd && pd.nodes ? pd.nodes : [];
-      } else {
-        sNodes = aggregateNodes(countryGraphs, s.periodKeys);
-      }
-      var top = sNodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }).slice(0, STREAK_TOP);
-      var found = top.some(function(n) { return n.id === node.id; });
-      if (found) count++;
-      else break;
+  var slotRankCache = {};
+  function slotRanks(si) {
+    if (slotRankCache[si]) return slotRankCache[si];
+    var s = aggregatedSlots[si], sNodes;
+    if (currentGranularity === '4h') {
+      var pd = countryGraphs[s.periodKeys[0]];
+      sNodes = pd && pd.nodes ? pd.nodes : [];
+    } else {
+      sNodes = aggregateNodes(countryGraphs, s.periodKeys);
     }
-    streaks[node.id] = count;
+    var ranks = {};
+    sNodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }).slice(0, 10)
+      .forEach(function(n, idx) { ranks[n.id] = idx + 1; });
+    return (slotRankCache[si] = ranks);
+  }
+  nodes.forEach(function(node) {
+    var counts = STREAK_TIERS.map(function() { return 0; }), alive = STREAK_TIERS.map(function() { return true; });
+    for (var si = currentSlotIdx; si >= 0; si--) {
+      var r = slotRanks(si)[node.id] || 99, any = false;
+      STREAK_TIERS.forEach(function(t, k) { if (alive[k] && r <= t) { counts[k]++; any = true; } else alive[k] = false; });
+      if (!any) break;
+    }
+    var pick = null;
+    STREAK_TIERS.forEach(function(t, k) { if (pick === null && counts[k] > 1) pick = { top: t, n: counts[k] }; });
+    streaks[node.id] = pick ? pick.n : 0;
+    streaks[node.id + '|top'] = pick ? pick.top : 10;
   });
 
   /* Comeback detection */
@@ -1971,11 +1983,12 @@ function renderHot20() {
       }
 
       /* Streak (i18n) */
-      var streak = streaks[node.id] || 0;
+      var streak = streaks[node.id] || 0, streakTop = streaks[node.id + '|top'] || 10;
       var streakHtml = '';
       if (streak > 1) {
-        var streakKey = streak > 1 ? 'homepage.streak_suffix_many' : 'homepage.streak_suffix_one';
-        streakHtml = '<span class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T('hot20.streak_tip', { n: streak, grans: glp, top: STREAK_TOP })) + '">\uD83D\uDCCD ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp, top: STREAK_TOP })) + '</span>';
+        var streakKey = streakTop === 1 ? 'homepage.streak_first_many' : 'homepage.streak_suffix_many';
+        var streakTipKey = streakTop === 1 ? 'hot20.streak_first_tip' : 'hot20.streak_tip';
+        streakHtml = '<span class="hot20-row-streak hot20-hint" data-tip="' + escapeHtml(T(streakTipKey, { n: streak, grans: glp, top: streakTop })) + '">\uD83D\uDCCD ' + escapeHtml(T(streakKey, { n: streak, gran: gl, grans: glp, top: streakTop })) + '</span>';
       }
 
       /* Rank class */

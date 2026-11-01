@@ -137,6 +137,34 @@
 .aune-row-score .inc.stable { color: var(--muted); font-weight: 400; }
 .aune-row-score .hot20-bar-track { grid-column: 1 / -1; margin-top: 4px; }
 .aune-row-score .unit { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+/* Étiquette « Actuellement : … » / « Sommet : … » + « i », à droite au-dessus des points (Adrien, 31 oct. 2026) */
+.aune-row-score .sal-wrap { grid-column: 1 / -1; margin-bottom: 5px; }
+.sal-wrap { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.sal-badge { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: inherit; }
+.sal-badge:hover .aune-band { filter: brightness(1.15); }
+.sal-prefix { font-family: var(--grotesk); font-size: 11.5px; color: var(--muted); }
+.sal-i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(160,190,255,0.6); background: transparent; color: #cfe1ff; font-family: var(--mono); font-size: 10px; font-weight: 700; line-height: 14px; padding: 0; cursor: help; flex: 0 0 auto; }
+.sal-i:hover, .sal-i:focus { background: rgba(85,136,255,0.25); border-color: var(--accent); outline: none; }
+.sal-pop { position: fixed; z-index: 400; background: rgba(8,16,46,0.97); border: 1px solid rgba(120,170,255,0.4); border-radius: 10px; padding: 14px 16px 12px; box-shadow: 0 12px 40px rgba(0,0,20,0.6); font-family: var(--grotesk); color: #dbe6ff; text-align: left; }
+.sal-pop p { margin: 0 0 8px; }
+.sal-kicker { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sal-pop .aune-band { animation: none; font-size: 10.5px; }
+.sal-note, .sal-sub { font-size: 12px; color: var(--muted); }
+.sal-sub { margin-top: -4px; }
+.sal-lede { font-size: 13px; line-height: 1.45; color: #f1f5ff; }
+.sal-curve { display: block; margin: 4px 0 0; }
+.sal-zone { opacity: 0.26; }
+.sal-zone.on { opacity: 0.85; animation: sal-blink 0.9s ease-in-out 3; }
+@keyframes sal-blink { 50% { opacity: 0.4; } }
+.sal-zone.band-aucune { fill: #55658a; } .sal-zone.band-faible { fill: #7f93b8; } .sal-zone.band-moderee { fill: #5fa8ff; }
+.sal-zone.band-elevee { fill: #f2c94c; } .sal-zone.band-tres_elevee { fill: #ff9f43; } .sal-zone.band-extreme { fill: #ff4d4d; }
+.sal-line { fill: none; stroke: #fff; stroke-opacity: 0.8; stroke-width: 1.4; }
+.sal-marker { stroke: #fff; stroke-width: 1.6; } .sal-dot { fill: #fff; }
+.sal-marker-label { font-family: var(--mono); font-size: 9px; fill: #fff; letter-spacing: 0.6px; text-transform: uppercase; }
+.sal-axis { font-family: var(--mono); font-size: 8px; fill: var(--muted); }
+.sal-scale { font-family: var(--mono); font-size: 9.5px; color: var(--muted); letter-spacing: 0.3px; }
+.sal-def { font-size: 12px; line-height: 1.45; color: #b9c8e8; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 2px; }
+.sal-more { font-size: 12.5px; color: #9dbcff; }
 .aune-clickable { cursor: pointer; }
 .aune-go { cursor: pointer; } /* tout le rang mène à la fiche */
 .aune-row.aune-go:hover { background: rgba(40,70,160,0.14); }

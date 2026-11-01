@@ -203,7 +203,8 @@
       "month": "mois dernier",
       "quarter": "an dernier",
       "total": ""
-    }
+    },
+    "streak_first_tip": "En première position depuis {n} {grans} consécutifs."
   },
   "constellation": {
     "title": "Constellation",
@@ -388,7 +389,8 @@
     "wl_label_day": "Jour",
     "wl_label_week": "Semaine",
     "wl_label_month": "Mois",
-    "wl_label_quarter": "Année"
+    "wl_label_quarter": "Année",
+    "streak_first_many": "{n} {grans} de suite en première position"
   },
   "gran_singular": {
     "4h": "bloc horaire (4 h)",
@@ -522,9 +524,9 @@
     "index24h_label": "indice 24h",
     "index24h_tip": "Indice 24h : moyenne de l'indice des 6 dernières éditions, les plus récentes comptant davantage.",
     "band24h_tip": "Niveau de l'indice 24h.",
-    "peak_label": "Sommet : {points} points ({when})",
+    "peak_label": "Sommet : {points} points/100 ({when})",
     "peak_prefix": "Pic ·",
-    "peak_tip": "L'édition où l'histoire a eu son indice le plus élevé dans la période.",
+    "peak_tip": "L'édition où l'histoire a eu son indice le plus élevé dans la période. C'est l'indice d'UNE édition (0 à 100), pas l'indice 24h, qui moyenne les six dernières éditions.",
     "score_tip": "Total des points depuis la première Une de l'histoire.",
     "gain_tip": {
       "week": "Points gagnés depuis lundi (somme des éditions).",
@@ -595,7 +597,37 @@
       "year": "an préc."
     },
     "art_info": "Crédit de l'illustration",
-    "points_short": "pts"
+    "points_short": "pts",
+    "sal": {
+      "now_prefix": "Actuellement :",
+      "peak_prefix": "Sommet :",
+      "i_label": "Expliquer l'étiquette de saillance",
+      "points_100": "({points} points/100)",
+      "peak_at": "({points} points/100, {when})",
+      "cumul": "Points cumulés sur la période : {points}",
+      "adj": {
+        "QC": "québécoises",
+        "CAN": "canadiennes"
+      },
+      "micro": {
+        "aucune": "Sous le radar : sur un an de Unes {adj}, 19 sur 20 attirent plus d'attention que celle-ci.",
+        "faible": "Sous la Une typique : 4 Unes {adj} sur 5 de l'année attirent plus d'attention que celle-ci.",
+        "moderee": "Le niveau d'une Une typique : la moitié des Unes {adj} de l'année en attire plus, l'autre moitié moins.",
+        "elevee": "Au-dessus de la Une typique : plus saillante que la moitié des Unes {adj} de l'année.",
+        "tres_elevee": "Dans le cinquième le plus marquant des Unes {adj} de l'année.",
+        "extreme": "Le sommet de l'échelle : sur un an de Unes {adj}, à peine 1 sur 20 attire autant d'attention que celle-ci."
+      },
+      "curve_now": "Maintenant",
+      "curve_peak": "Sommet",
+      "axis_less": "← moins d'attention",
+      "axis_more": "plus d'attention →",
+      "scale_24h": "Courbe : indice 24h des Unes {adj} d'une année (échelle logarithmique)",
+      "scale_block": "Courbe : indice d'une édition (4 h) des Unes {adj} d'une année (échelle logarithmique)",
+      "def": "L'indice de saillance Radar+ mesure la place qu'une nouvelle prend à la Une des médias : combien de médias l'y mettent, pendant combien de temps et avec quelle intensité. Chaque édition de 4 heures est notée de 0 à 100 ; l'indice 24h est la moyenne des six dernières éditions, les plus récentes comptant davantage. L'étiquette situe la nouvelle parmi les Unes d'une année entière.",
+      "more": "Comprendre les indices de saillance →",
+      "partial_one": "Apparue à la dernière édition seulement : l'indice 24h ne compte encore qu'une édition sur les six qu'il moyenne. Il monte si l'histoire reste en Une.",
+      "partial_many": "Présente dans {n} des six éditions que moyenne l'indice 24h : il monte si l'histoire reste en Une."
+    }
   },
   "article_panel": {
     "current": "Période courante",
