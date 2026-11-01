@@ -881,6 +881,72 @@
       .hot20-row-increase { font-size: 11px; }
       .hot20-row-name { font-size: 16px; }
     }
+
+    /* ===== Premier écran (Adrien, 1er nov. 2026) : La Une des Unes et le Hot 10 côte à côte, un
+       module par écran, on glisse de l'un à l'autre (trackpad, flèches, points, clavier) ; la
+       page continue vers le robot en dessous. Sur mobile, les deux modules restent empilés. ===== */
+    .top-carousel { position: relative; z-index: 1; display: flex; flex-direction: column; }
+    .top-track { display: flex; flex-direction: column; }
+    .top-panel[hidden] { display: none; }
+    .top-bar { display: none; }
+    @media (min-width: 761px) {
+      .top-carousel {
+        /* L'écran moins le bandeau d'alertes (fixé, 32 px de marge du body), le menu (collant, en
+           flux) et le bandeau « Dans le radar » fixé en bas : le module ET son bouton tiennent
+           dans l'écran. Plancher 560 px : en dessous, la page défile un peu. */
+        height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 560px);
+      }
+      .top-track {
+        flex: 1 1 auto; min-height: 0; flex-direction: row;
+        overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+        overflow-anchor: none; /* quand La Une des Unes apparaît à gauche, rester sur elle (pas sur le Hot 10) */
+        scrollbar-width: none; -ms-overflow-style: none;
+      }
+      .top-track::-webkit-scrollbar { display: none; }
+      .top-panel {
+        flex: 0 0 100%; width: 100%; max-width: none; margin: 0; height: 100%; min-height: 0;
+        scroll-snap-align: start; scroll-snap-stop: always;
+        display: flex; flex-direction: column;
+        padding: clamp(14px, 2.5vh, 32px) max(28px, calc((100% - 984px) / 2)) 6px; /* contenu centré, 984 px au plus (1040 moins les marges d'avant) */
+      }
+      .aune-section.top-panel .aune-head, .hot20-section.top-panel .hot20-header { margin-bottom: 10px; }
+      /* Rangs un peu plus serrés pour que les trois tiennent sur un portable de 700 px de haut */
+      .aune-section.top-panel .aune-row { padding-top: 6px; padding-bottom: 6px; }
+      .aune-section.top-panel .aune-row.rank-1 { padding-top: 8px; padding-bottom: 8px; margin: 8px 0 6px; }
+      .aune-section.top-panel .aune-row-main { gap: 4px; }
+      .aune-section.top-panel .aune-foot, .hot20-section.top-panel .hot20-more { margin-top: 10px; }
+      /* Hot 10 : la liste prend la hauteur qui reste et les dix lignes se la partagent. */
+      .hot20-section.top-panel .hot20-list { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+      .hot20-section.top-panel .hot20-list-header { flex: 0 0 auto; }
+      .hot20-section.top-panel .hot20-row { flex: 1 1 0; min-height: 0; padding: 3px 14px; }
+      .hot20-section.top-panel .hot20-list-header, .hot20-section.top-panel .hot20-row { grid-template-columns: 56px 110px minmax(160px, 1fr) 250px; }
+      .hot20-section.top-panel .hot20-row-pct, .hot20-section.top-panel .hot20-row-total { white-space: nowrap; }
+      .hot20-section.top-panel .hot20-empty { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; }
+      /* Score sur une ligne : points et augmentation ; ni barre ni part du radar (Adrien, 1er nov. 2026) */
+      .hot20-section.top-panel .hot20-row-pct { margin-bottom: 0; }
+      .hot20-section.top-panel .hot20-row-share, .hot20-section.top-panel .hot20-bar-track { display: none; }
+      /* Noms des objets un peu plus petits : ils doivent entrer au complet */
+      .hot20-section.top-panel .hot20-row-name { font-size: 16px; }
+      .hot20-section.top-panel .hot20-row-streak { font-size: 11.5px; }
+      /* Les pieds des modules sortent des panneaux : leurs liens vivent dans la barre du bas */
+      .aune-section.top-panel .aune-foot, .hot20-section.top-panel .hot20-more { display: none; }
+      /* Barre du bas : bouton | points | lien méthodo, les trois centrés autour des points */
+      .top-bar { flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; column-gap: 28px; padding: 8px 28px 6px; }
+      .top-bar-link { font-family: var(--grotesk); font-size: 13px; color: #9dbcff; text-decoration: none; }
+      .top-bar-link:hover { color: #fff; }
+      .top-bar-link.methodo-how { justify-self: end; text-decoration: underline; text-underline-offset: 3px; }
+      .top-bar-btn { justify-self: start; font-size: 14px; font-weight: 700; color: #fff; padding: 8px 18px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); white-space: nowrap; }
+      .top-bar-btn:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); color: #fff; }
+      /* Les deux points : un par module, le courant plein ; flèches discrètes de part et d'autre */
+      .top-dots { display: flex; justify-content: center; align-items: center; gap: 10px; }
+      .top-dots[hidden] { visibility: hidden; }
+      .top-dot { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1px solid rgba(157,188,255,0.55); background: transparent; cursor: pointer; transition: background 0.2s, border-color 0.2s, transform 0.2s; }
+      .top-dot:hover { border-color: #fff; }
+      .top-dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.2); box-shadow: 0 0 10px var(--accent-glow); }
+      .top-arrow { background: none; border: 0; color: rgba(157,188,255,0.7); font-family: var(--grotesk); font-size: 22px; line-height: 1; padding: 0 6px 2px; cursor: pointer; }
+      .top-arrow:hover { color: #fff; }
+      .top-arrow[disabled] { opacity: 0.25; cursor: default; }
+    }
   </style>
 </head>
 <body>
@@ -888,9 +954,12 @@
 <!-- Starfield -->
 <canvas id="stars-canvas"></canvas>
 
-<!-- ========== HERO ========== -->
+<!-- ========== PREMIER ÉCRAN : La Une des Unes | Hot 10 (un module par écran, on glisse de l'un à
+     l'autre ; deux points dessous ; la page continue vers le robot ; Adrien, 1er nov. 2026) ========== -->
+<div class="top-carousel" id="top-carousel">
+<div class="top-track" id="top-track">
 <!-- ========== LA UNE DES UNES (événements saillants, cumul 24 h) ========== -->
-<section class="aune-section" id="aune" hidden>
+<section class="aune-section top-panel" id="aune" hidden>
   <div class="aune-head">
     <div>
       <h2 class="aune-title"><span data-i18n="aune.title">La Une</span> <span class="accent" data-i18n="aune.title_accent">des Unes</span></h2>
@@ -918,7 +987,7 @@
 </section>
 
 <!-- ========== HOT 20 ========== -->
-<section class="hot20-section" id="hot20">
+<section class="hot20-section top-panel" id="hot20">
   <div class="hot20-header">
     <div class="hot20-title-row">
       <h2 class="hot20-title"><span data-i18n="hot20.title">Hot</span> <span class="accent" data-i18n="hot20.title_number">10</span><span class="hot20-subtitle" id="hot20-subtitle">Aujourd&rsquo;hui</span></h2>
@@ -959,6 +1028,72 @@
   </div>
   <div class="hot20-more"><a href="./classement.html?type=objets" id="hot20-more-link" data-i18n="hot20.see_more">Voir plus →</a><a href="./methodologie.html#indice-de-saillance-absolu" class="methodo-how" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
+</div>
+<!-- Barre sous les modules : le lien méthodo à gauche, les points (un par module visible, flèches de
+     part et d'autre, clavier ← →) au centre, le bouton vers le classement (du module affiché) à droite. Les pieds des modules restent dans la page pour le mobile (Adrien, 1er nov. 2026). -->
+<div class="top-bar" id="top-bar">
+  <a class="top-bar-link methodo-how" href="./methodologie.html#indice-de-saillance-absolu" data-i18n="aune.how">Comment l'indice est calculé →</a>
+  <div class="top-dots" id="top-dots" data-i18n-aria-label="hero.panels_aria" aria-label="Modules de l'accueil">
+    <button type="button" class="top-arrow" data-dir="-1" data-i18n-aria-label="hero.panel_prev" aria-label="Module précédent">&#8249;</button>
+    <button type="button" class="top-dot active" data-panel="0" data-i18n-aria-label="hero.panel_aune" aria-label="La Une des Unes"></button>
+    <button type="button" class="top-dot" data-panel="1" data-i18n-aria-label="hero.panel_hot10" aria-label="Hot 10"></button>
+    <button type="button" class="top-arrow" data-dir="1" data-i18n-aria-label="hero.panel_next" aria-label="Module suivant">&#8250;</button>
+  </div>
+  <a class="top-bar-link top-bar-btn" id="top-see-all" href="./classement.html" data-i18n="aune.see_all">Voir le classement complet →</a>
+</div>
+</div>
+<script>
+// Carrousel du premier écran : chaque module fait la largeur de la piste (accrochage CSS) ;
+// les points et les flèches font défiler la piste ; un module caché (#aune sans données) n'a
+// pas de point. Sur mobile la piste est verticale (modules empilés) et les points sont cachés.
+(function () {
+  var track = document.getElementById('top-track'), box = document.getElementById('top-dots');
+  if (!track || !box) return;
+  var dots = Array.prototype.slice.call(box.querySelectorAll('.top-dot'));
+  var arrows = Array.prototype.slice.call(box.querySelectorAll('.top-arrow'));
+  var cur = 0;
+  function shown() { return Array.prototype.filter.call(track.children, function (p) { return !p.hidden; }); }
+  function horizontal() { return getComputedStyle(track).flexDirection === 'row'; }
+  function index() { var w = track.clientWidth || 1; return Math.round(track.scrollLeft / w); }
+  function goTo(i, instant) {
+    var n = shown().length; i = Math.max(0, Math.min(n - 1, i)); cur = i;
+    track.scrollTo({ left: i * track.clientWidth, behavior: instant ? 'auto' : 'smooth' });
+    sync();
+  }
+  function sync() {
+    var n = shown().length;
+    dots.forEach(function (d) { var p = track.children[+d.dataset.panel]; d.hidden = !p || p.hidden; });
+    dots.filter(function (d) { return !d.hidden; }).forEach(function (d, i) {
+      d.classList.toggle('active', i === cur); d.setAttribute('aria-current', i === cur ? 'true' : 'false');
+    });
+    if (arrows[0]) arrows[0].disabled = cur <= 0;
+    if (arrows[1]) arrows[1].disabled = cur >= n - 1;
+    box.hidden = n < 2;
+    // Le bouton de la barre mène où mène le pied du module affiché (événements ou objets, période, pays)
+    var panel = shown()[cur], see = document.getElementById('top-see-all');
+    var src = panel && panel.querySelector('.aune-foot-links a:first-child, .hot20-more a:first-child');
+    if (see && src) see.href = src.getAttribute('href');
+  }
+  // Les pieds des modules sont mis à jour par leurs scripts (période, pays) : suivre leurs liens
+  new MutationObserver(sync).observe(track, { attributes: true, attributeFilter: ['href'], subtree: true });
+  box.addEventListener('click', function (e) {
+    var d = e.target.closest('.top-dot'), a = e.target.closest('.top-arrow');
+    if (d) goTo(dots.filter(function (x) { return !x.hidden; }).indexOf(d));
+    else if (a) goTo(cur + (+a.dataset.dir));
+  });
+  box.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(cur - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(cur + 1); }
+  });
+  track.addEventListener('scroll', function () { if (horizontal()) { cur = index(); sync(); } }, { passive: true });
+  window.addEventListener('resize', function () { if (horizontal()) goTo(cur, true); });
+  Array.prototype.forEach.call(track.children, function (p) {
+    new MutationObserver(function () { if (horizontal()) goTo(Math.min(cur, shown().length - 1), true); else sync(); })
+      .observe(p, { attributes: true, attributeFilter: ['hidden'] });
+  });
+  sync();
+})();
+</script>
 
 <!-- ========== MODULES ========== -->
 <section class="hero" id="hero">

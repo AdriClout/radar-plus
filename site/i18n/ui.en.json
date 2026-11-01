@@ -170,7 +170,12 @@
     "icon_constellation": "Constellation: the map of topics",
     "icon_classement": "Official ranking",
     "icon_evolution": "Evolution over time",
-    "icon_alertes": "Salience alerts"
+    "icon_alertes": "Salience alerts",
+    "panels_aria": "Home modules",
+    "panel_prev": "Previous module",
+    "panel_next": "Next module",
+    "panel_aune": "La Une des Unes",
+    "panel_hot10": "Hot 10"
   },
   "hot20": {
     "title": "Hot",
