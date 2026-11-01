@@ -503,12 +503,14 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
 }
 // Enveloppe défilable avec, à droite, un voile et un repère « défiler → » tant que tout n'est pas visible.
 function auneTableWrap(tableHtml, T) {
-  return '<div class="aune-table-outer"><div class="aune-table-hint">' + escapeHtml(T('classement.scroll_hint')) + '</div><div class="aune-table-wrap">' + tableHtml + '</div></div>';
+  return '<div class="aune-table-outer"><button type="button" class="aune-table-arrow" aria-label="' + escapeHtml(T('classement.scroll_hint')) + '" title="' + escapeHtml(T('classement.scroll_hint')) + '">&#8250;</button><div class="aune-table-wrap">' + tableHtml + '</div></div>';
 }
 function auneTableScrollCue() {
   document.querySelectorAll('.aune-table-outer').forEach(function(outer) {
     var wrap = outer.querySelector('.aune-table-wrap'); if (!wrap) return;
     var update = function() { outer.classList.toggle('has-more', wrap.scrollWidth - wrap.clientWidth - wrap.scrollLeft > 8); };
+    var arrow = outer.querySelector('.aune-table-arrow');
+    if (arrow) arrow.addEventListener('click', function() { wrap.scrollBy({ left: Math.max(300, wrap.clientWidth * 0.6), behavior: 'smooth' }); });
     wrap.addEventListener('scroll', update); window.addEventListener('resize', update); update();
   });
 }

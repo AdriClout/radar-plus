@@ -159,8 +159,10 @@
 /* ── Table large de la page Classement : toutes les colonnes, défilable, les trois premières
    colonnes (rang, mouvement, sujet) figées, le rang 1 plus gros, l'unité derrière chaque chiffre. ── */
 .aune-table-outer { position: relative; }
-.aune-table-hint { display: none; position: absolute; right: 0; top: -22px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #9dbcff; }
-.aune-table-outer.has-more .aune-table-hint { display: block; }
+/* Flèche sur le bord droit tant qu'il reste des colonnes à voir ; clic = défiler */
+.aune-table-arrow { display: none; position: absolute; right: 8px; top: 120px; z-index: 4; width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(120,170,255,0.5); background: rgba(10,18,50,0.95); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+.aune-table-arrow:hover { border-color: var(--accent); background: rgba(40,70,160,0.9); }
+.aune-table-outer.has-more .aune-table-arrow { display: block; }
 .aune-table-outer.has-more::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 70px; pointer-events: none; background: linear-gradient(90deg, rgba(2,0,16,0), rgba(2,0,16,0.9)); }
 .aune-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 .aune-table { width: 100%; min-width: 1320px; border-collapse: separate; border-spacing: 0; font-size: 13px; }

@@ -599,7 +599,7 @@
     "download": "Download (CSV)",
     "download_tip": "The displayed ranking, with its filters, as a CSV file readable in Excel",
     "obj_total": "total (130 days)",
-    "scroll_hint": "Scroll right to see everything →"
+    "scroll_hint": "See the other columns"
   },
   "csv": {
     "rank": "rank",

@@ -599,7 +599,7 @@
     "download": "Télécharger (CSV)",
     "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel",
     "obj_total": "total (130 jours)",
-    "scroll_hint": "Défiler vers la droite pour tout voir →"
+    "scroll_hint": "Voir les autres colonnes"
   },
   "csv": {
     "rank": "rang",
