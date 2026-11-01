@@ -655,7 +655,7 @@
       <span class="accent" data-i18n="alertes.title_accent">médiatiques</span>
     </h1>
     <p class="page-subtitle" data-i18n="alertes.subtitle_3lvl">
-      Trois niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours
+      Deux niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours
     </p>
 
     <div class="methodo-link-wrap">
@@ -747,7 +747,7 @@
   'use strict';
 
   // ─── Constantes ────────────────────────────────────────────────
-  const TIERS = ['extreme', 'tres_eleve', 'eleve'];
+  const TIERS = ['extreme', 'tres_eleve']; // plus de niveau « élevé » : trop fréquent (Adrien, 31 oct. 2026)
   const TIER_RANK = { extreme: 0, tres_eleve: 1, eleve: 2, none: 99 };
   const TIER_CSS = { extreme: 'extreme', tres_eleve: 'tres-eleve', eleve: 'eleve' };
   const COUNTRY_ORDER = ['QC', 'CAN', 'USA'];
@@ -812,7 +812,7 @@
     if (!tiers) return 'none';
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
     return 'none';
   }
 
@@ -1612,7 +1612,7 @@
     var body = document.getElementById('panel-body');
     if (!panel || !body) return;
 
-    var maxTier = allEpisodes.length ? 'eleve' : 'none';
+    var maxTier = allEpisodes.length ? 'tres_eleve' : 'none';
     allEpisodes.forEach(function(e) {
       if (tierRank(e.tier) < tierRank(maxTier)) maxTier = e.tier;
     });

@@ -336,6 +336,10 @@ function auneRanking(region, range, limit, win) {
 // Heure d'ÉDITION d'un bloc, en heure de Montréal : une édition (0h, 4h, 8h, 12h, 16h, 20h
 // l'été) publie le bloc de 4h qui s'est terminé une heure plus tôt, donc début du bloc + 5h.
 // C'est l'heure que la Vitrine affiche ; les blocs eux-mêmes (clés UTC) ne sont jamais montrés.
+// Une édition d'événements se nomme par l'heure où elle SORT (fin du bloc + 1 h) : « édition de 20h »
+// pour le bloc 19-23 UTC. Les blocs des événements (Vitrine) sont 23h, 3h, 7h, 11h, 15h, 19h à Montréal
+// en heure d'été, décalés d'une heure sur la grille des objets (0h, 4h, 8h…) ; tant que les deux
+// chaînes ne sont pas alignées, on garde l'heure de sortie, qui est celle que le lecteur a vue.
 function auneEditionTime(key) { return periodStartUtc(key) + AUNE_BLOCK_MS + 3600e3; }
 function auneHourMtl(t) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', hour: 'numeric', hour12: false }).format(new Date(t)).replace(/^24$/, '0').replace(/^0(\d)$/, '$1') + 'h';

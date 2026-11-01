@@ -38,10 +38,11 @@
     "home_hot20": "Hot 10",
     "classement": "Classement",
     "methodologie_full": "Méthodologie complète",
-    "indices": "Les indices de saillance"
+    "indices": "Les indices de saillance",
+    "tools": "Outils d’analyse"
   },
   "alertbar": {
-    "label": "ALERTE",
+    "label": "Alerte de saillance",
     "view_alerts_aria": "Voir les alertes",
     "active_aria": "Alertes de saillance actives",
     "event_tag": "Événement",
@@ -261,7 +262,7 @@
   "alertes": {
     "title": "Alertes",
     "title_accent": "médiatiques",
-    "subtitle_3lvl": "Trois niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours",
+    "subtitle_3lvl": "Deux niveaux dérivés du pic de saillance — calibrés par pays sur 130 jours",
     "filter_country": "Pays",
     "methodo_link": "Méthodologie →",
     "level_extreme": "Extrême",
@@ -310,7 +311,7 @@
     "total_days": "jours cumulés",
     "day": "jour",
     "days": "jours",
-    "methodology_intro": "Une alerte signale un sujet dont le pic de saillance dépasse le seuil <em>élevé</em> (p80) calibré pour ce pays. Trois niveaux sont dérivés du pic atteint au cours de l’épisode : <strong>Élevé</strong> (pic dans [p80, p95[), <strong>Très élevé</strong> (pic dans [p95, p99[), <strong>Extrême</strong> (pic ≥ p99). Un épisode est une période continue au-dessus du seuil ; les épisodes qui se chevauchent dans le temps sont regroupés en clusters.",
+    "methodology_intro": "Une alerte signale un sujet dont le pic de saillance dépasse le seuil <em>très élevé</em> (p95) calibré pour ce pays. Deux niveaux sont dérivés du pic atteint au cours de l’épisode : <strong>Très élevé</strong> (pic dans [p95, p99[), <strong>Extrême</strong> (pic ≥ p99). Le palier élevé (p80) reste visible sur la page Évolution mais ne déclenche plus d’alerte, trop fréquent. Un épisode est une période continue au-dessus du seuil ; les épisodes qui se chevauchent dans le temps sont regroupés en clusters.",
     "methodology_link": "Voir la méthodologie complète"
   },
   "alertes_pill": {
@@ -531,7 +532,7 @@
     "index24h_label": "indice 24h",
     "index24h_tip": "Indice 24h : moyenne de l'indice des 6 dernières éditions, les plus récentes comptant davantage.",
     "band24h_tip": "Niveau de l'indice 24h.",
-    "peak_label": "Sommet : {points} points/100 ({when})",
+    "peak_label": "Sommet : {points} points ({when})",
     "peak_prefix": "Pic ·",
     "peak_tip": "L'édition où l'histoire a eu son indice le plus élevé dans la période. C'est l'indice d'UNE édition (0 à 100), pas l'indice 24h, qui moyenne les six dernières éditions.",
     "score_tip": "Total des points depuis la première Une de l'histoire.",
@@ -609,8 +610,8 @@
       "now_prefix": "Actuellement :",
       "peak_prefix": "Sommet :",
       "i_label": "Expliquer l'étiquette de saillance",
-      "points_100": "({points} points/100)",
-      "peak_at": "({points} points/100, {when})",
+      "points_100": "({points} points)",
+      "peak_at": "({points} points, {when})",
       "cumul": "Points cumulés sur la période : {points}",
       "adj": {
         "QC": "québécoises",

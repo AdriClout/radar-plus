@@ -38,10 +38,11 @@
     "home_hot20": "Hot 10",
     "classement": "Ranking",
     "methodologie_full": "Full methodology",
-    "indices": "The saliency indices"
+    "indices": "The saliency indices",
+    "tools": "Analysis tools"
   },
   "alertbar": {
-    "label": "ALERT",
+    "label": "Salience alert",
     "view_alerts_aria": "View alerts",
     "active_aria": "Active saliency alerts",
     "event_tag": "Event",
@@ -261,7 +262,7 @@
   "alertes": {
     "title": "Media",
     "title_accent": "alerts",
-    "subtitle_3lvl": "Three levels derived from the salience peak — calibrated per country over 130 days",
+    "subtitle_3lvl": "Two levels derived from the salience peak — calibrated per country over 130 days",
     "filter_country": "Country",
     "methodo_link": "Methodology →",
     "level_extreme": "Extreme",
@@ -310,7 +311,7 @@
     "total_days": "total days",
     "day": "day",
     "days": "days",
-    "methodology_intro": "An alert flags a topic whose salience peak crosses the <em>high</em> threshold (p80) calibrated for that country. Three levels are derived from the peak reached during the episode: <strong>High</strong> (peak in [p80, p95[), <strong>Very high</strong> (peak in [p95, p99[), <strong>Extreme</strong> (peak ≥ p99). An episode is a continuous period above the threshold; episodes overlapping in time are grouped into clusters.",
+    "methodology_intro": "An alert flags a topic whose salience peak crosses the <em>very high</em> threshold (p95) calibrated for that country. Two levels are derived from the peak reached during the episode: <strong>Very high</strong> (peak in [p95, p99[), <strong>Extreme</strong> (peak ≥ p99). The high tier (p80) remains visible on the Evolution page but no longer triggers an alert, being too frequent. An episode is a continuous period above the threshold; episodes overlapping in time are grouped into clusters.",
     "methodology_link": "View full methodology"
   },
   "alertes_pill": {
@@ -531,7 +532,7 @@
     "index24h_label": "24h index",
     "index24h_tip": "24h index: average of the index over the last 6 editions, the most recent counting more.",
     "band24h_tip": "Level of the 24h index.",
-    "peak_label": "Peak: {points} points/100 ({when})",
+    "peak_label": "Peak: {points} points ({when})",
     "peak_prefix": "Peak ·",
     "peak_tip": "The edition where the story had its highest index in the period. This is the index of ONE edition (0 to 100), not the 24h index, which averages the last six editions.",
     "score_tip": "Total points since the story's first front page.",
@@ -609,8 +610,8 @@
       "now_prefix": "Now:",
       "peak_prefix": "Peak:",
       "i_label": "Explain the saliency label",
-      "points_100": "({points} points/100)",
-      "peak_at": "({points} points/100, {when})",
+      "points_100": "({points} points)",
+      "peak_at": "({points} points, {when})",
       "cumul": "Points over the period: {points}",
       "adj": {
         "QC": "Quebec",

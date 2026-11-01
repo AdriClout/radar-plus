@@ -1210,7 +1210,7 @@
     if (!tiers) return 'none';
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
     return 'none';
   }
   function aggregateSlot(country, slot) {
@@ -1466,7 +1466,7 @@
   // précédent.
   const ALERT_BADGE_LABELS = (function() {
     const out = {};
-    ['extreme','tres_eleve','eleve'].forEach(function(k) {
+    ['extreme','tres_eleve'].forEach(function(k) { // plus de niveau « élevé » (Adrien, 31 oct. 2026)
       const v = window.t ? window.t('alertes.level_short.' + k) : null;
       out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
     });

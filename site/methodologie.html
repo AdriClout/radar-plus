@@ -261,7 +261,7 @@
 <li><a href="#validation-et-fiabilité">Validation et fiabilité</a></li>
 <li><a href="#limites-méthodologiques">Limites méthodologiques</a></li>
 <li><a href="#reproductibilité-et-accès-aux-données">Reproductibilité et accès aux données</a></li>
-<li><a href="#alertes">Alertes médiatiques — trois niveaux dérivés du pic</a></li>
+<li><a href="#alertes">Alertes médiatiques — deux niveaux dérivés du pic</a></li>
 <li><a href="#paliers">Paliers de saillance absolue</a></li>
 <li><a href="#sources">Sources</a></li>
 </ol>
@@ -539,17 +539,16 @@
 </blockquote>
 <p>Une publication méthodologique détaillée <a href="#fn27" class="footnote-ref" id="fnref27" role="doc-noteref"><sup>27</sup></a> est en préparation et viendra compléter la documentation officielle.</p>
 <hr />
-<h2 id="alertes">10. Alertes médiatiques — trois niveaux dérivés du pic</h2>
-<p>Une <strong>alerte</strong> signale qu’un objet a dépassé, dans une période continue, le seuil de saillance <em>élevé</em> calibré pour son pays (palier p80 de la distribution observée des pics 4 h sur 130 jours — voir §11). Trois <strong>niveaux de sévérité</strong> sont dérivés automatiquement du pic atteint par l’épisode :</p>
+<h2 id="alertes">10. Alertes médiatiques — deux niveaux dérivés du pic</h2>
+<p>Une <strong>alerte</strong> signale qu’un objet a dépassé, dans une période continue, le seuil de saillance <em>très élevé</em> calibré pour son pays (palier p95 de la distribution observée des pics 4 h sur 130 jours — voir §11). Deux <strong>niveaux de sévérité</strong> sont dérivés automatiquement du pic atteint par l’épisode : Le palier <em>élevé</em> (p80) reste un palier de saillance, visible sur la page Évolution, mais ne déclenche plus d’alerte depuis le 31 octobre 2026 : trop fréquent pour servir de signal.</p>
 <ul>
-<li><strong>🟡 Élevé</strong> — pic dans <code>[p80, p95[</code>. Le sujet a brièvement ou durablement franchi le seuil de l’attention soutenue. C’est le tier de la <em>veille éditoriale quotidienne</em>.</li>
 <li><strong>🟠 Très élevé</strong> — pic dans <code>[p95, p99[</code>. Magnitude notable : top 5 % des pics observés au pays.</li>
 <li><strong>🔴 Extrême</strong> — pic ≥ p99. Top 1 % — un événement rare à l’échelle du corpus national.</li>
 </ul>
 <p>Cette taxonomie remplace une version précédente à six niveaux qui croisait magnitude, durée, dominance et anomalie z. La simplification est volontaire : un déclencheur unique (le pic vs un seuil calibré) est plus lisible pour l’utilisateur et plus stable dans le temps. Les autres signaux (durée, dominance, articles partagés) sont toujours calculés et restent visibles dans la fiche détaillée d’un épisode, sans entrer dans la classification du niveau.</p>
 
 <h3 id="alertes-episode">10.1 Définition d’un épisode</h3>
-<p>Un <strong>épisode</strong> est une suite de jours consécutifs où le pic quotidien de saillance d’un objet reste au-dessus du seuil <em>élevé</em> (p80). Un trou d’une journée interrompt l’épisode ; une nouvelle montée plus tard démarre un nouvel épisode. Il n’y a <em>pas</em> de durée minimum : un seul bloc 4 h franchissant le seuil suffit pour créer un épisode d’un jour. Le niveau de l’épisode est déterminé par son pic maximum.</p>
+<p>Un <strong>épisode</strong> est une suite de jours consécutifs où le pic quotidien de saillance d’un objet reste au-dessus du seuil <em>très élevé</em> (p95). Un trou d’une journée interrompt l’épisode ; une nouvelle montée plus tard démarre un nouvel épisode. Il n’y a <em>pas</em> de durée minimum : un seul bloc 4 h franchissant le seuil suffit pour créer un épisode d’un jour. Le niveau de l’épisode est déterminé par son pic maximum.</p>
 <p>Chaque épisode porte deux métadonnées de statut :</p>
 <ul>
 <li><strong>En cours</strong> — l’épisode touche le dernier jour observé au pays. L’objet est encore au-dessus du seuil.</li>
@@ -562,7 +561,7 @@
 <p><strong>(b) Clustering historique 130 jours, par chevauchement temporel.</strong> Pour les épisodes en dehors de la fenêtre des articles (≥ 14 jours dans le passé), on regroupe les épisodes du <em>même pays</em> dont les intervalles temporels se chevauchent à ≥ 50 % de la durée du plus court. Le pivot du cluster est l’épisode au niveau le plus élevé (à égalité, le pic le plus haut). Limite : le clustering 130 jours ne traverse pas les frontières nationales (Iran-CAN et Iran-USA restent deux événements distincts).</p>
 
 <h3 id="alertes-calibration">10.3 Calibration empirique</h3>
-<p>Les seuils p80 / p95 / p99 sont recalculés à chaque exécution du pipeline (toutes les 4 h) sur la distribution observée des pics 4 h des 130 derniers jours, par pays. Cette calibration <em>roulante</em> garantit que les niveaux s’ajustent automatiquement aux régimes médiatiques nationaux et à leurs variations (campagne électorale, crise majeure, période estivale). Les valeurs courantes sont publiées dans <code>meta.salience_tiers</code> de <code>graph.json</code> et <code>timeseries.json</code> ; le frontend dérive le niveau d’un épisode à partir du pic comparé à ces seuils — la classification n’est jamais codée en dur dans l’interface.</p>
+<p>Les seuils p95 et p99 (et p80, pour les paliers) sont recalculés à chaque exécution du pipeline (toutes les 4 h) sur la distribution observée des pics 4 h des 130 derniers jours, par pays. Cette calibration <em>roulante</em> garantit que les niveaux s’ajustent automatiquement aux régimes médiatiques nationaux et à leurs variations (campagne électorale, crise majeure, période estivale). Les valeurs courantes sont publiées dans <code>meta.salience_tiers</code> de <code>graph.json</code> et <code>timeseries.json</code> ; le frontend dérive le niveau d’un épisode à partir du pic comparé à ces seuils — la classification n’est jamais codée en dur dans l’interface.</p>
 
 <h3 id="alertes-portee">10.4 Portée et limites</h3>
 <p>Les alertes sont un <strong>signal de priorité éditoriale</strong>, pas un jugement de qualité ou de véracité. Une montée détectée signale que <em>la couverture médiatique change</em>, jamais que l’objet est nécessairement plus important ou véridique. Le clustering par pivot peut occasionnellement isoler un membre légitime si ses articles sont trop éparpillés ; dans ce cas, l’épisode reste visible individuellement. Enfin, le fait de dériver le niveau du seul pic, sans condition sur la durée ni la dominance, signifie qu’un objet qui touche le seuil pour un seul bloc 4 h est traité comme une alerte au même titre qu’un objet qui s’y maintient cinq jours — la durée et les articles partagés restent visibles sur la fiche détaillée pour qualifier l’événement, mais ne modifient pas son niveau.</p>
@@ -645,7 +644,7 @@
 <li><a href="#en-validation-fiabilite">Validation and reliability</a></li>
 <li><a href="#en-limites">Methodological limits</a></li>
 <li><a href="#en-reproductibilite">Reproducibility and data access</a></li>
-<li><a href="#en-alertes">Media alerts — three levels derived from the peak</a></li>
+<li><a href="#en-alertes">Media alerts — two levels derived from the peak</a></li>
 <li><a href="#en-paliers">Absolute saliency tiers</a></li>
 <li><a href="#en-sources">Sources</a></li>
 </ol>
@@ -878,17 +877,16 @@
 </blockquote>
 <p>A detailed methodological publication<a href="#en-fn27" class="footnote-ref" id="en-fnref27" role="doc-noteref"><sup>27</sup></a> is in preparation and will complete the official documentation.</p>
 <hr />
-<h2 id="en-alertes">10. Media alerts — three levels derived from the peak</h2>
-<p>An <strong>alert</strong> flags an object that, during a continuous period, has crossed the <em>high</em> saliency threshold calibrated for its country (p80 of the observed 4h-peak distribution over 130 days — see §11). Three <strong>severity levels</strong> are derived automatically from the peak the episode reaches:</p>
+<h2 id="en-alertes">10. Media alerts — two levels derived from the peak</h2>
+<p>An <strong>alert</strong> flags an object that, during a continuous period, has crossed the <em>very high</em> saliency threshold calibrated for its country (p95 of the observed 4h-peak distribution over 130 days — see §11). Two <strong>severity levels</strong> are derived automatically from the peak the episode reaches: The <em>high</em> tier (p80) remains a saliency tier, visible on the Evolution page, but no longer triggers an alert since October 31, 2026: too frequent to serve as a signal.</p>
 <ul>
-<li><strong>🟡 High</strong> — peak in <code>[p80, p95[</code>. The topic has briefly or durably crossed the sustained-attention threshold. This is the <em>daily editorial watch</em> tier.</li>
 <li><strong>🟠 Very high</strong> — peak in <code>[p95, p99[</code>. Notable magnitude: top 5% of observed peaks for the country.</li>
 <li><strong>🔴 Extreme</strong> — peak ≥ p99. Top 1% — a rare event at the scale of the national corpus.</li>
 </ul>
 <p>This taxonomy replaces an earlier six-tier version that cross-referenced magnitude, duration, dominance and z-anomaly. The simplification is deliberate: a single trigger (peak vs a calibrated threshold) is more readable for the user and more stable over time. Other signals (duration, dominance, shared articles) are still computed and remain visible on the episode detail card, but they no longer enter the level classification.</p>
 
 <h3 id="en-episode">10.1 Episode definition</h3>
-<p>An <strong>episode</strong> is a sequence of consecutive days where the daily saliency peak of an object stays above the <em>high</em> threshold (p80). A one-day gap interrupts the episode; a later rise starts a new one. There is <em>no</em> minimum duration: a single 4h block crossing the threshold creates a one-day episode. The episode level is determined by its maximum peak.</p>
+<p>An <strong>episode</strong> is a sequence of consecutive days where the daily saliency peak of an object stays above the <em>very high</em> threshold (p95). A one-day gap interrupts the episode; a later rise starts a new one. There is <em>no</em> minimum duration: a single 4h block crossing the threshold creates a one-day episode. The episode level is determined by its maximum peak.</p>
 <p>Each episode carries two status metadata:</p>
 <ul>
 <li><strong>Active</strong> — the episode touches the latest observed day for the country. The object is still above the threshold.</li>
@@ -901,7 +899,7 @@
 <p><strong>(b) Historical 130-day clustering, by temporal overlap.</strong> For episodes outside the article window (≥ 14 days in the past), we group same-country episodes whose temporal intervals overlap by ≥ 50% of the shorter duration. The cluster pivot is the episode at the highest level (ties broken by highest peak). Limit: 130-day clustering does not cross national borders (Iran-CAN and Iran-USA remain two distinct events).</p>
 
 <h3 id="en-calibration">10.3 Empirical calibration</h3>
-<p>The p80 / p95 / p99 thresholds are recomputed at every pipeline run (every 4h) on the observed distribution of 4h peaks over the past 130 days, per country. This <em>rolling</em> calibration ensures levels adjust automatically to national media regimes and their variations (election campaign, major crisis, summer period). Current values are published in <code>meta.salience_tiers</code> of <code>graph.json</code> and <code>timeseries.json</code>; the frontend derives an episode level from peak vs these thresholds — classification is never hard-coded in the interface.</p>
+<p>The p95 and p99 thresholds (and p80, for the tiers) are recomputed at every pipeline run (every 4h) on the observed distribution of 4h peaks over the past 130 days, per country. This <em>rolling</em> calibration ensures levels adjust automatically to national media regimes and their variations (election campaign, major crisis, summer period). Current values are published in <code>meta.salience_tiers</code> of <code>graph.json</code> and <code>timeseries.json</code>; the frontend derives an episode level from peak vs these thresholds — classification is never hard-coded in the interface.</p>
 
 <h3 id="en-portee">10.4 Scope and limits</h3>
 <p>Alerts are an <strong>editorial priority signal</strong>, not a quality or veracity judgment. A detected rise signals that <em>media coverage is shifting</em>, never that the object is necessarily more important or true. Pivot-based clustering may occasionally isolate a legitimate member if its articles are too scattered; in that case, the episode remains visible individually. Finally, deriving the level from peak alone — with no condition on duration or dominance — means an object that touches the threshold for a single 4h block is treated as an alert just like one that stays five days; duration and shared articles remain visible on the detail card to qualify the event, but they do not change its level.</p>

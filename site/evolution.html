@@ -1746,7 +1746,7 @@
     if (!tiers) return 'none';
     if (typeof tiers.extreme === 'number' && size >= tiers.extreme) return 'extreme';
     if (typeof tiers.very_high === 'number' && size >= tiers.very_high) return 'tres_eleve';
-    if (typeof tiers.high === 'number' && size >= tiers.high) return 'eleve';
+    // « élevé » (p80) n'est plus un niveau d'alerte : trop fréquent (Adrien, 31 oct. 2026) ; il reste un palier.
     return 'none';
   }
 
@@ -1928,7 +1928,7 @@
     const nodeAlertMap = new Map((curAlertGd.nodes || []).map(n => [n.id, n]));
     const ALERT_BADGE_LABELS = (function() {
       const out = {};
-      ['extreme','tres_eleve','eleve'].forEach(function(k) {
+      ['extreme','tres_eleve'].forEach(function(k) { // plus de niveau « élevé » (Adrien, 31 oct. 2026)
         const v = window.t ? window.t('alertes.level_short.' + k) : null;
         out[k] = (v && v !== 'alertes.level_short.' + k) ? v : k;
       });
@@ -2337,10 +2337,8 @@
     ctx.beginPath(); ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + chartH); ctx.lineTo(PAD.left + chartW, PAD.top + chartH); ctx.stroke();
 
     // Labels X
-    // Étiquettes à la FIN de chaque bloc de la grille réelle (7h, 11h, 15h, 19h, 23h, 3h en EDT).
-    const DAY_LABELS = [{ h: 0, label: 'Hier', align: 'left' }].concat(
-      ACTIVE_DAY_STARTS.map((st, i) => ({ h: (i + 1) * 4, label: FR_BLOCK_SHORT[(st + 4) % 24], align: i === ACTIVE_DAY_STARTS.length - 1 ? 'right' : 'center' }))
-    );
+    // Chaque édition nommée par sa plage (« 3h–7h »), centrée sous son bloc (Adrien, 31 oct. 2026).
+    const DAY_LABELS = ACTIVE_DAY_STARTS.map((st, i) => ({ h: i * 4 + 2, label: FR_BLOCK_LONG[st], align: 'center' }));
     DAY_LABELS.forEach(({ h, label, align }) => {
       const x = xOfHour(h);
       ctx.strokeStyle = 'rgba(55,85,175,0.22)'; ctx.lineWidth = 1;
@@ -2516,7 +2514,7 @@
     if (rankedGranularity === 'day') {
       if (period?.isVeille) return { major: 'Hier', minor: '' };
       const start = blockStartFromPeriod(period);
-      return { major: FR_BLOCK_SHORT[start] ?? (String(start) + 'h'), minor: '' };
+      return { major: FR_BLOCK_LONG[start] ?? (String(start) + 'h'), minor: '' }; // l'édition par sa plage
     }
 
     const dateStr = periodDisplayDate(period);

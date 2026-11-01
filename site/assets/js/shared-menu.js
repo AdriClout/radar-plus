@@ -128,10 +128,18 @@
             '<a href="./index.html#hot20" data-i18n="nav.home_hot20">Hot 20</a>' +
           '</div>' +
         '</div>' +
-        '<a href="./classement.html" data-page="classement.html">' + sym('classement') + '<span data-i18n="nav.classement">Classement</span></a>' +
-        '<a href="./evolution.html" data-page="evolution.html">' + sym('evolution') + '<span data-i18n="nav.evolution">Évolution</span></a>' +
-        '<a href="./constellation.html" data-page="constellation.html">' + sym('constellation') + '<span data-i18n="nav.constellation">Constellation</span></a>' +
-        '<a href="./alertes.html" data-page="alertes.html">' + sym('alertes') + '<span data-i18n="nav.alertes">Alertes</span></a>' +
+        // Les quatre outils d'analyse (= les quatre symboles du robot) sous un seul menu (Adrien, 31 oct. 2026).
+        '<div class="site-bar-dropdown site-bar-home hoverable">' +
+          '<a href="./index.html#modules" class="site-bar-dropdown-btn" aria-haspopup="true" aria-expanded="false">' +
+            '<span data-i18n="nav.tools">Outils d\u2019analyse</span> <span class="site-bar-caret" aria-hidden="true">\u25be</span>' +
+          '</a>' +
+          '<div class="site-bar-dropdown-menu" role="menu">' +
+            '<a href="./classement.html" data-page="classement.html">' + sym('classement') + '<span data-i18n="nav.classement">Classement</span></a>' +
+            '<a href="./evolution.html" data-page="evolution.html">' + sym('evolution') + '<span data-i18n="nav.evolution">Évolution</span></a>' +
+            '<a href="./constellation.html" data-page="constellation.html">' + sym('constellation') + '<span data-i18n="nav.constellation">Constellation</span></a>' +
+            '<a href="./alertes.html" data-page="alertes.html">' + sym('alertes') + '<span data-i18n="nav.alertes">Alertes</span></a>' +
+          '</div>' +
+        '</div>' +
         '<a href="./statistiques.html" data-page="statistiques.html" data-i18n="nav.statistiques">Statistiques</a>' +
         '<a href="./sonar.html" data-page="sonar.html" data-i18n="nav.sonar">Sonar</a>' +
         '<a href="./unes.html" data-page="unes.html" data-i18n="nav.unes">Dans le radar</a>' +
@@ -662,8 +670,8 @@
     bar.setAttribute('aria-label', 'Alertes de saillance actives');
     bar.innerHTML =
       '<a class="alert-bar-label" href="./alertes.html" data-i18n-aria-label="alertbar.view_alerts_aria" aria-label="Voir les alertes">' +
-        '<span class="alert-bar-dot" aria-hidden="true"></span>' +
-        '<span class="alert-bar-label-text" data-i18n="alertbar.label">ALERTE</span>' +
+        '<span class="alert-bar-dot" aria-hidden="true"></span>' + sym('alertes') +
+        '<span class="alert-bar-label-text" data-i18n="alertbar.label">Alerte de saillance</span>' +
       '</a>' +
       '<div class="alert-bar-track" id="alert-bar-track">' +
         '<div class="alert-bar-strip" id="alert-bar-strip"></div>' +

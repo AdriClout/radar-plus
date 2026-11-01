@@ -765,6 +765,7 @@ body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
 .site-bar-nav a:hover .radar-sym, .site-bar-nav a.current .radar-sym { opacity: 1; }
 .nav-drawer a .radar-sym, .site-drawer a .radar-sym, #nav-drawer a .radar-sym { width: 15px; height: 15px; margin-right: 8px; vertical-align: -2px; opacity: 0.85; }
 .page-sym { display: inline-block; margin-right: 0.35em; line-height: 0; }
+.alert-bar-label .radar-sym { width: 12px; height: 12px; margin: 0 5px 0 2px; vertical-align: -2px; }
 .page-sym .radar-sym { width: 0.95em; height: 0.95em; vertical-align: -0.1em; }
 .site-bar-nav a.current { color: #fff; border-color: rgba(120, 170, 255, 0.55); background: rgba(40, 70, 160, 0.45); }
 .site-bar-right { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; margin-left: auto; }
@@ -800,6 +801,7 @@ body.has-site-bar .nav-toggle { display: none; }
 /* « Accueil » : le bouton est un lien (va à l'accueil), le menu liste ses modules */
 .site-bar-home .site-bar-dropdown-btn { text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
 .site-bar-home .site-bar-dropdown-menu { min-width: 200px; }
+.site-bar-dropdown-menu a .radar-sym { width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px; opacity: 0.85; }
 /* Ancres des modules de l'accueil : dégager le menu (et le bandeau) */
 #aune, #hot20 { scroll-margin-top: calc(var(--site-bar-h, 58px) + 12px); }
 body.has-alert-bar #aune, body.has-alert-bar #hot20 { scroll-margin-top: calc(var(--alert-bar-h, 32px) + var(--site-bar-h, 58px) + 12px); }
