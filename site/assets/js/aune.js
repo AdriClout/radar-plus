@@ -466,11 +466,12 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
     // première Une dans les détails.
     : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + '</span>';
   var art = (i === 0 && !dense) ? auneArtHtml(c, rnd, urls, T, latest) : '';
-  var cls = 'aune-row rank-' + (i + 1) + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
+  var rank = c.rank || (i + 1);
+  var cls = 'aune-row rank-' + rank + ' band-' + escapeHtml(band) + (c.size ? ' size-' + c.size : '');
   var style = c.grow ? ' style="--grow:' + c.grow + '"' : '';
   return '<li class="' + cls + ' aune-go" data-href="' + auneFicheUrl(c, region) + '"' + style + '>' +
-    '<span class="aune-row-rank">' + (i + 1) + '</span>' +
-    '<span class="aune-row-trend">' + auneTrendHtml(c, i, region, cfg.range, prevRanks || {}, prevStart, T) + '</span>' +
+    '<span class="aune-row-rank">' + rank + '</span>' +
+    '<span class="aune-row-trend">' + auneTrendHtml(c, rank - 1, region, cfg.range, prevRanks || {}, prevStart, T) + '</span>' +
     art +
     '<div class="aune-row-main">' +
       '<div class="aune-row-top">' + tagHtml + (issue ? '<span class="aune-issue">' + escapeHtml(issue) + '</span>' : '') + '</div>' +
@@ -501,9 +502,10 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
     var arts = auneHeadlines(c, ev, 12);
     var stats = auneChartFor(region, cfg.range, cfg.offset, c.storyline);
     var delta = is24h ? c.points - (c.prev24h || 0) : null;
-    return '<tr class="rank-' + (i + 1) + ' band-' + esc(band) + ' aune-go" data-href="' + auneFicheUrl(c, region) + '">' +
-      '<td class="rank">' + (i + 1) + '</td>' +
-      '<td class="center">' + auneTrendHtml(c, i, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
+    var rank = c.rank || (i + 1);
+    return '<tr class="rank-' + rank + ' band-' + esc(band) + ' aune-go" data-href="' + auneFicheUrl(c, region) + '">' +
+      '<td class="rank">' + rank + '</td>' +
+      '<td class="center">' + auneTrendHtml(c, rank - 1, region, cfg.range, prevRanks || {}, prevStart, T) + '</td>' +
       '<td class="subject"><span class="aune-band band-' + esc(band) + '">' + esc(bandLabel) + '</span>' +
         '<span class="aune-row-title"><a href="' + auneFicheUrl(c, region) + '">' + esc(c.title) + '</a></span>' +
         '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</td>' +
@@ -572,6 +574,7 @@ function renderALaUne() {
   var past24h = is24h && cfg.offset < 0;
   var items = past24h ? auneRanking24hAt(region, auneEditionStart(cfg.offset), 1e9)
             : is24h ? auneRanking24h(latest, 1e9) : auneRanking(region, cfg.range, 1e9);
+  items.forEach(function(it, i) { it.rank = i + 1; }); // rang réel, gardé même quand un filtre réduit la liste
   // Filtre de recherche (page Classement) : titre ou thème, sans accents ni casse.
   var q = auneQuery();
   if (q) items = items.filter(function(it) { return auneNorm(it.title + ' ' + auneIssue(it, lang)).indexOf(q) !== -1; });
@@ -710,7 +713,7 @@ function downloadCsv() {
     var urlLast = c.url || auneEventUrl(auneEventAt(x.region, c.storyline, c.lastKey));
     var mediaUrls = artList.filter(function(a) { return a.url; }).map(function(a) { return (a.media_id || '?') + ': ' + a.url; }).join(' | ');
     var prev = x.prevRanks[c.storyline] || '', st = auneChartFor(x.region, cfg.range, cfg.offset, c.storyline);
-    return [i + 1, c.title, auneIssue(c, lang), c.points]
+    return [c.rank || (i + 1), c.title, auneIssue(c, lang), c.points]
       .concat(x.is24h ? [c.points - (c.prev24h || 0)] : [c.total || 0])
       .concat([c.sharePct || 0, prev, c.firstKey ? auneBlockLabel(c.firstKey, lang) : '', c.peak || 0, c.peakKey ? auneBlockLabel(c.peakKey, lang) : '', st.consec, st.total, arts, urlFirst, urlPeak, urlLast, mediaUrls, x.region, period]);
   });

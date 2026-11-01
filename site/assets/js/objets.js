@@ -89,10 +89,10 @@ function tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotal
     th('csv.points', 'num') + th('csv.share', 'num') + th('classement.obj_total', 'num') + th('csv.editions', 'num') +
     thTxt(T('csv.consec_of', { per: per }), 'num') + thTxt(T('csv.on_chart_of', { per: per }), 'num') + '</tr>';
   var rows = items.map(function(it, i) {
-    var band = LEVEL_BAND[it.level] || 'aucune', st = chartFor(cs, cfg.offset, it.id);
-    return '<tr class="rank-' + (i + 1) + ' band-' + band + ' aune-go" data-href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' +
-      '<td class="rank">' + (i + 1) + '</td>' +
-      '<td class="center">' + trendHtml(prevRanks[it.id], i + 1, limit, T, esc) + '</td>' +
+    var band = LEVEL_BAND[it.level] || 'aucune', st = chartFor(cs, cfg.offset, it.id), rank = it.rank || (i + 1);
+    return '<tr class="rank-' + rank + ' band-' + band + ' aune-go" data-href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' +
+      '<td class="rank">' + rank + '</td>' +
+      '<td class="center">' + trendHtml(prevRanks[it.id], rank, limit, T, esc) + '</td>' +
       '<td class="subject">' + (band === 'aucune' ? '' : '<span class="aune-band band-' + band + '">' + esc(T('alertes.level_short.' + it.level)) + '</span>') +
         '<span class="aune-row-title obj"><a href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' + esc(it.id) + '</a></span></td>' +
       '<td class="num strong">' + u.numUnit(it.points.toFixed(1), T('aune.points')) + '</td>' +
@@ -130,6 +130,7 @@ function render() {
     if (nxt) nxt.disabled = cfg.offset >= 0;
   }
   var items = ranked(graphs, keys), limit = cfg.limits[cfg.range] || 10;
+  items.forEach(function(it, i) { it.rank = i + 1; }); // rang réel, gardé même quand un filtre réduit la liste
   var q = u.query();
   if (q) items = items.filter(function(it) { return u.norm(it.id).indexOf(q) !== -1; });
   var total = items.reduce(function(m, it) { return m + it.points; }, 0) || 1;
@@ -147,12 +148,12 @@ function render() {
     '<span>' + esc(T('hot20.header_rank')) + '</span><span class="center">' + esc(T('hot20.header_movement')) + '</span>' +
     '<span>' + esc(T('classement.header_object')) + '</span><span class="right">' + esc(T('aune.header_points')) + '</span></li>';
   var rows = items.map(function(it, i) {
-    var band = LEVEL_BAND[it.level] || 'aucune';
+    var band = LEVEL_BAND[it.level] || 'aucune', rank = it.rank || (i + 1);
     var bandLabel = band === 'aucune' ? '' : T('alertes.level_short.' + it.level);
     var share = 100 * it.points / total;
-    return '<li class="aune-row rank-' + (i + 1) + ' band-' + band + ' aune-go" data-href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' +
-      '<span class="aune-row-rank">' + (i + 1) + '</span>' +
-      '<span class="aune-row-trend">' + trendHtml(prevRanks[it.id], i + 1, limit, T, esc) + '</span>' +
+    return '<li class="aune-row rank-' + rank + ' band-' + band + ' aune-go" data-href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' +
+      '<span class="aune-row-rank">' + rank + '</span>' +
+      '<span class="aune-row-trend">' + trendHtml(prevRanks[it.id], rank, limit, T, esc) + '</span>' +
       '<div class="aune-row-main">' +
         (band === 'aucune' ? '' : '<div class="aune-row-top"><span class="aune-band band-' + band + ' hot20-hint" data-tip="' + esc(T('classement.obj_band_tip')) + '">' + esc(bandLabel) + '</span></div>') +
         '<h3 class="aune-row-title obj"><a href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' + esc(it.id) + '</a></h3>' +
@@ -172,7 +173,7 @@ function download() {
   var headers = [T('csv.rank'), T('csv.object'), T('csv.points'), T('csv.share'), T('classement.obj_total'), T('csv.editions'), T('csv.level'), T('csv.prev_rank'), T('csv.consec'), T('csv.on_chart'), T('csv.region'), T('csv.period')];
   var rows = x.rows.map(function(it, i) {
     var st = chartFor(x.cs, cfg.offset, it.id);
-    return [i + 1, it.id, it.points, 100 * it.points / x.total, x.allTotal[it.id] || 0, it.blocks, it.level === 'none' ? '' : T('alertes.level_short.' + it.level), x.prevRanks[it.id] || '', st.consec, st.total, x.country, period];
+    return [it.rank || (i + 1), it.id, it.points, 100 * it.points / x.total, x.allTotal[it.id] || 0, it.blocks, it.level === 'none' ? '' : T('alertes.level_short.' + it.level), x.prevRanks[it.id] || '', st.consec, st.total, x.country, period];
   });
   u.csvFile(headers, rows, 'radarplus_objets_' + x.country + '_' + u.periodSlug(cfg.range, cfg.offset) + '.csv', lang, T);
 }
