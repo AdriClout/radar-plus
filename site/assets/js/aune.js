@@ -39,6 +39,8 @@ var cfg = {
   navId: null,          // page Classement : navigateur de période (‹ libellé ›), ids navId-prev/-label/-next
   offset: 0,            // 0 = période courante ; −1 = la précédente (édition, jour, semaine, mois, année)…
   type: 'evenements',   // page Classement : 'evenements' (ce module) ou 'objets' (assets/js/objets.js)
+  moreId: null,         // page Classement : bouton « Voir plus » (+50 rangs par clic) ; extra = rangs ajoutés
+  extra: 0, moreStep: 50,
   table: false          // page Classement : table large avec les statistiques d'archive
 };
 var CHART_N = 20;      // « au classement » = dans le top 20 de la période (comme le Hot 20)
@@ -385,6 +387,20 @@ function auneNavSub(range, offset, lang, T) {
   var date = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(w[0] + 12 * 3600e3));
   return T('classement.nav_sub_cumul', { date: date });
 }
+// Bouton « Voir plus » (page Classement) : visible tant que la liste affichée est plus courte que la
+// liste complète ; chaque clic ajoute cfg.moreStep rangs. Remis à zéro quand la vue change.
+function auneMoreButton(nAll, shown, T) {
+  if (!cfg.moreId) return;
+  var box = document.getElementById(cfg.moreId); if (!box) return;
+  var btn = box.querySelector('button'); if (!btn) return;
+  var left = nAll - shown;
+  box.hidden = left <= 0;
+  if (left > 0) btn.textContent = T('classement.more', { n: Math.min(cfg.moreStep, left), left: left });
+  if (!btn.dataset.bound) {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', function() { cfg.extra = (cfg.extra || 0) + cfg.moreStep; renderALaUne(); });
+  }
+}
 // Au-dessus de la date : une période close est un classement FINAL ; la période courante est
 // encore mise à jour à chaque édition.
 function auneNavStatus(cfg, T) {
@@ -676,7 +692,7 @@ function renderALaUne() {
     auneLoad(c, r).then(function() { if (cfg.range === r && cfg.country === c) renderALaUne(); });
     return;
   }
-  var is24h = auneIs24h(cfg.range), limit = AUNE_LIMIT[cfg.range] || 10, proportional = limit <= cfg.proportionalMax;
+  var is24h = auneIs24h(cfg.range), limit = (AUNE_LIMIT[cfg.range] || 10) + (cfg.extra || 0), proportional = limit <= cfg.proportionalMax;
   // Navigateur de période (page Classement) : libellé et bouton « suivant » bloqué sur la période courante.
   if (cfg.navId) {
     var lbl = document.getElementById(cfg.navId + '-label'), nxt = document.getElementById(cfg.navId + '-next');
@@ -695,6 +711,7 @@ function renderALaUne() {
   var countEl = cfg.countId ? document.getElementById(cfg.countId) : null;
   var full = items, nAll = full.length; // liste complète filtrée : affichage coupé à `limit`, export CSV entier
   items = full.slice(0, limit);
+  auneMoreButton(nAll, items.length, T);
   if (countEl) countEl.textContent = nAll > items.length ? T('aune.count_shown', { shown: items.length, n: nAll }) : T(nAll === 1 ? 'aune.count_one' : 'aune.count_many', { n: nAll });
   var sums = auneSums(region, cfg.range);
   full.forEach(function(it) {
@@ -855,7 +872,7 @@ function init(opts) {
     if (!btn) return;
     tabs.querySelectorAll('.aune-tab').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    cfg.range = btn.dataset.range; cfg.offset = 0;
+    cfg.range = btn.dataset.range; cfg.offset = 0; cfg.extra = 0;
     renderALaUne();
   });
   if (countries) countries.addEventListener('click', function(e) {
@@ -863,13 +880,13 @@ function init(opts) {
     if (!btn) return;
     countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    cfg.country = btn.dataset.country;
+    cfg.country = btn.dataset.country; cfg.extra = 0;
     renderALaUne();
   });
   if (cfg.navId) {
     var prevBtn = document.getElementById(cfg.navId + '-prev'), nextBtn = document.getElementById(cfg.navId + '-next');
-    if (prevBtn) prevBtn.addEventListener('click', function() { cfg.offset -= 1; renderALaUne(); });
-    if (nextBtn) nextBtn.addEventListener('click', function() { if (cfg.offset < 0) { cfg.offset += 1; renderALaUne(); } });
+    if (prevBtn) prevBtn.addEventListener('click', function() { cfg.offset -= 1; cfg.extra = 0; renderALaUne(); });
+    if (nextBtn) nextBtn.addEventListener('click', function() { if (cfg.offset < 0) { cfg.offset += 1; cfg.extra = 0; renderALaUne(); } });
   }
   var search = cfg.searchId ? document.getElementById(cfg.searchId) : null;
   if (search) search.addEventListener('input', function() { renderALaUne(); });
@@ -883,5 +900,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, when: auneWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, when: auneWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
 })();

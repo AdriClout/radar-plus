@@ -129,12 +129,13 @@ function render() {
     u.navStatus(cfg, T);
     if (nxt) nxt.disabled = cfg.offset >= 0;
   }
-  var items = ranked(graphs, keys), limit = cfg.limits[cfg.range] || 10;
+  var items = ranked(graphs, keys), limit = (cfg.limits[cfg.range] || 10) + (cfg.extra || 0);
   items.forEach(function(it, i) { it.rank = i + 1; }); // rang réel, gardé même quand un filtre réduit la liste
   var q = u.query();
   if (q) items = items.filter(function(it) { return u.norm(it.id).indexOf(q) !== -1; });
   var total = items.reduce(function(m, it) { return m + it.points; }, 0) || 1;
   var full = items, nAll = full.length; items = full.slice(0, limit);
+  if (u.moreButton) u.moreButton(nAll, items.length, T);
   var countEl = cfg.countId ? document.getElementById(cfg.countId) : null;
   if (countEl) countEl.textContent = nAll > items.length ? T('classement.obj_count_shown', { shown: items.length, n: nAll }) : T(nAll === 1 ? 'classement.obj_count_one' : 'classement.obj_count_many', { n: nAll });
   if (!items.length) { grid.innerHTML = '<div class="aune-empty">' + esc(T('aune.empty')) + '</div>'; return; }

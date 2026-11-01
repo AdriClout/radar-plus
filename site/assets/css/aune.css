@@ -139,13 +139,13 @@
 .aune-row-score .unit { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
 /* Étiquette de saillance : un rectangle de couleur sur deux lignes, « ACTUELLEMENT » (ou « SOMMET ») et
    le « i » en haut, le niveau dessous ; à droite, au-dessus des points (Adrien, 31 oct. 2026). */
-.aune-row-score .sal-tag { grid-column: 1 / -1; justify-self: start; margin-bottom: 6px; }
+.aune-row-score .sal-tag { grid-column: 1 / -1; justify-self: start; margin-bottom: 4px; }
 .sal-tag {
-  display: inline-flex; flex-direction: column; gap: 1px; padding: 4px 8px 5px; border-radius: 6px; min-width: 150px; max-width: 100%;
+  display: inline-flex; flex-direction: column; gap: 0; padding: 3px 8px 4px; border-radius: 6px; min-width: 150px; max-width: 100%;
   font-family: var(--grotesk); color: #060d22; background: #6b7fa8; text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.2;
 }
-.sal-tag-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.85; }
-.sal-level { font-size: 11px; font-weight: 800; color: inherit; text-decoration: none; white-space: nowrap; }
+.sal-tag-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 8.5px; font-weight: 600; letter-spacing: 0.1em; opacity: 0.85; }
+.sal-level { font-size: 10.5px; font-weight: 800; color: inherit; text-decoration: none; white-space: nowrap; }
 .sal-level:hover { text-decoration: underline; }
 .sal-i { width: 14px; height: 14px; border-radius: 50%; border: 1.3px solid currentColor; background: transparent; color: inherit; font-family: var(--mono); font-size: 9px; font-weight: 700; line-height: 11px; padding: 0; cursor: help; flex: 0 0 auto; opacity: 0.9; }
 .sal-i:hover, .sal-i:focus { background: rgba(0,0,0,0.18); outline: none; opacity: 1; }
@@ -158,7 +158,10 @@
 .sal-tag:not(.band-aucune) { animation: aune-pulse 2.2s ease-in-out infinite; }
 .sal-tag.band-extreme { animation-duration: 1.4s; }
 @media (prefers-reduced-motion: reduce) { .sal-tag { animation: none; } }
-.aune-row { min-height: 96px; } /* l'étiquette sur deux lignes au-dessus des points */
+/* La colonne des points (étiquette sur deux lignes, nombre, barre, part) fait ~100 px : plancher des
+   rangées relevé pour qu'elle ne déborde jamais sur la rangée suivante (Adrien, 31 oct. 2026). */
+.aune-row { min-height: 120px; }
+.aune-row-score { align-self: center; }
 .sal-pop { position: fixed; z-index: 400; background: rgba(8,16,46,0.97); border: 1px solid rgba(120,170,255,0.4); border-radius: 10px; padding: 14px 16px 12px; box-shadow: 0 12px 40px rgba(0,0,20,0.6); font-family: var(--grotesk); color: #dbe6ff; text-align: left; }
 .sal-pop p { margin: 0 0 8px; }
 .sal-kicker { font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }

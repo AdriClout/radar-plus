@@ -676,7 +676,8 @@
     "status_final": "Classement final",
     "status_live": "Classement en cours",
     "hot20_status_final": "Hot 20 final",
-    "hot20_status_live": "Hot 20 en cours"
+    "hot20_status_live": "Hot 20 en cours",
+    "more": "Voir {n} de plus ({left} restantes)"
   },
   "csv": {
     "rank": "rang",

@@ -64,6 +64,9 @@
     .cl-download { font-family: var(--grotesk); font-size: 12px; font-weight: 600; color: #e8f0ff; background: rgba(40,70,160,0.22); border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
     .cl-download:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     .cl-count { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+    .cl-more { text-align: center; margin: 22px 0 8px; }
+    .cl-more button { font-family: var(--grotesk); font-size: 15px; font-weight: 700; color: #fff; padding: 10px 22px; border: 1px solid rgba(120,170,255,0.45); border-radius: 8px; background: rgba(40,70,160,0.22); cursor: pointer; }
+    .cl-more button:hover { background: rgba(40,70,160,0.4); border-color: var(--accent); }
     @media (max-width: 760px) { #wrap { padding: 16px 16px calc(var(--ticker-height) + 40px); } .aune-head > div:first-child { flex: 0 0 auto; } .cl-nav { margin-right: 0; width: 100%; justify-content: space-between; } .cl-nav-block { min-width: 0; } .cl-nav-label { white-space: normal; } }
   </style>
 </head>
@@ -104,6 +107,8 @@
     <button type="button" class="cl-download" id="cl-download" data-i18n="classement.download" data-i18n-title="classement.download_tip" title="Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel">Télécharger (CSV)</button>
   </div>
   <div class="aune-grid view-list" id="aune-grid"></div>
+  <!-- « Voir plus » : +50 rangs par clic, jusqu'au bout de la liste ; le CSV a toujours tout (Adrien, 31 oct. 2026) -->
+  <div class="cl-more" id="cl-more" hidden><button type="button" data-i18n="classement.more">Voir plus</button></div>
   <div class="aune-foot"><span id="aune-foot"></span><a href="./methodologie.html" data-i18n="aune.how">Comment l'indice est calculé →</a></div>
 </section>
 </div>
@@ -140,7 +145,7 @@
   window.RadarAune.init({
     limits: { '24h': 20, today: 20, week: 20, month: 20, year: 20 }, // Hot 20, événements et objets (Adrien, 31 oct. 2026) ; la recherche fouille toute la liste
     proportionalMax: 0, // jamais de hauteur proportionnelle ni d'illustration : liste serrée
-    searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav', table: true,
+    searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav', table: true, moreId: 'cl-more',
     subtitleKeys: 'classement.range_sub.',
     range: range, country: country, type: type
   });
