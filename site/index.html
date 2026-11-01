@@ -1396,10 +1396,13 @@
     zone.addEventListener('mouseleave', () => { cstZones[i]._hovered = false; });
   });
 
-  function drawConstellations(time, dt) {
+  // oy : décalage vertical de la couche des constellations (parallaxe, voir draw()).
+  function drawConstellations(time, dt, oy) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     if (vw < 768) return; // mobile : étoiles seulement, pas de constellations (demande d'Adrien)
+    oy = oy || 0;
+    if (oy > vh + 40 || oy < -vh - 40) return; // couche hors écran : rien à dessiner
 
     for (let ci = 0; ci < constellationDefs.length; ci++) {
       const cst = constellationDefs[ci];
@@ -1426,8 +1429,8 @@
       ctx.strokeStyle = 'rgba(130,175,255,' + lineAlpha.toFixed(3) + ')';
       ctx.lineCap = 'round';
       for (const [a, b] of cst.lines) {
-        const ax = cst.stars[a][0] * vw, ay = cst.stars[a][1] * vh;
-        const bx = cst.stars[b][0] * vw, by = cst.stars[b][1] * vh;
+        const ax = cst.stars[a][0] * vw, ay = cst.stars[a][1] * vh + oy;
+        const bx = cst.stars[b][0] * vw, by = cst.stars[b][1] * vh + oy;
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.lineTo(bx, by);
@@ -1437,7 +1440,7 @@
       // — Stars —
       for (let i = 0; i < cst.stars.length; i++) {
         const x = cst.stars[i][0] * vw;
-        const y = cst.stars[i][1] * vh;
+        const y = cst.stars[i][1] * vh + oy;
         const isAnchor = (cst.anchor === i);
         const pulse = isAnchor ? 1 + Math.sin(time * 1.8 + ci * 2.3) * 0.14 : 1;
         const twinkle = 0.85 + Math.sin(time * 0.8 + i * 2.1 + ci * 5.7) * 0.15;
@@ -1468,8 +1471,8 @@
       let cx = 0, cy = 0;
       for (const s of cst.stars) { cx += s[0]; cy += s[1]; }
       cx = (cx / cst.stars.length) * vw;
-      cy = (cy / cst.stars.length) * vh;
-      const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + (cst.labelOffsetY || 12);
+      cy = (cy / cst.stars.length) * vh + oy;
+      const labelY = Math.max(...cst.stars.map(s => s[1])) * vh + (cst.labelOffsetY || 12) + oy;
       ctx.shadowColor = 'rgba(18,34,82,0.45)';
       ctx.shadowBlur = 6;
       ctx.fillStyle = 'rgba(160,202,255,' + ((1 - h * 0.45) * labelAlpha).toFixed(3) + ')';
@@ -1503,16 +1506,24 @@
     lastTime = nowMs;
     ctx.clearRect(0, 0, c.width, c.height);
     t += 0.016;
+    // Parallaxe (Adrien, 31 oct. 2026) : le ciel descend avec la page, plus lentement qu'elle ;
+    // les constellations sont ancrées au héros (le robot) : hors écran en haut de page, elles
+    // arrivent exactement à leur place quand le héros atteint le haut de la fenêtre.
+    const sy = window.scrollY || 0;
+    const heroEl = document.getElementById('hero');
+    const heroTop = heroEl ? heroEl.getBoundingClientRect().top + sy : 0;
+    const starShift = sy * 0.25, H = c.height || 1;
     for (const s of stars) {
       const alpha = s.a + Math.sin(t * s.speed * 60 + s.phase) * 0.15;
       ctx.fillStyle = 'rgba(180,200,255,' + Math.max(0, alpha) + ')';
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.arc(s.x, (((s.y - starShift) % H) + H) % H, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Draw constellations (fixed in viewport)
-    drawConstellations(t, dt);
+    // Constellations : couche ancrée au héros (même vitesse que lui, pour rester sous les zones
+    // de survol du héros) ; les étoiles, elles, descendent plus lentement.
+    drawConstellations(t, dt, heroTop - sy);
 
     if (nowMs >= nextMeteorAt) {
       spawnMeteor(nowMs);
