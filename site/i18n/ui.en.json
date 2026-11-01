@@ -583,7 +583,8 @@
       "year": "Every topic, actor and place on the front pages this year, ranked by points summed by edition."
     },
     "download": "Download (CSV)",
-    "download_tip": "The displayed ranking, with its filters, as a CSV file readable in Excel"
+    "download_tip": "The displayed ranking, with its filters, as a CSV file readable in Excel",
+    "obj_total": "total (130 days)"
   },
   "csv": {
     "rank": "rank",
@@ -604,6 +605,12 @@
     "level": "alert tier",
     "region": "region",
     "period": "period",
-    "footer": "Generated on {date} by radarplus.org · salience index, methodology: {url}"
+    "footer": "Generated on {date} by radarplus.org · salience index, methodology: {url}",
+    "consec": "consecutive periods in top 20",
+    "on_chart": "periods in top 20",
+    "url_first": "link first front page",
+    "url_peak": "link at peak",
+    "url_last": "link last front page",
+    "media_urls": "links by outlet (latest article)"
   }
 }

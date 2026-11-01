@@ -155,3 +155,31 @@
   .aune-row.has-art .aune-row-art { display: none; }
   .aune-row.rank-1 .aune-row-score .num { font-size: 26px; }
 }
+
+/* ── Table large de la page Classement (toutes les colonnes ; défile sur téléphone) ── */
+.aune-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.aune-table { width: 100%; min-width: 960px; border-collapse: collapse; font-size: 13px; }
+.aune-table th { font-family: var(--mono); font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 10px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; font-weight: 400; }
+.aune-table th.num, .aune-table td.num { text-align: right; }
+.aune-table th.center, .aune-table td.center { text-align: center; }
+.aune-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.aune-table tr { border-left: 3px solid transparent; }
+.aune-table td:first-child { border-left: 3px solid transparent; }
+.aune-table tr.band-faible td:first-child { border-left-color: #7f93b8; }
+.aune-table tr.band-moderee td:first-child { border-left-color: #5fa8ff; }
+.aune-table tr.band-elevee td:first-child { border-left-color: #f2c94c; }
+.aune-table tr.band-tres_elevee td:first-child { border-left-color: #ff9f43; }
+.aune-table tr.band-extreme td:first-child { border-left-color: #ff4d4d; }
+.aune-table tr.band-aucune td:first-child { border-left-color: rgba(127,147,184,0.3); }
+.aune-table td.rank { font-family: var(--mono); font-size: 16px; font-weight: 700; color: rgba(120,165,255,0.75); width: 44px; }
+.aune-table tr.rank-1 td.rank { color: #ffc857; } .aune-table tr.rank-2 td.rank { color: #d9e2f5; } .aune-table tr.rank-3 td.rank { color: #d9a86c; }
+.aune-table td.subject { min-width: 300px; }
+.aune-table td.subject .aune-band { display: inline-block; margin-bottom: 4px; }
+.aune-table td.subject .aune-row-title { display: block; font-size: 14px; white-space: normal; -webkit-line-clamp: unset; }
+.aune-table td.subject .sub { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.aune-table td.subject .aune-chips { margin-top: 4px; }
+.aune-table td.num { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.aune-table td.num.strong { font-size: 15px; font-weight: 700; color: #fff; }
+.aune-table td.num .sub { display: block; font-family: var(--grotesk); font-size: 10.5px; color: var(--muted); }
+.aune-table td.up { color: #4ade80; } .aune-table td.down { color: #f87171; }
+.aune-table tr:hover td { background: rgba(40,70,160,0.12); }

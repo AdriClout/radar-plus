@@ -583,7 +583,8 @@
       "year": "Tous les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition."
     },
     "download": "Télécharger (CSV)",
-    "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel"
+    "download_tip": "Le classement affiché, avec ses filtres, en fichier CSV lisible dans Excel",
+    "obj_total": "total (130 jours)"
   },
   "csv": {
     "rank": "rang",
@@ -604,6 +605,12 @@
     "level": "palier d'alerte",
     "region": "région",
     "period": "période",
-    "footer": "Généré le {date} par radarplus.org · indice de saillance, méthodologie : {url}"
+    "footer": "Généré le {date} par radarplus.org · indice de saillance, méthodologie : {url}",
+    "consec": "périodes consécutives au top 20",
+    "on_chart": "périodes au top 20",
+    "url_first": "lien première Une",
+    "url_peak": "lien au sommet",
+    "url_last": "lien dernière Une",
+    "media_urls": "liens par média (dernier article)"
   }
 }
