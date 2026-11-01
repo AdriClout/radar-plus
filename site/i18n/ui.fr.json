@@ -287,7 +287,8 @@
     "events_empty": "Aucun événement saillant dans cette période.",
     "events_peak": "sommet {v} pts · {when}",
     "events_cumul": "{v} pts au cumul",
-    "events_open": "Ouvrir l'article représentatif"
+    "events_open": "Ouvrir l'article représentatif",
+    "cumul_axis": "Points cumulés depuis le début de la période"
   },
   "alertes": {
     "title": "Alertes",
@@ -348,12 +349,6 @@
     "p_lede": "Les histoires qui ont atteint un niveau très élevé ou extrême dans une édition, région par région.",
     "p_loading": "Chargement des alertes…",
     "p_error": "Les alertes n'ont pas pu être chargées.",
-    "p_now_none": "Aucune alerte",
-    "p_now_alert": "Alerte",
-    "p_now_calm": "Aucune histoire n'atteint le niveau très élevé à la dernière édition.",
-    "p_now_calm_obj": "Aucun sujet n'atteint le palier très élevé à la dernière édition.",
-    "p_now_more": "et {n} de plus",
-    "p_now_when": "Dernière édition : {when}",
     "p_status_final": "Période terminée",
     "p_status_live": "En cours",
     "p_count": "{n} histoires en alerte",

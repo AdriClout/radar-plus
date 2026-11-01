@@ -287,7 +287,8 @@
     "events_empty": "No salient event in this period.",
     "events_peak": "peak {v} pts · {when}",
     "events_cumul": "{v} pts in total",
-    "events_open": "Open the representative article"
+    "events_open": "Open the representative article",
+    "cumul_axis": "Points accumulated since the start of the period"
   },
   "alertes": {
     "title": "Media",
@@ -348,12 +349,6 @@
     "p_lede": "Stories that reached a very high or extreme level in an edition, region by region.",
     "p_loading": "Loading alerts…",
     "p_error": "Alerts could not be loaded.",
-    "p_now_none": "No alert",
-    "p_now_alert": "Alert",
-    "p_now_calm": "No story reaches the very high level in the latest edition.",
-    "p_now_calm_obj": "No subject reaches the very high tier in the latest edition.",
-    "p_now_more": "and {n} more",
-    "p_now_when": "Latest edition: {when}",
     "p_status_final": "Closed period",
     "p_status_live": "Live",
     "p_count": "{n} stories on alert",

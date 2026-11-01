@@ -35,28 +35,9 @@
     .aune-head h1.aune-title { font-size: clamp(24px, 3.2vw, 37px); }
     .aune-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
-    /* ── En ce moment : une carte par région ── */
-    .al-now { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 26px 0 8px; }
-    .al-now-card { text-align: left; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--card-bg); transition: border-color .15s, transform .15s; min-width: 0; }
-    .al-now-card:hover { border-color: rgba(140,180,255,0.6); transform: translateY(-1px); }
-    .al-now-card.active { box-shadow: 0 0 0 1px rgba(140,180,255,0.55) inset; }
-    .al-now-card.lvl-tres_elevee { border-color: rgba(255,159,67,0.55); background: linear-gradient(180deg, rgba(255,159,67,0.10), rgba(10,18,50,0.7)); }
-    .al-now-card.lvl-extreme { border-color: rgba(255,77,77,0.65); background: linear-gradient(180deg, rgba(255,77,77,0.13), rgba(10,18,50,0.7)); }
-    .al-now-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .al-now-region { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #e8f0ff; }
-    .al-now-state { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-    .al-now-state .dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(120,200,150,0.75); }
-    .lvl-tres_elevee .al-now-state { color: var(--tres); } .lvl-tres_elevee .al-now-state .dot { background: var(--tres); animation: al-blink 1.6s ease-in-out infinite; }
-    .lvl-extreme .al-now-state { color: #ff7a7a; } .lvl-extreme .al-now-state .dot { background: var(--ext); animation: al-blink 1.1s ease-in-out infinite; }
-    @keyframes al-blink { 50% { opacity: .35; } }
-    @media (prefers-reduced-motion: reduce) { .al-now-state .dot { animation: none !important; } }
-    .al-now-items { display: flex; flex-direction: column; gap: 3px; min-height: 2.6em; }
-    .al-now-item { font-size: 14px; line-height: 1.3; color: #f1f5ff; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .al-now-item b { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--muted); margin-left: 6px; white-space: nowrap; }
-    .al-now-calm { font-size: 14px; color: var(--muted); }
-    .al-now-when { font-size: 12px; color: var(--muted); }
-
     /* ── Navigateur de période (celui du Classement) ── */
+    @keyframes al-blink { 50% { opacity: .35; } }
+    @media (prefers-reduced-motion: reduce) { .cl-nav-status.live::before { animation: none; } }
     .cl-toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 26px 0 10px; }
     .cl-nav { display: flex; align-items: center; gap: 10px; margin-right: auto; }
     .cl-nav-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 260px; max-width: 460px; text-align: center; }
@@ -129,7 +110,6 @@
     .al-loading { padding: 40px 0; text-align: center; color: var(--muted); }
 
     @media (max-width: 960px) {
-      .al-now { grid-template-columns: 1fr; }
       .al-pulse, .al-row { grid-template-columns: 1fr; gap: 8px; }
       .al-peak { text-align: left; }
       .al-pulse-max { display: none; }
@@ -165,9 +145,6 @@
       </div>
     </div>
   </div>
-
-  <!-- En ce moment : la dernière édition de chaque région, comme la barre d'alerte du haut -->
-  <div class="al-now" id="al-now"></div>
 
   <div class="cl-toolbar">
     <div class="cl-nav">
@@ -345,36 +322,6 @@
   function showTip(e, html) { tip.innerHTML = html; tip.style.display = 'block'; var x = Math.min(e.clientX + 14, window.innerWidth - 320), y = Math.min(e.clientY + 14, window.innerHeight - 120); tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
   function hideTip() { tip.style.display = 'none'; }
 
-  function renderNow() {
-    var box = document.getElementById('al-now'); if (!box) return;
-    var regs = ['QC', 'CAN', 'USA'];
-    box.innerHTML = regs.map(function (r) {
-      var list = [], when = '';
-      if (r === 'USA') {
-        var g = data.graph && data.graph.graphs && data.graph.graphs.USA, th = thresholds('USA');
-        if (g && th) Object.keys(g).forEach(function (k) {
-          when = edName(U.periodStartUtc(k));
-          (g[k].nodes || []).forEach(function (n) { var v = Number(n.size) || 0, lv = levelOf(v, th); if (lv) list.push({ title: cap(n.id), v: v, lv: lv }); });
-        });
-      } else {
-        var reg = data.latest && data.latest.by_region && data.latest.by_region[r];
-        if (reg && reg.period && reg.period.key) when = edName(U.periodStartUtc(reg.period.key));
-        ((reg && reg.events) || []).forEach(function (e) { if (e.band === 'tres_elevee' || e.band === 'extreme') list.push({ title: e.title || '', v: Number(e.index) || 0, lv: e.band }); });
-      }
-      list.sort(function (a, b) { return b.v - a.v; });
-      var top = list.length ? (list.some(function (x) { return x.lv === 'extreme'; }) ? 'extreme' : 'tres_elevee') : 'none';
-      var state = top === 'none' ? T('alertes.p_now_none') : T('alertes.p_now_alert') + ' · ' + T('aune.band.' + top);
-      var itemsHtml = list.length
-        ? list.slice(0, 2).map(function (x) { return '<span class="al-now-item">' + esc(x.title) + '<b>' + f1(x.v) + '</b></span>'; }).join('') + (list.length > 2 ? '<span class="al-now-when">' + esc(T('alertes.p_now_more', { n: list.length - 2 })) + '</span>' : '')
-        : '<span class="al-now-calm">' + esc(T(r === 'USA' ? 'alertes.p_now_calm_obj' : 'alertes.p_now_calm')) + '</span>';
-      return '<button type="button" class="al-now-card lvl-' + top + (r === st.region ? ' active' : '') + '" data-region="' + r + '">' +
-        '<span class="al-now-top"><span class="al-now-region">' + esc(T('alertbar.region.' + r)) + '</span><span class="al-now-state"><span class="dot"></span>' + esc(state) + '</span></span>' +
-        '<span class="al-now-items">' + itemsHtml + '</span>' +
-        (when ? '<span class="al-now-when">' + esc(T('alertes.p_now_when', { when: when })) + '</span>' : '') + '</button>';
-    }).join('');
-    box.querySelectorAll('.al-now-card').forEach(function (c) { c.addEventListener('click', function () { setRegion(c.dataset.region); }); });
-  }
-
   function renderHow() {
     var box = document.getElementById('al-how'); if (!box) return;
     var qc = thresholds('QC'), can = thresholds('CAN'), us = thresholds('USA');
@@ -534,7 +481,7 @@
   function setRegion(r) {
     st.region = r; st.pick = null; st.extra = 0;
     document.querySelectorAll('#al-regions .country-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.region === r); });
-    renderNow(); syncUrl();
+    syncUrl();
     document.getElementById('al-grid').innerHTML = '<div class="al-loading">' + esc(T('alertes.p_loading')) + '</div>';
     ensureRegion(r).then(function () { if (st.region === r) render(); });
   }
@@ -558,7 +505,7 @@
   document.querySelectorAll('#al-regions .country-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.region === st.region); });
   var rt = null; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 150); });
   function lede() { U.setSub(document.getElementById('al-lede'), T('alertes.p_lede')); }
-  document.addEventListener('i18n:applied', function () { lede(); renderNow(); renderHow(); if (data.idx) render(); });
+  document.addEventListener('i18n:applied', function () { lede(); renderHow(); if (data.idx) render(); });
 
   // ── Démarrage ────────────────────────────────────────────────────────────────────────
   lede();
@@ -568,7 +515,7 @@
     window.radarData.latestAsGraph().catch(function () { return null; })
   ]).then(function (res) {
     data.idx = res[0]; data.latest = res[1]; data.graph = res[2];
-    renderNow(); renderHow(); syncUrl();
+    renderHow(); syncUrl();
     return ensureRegion(st.region);
   }).then(render).catch(function (e) {
     console.error('Alertes :', e);

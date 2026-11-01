@@ -1169,10 +1169,10 @@
 
   const RANKED_GRANULARITIES = {
     day:   { topN: 10, emptyLabel: 'Journée' },
-    week:  { topN: 12, emptyLabel: 'Semaine' },
-    month: { topN: 14, emptyLabel: 'Mois' },
-    year:  { topN: 16, emptyLabel: 'Année' },
-    total: { topN: 20, emptyLabel: 'Depuis le début' },
+    week:  { topN: 10, emptyLabel: 'Semaine' }, // Hot 10 partout : dix lignes, comme la liste de gauche
+    month: { topN: 10, emptyLabel: 'Mois' },
+    year:  { topN: 10, emptyLabel: 'Année' },
+    total: { topN: 10, emptyLabel: 'Depuis le début' },
   };
   // Mois / jours: lus dynamiquement depuis ui.{lang}.json via window.t.
   // Fallback FR si i18n pas chargé.
@@ -2179,7 +2179,10 @@
     // fullSeries contient déjà tous les unionIds (top 10 de chaque période), donc on
     // peut simplement prendre tous les IDs de fullSeries qui n'auraient pas été inclus
     // dans topSeries (qui slice à getRankedTopN). Évite un nouveau pass sur winPeriods.
-    fullSeries.forEach(s => requiredIds.add(s.id));
+    // Seulement pour la journée (6 éditions) : sur une semaine, un mois ou une année, l'union des top 10
+    // de chaque jour donnait des centaines de lignes illisibles (Adrien, 1er nov. 2026). Le graphique
+    // montre alors le Hot 10 de la période, plus les objets survolés, choisis ou suivis.
+    if (rankedGranularity === 'day') fullSeries.forEach(s => requiredIds.add(s.id));
 
     const out = [...topSeries];
     requiredIds.forEach(id => {
@@ -2561,6 +2564,13 @@
       layout: getRankedChartLayout(rect), stars: STARS
     });
   }
+  // Mois, année, total : la courbe de chaque objet est son CUMUL de points (somme des éditions), la mesure
+  // du Hot 10 de la liste ; les maximums quotidiens sur cent jours faisaient un fouillis (Adrien, 1er nov. 2026).
+  function isCumulView() { return rankedGranularity === 'month' || rankedGranularity === 'year' || rankedGranularity === 'total'; }
+  // Cumul des valeurs mêmes de la liste (une par jour) : la courbe finit au total affiché à gauche.
+  function cumulSeries(series) {
+    return series.map(s => { let acc = 0; return { ...s, data: s.data.map(v => v === null ? null : (acc += v)) }; });
+  }
   function renderRankedChart(gd, hoverIdx = null, skipLegend = false) {
     if (currentMode === 'ranked' && rankedView === 'events') { renderEventsView(); return; }
     if (rankedGranularity === 'day') { renderDayModeChart(gd, hoverIdx, skipLegend); return; }
@@ -2592,7 +2602,8 @@
       : (hasPeriodSelectionInit2 ? selectedPeriodIdx : null);
     const hoverPeriod2 = (effectiveIdx2 !== null && effectiveIdx2 >= 0 && effectiveIdx2 < winPeriods.length)
       ? winPeriods[effectiveIdx2] : null;
-    const series = getRankedChartSeries(gd, winPeriods, hoverPeriod2);
+    const rawSeries = getRankedChartSeries(gd, winPeriods, hoverPeriod2);
+    const series = isCumulView() ? cumulSeries(rawSeries) : rawSeries;
     if (!series.length) return;
     const n = winPeriods.length;
     if (!n) return;
@@ -2626,7 +2637,11 @@
     // (pic atteint dans la fenêtre) et non en somme, donc les valeurs Y
     // restent comparables aux paliers calibrés sur saillance instantanée.
     const salienceTiersR = tsData?.meta?.salience_tiers?.[currentCountry];
-    if (salienceTiersR) {
+    if (isCumulView()) { // les paliers valent pour une édition, pas pour un cumul : on nomme l'axe à la place
+      ctx.font = '10px "Space Mono", monospace'; ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(150,185,235,0.75)';
+      ctx.fillText(((window.t && window.t('evolution.cumul_axis')) || 'Points cumulés').toUpperCase(), PAD.left, PAD.top - 12);
+    }
+    if (salienceTiersR && !isCumulView()) {
       const TIER_COLORS_R = {
         moderate:  { line: 'rgba(120,170,255,0.55)', text: 'rgba(170,200,255,0.92)' },
         high:      { line: 'rgba(212,188,88,0.65)',  text: 'rgba(255,224,140,0.95)' },
@@ -2871,9 +2886,9 @@
       });
     });
 
-    // Appel légende dynamique avec effectiveHoverIdx (hover ou sélection)
+    // Appel légende dynamique avec effectiveHoverIdx (hover ou sélection) ; la liste garde les valeurs du jour
     if (!skipLegend) {
-      requestAnimationFrame(() => renderRankedLegend(series, effectiveHoverIdx));
+      requestAnimationFrame(() => renderRankedLegend(rawSeries, effectiveHoverIdx));
     }
 
     // Marqueur de période courante (discret)
