@@ -185,10 +185,10 @@
     "trend_return": "Retour",
     "trend_new_tip": "Nouvelle entrée dans le Hot 10 pour cette {gran}.",
     "trend_return_tip": "Retour dans le Hot 10 après au moins 2 {grans} d’absence.",
-    "trend_up_tip": "Gagne {n} rang(s) par rapport à la {gran} précédente (de {prev} à {now}).",
-    "trend_down_tip": "Perd {n} rang(s) par rapport à la {gran} précédente (de {prev} à {now}).",
-    "trend_stable_tip": "Position inchangée: rang {now} comme à la {gran} précédente.",
-    "streak_tip": "Dans le top {top} depuis {n} {grans} consécutifs.",
+    "trend_up_tip": "Gagne {n} rang(s) par rapport à la période précédente ({gran}) : de {prev} à {now}.",
+    "trend_down_tip": "Perd {n} rang(s) par rapport à la période précédente ({gran}) : de {prev} à {now}.",
+    "trend_stable_tip": "Position inchangée : rang {now}, comme à la période précédente ({gran}).",
+    "streak_tip": "Dans le top {top} depuis {n} {grans} d'affilée.",
     "score_tip": "Saillance cumulée depuis le début de la collecte (toutes périodes confondues).",
     "share_label": "{pct} % du radar",
     "share_tip": "Part de cet objet dans la saillance de tous les objets de la période. La barre la dessine : pleine, il est seul dans l'actualité.",
@@ -207,7 +207,7 @@
       "quarter": "an dernier",
       "total": ""
     },
-    "streak_first_tip": "En première position depuis {n} {grans} consécutifs.",
+    "streak_first_tip": "En première position depuis {n} {grans} d'affilée.",
     "sub_edition": "Saillance gagnée pendant cette édition de 4 heures",
     "sub_data_start": "début des données chargées",
     "sub_days": "{n} jours de données",
@@ -400,7 +400,7 @@
     "streak_first_many": "{n} {grans} de suite en première position"
   },
   "gran_singular": {
-    "4h": "bloc horaire (4 h)",
+    "4h": "édition (4 h)",
     "day": "journée",
     "week": "semaine",
     "month": "mois",
@@ -408,7 +408,7 @@
     "total": "période totale"
   },
   "gran_plural": {
-    "4h": "blocs horaires",
+    "4h": "éditions",
     "day": "jours",
     "week": "semaines",
     "month": "mois",
@@ -564,7 +564,7 @@
     "header_points": "Points",
     "medias_one": "{n} média",
     "medias_many": "{n} médias",
-    "total_label": "total {points}",
+    "total_label": "total : {points} points",
     "how": "Comment l'indice est calculé →",
     "share_label": "{pct} % du radar",
     "share_tip": "Part de cet événement dans la saillance de tous les événements de la période. La barre la dessine : pleine, il est seul dans l'actualité.",

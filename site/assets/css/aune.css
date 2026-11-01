@@ -36,9 +36,13 @@
   min-height: max(calc(100vh - var(--alert-bar-h, 32px) - var(--site-bar-h, 58px) - var(--ticker-height, 44px)), 540px);
 }
 .aune-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; }
+/* Le bloc titre + phrase rétrécit (la phrase se replie) pour que les contrôles restent à droite, quelle
+   que soit la longueur de la phrase de la vue (Adrien, 31 oct. 2026). */
+.aune-head > :first-child { flex: 1 1 280px; min-width: 0; }
+.aune-head .aune-controls { flex: 0 0 auto; margin-left: auto; }
 .aune-title { font-family: var(--grotesk); font-size: clamp(24px, 3.2vw, 37px); font-weight: 700; letter-spacing: -0.02em; line-height: 1; color: #f1f5ff; }
 .aune-title .accent { color: var(--accent); }
-.aune-lede { font-size: 13px; color: var(--muted); margin-top: 8px; max-width: 600px; line-height: 1.45; min-height: 1.45em; }
+.aune-lede { font-size: 13px; color: var(--muted); margin-top: 8px; max-width: 520px; line-height: 1.45; min-height: 1.45em; }
 .aune-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .aune-controls .country-tabs, .aune-tabs { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(10,18,50,0.7); border: 1px solid var(--border); margin: 0; }
 .aune-controls .country-tab, .aune-tab {

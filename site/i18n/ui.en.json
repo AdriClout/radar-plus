@@ -185,10 +185,10 @@
     "trend_return": "Return",
     "trend_new_tip": "New entry in the Hot 10 for this {gran}.",
     "trend_return_tip": "Back in the Hot 10 after at least 2 {grans} away.",
-    "trend_up_tip": "Up {n} rank(s) compared to the previous {gran} (from {prev} to {now}).",
-    "trend_down_tip": "Down {n} rank(s) compared to the previous {gran} (from {prev} to {now}).",
-    "trend_stable_tip": "Unchanged position: rank {now} as in the previous {gran}.",
-    "streak_tip": "In the top {top} for {n} consecutive {grans}.",
+    "trend_up_tip": "Up {n} rank(s) from the previous period ({gran}): from {prev} to {now}.",
+    "trend_down_tip": "Down {n} rank(s) from the previous period ({gran}): from {prev} to {now}.",
+    "trend_stable_tip": "Unchanged: rank {now}, as in the previous period ({gran}).",
+    "streak_tip": "In the top {top} for {n} {grans} in a row.",
     "score_tip": "Saliency cumulated since the beginning of data collection (all periods combined).",
     "share_label": "{pct}% of the radar",
     "share_tip": "This object's share of the saliency of all objects in the period. The bar draws it: full, it alone fills the news.",
@@ -207,7 +207,7 @@
       "quarter": "last year",
       "total": ""
     },
-    "streak_first_tip": "In first place for {n} consecutive {grans}.",
+    "streak_first_tip": "In first place for {n} {grans} in a row.",
     "sub_edition": "Saliency gained during this 4-hour edition",
     "sub_data_start": "start of the loaded data",
     "sub_days": "{n} days of data",
@@ -400,7 +400,7 @@
     "streak_first_many": "{n} consecutive {grans} in first place"
   },
   "gran_singular": {
-    "4h": "4h block",
+    "4h": "edition (4 h)",
     "day": "day",
     "week": "week",
     "month": "month",
@@ -408,7 +408,7 @@
     "total": "full period"
   },
   "gran_plural": {
-    "4h": "4h blocks",
+    "4h": "editions",
     "day": "days",
     "week": "weeks",
     "month": "months",
@@ -564,7 +564,7 @@
     "header_points": "Points",
     "medias_one": "{n} outlet",
     "medias_many": "{n} outlets",
-    "total_label": "total {points}",
+    "total_label": "total: {points} points",
     "how": "How the index is calculated →",
     "share_label": "{pct}% of the radar",
     "share_tip": "This event's share of the salience of all events in the period. The bar draws it: full, it is alone in the news.",
