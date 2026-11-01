@@ -383,7 +383,8 @@
     "p_how_2": "A story is on alert when its points in a single edition reach the {tres} level: {qc} points in Quebec, {can} points in Canada (outside Quebec). That level holds the strongest 20% of appearances over a year of front pages. Above {qcx} and {canx} points, the strongest 5%, the alert becomes {ext}.",
     "p_how_3": "In the United States, Radar+ follows two outlets and does not build stories: the alert is about people, places and subjects. It is very high above {us} points, extreme above {usx}.",
     "p_how_link_indices": "The salience indices →",
-    "p_how_link_methodo": "Alert methodology →"
+    "p_how_link_methodo": "Alert methodology →",
+    "evo_cta": "See the change over time"
   },
   "alertes_pill": {
     "none_active": "No active alert",

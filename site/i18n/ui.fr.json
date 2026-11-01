@@ -383,7 +383,8 @@
     "p_how_2": "Une histoire est en alerte quand ses points d'une seule édition atteignent le niveau {tres} : {qc} points au Québec, {can} points au Canada (hors Québec). Ce niveau réunit les 20 % d'apparitions les plus fortes d'une année de Unes. Au-delà de {qcx} et {canx} points, les 5 % les plus fortes, l'alerte devient {ext}.",
     "p_how_3": "Aux États-Unis, Radar+ suit deux médias et ne forme pas d'histoires : l'alerte porte sur les personnes, les lieux et les sujets. Elle est très élevée au-delà de {us} points, extrême au-delà de {usx}.",
     "p_how_link_indices": "Les indices de saillance →",
-    "p_how_link_methodo": "Méthodologie des alertes →"
+    "p_how_link_methodo": "Méthodologie des alertes →",
+    "evo_cta": "Voir l'évolution dans le temps"
   },
   "alertes_pill": {
     "none_active": "Aucune alerte en cours",
