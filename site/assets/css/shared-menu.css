@@ -742,6 +742,13 @@ body.has-alert-bar .site-bar { top: var(--alert-bar-h); }
   font-size: 19px; letter-spacing: 1px; line-height: 1;
 }
 .site-bar-plus { color: #e6ff8a; }
+/* Le « + » du logo clignote, comme sur Évolution et Constellation (Adrien, 31 oct. 2026). */
+.site-bar-plus { display: inline-block; animation: sbPlusPulse 1.6s ease-in-out infinite; }
+@keyframes sbPlusPulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(221,230,74,0.6); }
+  50%      { opacity: 0.45; text-shadow: 0 0 1px rgba(221,230,74,0.1); }
+}
+@media (prefers-reduced-motion: reduce) { .site-bar-plus { animation: none; } }
 .site-bar-beta {
   font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1.5px;
   padding: 2px 6px; border-radius: 3px;

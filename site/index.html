@@ -126,7 +126,7 @@
     /* Scroll indicator — au-dessus du ticker, mais un peu plus bas qu'avant
        (signalement #25 : « descendre un peu le Explorer ») */
     .scroll-hint {
-      position: absolute; bottom: calc(var(--ticker-height) + 56px); left: 50%;
+      position: absolute; bottom: calc(var(--ticker-height) + 18px); left: 50%; /* plus bas, détaché des symboles (Adrien, 31 oct. 2026) */
       transform: translateX(-50%); text-align: center;
       animation: float 2.5s ease-in-out infinite;
       z-index: 5;
