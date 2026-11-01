@@ -157,7 +157,11 @@
     "title": "RADAR+",
     "beta": "BETA",
     "explore": "Explore",
-    "scroll_aria": "Explore the modules"
+    "scroll_aria": "Explore the modules",
+    "icon_constellation": "Constellation: the map of topics",
+    "icon_classement": "Official ranking",
+    "icon_evolution": "Evolution over time",
+    "icon_alertes": "Salience alerts"
   },
   "hot20": {
     "title": "Hot",

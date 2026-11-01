@@ -120,6 +120,8 @@
       font-family: var(--mono);
     }
     .media-hotspot:hover .media-tooltip { opacity: 1; }
+    .page-hotspot .media-tooltip { top: auto; bottom: 100%; margin-bottom: 6px; }
+    .page-hotspot:hover { background: rgba(85,136,255,0.14); border-radius: 10px; }
 
     /* Scroll indicator — au-dessus du ticker, mais un peu plus bas qu'avant
        (signalement #25 : « descendre un peu le Explorer ») */
@@ -1136,6 +1138,12 @@
       <!-- Row 4: National Post · Vancouver Sun -->
       <a class="media-hotspot" href="https://nationalpost.com"         target="_blank" rel="noopener" style="top:40%; left:6%;  width:13%; height:7%"><span class="media-tooltip">National Post</span></a>
       <a class="media-hotspot" href="https://vancouversun.com"         target="_blank" rel="noopener" style="top:35%; left:85%; width:12%; height:8%"><span class="media-tooltip">Vancouver Sun</span></a>
+      <!-- Les quatre symboles sous le robot : une page chacun (Adrien, 31 oct. 2026).
+           Positions relatives à l'image (960×683) : repère, podium, chronomètre, thermomètre. -->
+      <a class="media-hotspot page-hotspot" href="./constellation.html" style="top:84%; left:23%; width:10%; height:15%"><span class="media-tooltip" data-i18n="hero.icon_constellation">Constellation : la carte des sujets</span></a>
+      <a class="media-hotspot page-hotspot" href="./classement.html"    style="top:84%; left:34%; width:12%; height:15%"><span class="media-tooltip" data-i18n="hero.icon_classement">Classement officiel</span></a>
+      <a class="media-hotspot page-hotspot" href="./evolution.html"     style="top:84%; left:56%; width:10%; height:15%"><span class="media-tooltip" data-i18n="hero.icon_evolution">Évolution dans le temps</span></a>
+      <a class="media-hotspot page-hotspot" href="./alertes.html"       style="top:82%; left:67%; width:10%; height:17%"><span class="media-tooltip" data-i18n="hero.icon_alertes">Alertes de saillance</span></a>
     </div>
   </div>
   <button type="button" class="scroll-hint" id="scroll-to-hot20" data-i18n-aria-label="hero.scroll_aria" aria-label="Explorer les modules">
