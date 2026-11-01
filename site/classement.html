@@ -41,7 +41,10 @@
     .cl-type button { font-family: var(--grotesk); font-size: 12.5px; padding: 6px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
     .cl-type button.active { background: rgba(85,136,255,0.22); color: #fff; }
     body:not(.type-objets) .country-tab.obj-only { display: none; } /* pas d'événements pour les États-Unis */
-    .aune-head > div:first-child { flex: 1 1 300px; min-width: 0; }
+    .aune-head > div:first-child { flex: 1 1 460px; min-width: 0; }
+    /* Titre sur deux lignes : « Classement officiel » / « des événements » (Adrien, 31 oct. 2026) */
+    .aune-head h1.aune-title > span:not(.accent) { white-space: nowrap; }
+    .aune-head h1.aune-title .accent { display: block; }
     /* Remonter dans le temps : ‹ Semaine 44 · 26 oct. – 1 nov. 2026 › */
     .cl-nav { display: flex; align-items: center; gap: 10px; margin-right: auto; }
     .cl-nav-block { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 260px; text-align: center; }
