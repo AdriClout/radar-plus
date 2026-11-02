@@ -1348,10 +1348,23 @@
     return new Date(`${date}T${h}:00:00`);
   }
 
+  // Heure de Montréal au début du bloc, avec le décalage EN VIGUEUR À CETTE DATE (EDT ou EST).
+  // Avant le 1er nov. 2026, on appliquait le décalage du jour à toutes les clés : au passage à
+  // l'heure normale, la grille du jour mêlait des blocs d'avant et d'après (axe « 8h, Midi, 16h,
+  // 19h, 23h, 3h ») et tous les jours d'été passés glissaient d'une heure (Adrien, 1er nov. 2026).
+  const MTL_HOUR_FMT = (() => {
+    try { return new Intl.DateTimeFormat('en-US', { timeZone: 'America/Montreal', hour: 'numeric', hourCycle: 'h23' }); }
+    catch (e) { return null; }
+  })();
   function localBlockStartFromPeriodKey(key) {
-    const timePart = String(key || '').split('_')[1] || '';
+    const [datePart, timePart = ''] = String(key || '').split('_');
     const utcStartRaw = Number(timePart.split('-')[0]);
     if (!Number.isFinite(utcStartRaw)) return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart || '');
+    if (m && MTL_HOUR_FMT) {
+      const h = Number(MTL_HOUR_FMT.format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], utcStartRaw))));
+      if (Number.isFinite(h)) return h % 24;
+    }
     return (utcStartRaw - LOCAL_UTC_OFFSET_HOURS + 24) % 24;
   }
 
