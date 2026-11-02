@@ -825,7 +825,8 @@
       </div>
     </section>
 
-    <div class="layout">
+    <!-- Ancienne fiche d'objet, remplacée par objet.js (fiche calquée sur celle des événements, 1er nov. 2026) -->
+    <div class="layout" hidden>
       <section>
         <div class="panel" id="summary-panel">
           <div id="summary-empty" class="empty">
@@ -1754,8 +1755,10 @@
               const stats = computeStats(country, state.selectedObject);
               if (stats) {
                 renderStats(stats);
+                if (window.RadarObjet) window.RadarObjet.show(country, stats.objectId, state.timeseriesData);
                 setStatus('Objet rechargé pour ' + (COUNTRY_LABELS[country] || country) + '.', false);
               } else {
+                if (window.RadarObjet) window.RadarObjet.clear();
                 renderEmptyState('Cet objet n’apparaît pas dans cette édition actuellement.');
                 setStatus('Objet absent pour ' + (COUNTRY_LABELS[country] || country) + '.', true);
               }
@@ -1814,6 +1817,7 @@
         summaryEmptyEl.textContent = message;
         summaryContentEl.hidden = true;
         state.currentStats = null;
+        if (window.RadarObjet) window.RadarObjet.clear();
         historyStatsEl.innerHTML = '<div class="empty">Aucun objet sélectionné.</div>';
         peakListEl.innerHTML = '<div class="empty">Aucune donnée à afficher.</div>';
         articlesListEl.innerHTML = '<div class="empty">Les articles liés apparaîtront ici.</div>';
@@ -1831,6 +1835,7 @@
         }
         state.selectedObject = stats.objectId;
         renderStats(stats);
+        if (window.RadarObjet) window.RadarObjet.show(state.activeCountry, stats.objectId, state.timeseriesData);
         setStatus('Objet sélectionné: ' + stats.objectId + '.', false);
       }
 
@@ -2257,5 +2262,6 @@
   <script src="./assets/js/shared-menu.js"></script>
   <script src="./assets/js/aune.js"></script>
   <script src="./assets/js/evenement.js"></script>
+  <script src="./assets/js/objet.js"></script>
 </body>
 </html>
