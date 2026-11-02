@@ -25,6 +25,7 @@ autre Une (règle éditoriale de la Vitrine).
 
 Usage : python3 pipeline/fetch_art.py   (après build_events.R, avant publish_r2.py)
 """
+import glob
 import json
 import os
 import sys
@@ -62,6 +63,36 @@ def jaccard(a: str, b: str) -> float:
     if not wa or not wb:
         return 0.0
     return len(wa & wb) / len(wa | wb)
+
+
+def from_storylines(events_dir, fam, v_title, v_sum, v_block_key):
+    """Storylines de NOS fiches (events/storylines/<région>/<année>.json) qui sont l'histoire de la
+    Vitrine : même famille, un bloc au bloc de la Vitrine, et soit le même indice 24 h au Québec à
+    ce bloc (sum_qc), soit un titre (premier, sommet, dernier) à 0,5 de Jaccard ou plus."""
+    keys = set()
+    for path in sorted(glob.glob(os.path.join(events_dir, "storylines", "*", "*.json"))):
+        region = os.path.basename(os.path.dirname(path))
+        try:
+            data = json.load(open(path, encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            continue
+        stories = data.get("storylines") or {}
+        if not isinstance(stories, dict):
+            continue
+        for sid, sl in stories.items():
+            if not isinstance(sl, dict) or family(sid) != fam:
+                continue
+            if v_block_key not in (sl.get("series") or {}):
+                continue
+            s24 = (sl.get("sum24h") or {}).get(v_block_key)
+            if (region == "QC" and isinstance(v_sum, (int, float)) and isinstance(s24, (int, float))
+                    and abs(float(s24) - float(v_sum)) < 0.02):
+                keys.add(sid)
+                continue
+            titles = {sl.get(k) or "" for k in ("title", "title_first", "title_peak", "title_last")}
+            if any(t and jaccard(t, v_title) >= 0.5 for t in titles):
+                keys.add(sid)
+    return keys
 
 
 def main() -> int:
@@ -125,6 +156,16 @@ def main() -> int:
             if same_story(cur.get("storyline"), cur.get("last_event_id"), cur.get("title") or "",
                           cur.get("sum24h"), cur.get("last_key")):
                 keys.add(cur.get("storyline"))
+    # Fiches storylines (toute la fenêtre) : l'histoire de la Vitrine est reconnue même quand
+    # notre dernier bloc n'est pas le sien. Vu le 2 nov. 2026 : la Vitrine illustrait « Trump et
+    # Carney s'approchent d'une entente commerciale » (story-mark-carney-438b7bb3, bloc 08-12) ;
+    # chez nous la même histoire (story-mark-carney-63b1097b) était déjà au bloc 12-16, sous un
+    # autre titre, et son indice 24 h au bloc 08-12 valait exactement le sum_qc de la Vitrine
+    # (23,43). Les règles ci-dessus, qui ne regardent que notre dernier bloc, l'ont manquée et
+    # le n° 1 de l'accueil est resté sans image. Ici : même famille, présente au bloc de la
+    # Vitrine, ET même indice 24 h QC à ce bloc ou un de ses titres très proche.
+    if v_story and v_block_key:
+        keys |= from_storylines(events_dir, family(v_story), v_title, v_sum, v_block_key)
     keys.discard(None)
     keys.add(v_key)  # clé de la Vitrine, toujours archivée
 
