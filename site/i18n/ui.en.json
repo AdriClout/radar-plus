@@ -184,6 +184,7 @@
     "header_movement": "Movement",
     "header_subject": "Subject",
     "header_score_increase": "Score · Increase",
+    "header_score": "Score",
     "header_articles": "Articles",
     "country_label": "Country",
     "country_qc": "Quebec",
@@ -195,7 +196,7 @@
     "trend_new": "New",
     "trend_return": "Return",
     "trend_new_tip": "New entry in the Hot 10 for this {gran}.",
-    "trend_return_tip": "Back in the Hot 10 after at least 2 {grans} away.",
+    "trend_return_tip": "Back in the Hot 10: absent from the previous period's, present in an earlier one.",
     "trend_up_tip": "Up {n} rank(s) from the previous period ({gran}): from {prev} to {now}.",
     "trend_down_tip": "Down {n} rank(s) from the previous period ({gran}): from {prev} to {now}.",
     "trend_stable_tip": "Unchanged: rank {now}, as in the previous period ({gran}).",
@@ -546,7 +547,7 @@
     "fresh_stale": "Data is stale — incident in progress",
     "fresh_unknown": "Freshness unavailable",
     "timeline_title": "RELIABILITY BY MEDIUM",
-    "timeline_note": "Hover a segment to read its verification. Dark notches are documented collection gaps.",
+    "timeline_note": "Hover a segment to read its verification. Dark notches are documented collection gaps. The white frame marks the part of the corpus the site presents today.",
     "method_title": "THE METHOD, IN THREE SENTENCES",
     "method_p1": "A segment only enters the corpus if it is of very good quality, validated against an independent reference, and recomputable from the raw source.",
     "method_p2": "Historical data is checked headline by headline against the production collection over their common window; below the 85% precision bar, we rebuild from archived front pages rather than admit the segment.",
@@ -566,7 +567,11 @@
     "load_error": "Could not load qualite.json.",
     "concordance": "Concordance rate",
     "pages_rejouees": "pages replayed, last 12 months",
-    "col_taux": "Concordance"
+    "col_taux": "Concordance",
+    "site_row": "Presented on the site",
+    "site_objects": "The object index since",
+    "site_events": "events since",
+    "site_rest": "The earlier corpus is collected and verified, but not yet computed with the current index; its recomputation with the same formula is planned."
   },
   "aune": {
     "title": "La Une",
