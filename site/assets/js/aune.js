@@ -604,7 +604,8 @@ function salBadgeHtml(c, region, T) {
   // Un seul rectangle de couleur sur deux lignes : « ACTUELLEMENT » (ou « SOMMET ») et le « i »
   // en haut, le niveau dessous ; tient dans la colonne des points (Adrien, 31 oct. 2026).
   return '<span class="sal-tag band-' + escapeHtml(band) + '">' +
-    '<span class="sal-tag-top"><span class="sal-prefix">' + escapeHtml(T(c.is24h ? 'aune.sal.now_word' : 'aune.sal.peak_word')) + '</span>' +
+    // Sommet atteint à l'édition en cours : les deux mots (Adrien, 1er nov. 2026).
+    '<span class="sal-tag-top"><span class="sal-prefix">' + escapeHtml(T(c.peakNow ? 'aune.sal.now_peak_word' : c.is24h ? 'aune.sal.now_word' : 'aune.sal.peak_word')) + '</span>' +
     '<button type="button" class="sal-i" data-sid="' + escapeHtml(c.storyline) + '" aria-label="' + escapeHtml(T('aune.sal.i_label')) + '">i</button></span>' +
     '<a class="sal-level" href="./indices.html#etiquettes">' + escapeHtml(T('aune.band.' + band)) + '</a>' +
   '</span>';
@@ -639,22 +640,22 @@ function salCurveSvg(value, t, band, markerLabel, T, peakVal) {
 }
 function salPopHtml(sid, lang, T) {
   var row = salRows[sid]; if (!row) return '';
-  var c = row.c, region = row.region, adj = T('aune.sal.adj.' + region);
+  var c = row.c, region = row.region;
   var scale = c.is24h ? 'sum24h' : 'block', t = salThresholds(region, scale);
   var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
   var peakBand = c.peakBand || salBandOf(c.peak || 0, salThresholds(region, c.is24h ? 'sum24h' : 'block'));
+  // Fenêtre allégée (Adrien, 1er nov. 2026 : « trop de stock ») : les niveaux avec leurs points, la
+  // courbe et un renvoi vers la page des indices. La phrase de situation, la légende de la courbe et la
+  // définition sont sur cette page.
   var html = '';
   if (c.is24h) html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.now_prefix')) + ' ' + salPill(band, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.points_100', { points: (c.points || 0).toFixed(1) })) + '</span></p>';
   html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.peak_prefix')) + ' ' + salPill(peakBand, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.peak_at', { points: (c.peak || 0).toFixed(1), when: auneEditionWhen(c.peakKey, lang, c.peakNow) })) + '</span></p>';
   if (!c.is24h) html += '<p class="sal-note sal-sub">' + escapeHtml(T('aune.sal.cumul', { points: (c.points || 0).toFixed(1) })) + '</p>';
-  // Une histoire présente dans moins de six éditions a un indice 24h encore partiel : « 13.1 » à côté
-  // d'un sommet d'édition à « 43.9 » se lit comme une erreur si on ne le dit pas (Adrien, 31 oct. 2026).
-  if (c.is24h && c.blocks > 0 && c.blocks < 6) html += '<p class="sal-note sal-partial">' + escapeHtml(T(c.blocks === 1 ? 'aune.sal.partial_one' : 'aune.sal.partial_many', { n: c.blocks })) + '</p>';
-  html += '<p class="sal-lede">' + escapeHtml(T('aune.sal.micro.' + band, { adj: adj })) + '</p>';
-  if (t) html += salCurveSvg(c.is24h ? c.points : c.peak, t, band, T(c.is24h ? 'aune.sal.curve_now' : 'aune.sal.curve_peak'), T, (c.is24h && c.peak > c.points + 0.05) ? c.peak : null) +
-    '<p class="sal-scale">' + escapeHtml(T(c.is24h ? 'aune.sal.scale_24h' : 'aune.sal.scale_block', { adj: adj })) + '</p>';
-  html += '<p class="sal-def">' + escapeHtml(T('aune.sal.def')) + '</p>' +
-    '<a class="sal-more" href="./indices.html">' + escapeHtml(T('aune.sal.more')) + '</a>';
+  // Indice 24h encore partiel : dit en chiffres, pour que « 13.1 » à côté d'un sommet à « 43.9 » ne se
+  // lise pas comme une erreur (Adrien, 31 oct. 2026).
+  if (c.is24h && c.blocks > 0 && c.blocks < 6) html += '<p class="sal-note sal-sub">' + escapeHtml(T(c.blocks === 1 ? 'aune.sal.partial_short_one' : 'aune.sal.partial_short_many', { n: c.blocks })) + '</p>';
+  if (t) html += salCurveSvg(c.is24h ? c.points : c.peak, t, band, T(c.is24h ? 'aune.sal.curve_now' : 'aune.sal.curve_peak'), T, (c.is24h && c.peak > c.points + 0.05) ? c.peak : null);
+  html += '<a class="sal-more" href="./indices.html">' + escapeHtml(T('aune.sal.more')) + '</a>';
   return html;
 }
 var salLayer = null, salTimer = null, salOpenFor = null;
@@ -824,9 +825,11 @@ function renderALaUne() {
   auneMoreButton(nAll, items.length, T);
   if (countEl) countEl.textContent = nAll > items.length ? T('aune.count_shown', { shown: items.length, n: nAll }) : T(nAll === 1 ? 'aune.count_one' : 'aune.count_many', { n: nAll });
   var sums = auneSums(region, cfg.range);
+  var latestT = cfg.offset === 0 ? auneEditionStart(0) : null, latestK = latestT === null ? null : auneKeyAt(latestT);
   full.forEach(function(it) {
     var o = sums[it.storyline] || { total: 0, gain: 0, peak: 0 };
     it.total = o.total; it.gain = o.gain; it.peak = o.peak; it.peakKey = o.peakKey; it.peakBand = auneBand(region, o.peak);
+    it.peakNow = !!latestK && o.peakKey === latestK;
     it.firstKey = it.first_key || auneFirstKey(region, it.storyline);
   });
   // Dernières heures : le sommet est le plus haut INDICE 24h de l'histoire (même échelle que le nombre
