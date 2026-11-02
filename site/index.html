@@ -1743,65 +1743,7 @@ function buildPeriods() {
   buildSlots();
 }
 
-/* ===== AGGREGATION HELPERS ===== */
-
-var FR_MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-var FR_MONTHS_SHORT_MAP = { Jan:'jan.', Feb:'fév.', Mar:'mars', Apr:'avr.', May:'mai', Jun:'juin', Jul:'juil.', Aug:'août', Sep:'sept.', Oct:'oct.', Nov:'nov.', Dec:'déc.' };
-var FR_DAYS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-
-function periodKeyToDate(key) {
-  // "2026-04-14_16-20" → "2026-04-14"
-  return key.split('_')[0];
-}
-
-function dateToWeekKey(dateStr) {
-  // ISO 8601 week. Returns "2026-W19".
-  var d = new Date(dateStr + 'T00:00:00');
-  // Move to Thursday of same ISO week (treat Sunday as day 7)
-  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-  var yearStart = new Date(d.getFullYear(), 0, 1);
-  var weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-  return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
-}
-
-function dateToMonthKey(dateStr) {
-  return dateStr.slice(0, 7); // "2026-04"
-}
-
-function weekKeyToLabel(weekKey) {
-  // "2026-W15" → "Semaine du 7 avril 2026"
-  var parts = weekKey.split('-W');
-  var year = parseInt(parts[0]);
-  var week = parseInt(parts[1]);
-  // Find Monday of that ISO week
-  var jan4 = new Date(year, 0, 4);
-  var d = new Date(jan4.getTime());
-  d.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (week - 1) * 7);
-  var day = d.getDate();
-  var month = FR_MONTHS[d.getMonth()];
-  return 'Semaine du ' + day + ' ' + month + ' ' + year;
-}
-
-function monthKeyToLabel(monthKey) {
-  var parts = monthKey.split('-');
-  return FR_MONTHS[parseInt(parts[1]) - 1].charAt(0).toUpperCase() + FR_MONTHS[parseInt(parts[1]) - 1].slice(1) + ' ' + parts[0];
-}
-
-// Helpers de formatage "depuis le X" pour les intervalles
-function formatStartDateFr(day, monthIdx, year) {
-  var dayPart = day === 1 ? '1er' : String(day);
-  return dayPart + ' ' + FR_MONTHS[monthIdx] + ' ' + year;
-}
-function weekKeyStartDate(weekKey) {
-  // Returns Date of the Monday of that ISO week
-  var parts = weekKey.split('-W');
-  var year = parseInt(parts[0]);
-  var week = parseInt(parts[1]);
-  var jan4 = new Date(year, 0, 4);
-  var d = new Date(jan4.getTime());
-  d.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (week - 1) * 7);
-  return d;
-}
+/* ===== PÉRIODES DU HOT 10 ===== */
 
 function buildSlots() {
   var src = timeseriesData || graphData;
@@ -1816,64 +1758,29 @@ function buildSlots() {
     return;
   }
 
-  // Group period keys by granularity bucket
-  var buckets = {};
-  var bucketOrder = [];
-  allPeriods.forEach(function(p) {
-    var dateStr = periodKeyToDate(p.key);
-    var bucketKey;
-    if (currentGranularity === 'day') {
-      bucketKey = dateStr;
-    } else if (currentGranularity === 'week') {
-      bucketKey = dateToWeekKey(dateStr);
-    } else if (currentGranularity === 'month') {
-      bucketKey = dateToMonthKey(dateStr);
-    } else if (currentGranularity === 'quarter') {
-      bucketKey = dateStr.slice(0, 4); // bucket par année
-    } else { // 'total'
-      bucketKey = 'all';
+  // Jour, semaine, mois, année : les mêmes fenêtres d'éditions que la page Classement (aune.js),
+  // pour que le Hot 10 et le classement complet disent la même chose (Adrien, 1er nov. 2026).
+  // Avant : regroupement par date UTC des blocs, qui rangeait l'édition de minuit dans la veille.
+  var u = window.RadarAune && window.RadarAune.util;
+  var T = window.t || function(k) { return k; }, lang = (document.documentElement.lang || 'fr').slice(0, 2);
+  var allKeys = allPeriods.map(function(p) { return p.key; });
+  var GRAN_RANGE = { day: 'today', week: 'week', month: 'month', quarter: 'year' };
+  var range = GRAN_RANGE[currentGranularity];
+  if (range && u) {
+    var firstT = u.periodStartUtc(allKeys[0]), slots = [];
+    for (var off = 0, guard = 0; guard < 2000; off--, guard++) {
+      var w = u.window(range, off);
+      if (w[1] <= firstT) break;
+      var keys = allKeys.filter(function(k) { var t = u.periodStartUtc(k); return t >= w[0] && t < w[1]; });
+      slots.unshift({ periodKeys: keys, offset: off, range: range,
+        dateLabel: u.navLabel(range, off, lang, T), interval: u.navSub(range, off, lang, T) });
     }
-    if (!buckets[bucketKey]) {
-      buckets[bucketKey] = [];
-      bucketOrder.push(bucketKey);
-    }
-    buckets[bucketKey].push(p.key);
-  });
-
-  // Pour le bucket "all" (année), on dérive l'année depuis la dernière période du dataset
-  var fallbackYear = (allPeriods.length ? allPeriods[allPeriods.length - 1].key.slice(0, 4) : new Date().getFullYear());
-
-  aggregatedSlots = bucketOrder.map(function(bk) {
-    var keys = buckets[bk];
-    var label, dateLabel, interval;
-    if (currentGranularity === 'day') {
-      var d = new Date(bk + 'T00:00:00');
-      dateLabel = d.getDate() + ' ' + FR_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
-      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(d.getDate(), d.getMonth(), d.getFullYear());
-    } else if (currentGranularity === 'week') {
-      dateLabel = weekKeyToLabel(bk);
-      var ws = weekKeyStartDate(bk);
-      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(ws.getDate(), ws.getMonth(), ws.getFullYear());
-    } else if (currentGranularity === 'month') {
-      dateLabel = monthKeyToLabel(bk);
-      var mp = bk.split('-');
-      var mYear = parseInt(mp[0]);
-      var mIdx = parseInt(mp[1]) - 1;
-      interval = 'Saillance cumulée depuis le ' + formatStartDateFr(1, mIdx, mYear);
-    } else if (currentGranularity === 'quarter') {
-      dateLabel = String(bk);
-      interval = 'Saillance cumulée pour l\'année ' + bk;
-    } else { // total
-      var firstKey = keys[0];
-      var firstDate = firstKey ? new Date(periodKeyToDate(firstKey) + 'T00:00:00') : null;
-      dateLabel = 'Depuis le début';
-      interval = firstDate
-        ? 'Saillance cumulée depuis le ' + formatStartDateFr(firstDate.getDate(), firstDate.getMonth(), firstDate.getFullYear())
-        : 'Saillance cumulée sur toutes les données disponibles';
-    }
-    return { periodKeys: keys, dateLabel: dateLabel, interval: interval, bucketKey: bk };
-  });
-
+    // Période en cours encore vide (minuit passé, première édition pas encore publiée) : on montre la précédente.
+    while (slots.length > 1 && !slots[slots.length - 1].periodKeys.length) slots.pop();
+    aggregatedSlots = slots;
+  } else { // 'total' : toutes les éditions chargées
+    aggregatedSlots = [{ periodKeys: allKeys, offset: 0, dateLabel: T('subtitle.total'), interval: '' }];
+  }
   currentSlotIdx = aggregatedSlots.length - 1;
 }
 
@@ -1939,13 +1846,16 @@ function renderHot20() {
     var main = T('subtitle.' + currentGranularity) || '', detail = '';
     if (u && slot0 && slot0.periodKeys && slot0.periodKeys.length) {
       var loc = lang === 'en' ? 'en-CA' : 'fr-CA';
-      var fmtDate = function(key) { return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(u.editionTime(key) + 12 * 3600e3)); };
+      // Jour de l'édition elle-même (la première édition chargée sort le 14 juillet à 13h ; l'ancien
+      // décalage de +12 h la faisait passer au 15).
+      var fmtDate = function(key) { return u.fr1er(new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(u.editionTime(key))), lang); };
       var firstKey = slot0.periodKeys[0], lastKey = slot0.periodKeys[slot0.periodKeys.length - 1];
-      var map = { day: 'today', week: 'week', month: 'month' };
+      var off = slot0.offset || 0, rg = slot0.range;
+      var fromStart = allPeriods.length && firstKey === allPeriods[0].key; // la période commence avec les données
       if (currentGranularity === '4h') { main = u.blockLabel(lastKey, lang); detail = T('hot20.sub_edition'); }
-      else if (currentGranularity === 'day') { main = u.navLabel('today', 0, lang, T); detail = T('hot20.sub_today', { n: slot0.periodKeys.length }); }
-      else if (map[currentGranularity]) { main = u.navLabel(map[currentGranularity], 0, lang, T); detail = u.navSub(map[currentGranularity], 0, lang, T); }
-      else if (currentGranularity === 'quarter') { main = u.navLabel('year', 0, lang, T); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_data_start'); }
+      else if (currentGranularity === 'day') { main = u.navLabel('today', off, lang, T); detail = off === 0 ? T('hot20.sub_today', { n: slot0.periodKeys.length }) : u.navSub('today', off, lang, T); }
+      else if (currentGranularity === 'week' || currentGranularity === 'month') { main = u.navLabel(rg, off, lang, T); detail = u.navSub(rg, off, lang, T); }
+      else if (currentGranularity === 'quarter') { main = u.navLabel('year', off, lang, T); detail = fromStart ? T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_data_start') : u.navSub('year', off, lang, T); }
       else { main = T('subtitle.total'); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_days', { n: new Set(slot0.periodKeys.map(function(k) { return k.slice(0, 10); })).size }); }
     }
     subtitleEl.innerHTML = '<span class="sub-main">' + escapeHtml(main) + '</span>' + (detail ? '<span class="sub-detail">' + escapeHtml(detail) + '</span>' : '');
@@ -2008,29 +1918,7 @@ function renderHot20() {
   var nodes = allNodes.slice(0, 10); // Hot 10 sur l'accueil (Adrien, 31 oct. 2026) ; la suite dans Classement
   var totalSize = allNodes.reduce(function(acc, n) { return acc + (n.size || 0); }, 0) || 1;
 
-  /* Trend: compare with previous slot */
-  var prevRanks = {};
-  var prevIds = {};
-  if (currentSlotIdx > 0) {
-    var prevSlot = aggregatedSlots[currentSlotIdx - 1];
-    var prevNodes;
-    if (currentGranularity === '4h') {
-      var prevData = countryGraphs[prevSlot.periodKeys[0]];
-      prevNodes = prevData && prevData.nodes ? prevData.nodes.slice().sort(function(a, b) { return (b.size || 0) - (a.size || 0); }) : [];
-    } else {
-      prevNodes = aggregateNodes(countryGraphs, prevSlot.periodKeys);
-    }
-    prevNodes.forEach(function(n, idx) { prevRanks[n.id] = idx + 1; prevIds[n.id] = true; });
-  }
-
-  /* Série : nombre de périodes consécutives (en remontant depuis celle-ci) où l'objet est dans
-     le top 10 de la période, le classement affiché ; les données gardent 30 objets par bloc,
-     « présent dans les données » ne voulait rien dire pour le lecteur (Adrien, 31 oct. 2026). */
-  // Paliers, du plus serré au plus large : première position, top 2, top 3, top 10. On affiche
-  // le palier le plus serré tenu au moins deux périodes de suite (« 2 jours de suite en
-  // première position » plutôt que « 15 jours de suite dans le top 10 » ; Adrien, 31 oct. 2026).
-  var STREAK_TIERS = [1, 2, 3, 10];
-  var streaks = {};
+  /* Rangs du Hot 10 de chaque période (10 premiers seulement), mémorisés pour ce rendu. */
   var slotRankCache = {};
   function slotRanks(si) {
     if (slotRankCache[si]) return slotRankCache[si];
@@ -2046,6 +1934,19 @@ function renderHot20() {
       .forEach(function(n, idx) { ranks[n.id] = idx + 1; });
     return (slotRankCache[si] = ranks);
   }
+
+  /* Mouvement : par rapport au Hot 10 de la période précédente. Hors de ce Hot 10, l'objet est
+     « Nouveau » ou « Retour », jamais « ▲596 » (rang dans une liste que personne ne voit ; Adrien, 1er nov. 2026). */
+  var prevRanks = currentSlotIdx > 0 ? slotRanks(currentSlotIdx - 1) : {};
+
+  /* Série : nombre de périodes consécutives (en remontant depuis celle-ci) où l'objet est dans
+     le top 10 de la période, le classement affiché ; les données gardent 30 objets par bloc,
+     « présent dans les données » ne voulait rien dire pour le lecteur (Adrien, 31 oct. 2026). */
+  // Paliers, du plus serré au plus large : première position, top 2, top 3, top 10. On affiche
+  // le palier le plus serré tenu au moins deux périodes de suite (« 2 jours de suite en
+  // première position » plutôt que « 15 jours de suite dans le top 10 » ; Adrien, 31 oct. 2026).
+  var STREAK_TIERS = [1, 2, 3, 10];
+  var streaks = {};
   nodes.forEach(function(node) {
     var counts = STREAK_TIERS.map(function() { return 0; }), alive = STREAK_TIERS.map(function() { return true; });
     for (var si = currentSlotIdx; si >= 0; si--) {
@@ -2059,23 +1960,12 @@ function renderHot20() {
     streaks[node.id + '|top'] = pick ? pick.top : 10;
   });
 
-  /* Comeback detection */
+  /* Retour : absent du Hot 10 de la période précédente, présent dans celui d'une des 9 d'avant. */
   var comebacks = {};
   nodes.forEach(function(node) {
-    if (prevIds[node.id]) return;
+    if (prevRanks[node.id]) return;
     for (var si = currentSlotIdx - 2; si >= Math.max(0, currentSlotIdx - 10); si--) {
-      var s = aggregatedSlots[si];
-      var sNodes;
-      if (currentGranularity === '4h') {
-        var pd = countryGraphs[s.periodKeys[0]];
-        sNodes = pd && pd.nodes ? pd.nodes : [];
-      } else {
-        sNodes = aggregateNodes(countryGraphs, s.periodKeys);
-      }
-      if (sNodes.some(function(n) { return n.id === node.id; })) {
-        comebacks[node.id] = true;
-        return;
-      }
+      if (slotRanks(si)[node.id]) { comebacks[node.id] = true; return; }
     }
   });
 
@@ -2139,13 +2029,16 @@ function renderHot20() {
     oldPos[el.dataset.nodeId] = el.getBoundingClientRect().top;
   });
   var hasOldRows = Object.keys(oldPos).length > 0;
+  // L'augmentation égale le total quand la période couvre toutes les données chargées (« Depuis le
+  // début », et « Cette année » tant que les données commencent cette année) : on ne l'affiche pas.
+  var hideIncrease = currentGranularity === 'total' || slot.periodKeys.length >= allPeriods.length;
 
   grid.innerHTML =
     '<div class="hot20-list-header">' +
       '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
-      '<span>' + escapeHtml(T('hot20.header_movement')) + '</span>' +
+      '<span>' + (currentSlotIdx > 0 ? escapeHtml(T('hot20.header_movement')) : '') + '</span>' +
       '<span style="padding-left:12px;">' + escapeHtml(T('hot20.header_subject')) + '</span>' +
-      '<span style="padding-left:12px;">' + escapeHtml(T('hot20.header_score_increase')) + '</span>' +
+      '<span style="padding-left:12px;">' + escapeHtml(T(hideIncrease ? 'hot20.header_score' : 'hot20.header_score_increase')) + '</span>' +
       '<span>' + escapeHtml(T('hot20.header_articles')) + '</span>' +
     '</div>' +
     nodes.map(function(node, i) {
@@ -2251,7 +2144,7 @@ function renderHot20() {
         '<div class="hot20-row-score">' +
           '<div class="hot20-row-pct">' +
             '<span class="hot20-row-total hot20-hint" data-tip="' + escapeHtml(T('hot20.score_tip')) + '"><strong>' + totalStr + '</strong> ' + escapeHtml(ptsLabel) + '</span>' +
-            (currentGranularity === 'total' ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
+            (hideIncrease ? '' : '<span class="hot20-row-increase hot20-hint" data-tip="' + escapeHtml(increaseTip) + '.">' + increaseStr + '</span>') +
           '</div>' +
           '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + barPct + '%"></div></div>' +
           '<div class="hot20-row-share hot20-hint" data-tip="' + escapeHtml(T('hot20.share_tip')) + '">' + escapeHtml(T(currentSlotIdx === aggregatedSlots.length - 1 ? 'hot20.share_label_gran.' + currentGranularity : 'hot20.share_label', { pct: pct })) + '</div>' +
