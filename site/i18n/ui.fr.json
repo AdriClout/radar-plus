@@ -184,6 +184,7 @@
     "header_movement": "Mouvement",
     "header_subject": "Sujet",
     "header_score_increase": "Score · Augmentation",
+    "header_score": "Score",
     "header_articles": "Articles",
     "country_label": "Pays",
     "country_qc": "Québec",
@@ -195,7 +196,7 @@
     "trend_new": "Nouveau",
     "trend_return": "Retour",
     "trend_new_tip": "Nouvelle entrée dans le Hot 10 pour cette {gran}.",
-    "trend_return_tip": "Retour dans le Hot 10 après au moins 2 {grans} d’absence.",
+    "trend_return_tip": "De retour dans le Hot 10 : absent de celui de la période précédente, présent dans une période antérieure.",
     "trend_up_tip": "Gagne {n} rang(s) par rapport à la période précédente ({gran}) : de {prev} à {now}.",
     "trend_down_tip": "Perd {n} rang(s) par rapport à la période précédente ({gran}) : de {prev} à {now}.",
     "trend_stable_tip": "Position inchangée : rang {now}, comme à la période précédente ({gran}).",
@@ -546,7 +547,7 @@
     "fresh_stale": "Données périmées — incident en cours",
     "fresh_unknown": "Fraîcheur indisponible",
     "timeline_title": "FIABILITÉ PAR MÉDIA",
-    "timeline_note": "Survolez un segment pour lire sa vérification. Les entailles sombres sont des trous de collecte documentés.",
+    "timeline_note": "Survolez un segment pour lire sa vérification. Les entailles sombres sont des trous de collecte documentés. Le cadre blanc marque la partie du corpus que le site présente aujourd'hui.",
     "method_title": "LA MÉTHODE, EN TROIS PHRASES",
     "method_p1": "Un segment n'entre dans le corpus que s'il est de très bonne qualité, validé contre une référence indépendante, et re-calculable depuis la source brute.",
     "method_p2": "Les données historiques sont confrontées Une par Une à la collecte de production sur leur fenêtre commune ; sous la barre de 85 % de précision, on reconstruit depuis les pages d'accueil archivées plutôt que d'admettre le segment.",
@@ -566,7 +567,11 @@
     "load_error": "Impossible de charger qualite.json.",
     "concordance": "Taux de concordance",
     "pages_rejouees": "pages rejouées, 12 derniers mois",
-    "col_taux": "Concordance"
+    "col_taux": "Concordance",
+    "site_row": "Présenté sur le site",
+    "site_objects": "L'indice des objets depuis le",
+    "site_events": "les événements depuis le",
+    "site_rest": "Le corpus antérieur est collecté et vérifié, mais pas encore calculé avec l'indice actuel ; son recalcul avec la même formule est prévu."
   },
   "aune": {
     "title": "La Une",

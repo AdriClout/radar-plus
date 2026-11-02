@@ -412,18 +412,21 @@ function auneWhen(key, lang) {
 function auneBlockLabel(key, lang) {
   var t = auneEditionTime(key), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
   var day = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'short' }).format(new Date(t));
-  return (lang === 'en' ? auneHourMtl(t) + ' edition, ' : 'édition de ' + auneHourMtl(t) + ', ') + day;
+  return (lang === 'en' ? auneHourMtl(t) + ' edition, ' : 'édition de ' + auneHourMtl(t) + ', ' + auneFr1er(day, lang));
 }
 // Filtre de recherche (page Classement) : sans accents ni casse.
 // Libellé de la période affichée : « édition de 16h, 31 oct. », « samedi 31 octobre 2026 »,
 // « Semaine 44 · 26 oct. – 1 nov. 2026 », « octobre 2026 », « 2026 ».
+// « 1 novembre » → « 1er novembre » en français (le premier du mois s'écrit avec l'ordinal ; Adrien, 1er nov. 2026).
+function auneFr1er(s, lang) { return lang === 'en' ? s : String(s).replace(/(^|[\s(])1 (?=[a-zéû])/g, '$11er '); }
 function auneIsoWeek(t) {
   var q = mtlParts(new Date(t)), d = new Date(Date.UTC(q.y, q.m - 1, q.d));
   var day = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - day);
   var y0 = Date.UTC(d.getUTCFullYear(), 0, 1);
   return Math.ceil(((d - y0) / 86400e3 + 1) / 7);
 }
-function auneNavLabel(range, offset, lang, T) {
+function auneNavLabel(range, offset, lang, T) { return auneFr1er(auneNavLabelRaw(range, offset, lang, T), lang); }
+function auneNavLabelRaw(range, offset, lang, T) {
   var loc = lang === 'en' ? 'en-CA' : 'fr-CA', w = auneWindow(range, offset);
   var fmt = function(t, o) { return new Intl.DateTimeFormat(loc, Object.assign({ timeZone: 'America/Montreal' }, o)).format(new Date(t)); };
   if (range === '24h') { var t0 = auneEditionStart(offset); return t0 === null ? '' : auneBlockLabel(auneKeyAt(t0), lang); }
@@ -443,7 +446,8 @@ function auneNavLabel(range, offset, lang, T) {
 }
 // Deuxième ligne du navigateur : « Saillance cumulée depuis le 26 octobre 2026 » ou, pour
 // Dernières heures, « Indice 24h à cette édition ».
-function auneNavSub(range, offset, lang, T) {
+function auneNavSub(range, offset, lang, T) { return auneFr1er(auneNavSubRaw(range, offset, lang, T), lang); }
+function auneNavSubRaw(range, offset, lang, T) {
   if (range === '24h') return T('classement.nav_sub_24h');
   if (range === 'elecqc2026' && !offset) return T('classement.nav_sub_elec');
   var w = auneWindow(range, offset), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
@@ -1052,5 +1056,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, exportData: exportData, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { setSub: auneSetSub, window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, artUrl: auneArtUrl, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek } };
+  util: { setSub: auneSetSub, window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, artUrl: auneArtUrl, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek, fr1er: auneFr1er } };
 })();
