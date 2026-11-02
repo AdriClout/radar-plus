@@ -24,6 +24,25 @@
   };
 })();
 
+// Pas d'éclair de clés de traduction au chargement (Adrien, 1er nov. 2026 : « je vois pendant une
+// seconde plein de code »). Les textes (i18n/ui.*.json) arrivent après le premier affichage ; d'ici
+// là, les libellés écrits par les scripts valent leur clé (« hot20.header_rank »). config.js est lu
+// dans le <head> de chaque page : la page reste masquée jusqu'à ce que i18n.js ait appliqué les
+// textes, ou au plus 2,5 s (filet si le fichier ne vient pas). Pages sans i18n.js : affichées tout de suite.
+(function () {
+  var root = document.documentElement;
+  root.classList.add('i18n-pending');
+  var st = document.createElement('style');
+  // Sans fondu : une transition reste figée dans un onglet ouvert en arrière-plan.
+  st.textContent = 'html.i18n-pending{background:#00000f}html.i18n-pending body{opacity:0}';
+  (document.head || root).appendChild(st);
+  function show() { root.classList.remove('i18n-pending'); }
+  window.radarShowPage = show;
+  setTimeout(show, 2500);
+  document.addEventListener('i18n:applied', show);
+  document.addEventListener('DOMContentLoaded', function () { if (!window.__i18n) show(); });
+})();
+
 // Typographie des heures (règle Vitrine, Adrien 24 oct. 2026) : « 17h57 », « 24h »,
 // jamais d'espace avant le h. À appliquer aux sorties des formateurs de date.
 window.radarTypo = function (s) {
