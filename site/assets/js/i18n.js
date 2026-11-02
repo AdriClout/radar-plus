@@ -121,7 +121,9 @@
 
   // ─── Chargement des fichiers JSON ────────────────────────────────────────
   function loadStrings(lang) {
-    return fetch('./i18n/ui.' + lang + '.json', { cache: 'no-store' })
+    // no-cache : le navigateur revalide sa copie (réponse 304 rapide) au lieu de tout retélécharger ;
+    // un texte modifié au déploiement est quand même lu tout de suite.
+    return fetch('./i18n/ui.' + lang + '.json', { cache: 'no-cache' })
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
