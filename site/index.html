@@ -43,10 +43,13 @@
     /* Les zones vivent DANS le héros (position absolue), pas fixées au viewport :
        fixées, elles restaient sous le curseur après le défilement et volaient
        les clics du bouton Québec du HOT 20 (signalement #27, Firefox). */
+    /* Les zones ne captent plus la souris : la bulle s'ouvre quand le curseur s'arrête près d'une
+       étoile ou d'un trait de la constellation (voir cstNear), pas dans un grand rectangle autour
+       (Adrien, 1er nov. 2026 : « je suis même pas proche et elles s'ouvrent »). */
     .cst-zone {
       position: absolute;
       z-index: 3;
-      cursor: default;
+      pointer-events: none;
     }
     /* Mobile : pas de constellations ni de zones (le dessin est aussi coupé dans drawConstellations). */
     @media (max-width: 767px) { .cst-zone { display: none; } }
@@ -64,7 +67,7 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
-    .cst-zone:hover .cst-tooltip { opacity: 1; }
+    .cst-zone.on .cst-tooltip { opacity: 1; }
     .cst-tooltip .cst-tooltip-name {
       font-family: var(--orbitron);
       font-size: 11px;
@@ -1500,11 +1503,37 @@
   // Hover state per constellation (smooth 0→1)
   const cstHover = constellationDefs.map(() => 0);
   const cstZones = constellationDefs.map((_, i) => document.getElementById('cst-zone-' + i));
-  cstZones.forEach((zone, i) => {
-    if (!zone) return;
-    zone.addEventListener('mouseenter', () => { cstZones[i]._hovered = true; });
-    zone.addEventListener('mouseleave', () => { cstZones[i]._hovered = false; });
-  });
+  // Survol par proximité : à moins de CST_NEAR px d'une étoile ou d'un trait, pendant CST_DWELL ms,
+  // la constellation s'allume et sa bulle s'ouvre ; elle se referme au-delà de CST_FAR px.
+  const CST_NEAR = 22, CST_FAR = 44, CST_DWELL = 280;
+  let cstOy = 0, cstMouse = null;
+  function cstDist(ci, mx, my) {
+    const cst = constellationDefs[ci], vw = window.innerWidth, vh = window.innerHeight;
+    const P = cst.stars.map(st => [st[0] * vw, st[1] * vh + cstOy]);
+    let d = Infinity;
+    P.forEach(p => { d = Math.min(d, Math.hypot(mx - p[0], my - p[1])); });
+    cst.lines.forEach(([a, b]) => {
+      const ax = P[a][0], ay = P[a][1], bx = P[b][0], by = P[b][1];
+      const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy || 1;
+      const t = Math.max(0, Math.min(1, ((mx - ax) * dx + (my - ay) * dy) / len2));
+      d = Math.min(d, Math.hypot(mx - (ax + t * dx), my - (ay + t * dy)));
+    });
+    return d;
+  }
+  function cstUpdateHover(now) {
+    cstZones.forEach((zone, i) => {
+      if (!zone) return;
+      const d = cstMouse && window.innerWidth >= 768 ? cstDist(i, cstMouse.x, cstMouse.y) : Infinity;
+      if (zone._hovered) {
+        if (d > CST_FAR) { zone._hovered = false; zone._since = null; zone.classList.remove('on'); }
+      } else if (d <= CST_NEAR) {
+        if (zone._since == null) zone._since = now;
+        if (now - zone._since >= CST_DWELL) { zone._hovered = true; zone.classList.add('on'); }
+      } else zone._since = null;
+    });
+  }
+  window.addEventListener('mousemove', e => { cstMouse = { x: e.clientX, y: e.clientY }; }, { passive: true });
+  document.addEventListener('mouseleave', () => { cstMouse = null; });
 
   // oy : décalage vertical de la couche des constellations (parallaxe, voir draw()).
   function drawConstellations(time, dt, oy) {
@@ -1512,6 +1541,8 @@
     const vh = window.innerHeight;
     if (vw < 768) return; // mobile : étoiles seulement, pas de constellations (demande d'Adrien)
     oy = oy || 0;
+    cstOy = oy;
+    cstUpdateHover(performance.now());
     if (oy > vh + 40 || oy < -vh - 40) return; // couche hors écran : rien à dessiner
 
     for (let ci = 0; ci < constellationDefs.length; ci++) {
