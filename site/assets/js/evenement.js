@@ -169,8 +169,20 @@ function mediaOf(evs) {
 }
 function mtlDay(key) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Montreal', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(u.editionTime(key))); }
 function dayNum(ymd) { return Date.UTC(+ymd.slice(0, 4), +ymd.slice(5, 7) - 1, +ymd.slice(8, 10)) / 86400e3; }
-// Axe continu d'éditions de 4 h, de la première à la dernière : les éditions sans l'histoire valent 0.
-function axisKeys(k0, k1) { var out = [], t1 = u.periodStartUtc(k1); for (var t = u.periodStartUtc(k0); t <= t1 && out.length < 2400; t += BLOCK_MS) out.push(u.keyAt(t)); return out; }
+// Axe continu d'éditions de 4 h, de la première à la dernière. Il suit les éditions réellement publiées
+// (`known`) : au changement d'heure, la grille des blocs glisse d'une heure, et un pas fixe de 4 h
+// perdait les éditions d'après (vu le 1er nov. 2026). Entre deux éditions connues : pas de 4 h, valeur 0.
+function axisKeys(k0, k1, known) {
+  var ks = (known || []).filter(function(k, i, a) { return a.indexOf(k) === i; }).sort(), out = [], j = 0, H = 3600e3;
+  var t = u.periodStartUtc(k0), t1 = u.periodStartUtc(k1);
+  while (t <= t1 + 2 * H && out.length < 4000) {
+    while (j < ks.length && u.periodStartUtc(ks[j]) < t - 2 * H) j++;
+    if (j < ks.length && u.periodStartUtc(ks[j]) < t + 3 * H) { out.push(ks[j]); t = u.periodStartUtc(ks[j]) + BLOCK_MS; j++; }
+    else if (t <= t1) { out.push(u.keyAt(t)); t += BLOCK_MS; }
+    else break;
+  }
+  return out;
+}
 function ordinal(n, L) { if (L === 'en') { var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); } return n === 1 ? '1re' : n + 'e'; }
 function plural(n, one, many) { return T(n === 1 ? one : many, { n: n }); }
 
@@ -321,7 +333,7 @@ function render(sec, data) {
   if (!st) { sec.innerHTML = '<div class="ev-empty">' + esc(T('fiche.not_found')) + '</div>'; return; }
   var series = st.series || {}, cum = st.sum24h || {};
   var sKeys = Object.keys(series).sort(), cKeys = Object.keys(cum).sort();
-  var known = sKeys.concat(cKeys).sort(), axis = known.length ? axisKeys(known[0], known[known.length - 1]) : [];
+  var known = sKeys.concat(cKeys).sort(), axis = known.length ? axisKeys(known[0], known[known.length - 1], known) : [];
   var th = (data.idx && data.idx.thresholds && data.idx.thresholds[region]) || {};
   var latestKey = data.idx && data.idx.latest_period && data.idx.latest_period[region];
   var lastCumKey = cKeys[cKeys.length - 1], live = !!(lastCumKey && latestKey && lastCumKey === latestKey);

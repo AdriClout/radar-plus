@@ -116,3 +116,9 @@
 .tool-btn-sub { font-size: 12.5px; line-height: 1.35; color: rgba(180,200,240,0.8); }
 .tool-btn-go { flex: 0 0 auto; font-size: 20px; color: #9dc0ff; }
 @media (max-width: 600px) { .tool-btns { grid-template-columns: 1fr; } }
+
+/* ── Fiche d'objet (objet.js, 1er nov. 2026) : même fiche ; la liste des éditions s'ouvre en entier sur demande ── */
+.ob-more { margin-top: 10px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--line); background: rgba(40,70,160,0.22); color: #dbe6ff; cursor: pointer; }
+.ob-more:hover { border-color: var(--accent); background: rgba(40,70,160,0.42); }
+/* L'ancienne fiche d'objet de statistiques.html reste masquée : son « display: grid » l'emportait sur [hidden]. */
+main.wrap > .layout[hidden] { display: none !important; }
