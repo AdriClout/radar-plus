@@ -68,6 +68,11 @@
   flex: var(--grow, 1) 1 0px;
 }
 .aune-row.has-art { grid-template-columns: 48px 72px minmax(160px, 22%) minmax(0, 1fr) 210px; }
+/* La hauteur proportionnelle n'a de sens qu'avec l'illustration, qui remplit la carte du n° 1. Sans
+   elle (la Vitrine n'illustre qu'une histoire à la fois : souvent rien au Canada et aux États-Unis),
+   le n° 1 devenait une grande carte vide (Canada, 2 nov. 2026 : 124 points contre 32 et 19).
+   Les rangs se partagent alors la hauteur à parts égales (Adrien, 2 nov. 2026). */
+.aune-list.proportional:not(:has(> .aune-row.rank-1.has-art)) > .aune-row { flex-grow: 1; }
 /* Rangs 2 et 3 : une illustration plus petite, la carte du n° 1 garde la grande (Adrien, 1er nov. 2026). */
 .aune-row.has-art:not(.rank-1) { grid-template-columns: 48px 72px 140px minmax(0, 1fr) 210px; }
 .aune-row:not(.rank-1) .aune-row-art { align-self: center; height: 86px; }
