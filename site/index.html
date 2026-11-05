@@ -2039,7 +2039,9 @@ function renderHot20() {
       // le niveau du pipeline même quand la taille du snapshot a baissé.
       // Sinon, fallback sur le calcul size-tier pour highlighter les
       // pics qui n'ont pas (encore) déclenché d'épisode.
-      if (n.alert_active && n.alert_level && n.alert_level !== 'none') {
+      // « élevé » n'est plus un niveau d'alerte (Adrien, 31 oct. 2026), même quand l'épisode
+      // du pipeline le porte encore : seuls très élevé et extrême donnent l'étiquette.
+      if (n.alert_active && (n.alert_level === 'tres_eleve' || n.alert_level === 'extreme')) {
         currentAlertByName[n.id] = n.alert_level;
         return;
       }
@@ -2156,8 +2158,10 @@ function renderHot20() {
       var totalAllTime = (allTimeScores && allTimeScores[currentCountry])
         ? (allTimeScores[currentCountry][node.id] || 0) : null;
       var slotIncrease = Number(node.size) || 0;
-      var totalStr = totalAllTime !== null ? totalAllTime.toFixed(1) : '—';
-      var increaseStr = '+' + slotIncrease.toFixed(1);
+      // Format français « 22 157,0 » / anglais « 22,157.0 » (Adrien, 4 nov. 2026).
+      var fmt = (window.RadarAune && window.RadarAune.util.fmt) || function(x) { return Number(x).toFixed(1); };
+      var totalStr = totalAllTime !== null ? fmt(totalAllTime) : '—';
+      var increaseStr = '+' + fmt(slotIncrease);
       var increaseTip = T('increase_tip.' + currentGranularity);
       var ptsLabel = T('hot20.points_label');
       var articleLabel = articleCount > 1 ? T('common.articles') : T('common.article');
@@ -2476,7 +2480,7 @@ function openArticlePanel(node) {
   meta.textContent = (articlesLoading && currentArticles.length === 0
     ? 'Chargement\u2026'
     : currentArticles.length + ' article' + (currentArticles.length === 1 ? '' : 's')
-  ) + ' \u00b7 score ' + (node.size || 0).toFixed(1);
+  ) + ' \u00b7 score ' + ((window.RadarAune && window.RadarAune.util.fmt) ? window.RadarAune.util.fmt(node.size) : (node.size || 0).toFixed(1));
 
   var wlDate = document.getElementById('wl-date');
   var slotLabel = (wlDate && wlDate.textContent !== '\u2014') ? wlDate.textContent.trim() : '';

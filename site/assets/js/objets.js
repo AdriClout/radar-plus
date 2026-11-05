@@ -96,9 +96,9 @@ function tableHtml(items, cfg, u, T, prevRanks, limit, total, lang, cs, allTotal
       '<td class="center">' + trendHtml(prevRanks[it.id], rank, limit, T, esc) + '</td>' +
       '<td class="subject">' + (band === 'aucune' ? '' : '<span class="aune-band band-' + band + '">' + esc(T('alertes.level_short.' + it.level)) + '</span>') +
         '<span class="aune-row-title obj"><a href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' + esc(it.id) + '</a></span></td>' +
-      '<td class="num strong">' + u.numUnit(it.points.toFixed(1), T('aune.points')) + '</td>' +
+      '<td class="num strong">' + u.numUnit(u.fmt(it.points), T('aune.points')) + '</td>' +
       '<td class="num">' + u.numUnit(Math.round(100 * it.points / total), '%') + '</td>' +
-      '<td class="num">' + u.numUnit((allTotal[it.id] || 0).toFixed(1), T('aune.points')) + '</td>' +
+      '<td class="num">' + u.numUnit(u.fmt(allTotal[it.id]), T('aune.points')) + '</td>' +
       '<td class="num">' + u.numUnit(it.blocks, T(it.blocks === 1 ? 'aune.unit_one.24h' : 'aune.unit_many.24h')) + '</td>' +
       (u.isFixed(cfg.range) ? '<td class="num">—</td><td class="num">—</td>' :
       '<td class="num">' + u.numUnit(st.consec, u.unitPeriod(cfg.range, st.consec, T)) + '</td>' +
@@ -162,7 +162,7 @@ function render() {
         '<h3 class="aune-row-title obj"><a href="./statistiques.html?objet=' + encodeURIComponent(it.id) + '">' + esc(it.id) + '</a></h3>' +
         '<div class="aune-row-meta"><span>' + esc(T(it.blocks === 1 ? 'classement.obj_editions_one' : 'classement.obj_editions_many', { n: it.blocks })) + '</span></div>' +
       '</div>' +
-      '<div class="aune-row-score"><span class="num hot20-hint" data-tip="' + esc(T('classement.obj_points_tip')) + '">' + it.points.toFixed(1) + '</span>' +
+      '<div class="aune-row-score"><span class="num hot20-hint" data-tip="' + esc(T('classement.obj_points_tip')) + '">' + u.fmt(it.points) + '</span>' +
         '<div class="hot20-bar-track"><div class="hot20-bar" style="width:' + Math.max(1, Math.round(share)) + '%"></div></div>' +
         '<span class="unit hot20-hint" data-tip="' + esc(T('aune.share_tip')) + '">' + esc(T('aune.share_label', { pct: Math.round(share) })) + '</span></div>' +
     '</li>';

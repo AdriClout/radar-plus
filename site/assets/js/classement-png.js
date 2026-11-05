@@ -9,7 +9,8 @@
   var SITE = 'https://radarplus.org';
   function T(k, p) { return (window.t ? window.t(k, p) : k) || k; }
   function esc(s) { return s == null ? '' : String(s); }
-  function fmt1(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+  // Même format que la page (« 22 157,0 » / « 22,157.0 ») : aune.js le fournit.
+  function fmt1(v) { var u = window.RadarAune && window.RadarAune.util; return u && u.fmt ? u.fmt(v) : (Math.round(v * 10) / 10).toFixed(1); }
   function fmtInt(v, lang) { return new Intl.NumberFormat(lang === 'en' ? 'en-CA' : 'fr-CA').format(Math.round(v)); }
   function loadImage(src) { return new Promise(function (res) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = src; }); }
   function truncate(ctx, text, maxW) {
