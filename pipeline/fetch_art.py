@@ -12,9 +12,11 @@ et le fichier qui dit quelle histoire elle illustre :
 À chaque rafraîchissement, ce script :
   1. lit hero-selection.json ;
   2. retrouve l'histoire correspondante dans NOTRE events/latest.json (même
-     storyline, ou même event_id dans le dernier bloc — les deux chaînes lisent
-     la même table, mais la Vitrine peut porter un autre identifiant de
-     storyline pour la même histoire) ;
+     storyline, ou même event_id dans le dernier bloc). Depuis le 4 nov. 2026 (#53),
+     Radar+ lit ses histoires dans la même base que la Vitrine (AWS PROD) : les
+     identifiants sont les mêmes et la première règle suffit. Les règles de
+     rattrapage (famille, indice, titre) datent de la lecture en DEV, où chaque
+     base regroupait les histoires à sa façon ; elles restent comme filet ;
   3. enregistre latest.webp sous events/art/<storyline>.webp pour chaque clé
      appariée (la nôtre et celle de la Vitrine).
 

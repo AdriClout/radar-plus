@@ -5,6 +5,10 @@ Uses boto3 (official AWS SDK) — no session-token issues.
 Writes salient_index.csv, salient_objects.csv and headline_events.csv next to this script.
 
 Usage: fetch_data.py [all|constellation|events]   (défaut : all)
+
+L'environnement AWS est celui des clés fournies. Le refresh (refresh-constellation.yml)
+lit `constellation` en DEV et `events` en PROD, la base de la Vitrine (#53) ; en local,
+choisir le profil : AWS_PROFILE=ellipse-prod python3 pipeline/fetch_data.py events
 """
 
 import boto3
