@@ -26,6 +26,7 @@
       --surveillance: #f0c46d;
       --exclu: #ff8c8c;
       --trou: rgba(20, 28, 52, 0.95);
+      --site: #f4f7ff; /* ce que le site présente : blanc, distinct des quatre statuts */
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -160,6 +161,16 @@
       cursor: help;
     }
     .avenir { position: absolute; top: 0; bottom: 0; right: 0; background: rgba(0, 0, 15, 0.55); }
+    /* Portion du corpus présentée sur le site : ligne de tête + cadre blanc sur chaque barre (Adrien, 1er nov. 2026) */
+    .ligne-site { margin-bottom: 4px; }
+    .ligne-site .nom { color: var(--site); }
+    .seg.site { background: rgba(244, 247, 255, 0.82); }
+    .fenetre-site {
+      position: absolute; top: 0; bottom: 0; right: 0;
+      box-shadow: inset 0 0 0 1.5px var(--site);
+      border-radius: 0 4px 4px 0;
+      pointer-events: none;
+    }
 
     .legende {
       display: flex;
@@ -233,7 +244,7 @@
 
     <section class="bloc">
       <h2 data-i18n="sonarq.timeline_title">FIABILITÉ PAR MÉDIA</h2>
-      <p class="note" data-i18n="sonarq.timeline_note">Survolez un segment pour lire sa vérification. Les entailles sombres sont des trous de collecte documentés.</p>
+      <p class="note" data-i18n="sonarq.timeline_note">Survolez un segment pour lire sa vérification. Les entailles sombres sont des trous de collecte documentés. Le cadre blanc marque la partie du corpus que le site présente aujourd'hui.</p>
       <div class="entetes">
         <span></span>
         <div class="axe" id="axe"></div>
@@ -290,6 +301,9 @@
       };
       var REGIONS = { QC: 'Québec', CAN: 'Canada', US: 'États-Unis' };
       var donneesGlobales = {};
+      // Ce que le site présente : début de l'indice des objets (v2/index.json) et des événements
+      // (v2/events/index.json), lus dans les fichiers publiés pour rester vrais si la fenêtre bouge.
+      var fenetreSite = null;
 
       var DEBUT = new Date('2023-04-17T00:00:00Z');
       var FIN = new Date();
@@ -339,6 +353,15 @@
                '<div>' + (tr.cause || '') + '</div>';
       }
 
+      function bulleSite(f) {
+        var corps = t('sonarq.site_objects', "L'indice des objets depuis le") + ' ' + fmtDate(f.objets) +
+          (f.evenements ? ', ' + t('sonarq.site_events', 'les événements depuis le') + ' ' + fmtDate(f.evenements) : '') + '. ' +
+          t('sonarq.site_rest', "Le corpus antérieur est collecté et vérifié, mais pas encore calculé avec l'indice actuel ; son recalcul avec la même formule est prévu.");
+        return '<strong>' + t('sonarq.site_row', 'Présenté sur le site') + '</strong>' +
+               '<div class="quand">' + fmtDate(f.objets) + ' → ' + fmtDate(null) + '</div>' +
+               '<div>' + corps + '</div>';
+      }
+
       function construireAxe() {
         var axe = document.getElementById('axe');
         var annees = [];
@@ -355,9 +378,13 @@
           ['exclu', 'var(--exclu)'],
           ['trou', 'var(--trou)']
         ];
+        if (fenetreSite) items.push(['site', 'transparent']);
         el.innerHTML = items.map(function (it) {
-          var lib = it[0] === 'trou' ? t('sonarq.st_trou', 'Trou de collecte') : STATUTS[it[0]].libelle();
-          var bord = it[0] === 'trou' ? 'border:1px solid var(--line);' : '';
+          var lib = it[0] === 'trou' ? t('sonarq.st_trou', 'Trou de collecte')
+            : it[0] === 'site' ? t('sonarq.site_row', 'Présenté sur le site')
+            : STATUTS[it[0]].libelle();
+          var bord = it[0] === 'trou' ? 'border:1px solid var(--line);'
+            : it[0] === 'site' ? 'border:1.5px solid var(--site);' : '';
           return '<span class="item"><span class="carre" style="background:' + it[1] + ';' + bord + '"></span>' + lib + '</span>';
         }).join('');
       }
@@ -365,6 +392,28 @@
       function construireFrise(donnees) {
         var frise = document.getElementById('frise');
         frise.innerHTML = '';
+        if (fenetreSite) {
+          var ls = document.createElement('div');
+          ls.className = 'ligne ligne-site';
+          var ns = document.createElement('div');
+          ns.className = 'nom';
+          ns.textContent = t('sonarq.site_row', 'Présenté sur le site');
+          var bs = document.createElement('div');
+          bs.className = 'barre';
+          var seg = document.createElement('div');
+          seg.className = 'seg site';
+          var gs = pct(fenetreSite.objets);
+          seg.style.left = gs + '%';
+          seg.style.width = Math.max(0.4, 100 - gs) + '%';
+          seg.addEventListener('mousemove', function (ev) { montreBulle(ev, bulleSite(fenetreSite)); });
+          seg.addEventListener('mouseleave', cacheBulle);
+          seg.addEventListener('click', function (ev) { montreBulle(ev, bulleSite(fenetreSite)); });
+          bs.appendChild(seg);
+          var ts = document.createElement('div');
+          ts.className = 'taux';
+          ls.appendChild(ns); ls.appendChild(bs); ls.appendChild(ts);
+          frise.appendChild(ls);
+        }
         ['QC', 'CAN', 'US'].forEach(function (region) {
           var medias = donnees.medias.filter(function (m) { return m.region === region; });
           if (!medias.length) return;
@@ -415,6 +464,13 @@
               avant.style.right = 'auto';
               avant.style.width = premier + '%';
               barre.appendChild(avant);
+            }
+
+            if (fenetreSite) {
+              var cadre = document.createElement('div');
+              cadre.className = 'fenetre-site';
+              cadre.style.width = Math.max(0.4, 100 - pct(fenetreSite.objets)) + '%';
+              barre.appendChild(cadre);
             }
 
             ligne.appendChild(nom);
@@ -476,9 +532,29 @@
           });
       }
 
-      fetch('./qualite.json', { cache: 'no-store' })
-        .then(function (r) { return r.json(); })
-        .then(function (donnees) {
+      var rd = window.radarData;
+      var fenetre = rd ? Promise.all([
+        rd.index().catch(function () { return null; }),
+        rd.eventsIndex().catch(function () { return null; })
+      ]).then(function (r) {
+        var debut = r[0] && r[0].window && r[0].window.start;
+        if (!debut) return null;
+        var ev = null;
+        var dates = r[1] && r[1].dates;
+        if (dates) Object.keys(dates).forEach(function (k) {
+          var d = dates[k] && dates[k][0];
+          if (d && (!ev || d < ev)) ev = d;
+        });
+        return { objets: debut, evenements: ev };
+      }).catch(function () { return null; }) : Promise.resolve(null);
+
+      Promise.all([
+        fetch('./qualite.json', { cache: 'no-store' }).then(function (r) { return r.json(); }),
+        fenetre
+      ])
+        .then(function (res) {
+          var donnees = res[0];
+          fenetreSite = res[1];
           donneesGlobales = donnees;
           construireAxe();
           construireFrise(donnees);

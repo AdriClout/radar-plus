@@ -48,13 +48,13 @@ Radar+ photographie les pages d'accueil des grands médias canadiens et américa
 
 ## Bloc 2 — Saillance médiatique
 
-La saillance, c'est la place qu'un sujet occupe dans la couverture d'un média : haut ou bas de la page, gros titre ou simple brève, mis en avant pendant des heures ou évacué en quelques minutes. Plus un sujet est saillant, plus il a de chances de marquer le public.
+La saillance, c'est la place qu'un sujet prend à la Une des médias : porté par un seul ou par plusieurs à la fois, gardé des heures ou évacué en quelques minutes. Plus un sujet est saillant, plus il a de chances de marquer le public.
 
 ---
 
 ## Bloc 3 — Indices de saillance
 
-Radar+ traduit cette visibilité en chiffres. Chaque sujet — un enjeu, une personne, un lieu — reçoit un indice qui combine sa position, sa taille et sa durée. Un indice élevé signale un sujet qui domine la couverture; un indice faible, un sujet qui passe presque inaperçu.
+Toutes les 4 heures, chaque sujet — un enjeu, une personne, un lieu — reçoit un indice : combien de médias le mettent à la Une, avec combien d'articles, pendant combien de temps. Un indice élevé signale un sujet qui domine les Unes; faible, un sujet presque inaperçu.
 
 ---
 
