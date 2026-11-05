@@ -914,6 +914,18 @@
       }
       .aune-section.top-panel .aune-head { margin-bottom: 10px; }
       .hot20-section.top-panel .hot20-header { margin-bottom: 20px; }
+      /* En-tête figé : titre à gauche, pays et périodes à droite, sur une seule rangée quel que soit
+         le filtre ; le sous-titre tient sur ses deux lignes (texte complet au survol s'il déborde).
+         Avant, le sous-titre plus long de « Cette année » renvoyait les boutons sous le titre et
+         tout le tableau descendait (Adrien, 5 nov. 2026). */
+      .hot20-section.top-panel .hot20-header { flex-wrap: nowrap; }
+      /* La Une des Unes : le sous-titre garde deux lignes de hauteur, même quand « Dernières heures »
+         n'en prend qu'une ; sinon la liste remontait de 9 px à ce filtre. */
+      .aune-section.top-panel .aune-lede { min-height: 2.9em; }
+      .hot20-section.top-panel .hot20-title-row { flex: 1 1 auto; min-width: 0; }
+      .hot20-section.top-panel .hot20-controls { flex: 0 0 auto; }
+      .hot20-section.top-panel .hot20-subtitle .sub-main,
+      .hot20-section.top-panel .hot20-subtitle .sub-detail { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .hot20-section.top-panel .hot20-title .hot20-subtitle { margin-top: 14px; } /* de l'air sous « Hot 10 » (Adrien, 1er nov. 2026) */
       .hot20-section.top-panel .hot20-subtitle .sub-detail { margin-top: 4px; }
       /* Rangs un peu plus serrés pour que les trois tiennent sur un portable de 700 px de haut */
@@ -1886,10 +1898,10 @@ function renderHot20() {
       if (currentGranularity === '4h') { main = u.blockLabel(lastKey, lang); detail = T('hot20.sub_edition'); }
       else if (currentGranularity === 'day') { main = u.navLabel('today', off, lang, T); detail = off === 0 ? T('hot20.sub_today', { n: slot0.periodKeys.length }) : u.navSub('today', off, lang, T); }
       else if (currentGranularity === 'week' || currentGranularity === 'month') { main = u.navLabel(rg, off, lang, T); detail = u.navSub(rg, off, lang, T); }
-      else if (currentGranularity === 'quarter') { main = u.navLabel('year', off, lang, T); detail = fromStart ? T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_data_start') : u.navSub('year', off, lang, T); }
-      else { main = T('subtitle.total'); detail = T('classement.nav_sub_cumul', { date: fmtDate(firstKey) }) + ' · ' + T('hot20.sub_days', { n: new Set(slot0.periodKeys.map(function(k) { return k.slice(0, 10); })).size }); }
+      else if (currentGranularity === 'quarter') { main = u.navLabel('year', off, lang, T); detail = fromStart ? T('hot20.sub_since_start', { date: fmtDate(firstKey) }) : u.navSub('year', off, lang, T); }
+      else { main = T('subtitle.total'); detail = T('hot20.sub_total', { date: fmtDate(firstKey), n: new Set(slot0.periodKeys.map(function(k) { return k.slice(0, 10); })).size }); }
     }
-    subtitleEl.innerHTML = '<span class="sub-main">' + escapeHtml(main) + '</span>' + (detail ? '<span class="sub-detail">' + escapeHtml(detail) + '</span>' : '');
+    subtitleEl.innerHTML = '<span class="sub-main">' + escapeHtml(main) + '</span>' + '<span class="sub-detail" title="' + escapeHtml(detail) + '">' + (detail ? escapeHtml(detail) : '&nbsp;') + '</span>';
   })();
 
   if (!aggregatedSlots.length) {
@@ -2062,14 +2074,14 @@ function renderHot20() {
     oldPos[el.dataset.nodeId] = el.getBoundingClientRect().top;
   });
   var hasOldRows = Object.keys(oldPos).length > 0;
-  // L'augmentation égale le total quand la période couvre toutes les données chargées (« Depuis le
-  // début », et « Cette année » tant que les données commencent cette année) : on ne l'affiche pas.
-  var hideIncrease = currentGranularity === 'total' || slot.periodKeys.length >= allPeriods.length;
+  // Mêmes colonnes dans toutes les vues : changer de filtre ne doit rien déplacer (Adrien, 5 nov. 2026).
+  // Avant, « Cette année » et « Depuis le début » perdaient Mouvement et Augmentation.
+  var hideIncrease = false;
 
   grid.innerHTML =
     '<div class="hot20-list-header">' +
       '<span>' + escapeHtml(T('hot20.header_rank')) + '</span>' +
-      '<span>' + (currentSlotIdx > 0 ? escapeHtml(T('hot20.header_movement')) : '') + '</span>' +
+      '<span>' + escapeHtml(T('hot20.header_movement')) + '</span>' +
       '<span style="padding-left:12px;">' + escapeHtml(T('hot20.header_subject')) + '</span>' +
       '<span style="padding-left:12px;">' + escapeHtml(T(hideIncrease ? 'hot20.header_score' : 'hot20.header_score_increase')) + '</span>' +
       '<span>' + escapeHtml(T('hot20.header_articles')) + '</span>' +
@@ -2112,7 +2124,9 @@ function renderHot20() {
         : (slotArticlesReady ? T('common.no_articles_dataset') : T('common.loading'));
 
       /* Trend badge (i18n) ; « / hier », « / sem. dernière »… dit toujours par rapport à quoi (Adrien, 31 oct. 2026) */
-      var trendHtml = '';
+      // Pas de période précédente chargée (Depuis le début ; Cette année tant que les données commencent
+      // cette année) : un tiret, la colonne reste là.
+      var trendHtml = '<span class="hot20-trend hot20-hint stable" data-tip="' + escapeHtml(T('hot20.trend_none_tip')) + '">&mdash;</span>';
       var vsTxt = T('hot20.vs.' + currentGranularity);
       var vs = vsTxt && vsTxt !== 'hot20.vs.' + currentGranularity ? '<span class="trend-vs">/ ' + escapeHtml(vsTxt) + '</span>' : '';
       if (currentSlotIdx > 0) {

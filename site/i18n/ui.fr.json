@@ -223,6 +223,9 @@
     "sub_edition": "Saillance gagnée pendant cette édition de 4 heures",
     "sub_data_start": "début des données chargées",
     "sub_days": "{n} jours de données",
+    "sub_since_start": "Cumul depuis le {date}, début des données",
+    "sub_total": "Cumul depuis le {date} · {n} jours",
+    "trend_none_tip": "Pas de période précédente à comparer dans les données chargées.",
     "sub_today": "Saillance cumulée depuis minuit · {n} éditions",
     "share_label_gran": {
       "4h": "{pct} % du radar à cette édition",
