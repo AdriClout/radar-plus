@@ -71,6 +71,12 @@ publié dans R2 avec le reste (même indice que la Vitrine : colonne publiée
 conventions du frontend Vitrine, à resynchroniser à chaque recalibration).
 Régions : `QC` et `CAN` (= `ROC` de la table).
 
+**Environnement AWS (#53, depuis le 4 nov. 2026).** Les histoires sont lues en
+**PROD**, la base de la Vitrine : mêmes identifiants d'histoire, mêmes titres, et
+l'illustration de la Vitrine se pose sur la bonne Une. Les objets
+(`salient_index`, `salient_headlines_objects`) restent lus en **DEV** jusqu'à la
+bascule après le recompute (aws-refiners#207). Le ticker lit PROD.
+
 | Fichier | Contenu |
 |---|---|
 | `events/index.json` | seuils par bande (`block`, `sum24h`), bandes FR/EN, périodes, `dates` par région, `latest_period` |

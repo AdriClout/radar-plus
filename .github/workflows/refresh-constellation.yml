@@ -62,14 +62,29 @@ jobs:
           )
         shell: Rscript {0}
 
-      - name: Fetch Athena data (Python boto3)
+      # Deux environnements AWS (#53) :
+      # - objets et indice des objets (constellation, Hot 10, Évolution) : DEV,
+      #   jusqu'à la bascule après le recompute (aws-refiners#207) ;
+      # - histoires (La Une des Unes, Classement, Alertes) : PROD, la base que lit
+      #   la Vitrine (DATAMART_ENV=PROD depuis le 19 sept. 2026). Mêmes identifiants
+      #   d'histoire et mêmes titres que la Vitrine, donc son illustration se pose
+      #   sur la bonne Une (4 nov. 2026 : en DEV, le n° 1 portait un autre numéro
+      #   et un autre titre, et restait sans image).
+      - name: Fetch Athena data — objets (AWS DEV)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
           AWS_DEFAULT_REGION: ca-central-1
         run: |
           pip install boto3 --quiet
-          python3 pipeline/fetch_data.py
+          python3 pipeline/fetch_data.py constellation
+
+      - name: Fetch Athena data — histoires (AWS PROD, comme la Vitrine)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          AWS_DEFAULT_REGION: ca-central-1
+        run: python3 pipeline/fetch_data.py events
 
       - name: Build constellation data (R)
         run: Rscript pipeline/build_data.R
