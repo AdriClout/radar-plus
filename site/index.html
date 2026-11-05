@@ -919,6 +919,9 @@
          Avant, le sous-titre plus long de « Cette année » renvoyait les boutons sous le titre et
          tout le tableau descendait (Adrien, 5 nov. 2026). */
       .hot20-section.top-panel .hot20-header { flex-wrap: nowrap; }
+      /* La Une des Unes : le sous-titre garde deux lignes de hauteur, même quand « Dernières heures »
+         n'en prend qu'une ; sinon la liste remontait de 9 px à ce filtre. */
+      .aune-section.top-panel .aune-lede { min-height: 2.9em; }
       .hot20-section.top-panel .hot20-title-row { flex: 1 1 auto; min-width: 0; }
       .hot20-section.top-panel .hot20-controls { flex: 0 0 auto; }
       .hot20-section.top-panel .hot20-subtitle .sub-main,
