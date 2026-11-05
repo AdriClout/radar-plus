@@ -223,6 +223,9 @@
     "sub_edition": "Saliency gained during this 4-hour edition",
     "sub_data_start": "start of the loaded data",
     "sub_days": "{n} days of data",
+    "sub_since_start": "Summed since {date}, start of the data",
+    "sub_total": "Summed since {date} · {n} days",
+    "trend_none_tip": "No previous period to compare in the loaded data.",
     "sub_today": "Saliency summed since midnight · {n} editions",
     "share_label_gran": {
       "4h": "{pct}% of the radar this edition",
