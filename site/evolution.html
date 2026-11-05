@@ -1993,7 +1993,8 @@
       // Source de vérité = pipeline (alert_active/alert_level): un épisode
       // actif garde son badge même si la taille du bloc courant a baissé.
       // Fallback: tier de saillance dérivé de la taille snapshot.
-      const pipelineLvl = curAlertNode && curAlertNode.alert_active && curAlertNode.alert_level && curAlertNode.alert_level !== 'none'
+      // « élevé » n'est plus un niveau d'alerte (Adrien, 31 oct. 2026), même porté par l'épisode.
+      const pipelineLvl = curAlertNode && curAlertNode.alert_active && (curAlertNode.alert_level === 'tres_eleve' || curAlertNode.alert_level === 'extreme')
         ? curAlertNode.alert_level
         : null;
       const curAlertLevel = pipelineLvl || (curAlertNode ? deriveLevel(currentCountry, Number(curAlertNode.size)) : 'none');

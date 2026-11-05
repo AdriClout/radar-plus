@@ -345,8 +345,8 @@ function auneTrendHtml(c, i, region, range, prevRanks, prevStart, T) {
 function auneDeltaHtml(c, T) {
   var prev = typeof c.prev24h === 'number' ? c.prev24h : 0, d = c.points - prev;
   var cls = d >= 0.05 ? 'up' : d <= -0.05 ? 'down' : 'stable';
-  var txt = cls === 'stable' ? '0.0' : (d > 0 ? '+' : '&minus;') + Math.abs(d).toFixed(1);
-  var tip = T('aune.delta_tip', { prev: prev.toFixed(1), now: c.points.toFixed(1) });
+  var txt = cls === 'stable' ? auneFmt(0) : (d > 0 ? '+' : '&minus;') + auneFmt(Math.abs(d));
+  var tip = T('aune.delta_tip', { prev: auneFmt(prev), now: auneFmt(c.points) });
   // L'unité suit toujours le chiffre (Adrien, 31 oct. 2026)
   return '<span class="inc ' + cls + ' hot20-hint" data-tip="' + escapeHtml(tip) + '">' + txt + ' <span class="pts">' + escapeHtml(T('aune.points_short')) + '</span></span>';
 }
@@ -553,8 +553,8 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
       // « Dans le radar depuis … » (première Une captée) et « sommet … » (meilleur bloc de la
       // période, avec son moment) plutôt que des comptes de blocs (Adrien, 31 oct. 2026).
       (c.firstKey ? '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.since_tip', { label: auneBlockLabel(c.firstKey, lang) })) + '">' + escapeHtml(T('aune.since_label', { when: auneWhen(c.firstKey, lang) })) + '</span>' : '') +
-      '<span class="hot20-hint" data-tip="' + escapeHtml(T(c.is24h ? 'aune.peak_tip_24h' : 'aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneEditionWhen(c.peakKey, lang, c.peakNow), points: (c.peak || 0).toFixed(1) })) + '</span>' +
-      (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '">' + escapeHtml(T('aune.total_label', { points: (c.total || 0).toFixed(1) })) + '</span>') +
+      '<span class="hot20-hint" data-tip="' + escapeHtml(T(c.is24h ? 'aune.peak_tip_24h' : 'aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneEditionWhen(c.peakKey, lang, c.peakNow), points: auneFmt(c.peak) })) + '</span>' +
+      (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '">' + escapeHtml(T('aune.total_label', { points: auneFmt(c.total) })) + '</span>') +
       auneChipsHtml(arts) +
     '</div>';
   // La mesure de la vue (l'en-tête la nomme : indice 24h ou points) et, à côté, la part
@@ -562,10 +562,10 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   var shareHtml = '<span class="unit hot20-hint" data-tip="' + escapeHtml(T('aune.share_tip')) + '">' + escapeHtml(T(cfg.offset === 0 ? 'aune.share_label_range.' + cfg.range : 'aune.share_label', { pct: Math.round(c.sharePct || 0) })) + '</span>';
   var scoreHtml = c.is24h
     // Dernières heures : indice 24h de la Vitrine + variation depuis l'édition précédente
-    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points')) + '</span>' + '</span>' + auneDeltaHtml(c, T)
+    ? '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.index24h_tip')) + '">' + auneFmt(c.points) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points')) + '</span>' + '</span>' + auneDeltaHtml(c, T)
     // Cumuls : points gagnés dans la fenêtre (la mesure qui classe) ; total depuis la
     // première Une dans les détails.
-    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + c.points.toFixed(1) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points_cumul')) + '</span>' + '</span>';
+    : '<span class="num hot20-hint" data-tip="' + escapeHtml(T('aune.gain_tip.' + cfg.range)) + '">' + auneFmt(c.points) + ' ' + '<span class="pts">' + escapeHtml(T('aune.points_cumul')) + '</span>' + '</span>';
   var rank = c.rank || (i + 1);
   // Image : la première position seulement, partout (Adrien, 1er nov. 2026).
   var art = !dense && rank === 1 ? auneArtHtml(c, rnd, urls, T, latest) : '';
@@ -652,9 +652,9 @@ function salPopHtml(sid, lang, T) {
   // courbe et un renvoi vers la page des indices. La phrase de situation, la légende de la courbe et la
   // définition sont sur cette page.
   var html = '';
-  if (c.is24h) html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.now_prefix')) + ' ' + salPill(band, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.points_100', { points: (c.points || 0).toFixed(1) })) + '</span></p>';
-  html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.peak_prefix')) + ' ' + salPill(peakBand, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.peak_at', { points: (c.peak || 0).toFixed(1), when: auneEditionWhen(c.peakKey, lang, c.peakNow) })) + '</span></p>';
-  if (!c.is24h) html += '<p class="sal-note sal-sub">' + escapeHtml(T('aune.sal.cumul', { points: (c.points || 0).toFixed(1) })) + '</p>';
+  if (c.is24h) html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.now_prefix')) + ' ' + salPill(band, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.points_100', { points: auneFmt(c.points) })) + '</span></p>';
+  html += '<p class="sal-kicker">' + escapeHtml(T('aune.sal.peak_prefix')) + ' ' + salPill(peakBand, T) + ' <span class="sal-note">' + escapeHtml(T('aune.sal.peak_at', { points: auneFmt(c.peak), when: auneEditionWhen(c.peakKey, lang, c.peakNow) })) + '</span></p>';
+  if (!c.is24h) html += '<p class="sal-note sal-sub">' + escapeHtml(T('aune.sal.cumul', { points: auneFmt(c.points) })) + '</p>';
   // Indice 24h encore partiel : dit en chiffres, pour que « 13.1 » à côté d'un sommet à « 43.9 » ne se
   // lise pas comme une erreur (Adrien, 31 oct. 2026).
   if (c.is24h && c.blocks > 0 && c.blocks < 6) html += '<p class="sal-note sal-sub">' + escapeHtml(T(c.blocks === 1 ? 'aune.sal.partial_short_one' : 'aune.sal.partial_short_many', { n: c.blocks })) + '</p>';
@@ -702,6 +702,17 @@ function salInit() {
 // Unité des périodes de la vue (« 13 semaines ») et nombre avec unité (« 669.1 points »).
 function auneUnitPeriod(range, n, T) { return T((n === 1 ? 'aune.unit_one.' : 'aune.unit_many.') + range); }
 function auneNumUnit(v, unit) { return '<span class="val">' + v + '</span> <span class="unit">' + escapeHtml(unit) + '</span>'; }
+// Nombres affichés : virgule décimale et espace des milliers en français (« 22 157,0 »),
+// point et virgule en anglais (« 22,157.0 ») (Adrien, 4 nov. 2026). Langue lue à chaque appel :
+// la bascule FR/EN se fait sans recharger. Jamais pour le CSS, le SVG ni le CSV.
+var AUNE_FMT = {};
+function auneFmt(x, d) {
+  var lang = (document.documentElement.lang || 'fr').slice(0, 2) === 'en' ? 'en-CA' : 'fr-CA';
+  d = d == null ? 1 : d;
+  var k = lang + d;
+  if (!AUNE_FMT[k]) AUNE_FMT[k] = new Intl.NumberFormat(lang, { minimumFractionDigits: d, maximumFractionDigits: d });
+  return AUNE_FMT[k].format(Number(x) || 0);
+}
 function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is24h) {
   var esc = escapeHtml;
   var th = function(k, cls) { return '<th class="' + (cls || '') + '">' + esc(T(k)) + '</th>'; };
@@ -724,11 +735,11 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
       '<td class="subject"><div class="subj-wrap">' + (rank === 1 ? auneThumbHtml(c, T) : '') + '<div class="subj-text">' + salBadgeHtml(c, region, T) +
         '<span class="aune-row-title"><a href="' + auneFicheUrl(c, region) + '">' + esc(c.title) + '</a></span>' +
         '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</div></div></td>' +
-      '<td class="num strong">' + auneNumUnit(c.points.toFixed(1), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
-      (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + auneNumUnit((delta > 0 ? '+' : '') + delta.toFixed(1), T('aune.points')) + '</td>'
-             : '<td class="num">' + auneNumUnit((c.total || 0).toFixed(1), T('aune.points')) + '</td>') +
+      '<td class="num strong">' + auneNumUnit(auneFmt(c.points), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
+      (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + auneNumUnit((delta > 0 ? '+' : '') + auneFmt(delta), T('aune.points')) + '</td>'
+             : '<td class="num">' + auneNumUnit(auneFmt(c.total), T('aune.points')) + '</td>') +
       '<td class="num">' + auneNumUnit(Math.round(c.sharePct || 0), '%') + '</td>' +
-      '<td class="num">' + auneNumUnit((c.peak || 0).toFixed(1), T('aune.points')) + '<span class="sub">' + esc(auneWhen(c.peakKey, lang)) + '</span></td>' +
+      '<td class="num">' + auneNumUnit(auneFmt(c.peak), T('aune.points')) + '<span class="sub">' + esc(auneWhen(c.peakKey, lang)) + '</span></td>' +
       '<td>' + esc(c.firstKey ? auneWhen(c.firstKey, lang) : '') + '</td>' +
       (auneIsFixed(cfg.range) ? '<td class="num">—</td><td class="num">—</td>' :
       '<td class="num">' + auneNumUnit(stats.consec, auneUnitPeriod(cfg.range, stats.consec, T)) + '</td>' +
@@ -1056,5 +1067,5 @@ function init(opts) {
 }
 window.RadarAune = { init: init, render: renderALaUne, download: downloadCsv, exportData: exportData, cfg: cfg,
   // Boîte à outils partagée avec le classement des objets (assets/js/objets.js)
-  util: { setSub: auneSetSub, window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, artUrl: auneArtUrl, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek, fr1er: auneFr1er } };
+  util: { setSub: auneSetSub, window: auneWindow, navLabel: auneNavLabel, navSub: auneNavSub, navStatus: auneNavStatus, moreButton: auneMoreButton, artUrl: auneArtUrl, isFixed: auneIsFixed, isHot: auneIsHot, when: auneWhen, editionWhen: auneEditionWhen, blockLabel: auneBlockLabel, editionTime: auneEditionTime, hourMtl: auneHourMtl, mtlParts: mtlParts, csvFile: csvFile, periodSlug: periodSlug, tableWrap: auneTableWrap, scrollCue: auneTableScrollCue, numUnit: auneNumUnit, fmt: auneFmt, unitPeriod: auneUnitPeriod, firstDate: AUNE_FIRST_DATE, chartN: CHART_N, editionStart: auneEditionStart, keyAt: auneKeyAt, periodStartUtc: periodStartUtc, escapeHtml: escapeHtml, norm: auneNorm, query: auneQuery, isoWeek: auneIsoWeek, fr1er: auneFr1er } };
 })();
