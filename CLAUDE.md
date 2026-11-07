@@ -23,5 +23,6 @@
 - **Aucun secret ni donnée brute dans le repo** — le `quality-gate` les bloque.
 - **`main` est protégée** : passer par une PR, `quality-gate` requis.
 - **La méthodologie publique n'est jamais périmée** : toute PR qui change un calcul, un seuil, un horaire, la collecte, un modèle ou un affichage remplit la section « Impact méthodologie » (check `garde-metho`) ; skills `synchro-methodologie-radar` (quoi, quand) et `redaction-methodologie` (comment).
+- **Les mots des niveaux viennent de Notion** (base « Radar+ et la mesure de la saillance » du Guide de rédaction CAPP/CLESSN) : édition (pas bloc), événement (`event_id`), cycle de vie (`storyline_id`), saga, objet (pas sujet) ; jamais histoire, story, dossier ni thème pour un niveau. Notion d'abord, puis PR ici. Détail : règle 6 d'`AGENTS.md`.
 
 Détail et rationale complets : [`AGENTS.md`](./AGENTS.md).
