@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-11-08T17:48:05+00:00",
+ "genere_le": "2026-11-08T19:14:29+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -60,16 +60,16 @@
      "debut": "2026-08-10",
      "fin": "2026-09-16",
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline. Les pages « Le fil électoral » en Une (6 % du temps de Une depuis le 27 août) n'avaient que leur introduction : le direct, servi par un encart externe (Norkon), n'était pas capté (aws-infra#594). Réparé dans le brut le 8 novembre 2026 : l'extracteur télécharge désormais le cadre du direct et le conserve avec la page (aws-infra#717, mise en production #718), et les Unes du fil déjà stockées ont été rejouées — 194 captures (36 adresses, du 27 août au 6 octobre) portent maintenant l'introduction et les entrées du direct (3 900 à 12 900 caractères), lues dans le cadre tel qu'il se présentait au moment du rejeu. Les étages aval (objets, indice) n'ont pas encore été rejoués.",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline. Les pages « Le fil électoral » en Une (6 % du temps de Une depuis le 27 août) n'avaient que leur introduction (200 caractères) : le direct, servi par un encart externe (Norkon), n'était pas capté (aws-infra#594). Le 8 novembre 2026, l'extracteur a été corrigé (aws-infra#717, mise en production #718 : le cadre du direct est téléchargé et conservé avec la page) et les Unes du fil déjà stockées ont été rejouées : 194 captures (36 adresses, du 27 août au 6 octobre) reçoivent l'introduction et les entrées du direct (3 908 à 12 866 caractères). Vérifié le 8 novembre dans la table brute de production : les captures rejouées s'ajoutent aux originales au lieu de les remplacer (une ligne à 200 caractères et une ligne enrichie, à deux minutes d'écart, pour chaque créneau), et le texte enrichi est l'état du direct au moment du rejeu, identique pour toutes les captures d'une même adresse (par exemple 8 368 caractères sur les 12 créneaux du 27 août), pas le direct tel qu'il était à l'heure de chaque capture. À dédoublonner et à trancher avant tout rejeu des étages aval (objets, indice), qui n'ont pas été rejoués.",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#594 (fermée le 8 nov. 2026) · aws-infra#717 · mise en production aws-infra#718"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#594 (fermée le 8 nov. 2026) · aws-infra#717 · mise en production aws-infra#718 · mesure du 8 novembre 2026 dans la table brute de production"
      }
     },
     {
      "debut": "2026-09-16",
      "fin": "2026-10-23",
      "statut": "surveillance",
-     "resume": "En réparation : La Presse a placé un bloc thématique en tête de ses grands titres (« Campagne électorale », puis d'autres blocs après le scrutin, comme « Incendie sur une base militaire en Alberta ») ; le sélecteur sautait la carte de tête de ce bloc, du 16 septembre (19 h 55) jusqu'au correctif aws-infra#654, en production le 23 octobre (aws-infra#657). Collecte brute réparée le 26 octobre 2026 : vraie Une retrouvée sur chacune des 1 316 captures fausses à partir des pages d'accueil archivées, validée à l'œil sur les pages rendues ; textes repris de la page d'époque déjà collectée (97), du billet le plus récent du direct à l'heure de la capture (213, fil électoral, débats, match) ou de la page actuelle de l'article (947) ; 59 captures sans texte, déclarées (par exemple l'article du jour du vote, réécrit au fil de la journée). Reste à propager la réparation aux objets et à l'indice. Le rejeu du 8 novembre 2026 des Unes du « fil électoral » (aws-infra#594 : 194 captures du 27 août au 6 octobre, texte = introduction et entrées du direct) touche aussi cette fenêtre et recouvre en partie les captures de direct réparées le 26 octobre : l'articulation des deux réparations dans le brut reste à vérifier avant le rejeu des étages aval.",
+     "resume": "En réparation : La Presse a placé un bloc thématique en tête de ses grands titres (« Campagne électorale », puis d'autres blocs après le scrutin, comme « Incendie sur une base militaire en Alberta ») ; le sélecteur sautait la carte de tête de ce bloc, du 16 septembre (19 h 55) jusqu'au correctif aws-infra#654, en production le 23 octobre (aws-infra#657). Collecte brute réparée le 26 octobre 2026 : vraie Une retrouvée sur chacune des 1 316 captures fausses à partir des pages d'accueil archivées, validée à l'œil sur les pages rendues ; textes repris de la page d'époque déjà collectée (97), du billet le plus récent du direct à l'heure de la capture (213, fil électoral, débats, match) ou de la page actuelle de l'article (947) ; 59 captures sans texte, déclarées (par exemple l'article du jour du vote, réécrit au fil de la journée). Reste à propager la réparation aux objets et à l'indice. Le rejeu du 8 novembre 2026 des Unes du « fil électoral » (aws-infra#594) ne touche pas les textes repris le 26 octobre : du 17 septembre au 5 octobre, les captures du fil gardent le billet le plus récent du direct (500 à 2 500 caractères) ; seuls les créneaux du 6 octobre (8) et de la nuit du 15 au 16 septembre (7) portent en plus une ligne rejouée (table brute de production, mesure du 8 novembre).",
      "preuve": {
       "reference": "aws-refiners#286 (garde-Une, 17 sept. → 5 oct.) · aws-infra#654 · aws-infra#657 · réparation brute du 26 oct. 2026 · aws-infra#594 (rejeu du 8 nov. 2026)"
      }
@@ -157,18 +157,18 @@
      "debut": "2026-08-14",
      "fin": "2026-11-05",
      "statut": "surveillance",
-     "resume": "Collecte dégradée : environ la moitié des captures en août 2026, cadence normale revenue au 12 septembre (136 à 143 captures par jour), puis nouvelle dégradation du 8 octobre au 4 novembre (23 à 134 captures par jour, souvent moins de 100, pour 144 attendues). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (23 à 25 captures), comme TVA et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Réparé en direct le 5 novembre 2026 (correctifs aws-infra#677 et #693 : délai complet accordé à l'extracteur, puis navigation directe en première tentative et mandataire en repli ; mises en production #678 et #695 le 5 novembre à 15 h 42 UTC, puis #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
+     "resume": "Collecte dégradée : environ la moitié des captures en août 2026, cadence normale revenue au 12 septembre (136 à 143 captures par jour), puis nouvelle dégradation du 8 octobre au 4 novembre : 23 à 134 captures par jour, moins de 100 sur 22 de ces 28 jours, pour 144 attendues (mesure du 8 novembre 2026 dans la table brute de production). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (23 captures), comme TVA et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Réparé en direct en trois temps : délai complet accordé à l'extracteur (aws-infra#677), puis service de déblocage en secours (#693, en production le 5 novembre à 15 h 42 UTC), puis, la navigation directe étant refusée par les sites, passage systématique par le service de déblocage avec cinq tentatives espacées (#705, en production le 8 novembre, #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
      "preuve": {
-      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-refiners#337 · mesures des 12 sept. et 28 oct. 2026 sur le brut de production · journaux de production du 14 sept."
+      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-infra#705 · aws-refiners#337 · mesure du 8 novembre 2026 dans la table brute de production · journaux de production du 14 sept."
      }
     },
     {
      "debut": "2026-11-05",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante avec l'extracteur corrigé (aws-infra#484, en production depuis le 5 novembre 2026) : 144, 144 puis 130 captures par jour depuis le 5 novembre, pour 144 attendues (mesure du 8 novembre). Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
+     "resume": "Collecte courante avec l'extracteur corrigé (aws-infra#484, #705) : 144 captures les 5 et 6 novembre, 130 le 7, puis 76 sur les 96 créneaux écoulés le 8 à 16 h UTC (mesure du 8 novembre 2026 dans la table brute de production). Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
      "preuve": {
-      "reference": "aws-infra#484 · mesure du 8 nov. 2026 sur le brut de production · aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-infra#484 · aws-infra#705 · mesure du 8 novembre 2026 dans la table brute de production · aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -195,7 +195,7 @@
      "debut": "2026-10-08",
      "fin": "2026-11-04",
      "jours": 28,
-     "cause": "Collecte dégradée : 23 à 134 captures par jour, souvent moins de 100, pour 144 attendues (extracteur réparé le 5 novembre 2026, aws-infra#484) — trou historique rejouable depuis les pages d'accueil archivées, rejeu à faire"
+     "cause": "Collecte dégradée : 23 à 134 captures par jour, moins de 100 sur 22 des 28 jours, pour 144 attendues (table brute de production, mesure du 8 nov. 2026 ; extracteur réparé le 5 nov., aws-infra#484) — trou historique rejouable depuis les pages d'accueil archivées, rejeu à faire"
     }
    ],
    "concordance": {
@@ -232,18 +232,18 @@
      "debut": "2026-06-03",
      "fin": "2026-11-05",
      "statut": "surveillance",
-     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités ; de nouveau dégradé du 8 octobre au 4 novembre (25 à 141 captures par jour, souvent moins de 100, pour 144 attendues). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (23 à 25 captures), comme JDM et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Hors panne, TVA perdait déjà 5 à 8 % de ses captures de cette façon. Réparé en direct le 5 novembre 2026 (correctifs aws-infra#677 et #693 : délai complet accordé à l'extracteur, puis navigation directe en première tentative et mandataire en repli ; mises en production #678 et #695 le 5 novembre à 15 h 42 UTC, puis #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
+     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités ; de nouveau dégradé du 8 octobre au 4 novembre : 25 à 140 captures par jour, moins de 100 sur 14 de ces 28 jours, pour 144 attendues (mesure du 8 novembre 2026 dans la table brute de production). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (25 captures), comme JDM et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Hors panne, TVA perdait déjà 5 à 8 % de ses captures de cette façon. Réparé en direct en trois temps : délai complet accordé à l'extracteur (aws-infra#677), puis service de déblocage en secours (#693, en production le 5 novembre à 15 h 42 UTC), puis, la navigation directe étant refusée par les sites, passage systématique par le service de déblocage avec cinq tentatives espacées (#705, en production le 8 novembre, #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
      "preuve": {
-      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-refiners#335 (inventaire) · mesures des 12 sept. et 28 oct. 2026 sur le brut de production · journaux de production du 14 sept."
+      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-infra#705 · aws-refiners#335 (inventaire) · mesure du 8 novembre 2026 dans la table brute de production · journaux de production du 14 sept."
      }
     },
     {
      "debut": "2026-11-05",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante avec l'extracteur corrigé (aws-infra#484, en production depuis le 5 novembre 2026) : 144, 144 puis 141 captures par jour depuis le 5 novembre, pour 144 attendues (mesure du 8 novembre). Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
+     "resume": "Collecte courante avec l'extracteur corrigé (aws-infra#484, #705) : 144 captures les 5 et 6 novembre, 141 le 7, puis 88 sur les 96 créneaux écoulés le 8 à 16 h UTC (mesure du 8 novembre 2026 dans la table brute de production). Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
      "preuve": {
-      "reference": "aws-infra#484 · mesure du 8 nov. 2026 sur le brut de production · aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-infra#484 · aws-infra#705 · mesure du 8 novembre 2026 dans la table brute de production · aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -282,7 +282,7 @@
      "debut": "2026-10-08",
      "fin": "2026-11-04",
      "jours": 28,
-     "cause": "Collecte dégradée : 25 à 141 captures par jour, souvent moins de 100, pour 144 attendues (extracteur réparé le 5 novembre 2026, aws-infra#484) — trou historique rejouable depuis les pages d'accueil archivées, rejeu à faire"
+     "cause": "Collecte dégradée : 25 à 140 captures par jour, moins de 100 sur 14 des 28 jours, pour 144 attendues (table brute de production, mesure du 8 nov. 2026 ; extracteur réparé le 5 nov., aws-infra#484) — trou historique rejouable depuis les pages d'accueil archivées, rejeu à faire"
     }
    ],
    "concordance": {
@@ -636,9 +636,9 @@
      "debut": "2026-09-21",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante avec le sélecteur de texte corrigé (aws-infra#593). Le corps est revenu : en octobre, 79 captures sur 4 458 ont moins de 300 caractères ; en novembre, aucune (mesure du 8 novembre 2026 dans le brut de production, 1 032 captures). La médiane reste plus basse qu'avant mai 2026 (704 caractères en octobre, 829 en novembre, contre 4 500 à 5 100) ; la fiche fermée le 8 novembre l'attribue au mélange des Unes, après vérification sur le brut récent : articles complets de 4 800 à 5 100 caractères, brèves de 500 à 900, un dixième des captures au-dessus de 4 700. Sonar supposait le 31 octobre que le sélecteur ne prenait que l'amorce : hypothèse écartée par cette vérification. Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
+     "resume": "Collecte courante avec le sélecteur de texte corrigé (aws-infra#593, fusionné le 18 septembre, en production le 20). Les corps tronqués à une centaine de caractères ont disparu : 79 captures sous 300 caractères en octobre, aucune en novembre. Mais le corps reste court sur une grande part des captures : 64 % sous 1 000 caractères en octobre et 52 % en novembre, contre 1 à 3 % de janvier à avril 2026 ; un quart à un tiers seulement dépassent 3 000 caractères, contre 80 % avant mai (médiane 705 puis 964 caractères, contre 4 800 à 5 150 ; mesure du 8 novembre 2026 dans la table brute de production). La fiche fermée le 8 novembre attribue cet écart au mélange des Unes (articles complets de 4 800 à 5 100 caractères, brèves de 500 à 900), vérifié sur quelques captures récentes ; un tel changement de mélange par rapport à l'hiver reste à expliquer. Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
      "preuve": {
-      "reference": "aws-infra#486 (fermée le 8 nov. 2026) · mesures des 31 oct. et 8 nov. 2026 sur le brut de production"
+      "reference": "aws-infra#486 (fermée le 8 nov. 2026) · aws-infra#593 · mesures des 31 oct. et 8 nov. 2026 sur la table brute de production"
      }
     }
    ],
@@ -690,9 +690,9 @@
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un mandataire (proxy) —, et presque aucune le 15 octobre (23 à 25 captures dans la journée pour chacun des trois) : cause trouvée dans les journaux de production (le mandataire ne fournissait pas d'adresse de sortie, chaque navigation expirait), extracteurs corrigés le 5 novembre 2026 (aws-infra#484 : navigation directe en première tentative, mandataire en repli) ; 128 à 138 captures par jour depuis (mesure du 8 novembre) ; les 19-20 et 26-27 octobre, trois Unes « en direct » (référendum albertain, élection torontoise) portent des corps de 60 000 à 180 000 caractères : pages de direct, pas une panne, mais un texte hors norme pour l'extraction",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un mandataire (proxy) —, et presque aucune le 15 octobre (24 captures) : cause trouvée dans les journaux de production (le mandataire ne fournissait pas d'adresse de sortie, chaque navigation expirait) ; extracteurs corrigés le 5 puis le 8 novembre 2026 (aws-infra#484, #705 : service de déblocage systématique, cinq tentatives espacées) ; 123 à 143 captures par jour en octobre hors le 15, 108 le 1er novembre, 128 à 138 du 5 au 7 novembre (mesure du 8 novembre 2026 dans la table brute de production) ; début novembre, une page de contrôle « Security Check » du site était parfois enregistrée comme article sans texte : détectée et écartée depuis aws-infra#666 (fiche #665) ; les 19-20 et 26-27 octobre, trois Unes « en direct » (référendum albertain, élection torontoise) portent des corps de 60 000 à 180 000 caractères : pages de direct, pas une panne, mais un texte hors norme pour l'extraction",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14 · mesure du 2026-10-31 · aws-infra#484 (fermée le 8 nov. 2026)"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14 · mesure du 2026-10-31 · aws-infra#484 et #705 · aws-infra#665 · mesure du 8 novembre 2026 dans la table brute de production"
      }
     }
    ],
@@ -921,29 +921,29 @@
     },
     {
      "debut": "2026-08-10",
-     "fin": "2026-10-30",
+     "fin": "2026-10-21",
      "statut": "surveillance",
-     "resume": "Limite déclarée : depuis août 2026, des blocs de mise en page (ruban, encart vidéo) sont captés à la place de la Une ; depuis le 12 septembre, la capture est souvent une page vidéo au corps vide, que le chargeur rejette. Un premier correctif de sélecteur (aws-infra#590, 14 septembre) a été retiré : la Une qu'il choisissait n'était pas celle visible sur la page rendue ; un correctif qui remplace une Une vidéo par l'article de son bloc a suivi (aws-infra#595). Le garde-Une signalait encore des Unes introuvables sur la page d'accueil les 19 et 21 octobre, puis plus aucune Une n'a été captée à partir du 21 octobre à 9 h 57 UTC (voir le trou). Dans la série gelée du 17 mai 2025 au 18 octobre 2026, CNN est traité comme une limite documentée, pas comme une série validée.",
+     "resume": "Limite déclarée : depuis août 2026, des blocs de mise en page (ruban, encart vidéo) sont captés à la place de la Une ; depuis le 12 septembre, la capture est souvent une page vidéo au corps vide, que le chargeur rejette. Un premier correctif de sélecteur (aws-infra#590, 14 septembre) a été retiré : la Une qu'il choisissait n'était pas celle visible sur la page rendue ; un correctif qui remplace une Une vidéo par l'article de son bloc a suivi (aws-infra#595). Le garde-Une signalait encore des Unes introuvables sur la page d'accueil les 19 et 21 octobre ; 81 captures seulement le 19 octobre, 60 le 21 (dernière à 9 h 57 UTC), puis plus rien (voir le trou). Dans la série gelée du 17 mai 2025 au 18 octobre 2026, CNN est traité comme une limite documentée, pas comme une série validée.",
      "preuve": {
-      "reference": "aws-infra#485 · aws-infra#590 · aws-infra#595 · garde-Une (aws-refiners#286) des 19 et 21 oct."
+      "reference": "aws-infra#485 · aws-infra#590 · aws-infra#595 · garde-Une (aws-refiners#286) des 19 et 21 oct. · mesure du 8 novembre 2026 dans la table brute de production"
      }
     },
     {
-     "debut": "2026-10-30",
+     "debut": "2026-10-21",
      "fin": "2026-11-05",
      "statut": "surveillance",
-     "resume": "Unes fausses : du 30 octobre (15 h 17 UTC) au 5 novembre (21 h 07 UTC), la collecte captait le hub électoral de CNN (page /election/2026) à la place de la Une — 431 captures. Réparé en direct par aws-infra#698 (mise en production #699 le 5 novembre à 20 h 55 UTC). Les 431 captures fausses restent dans le brut : leur rejeu depuis les pages d'accueil archivées n'est pas fait.",
+     "resume": "En panne puis détournée : aucune Une dans la table brute du 21 octobre (9 h 57 UTC) au 2 novembre (1 h 57 UTC). D'après la fiche aws-infra#485, l'extracteur a repris le 30 octobre à 15 h 17 UTC mais captait le hub électoral de CNN (page /election/2026) à la place de la Une, jusqu'au 5 novembre à 21 h 07 : 431 captures dans le lac de données, dont aucune n'a atteint la table brute (pas de texte d'article). La table reprend le 2 novembre (89 captures), puis 144 par jour dès le 3 : des directs du scrutin de mi-mandat, 2 adresses distinctes par jour (mesure du 8 novembre 2026 dans la table brute de production). Réparé en direct par aws-infra#698 (mise en production #699 le 5 novembre à 20 h 55 UTC). Les 431 captures du hub restent dans le lac, sans rejeu des créneaux concernés.",
      "preuve": {
-      "reference": "aws-infra#485 (fermée le 8 nov. 2026) · aws-infra#698 · mise en production aws-infra#699"
+      "reference": "aws-infra#485 (fermée le 8 nov. 2026) · aws-infra#698 · mise en production aws-infra#699 · mesure du 8 novembre 2026 dans la table brute de production"
      }
     },
     {
      "debut": "2026-11-05",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante avec le sélecteur corrigé (aws-infra#698 : la Une est le premier lien d'article ou de direct du HTML servi par CNN, avant tout repli ; le scénario du ruban décrit dans aws-infra#619 ne se produit plus) : 144 captures par jour dès le 6 novembre, aucun hub ni ruban du 5 au 8 novembre, de vrais articles au corps non vide. Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
+     "resume": "Collecte courante avec le sélecteur corrigé (aws-infra#698 : la Une est le premier lien d'article ou de direct du HTML servi par CNN, avant tout repli ; le scénario du ruban décrit dans aws-infra#619 ne se produit plus) : 144 captures par jour les 5, 6 et 7 novembre, 3 à 4 adresses distinctes par jour, corps non vide (médiane de 900 à 1 500 caractères), aucun hub ni ruban (mesure du 8 novembre 2026 dans la table brute de production). Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
      "preuve": {
-      "reference": "aws-infra#485 · aws-infra#619 (fermée le 8 nov. 2026) · mesure du 8 nov. 2026 sur le brut de production · aws-refiners#286 (garde-Une) · sonar-pipeline"
+      "reference": "aws-infra#485 · aws-infra#619 (fermée le 8 nov. 2026) · mesure du 8 novembre 2026 dans la table brute de production · aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
     }
    ],
@@ -956,9 +956,9 @@
     },
     {
      "debut": "2026-10-21",
-     "fin": "2026-10-30",
-     "jours": 9,
-     "cause": "Aucune Une captée du 21 octobre 2026 (9 h 57 UTC) au moins jusqu'au 28 octobre (constats des 25 et 28 octobre dans le brut de production) ; à partir du 30 octobre (15 h 17 UTC), la collecte reprend mais capte le hub électoral à la place de la Une, jusqu'au correctif du 5 novembre (aws-infra#485). Pendant ce trou, l'indice américain ne repose que sur Fox News et sa facette Visibilité tombe à zéro ; hors de la série gelée de l'article (qui s'arrête au 18 octobre)."
+     "fin": "2026-11-02",
+     "jours": 12,
+     "cause": "Aucune Une dans la table brute de production du 21 octobre 2026 (9 h 57 UTC) au 2 novembre (1 h 57 UTC), mesuré le 8 novembre. Selon la fiche aws-infra#485, l'extracteur a repris le 30 octobre mais captait le hub électoral à la place de la Une jusqu'au 5 novembre ; ces 431 captures sont restées hors de la table. Pendant ce trou, l'indice américain ne repose que sur Fox News et sa facette Visibilité tombe à zéro ; hors de la série gelée de l'article (qui s'arrête au 18 octobre)."
     }
    ],
    "concordance": {
