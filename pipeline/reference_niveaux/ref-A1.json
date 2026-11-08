@@ -1,0 +1,95 @@
+{
+  "nom": "ref-A1",
+  "description": "Référence fixe des niveaux de saillance de Radar+ et de la Vitrine : année de l'article 2, série recalculée (pilote de recompute de la thèse)",
+  "fenetre": {
+    "debut": "2025-10-16",
+    "fin": "2026-10-15",
+    "jours": 365,
+    "grille": "Montréal (blocs 03-07 … 23-03), journées de Montréal"
+  },
+  "source": {
+    "tables": "gel_v2 (_data_article2/gel_v2, export du 8 nov. 2026 des tables _these* de DEV, un calcul par jour)",
+    "code": "aws-refiners pilote/these-2026-11-heure @ 58a5d6c",
+    "script": "73_reference_niveaux_refA1.R",
+    "date": "2026-11-08"
+  },
+  "remplace": "calibration roulante 130 j (Radar+, objets) et constantes copiées de la Vitrine (TH_BLOCK / TH_SUM) ; sera remplacée par ref-2025 (année civile 2025) après le grand recompute (#207)",
+  "conventions": {
+    "centiles_evenements": ["p5", "p20", "p50", "p80", "p95"],
+    "bandes_evenements": ["faible", "moderee", "elevee", "tres_elevee", "extreme"],
+    "RWT": 3.3474,
+    "demi_vie_h": 10,
+    "centiles_objets": ["p50 modere", "p80 eleve", "p95 tres_eleve", "p99 extreme"],
+    "plancher_objets": 20
+  },
+  "evenements": {
+    "QC": {
+      "cumul24h_brut_x100": [36.8, 49.3, 72.6, 115.4, 182.3],
+      "cumul24h_points": [10.99, 14.73, 21.69, 34.47, 54.46],
+      "par_edition_x100": [17.6, 23.1, 29.7, 49.1, 68],
+      "pic_convB_x100": [24.6, 35.2, 50.3, 65.2, 78],
+      "n_histoires_cumul": 1140,
+      "n_cartes": 7101,
+      "n_histoires_pic": 977,
+      "mono_n": 21,
+      "mono_max_x100": 64.79,
+      "mono_pct_sup_mediane": 0,
+      "site_actuel_par_edition": [12.1, 17.4, 21.5, 41.9, 63.6],
+      "site_actuel_cumul_points": [10.1, 12.49, 17.69, 28.83, 46.93]
+    },
+    "ROC": {
+      "cumul24h_brut_x100": [23.2, 38.1, 54.2, 98.4, 179.3],
+      "cumul24h_points": [6.93, 11.38, 16.19, 29.4, 53.56],
+      "par_edition_x100": [19.2, 22.1, 24.4, 44.1, 63.9],
+      "pic_convB_x100": [23.2, 27, 43.6, 62, 74.3],
+      "n_histoires_cumul": 1325,
+      "n_cartes": 6815,
+      "n_histoires_pic": 748,
+      "mono_n": 549,
+      "mono_max_x100": 85.71,
+      "mono_pct_sup_mediane": 12.8,
+      "site_actuel_par_edition": [11.3, 15.9, 20, 37.2, 59.6],
+      "site_actuel_cumul_points": [5.97, 9.08, 13.56, 25.39, 44.99]
+    }
+  },
+  "objets": {
+    "CAN": {
+      "n_blocs": 2190,
+      "moderate": 71.655,
+      "high": 84.02,
+      "very_high": 92.401,
+      "extreme": 96.682,
+      "site_actuel_roulant_130j": [70.89, 86.151, 90.816, 95.898]
+    },
+    "QC": {
+      "n_blocs": 2190,
+      "moderate": 66.374,
+      "high": 81.664,
+      "very_high": 91.216,
+      "extreme": 98.27,
+      "site_actuel_roulant_130j": [60.883, 76.969, 89.639, 96.526]
+    },
+    "USA": {
+      "n_blocs": 2027,
+      "moderate": 73.467,
+      "high": 81.483,
+      "very_high": 85.456,
+      "extreme": 87.623,
+      "site_actuel_roulant_130j": [65.776, 73.479, 78.46, 80.854]
+    }
+  },
+  "frequence_alerte": [
+    {
+      "region": "QC",
+      "jours": 365,
+      "jours_tres_elevee_refA1": 349,
+      "jours_tres_elevee_site": 359
+    },
+    {
+      "region": "ROC",
+      "jours": 365,
+      "jours_tres_elevee_refA1": 338,
+      "jours_tres_elevee_site": 358
+    }
+  ]
+}

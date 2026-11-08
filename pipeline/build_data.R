@@ -158,7 +158,14 @@ df_index <- df_index |>
 # Calibrés sur les PICS par bloc 4h (max(saillance) par country×date×bloc).
 # Voir methodologie.html §11 pour la justification de la calibration sur pics.
 #   moderate  = p50 · high = p80 · very_high = p95 · extreme = p99
-cat("Calcul des paliers de saillance par pays (pics par bloc 4h, saillance >= ", ALERT_MIN_ABS_SCORE, ")...\n", sep = "")
+# Depuis le 8 nov. 2026 (décision d'Adrien, aws-refiners#207) : les paliers viennent d'une RÉFÉRENCE FIXE et datée
+# (pipeline/reference_niveaux/ref-A1.json, copie de aws-refiners docs/reference-niveaux), calculée une fois sur une
+# année complète de la série recalculée, aux mêmes définitions que ci-dessous (pics par bloc ≥ plancher, génériques
+# exclus, p50/p80/p95/p99). Le calcul roulant sur la fenêtre chargée est conservé en DIAGNOSTIC (affiché, non publié).
+REFERENCE_NIVEAUX <- Sys.getenv("REFERENCE_NIVEAUX", "ref-A1")   # "roulant" = ancien comportement (comparaison)
+reference_niveaux <- if (REFERENCE_NIVEAUX != "roulant")
+  jsonlite::fromJSON(file.path(OUT_DIR, "reference_niveaux", paste0(REFERENCE_NIVEAUX, ".json")), simplifyVector = FALSE) else NULL
+cat("Calcul des paliers de saillance par pays (pics par bloc 4h, saillance >= ", ALERT_MIN_ABS_SCORE, ") — diagnostic roulant...\n", sep = "")
 salience_tiers_df <- df_index |>
   dplyr::filter(indice >= ALERT_MIN_ABS_SCORE) |>
   dplyr::group_by(country_id, date_utc, time_interval_utc) |>
@@ -171,18 +178,30 @@ salience_tiers_df <- df_index |>
     extreme   = stats::quantile(peak, 0.99, na.rm = TRUE),
     .groups   = "drop"
   )
-salience_tiers <- list()
+salience_tiers_roulant <- list()
 for (i in seq_len(nrow(salience_tiers_df))) {
   c <- as.character(salience_tiers_df$country_id[i])
-  salience_tiers[[c]] <- list(
+  salience_tiers_roulant[[c]] <- list(
     moderate  = round(unname(salience_tiers_df$moderate[i]),  3),
     high      = round(unname(salience_tiers_df$high[i]),      3),
     very_high = round(unname(salience_tiers_df$very_high[i]), 3),
     extreme   = round(unname(salience_tiers_df$extreme[i]),   3)
   )
-  cat(sprintf("  %s : modéré=%.2f · élevé=%.2f · très élevé=%.2f · extrême=%.2f\n",
-              c, salience_tiers[[c]]$moderate, salience_tiers[[c]]$high,
-              salience_tiers[[c]]$very_high, salience_tiers[[c]]$extreme))
+  cat(sprintf("  (roulant) %s : modéré=%.2f · élevé=%.2f · très élevé=%.2f · extrême=%.2f\n",
+              c, salience_tiers_roulant[[c]]$moderate, salience_tiers_roulant[[c]]$high,
+              salience_tiers_roulant[[c]]$very_high, salience_tiers_roulant[[c]]$extreme))
+}
+if (is.null(reference_niveaux)) {
+  salience_tiers <- salience_tiers_roulant
+  cat("Paliers PUBLIÉS : calcul roulant (REFERENCE_NIVEAUX=roulant).\n")
+} else {
+  salience_tiers <- lapply(reference_niveaux$objets, function(o)
+    list(moderate = o$moderate, high = o$high, very_high = o$very_high, extreme = o$extreme))
+  salience_tiers <- salience_tiers[names(salience_tiers) %in% c("CAN", "QC", "USA")]
+  cat(sprintf("Paliers PUBLIÉS : référence fixe %s (%s → %s) :\n", reference_niveaux$nom,
+              reference_niveaux$fenetre$debut, reference_niveaux$fenetre$fin))
+  for (c in names(salience_tiers)) cat(sprintf("  %s : modéré=%.2f · élevé=%.2f · très élevé=%.2f · extrême=%.2f\n",
+              c, salience_tiers[[c]]$moderate, salience_tiers[[c]]$high, salience_tiers[[c]]$very_high, salience_tiers[[c]]$extreme))
 }
 
 # ─── Helper d'accès aux paliers par pays ─────────────────────────────────────

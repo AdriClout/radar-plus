@@ -67,10 +67,22 @@ HALF_LIFE_H   <- 10
 BLOCK_H       <- 4
 WINDOW_BLOCKS <- 6L
 RWT <- sum(2^(-(0:5) * BLOCK_H / HALF_LIFE_H))   # RECENCY_WEIGHT_TOTAL ≈ 3,347
-TH_BLOCK <- list(QC  = c(12.1, 17.4, 21.5, 41.9, 63.6),
-                 CAN = c(11.3, 15.9, 20.0, 37.2, 59.6))
-TH_SUM   <- list(QC  = c(33.8, 41.8, 59.2, 96.5, 157.1) / RWT,
-                 CAN = c(20.0, 30.4, 45.4, 85.0, 150.6) / RWT)
+# Depuis le 8 nov. 2026 (décision d'Adrien, aws-refiners#207) : bandes lues dans la RÉFÉRENCE FIXE et datée
+# pipeline/reference_niveaux/<ref>.json (copie de aws-refiners docs/reference-niveaux ; ref-A1 = année de l'article 2
+# sur la série recalculée), aux conventions du frontend Vitrine (p5/p20/p50/p80/p95 ; cumul 24 h déjà en points ÷ RWT).
+# Les constantes copiées de la Vitrine le 23 oct. 2026 restent accessibles avec REFERENCE_NIVEAUX=vitrine-2026-08.
+REFERENCE_NIVEAUX <- Sys.getenv("REFERENCE_NIVEAUX", "ref-A1")
+if (REFERENCE_NIVEAUX == "vitrine-2026-08") {
+  TH_BLOCK <- list(QC  = c(12.1, 17.4, 21.5, 41.9, 63.6),
+                   CAN = c(11.3, 15.9, 20.0, 37.2, 59.6))
+  TH_SUM   <- list(QC  = c(33.8, 41.8, 59.2, 96.5, 157.1) / RWT,
+                   CAN = c(20.0, 30.4, 45.4, 85.0, 150.6) / RWT)
+} else {
+  .ref <- jsonlite::fromJSON(file.path(OUT_DIR, "reference_niveaux", paste0(REFERENCE_NIVEAUX, ".json")), simplifyVector = TRUE)
+  TH_BLOCK <- list(QC = as.numeric(.ref$evenements$QC$par_edition_x100), CAN = as.numeric(.ref$evenements$ROC$par_edition_x100))
+  TH_SUM   <- list(QC = as.numeric(.ref$evenements$QC$cumul24h_points),  CAN = as.numeric(.ref$evenements$ROC$cumul24h_points))
+  cat(sprintf("Bandes des événements : référence fixe %s (%s → %s)\n", .ref$nom, .ref$fenetre$debut, .ref$fenetre$fin))
+}
 for (r in names(TH_BLOCK)) { names(TH_BLOCK[[r]]) <- BANDES$id; names(TH_SUM[[r]]) <- BANDES$id }
 
 band_of <- function(v, th) {
@@ -351,6 +363,7 @@ write_v2(list(
   half_life_h          = HALF_LIFE_H,
   window_blocks        = WINDOW_BLOCKS,
   recency_weight_total = round(RWT, 4),
+  reference_niveaux    = REFERENCE_NIVEAUX,
   bands                = lapply(seq_len(nrow(BANDES)), function(i) as.list(BANDES[i, ])),
   thresholds           = lapply(setNames(names(TH_BLOCK), names(TH_BLOCK)), function(r)
                            list(block = as.list(round(TH_BLOCK[[r]], 3)), sum24h = as.list(round(TH_SUM[[r]], 3)))),
