@@ -21,7 +21,7 @@ from datetime import date, datetime, timedelta, timezone
 import boto3
 
 REGION = "ca-central-1"
-WORKGROUP = "ellipse-work-group"
+WORKGROUP = "ellipse-athena-workgroup"
 WAREHOUSE_DB = "gluestackdatawarehousedbe64d5725"
 DATAMART_DB = "gluestackdatamartdbd046f685"
 
