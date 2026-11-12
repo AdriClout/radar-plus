@@ -18,7 +18,7 @@ import sys
 from datetime import date, timedelta
 
 REGION       = "ca-central-1"
-WORKGROUP    = "ellipse-work-group"
+WORKGROUP    = "ellipse-athena-workgroup"
 DATABASE     = "gluestackdatamartdbd046f685"
 HISTORY_DAYS = 130  # Covers all of 2026 from January 1st
 
