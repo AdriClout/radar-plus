@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-11-15T21:00:00+00:00",
+ "genere_le": "2026-11-15T22:30:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -369,10 +369,10 @@
      "debut": "2024-05-28",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Note du 15 novembre 2026 : collecte partielle le 23 décembre 2025 (86 captures sur 144) et le 4 février 2026 (69) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 95.9,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
@@ -477,10 +477,10 @@
      "debut": "2024-05-28",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Note du 15 novembre 2026 : collecte partielle les 11 et 12 février et le 23 février 2026, pannes communes à presque tous les médias (89 à 94 captures sur 144) et le 5 juillet 2026 (90) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 97.0,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
@@ -623,10 +623,10 @@
      "debut": "2025-10-01",
      "fin": "2026-05-18",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Corps d'articles complets (médiane de 4 500 à 5 100 caractères)",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Corps d'articles complets (médiane de 4 500 à 5 100 caractères). Note du 15 novembre 2026 : collecte partielle les 28 et 29 mars 2026 (47 et 48 captures sur 144), et les 11 et 12 février et le 23 février 2026, pannes communes à presque tous les médias (88 à 99) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 100.0,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
@@ -686,19 +686,19 @@
      "debut": "2024-05-28",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Note du 15 novembre 2026 : collecte partielle le 25 décembre 2025 (93 captures sur 144) et les 11 et 12 février et le 23 février 2026, pannes communes à presque tous les médias (92 et 95) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 98.0,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un mandataire (proxy) —, et presque aucune le 15 octobre (24 captures) : cause trouvée dans les journaux de production (le mandataire ne fournissait pas d'adresse de sortie, chaque navigation expirait) ; extracteurs corrigés le 5 puis le 8 novembre 2026 (aws-infra#484, #705 : service de déblocage systématique, cinq tentatives espacées) ; 123 à 143 captures par jour en octobre hors le 15, 108 le 1er novembre, 128 à 138 du 5 au 7 novembre (mesure du 8 novembre 2026 dans la table brute de production) ; début novembre, une page de contrôle « Security Check » du site était parfois enregistrée comme article sans texte : détectée et écartée depuis aws-infra#666 (fiche #665) ; les 19-20 et 26-27 octobre, trois Unes « en direct » (référendum albertain, élection torontoise) portent des corps de 60 000 à 180 000 caractères : pages de direct, pas une panne, mais un texte hors norme pour l'extraction",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal), comme JDM et TVA — les trois extracteurs qui passent par un navigateur et un mandataire (proxy) —, et presque aucune le 15 octobre (24 captures) : cause trouvée dans les journaux de production (le mandataire ne fournissait pas d'adresse de sortie, chaque navigation expirait) ; extracteurs corrigés le 5 puis le 8 novembre 2026 (aws-infra#484, #705 : service de déblocage systématique, cinq tentatives espacées) ; 123 à 143 captures par jour en octobre hors le 15, 108 le 1er novembre, 128 à 138 du 5 au 7 novembre (mesure du 8 novembre 2026 dans la table brute de production) ; début novembre, une page de contrôle « Security Check » du site était parfois enregistrée comme article sans texte : détectée et écartée depuis aws-infra#666 (fiche #665) ; les 19-20 et 26-27 octobre, trois Unes « en direct » (référendum albertain, élection torontoise) portent des corps de 60 000 à 180 000 caractères : pages de direct, pas une panne, mais un texte hors norme pour l'extraction. Note du 15 novembre 2026 : collecte partielle aussi le 13 août 2026 (34 captures sur 144) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14 · mesure du 2026-10-31 · aws-infra#484 et #705 · aws-infra#665 · mesure du 8 novembre 2026 dans la table brute de production"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · validation du 2026-09-14 · mesure du 2026-10-31 · aws-infra#484 et #705 · aws-infra#665 · mesure du 8 novembre 2026 dans la table brute de production · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     }
    ],
@@ -746,10 +746,10 @@
      "debut": "2024-05-28",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Note du 15 novembre 2026 : collecte partielle les 11 et 12 février et le 23 février 2026, pannes communes à presque tous les médias (89 à 98 captures sur 144) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 97.1,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
@@ -819,10 +819,10 @@
      "debut": "2025-10-20",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Note du 15 novembre 2026 : collecte partielle les 28 et 29 novembre 2025 et les 30 et 31 mai 2026 (67 à 76 captures sur 144), et les 11 et 12 février et le 23 février 2026, pannes communes à presque tous les médias (84 à 99) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 95.1,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
@@ -879,19 +879,19 @@
      "debut": "2024-05-28",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10. Note du 15 novembre 2026 : collecte partielle les 11 et 12 février et le 23 février 2026, pannes communes à presque tous les médias (82 à 97 captures sur 144) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 95.9,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
      "debut": "2026-08-10",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; Unes exactes, mais texte tronqué sur 25 à 31 % des Unes depuis au moins la fin août : le sélecteur ne lisait que les premiers paragraphes (correctif en relecture : aws-infra#593)",
+     "resume": "Collecte courante — un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline ; Unes exactes, mais texte tronqué sur 25 à 31 % des Unes depuis au moins la fin août : le sélecteur ne lisait que les premiers paragraphes (correctif en relecture : aws-infra#593). Note du 15 novembre 2026 : collecte partielle le 11 octobre 2026 (66 captures sur 144) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
-      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#593 · validation du 2026-09-14"
+      "reference": "aws-refiners#286 (garde-Une) · sonar-pipeline · aws-infra#593 · validation du 2026-09-14 · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     }
    ],
@@ -923,7 +923,10 @@
      "debut": "2024-09-01",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production. Fenêtre de novembre 2025 réparée par rejeu des pages archivées avec la chaîne d'extraction d'époque, validée à 98,5-100 % sur jours témoins (aws-refiners#339)"
+     "resume": "Collecte de production. Fenêtre de novembre 2025 réparée par rejeu des pages archivées avec la chaîne d'extraction d'époque, validée à 98,5-100 % sur jours témoins (aws-refiners#339). Note du 15 novembre 2026 : 18 jours de collecte partielle d'octobre 2025 à mars 2026 (moins de 100 captures sur 144 ; pires : 18 le 20 décembre, 2 le 1er mars). Les pages d'accueil archivées sont complètes, mais l'ancienne mise en page fait échouer la chaîne d'extraction actuelle : rejouabilité à établir (aws-refiners#339).",
+     "preuve": {
+      "reference": "mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
+     }
     },
     {
      "debut": "2026-08-10",
@@ -981,10 +984,10 @@
      "debut": "2024-09-01",
      "fin": "2026-08-14",
      "statut": "valide",
-     "resume": "Collecte auditée (concordance 97,8 % sur deux ans). Les captures du flux vidéo prises pendant les bannières de direct (0 à 5 % des captures par jour) sont exclues du calcul et documentées — leur rejeu est différé, pas abandonné",
+     "resume": "Collecte auditée (concordance 97,8 % sur deux ans). Les captures du flux vidéo prises pendant les bannières de direct (0 à 5 % des captures par jour) sont exclues du calcul et documentées — leur rejeu est différé, pas abandonné. Note du 15 novembre 2026 : collecte partielle du 6 au 17 février 2026 (22 à 98 captures par jour sur 144) ; pages d'accueil archivées complètes, rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 97.8,
-      "reference": "aws-refiners#207 · exclusion : aws-refiners#292/#327 · rejeu différé : aws-refiners#333"
+      "reference": "aws-refiners#207 · exclusion : aws-refiners#292/#327 · rejeu différé : aws-refiners#333 · mesure du 15 novembre 2026 (table brute et pages archivées) · aws-refiners#339"
      }
     },
     {
