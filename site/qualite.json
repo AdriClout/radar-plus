@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-11-08T19:14:29+00:00",
+ "genere_le": "2026-11-15T21:00:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -157,9 +157,9 @@
      "debut": "2026-08-14",
      "fin": "2026-11-05",
      "statut": "surveillance",
-     "resume": "Collecte dégradée : environ la moitié des captures en août 2026, cadence normale revenue au 12 septembre (136 à 143 captures par jour), puis nouvelle dégradation du 8 octobre au 4 novembre : 23 à 134 captures par jour, moins de 100 sur 22 de ces 28 jours, pour 144 attendues (mesure du 8 novembre 2026 dans la table brute de production). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (23 captures), comme TVA et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Réparé en direct en trois temps : délai complet accordé à l'extracteur (aws-infra#677), puis service de déblocage en secours (#693, en production le 5 novembre à 15 h 42 UTC), puis, la navigation directe étant refusée par les sites, passage systématique par le service de déblocage avec cinq tentatives espacées (#705, en production le 8 novembre, #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
+     "resume": "Collecte dégradée : 44 à 104 captures par jour du 15 au 26 août 2026 pour 144 attendues (mesure du 15 novembre 2026 ; pages d'accueil archivées complètes, rejeu à faire), cadence normale revenue au 12 septembre (136 à 143 captures par jour), puis nouvelle dégradation du 8 octobre au 4 novembre : 23 à 134 captures par jour, moins de 100 sur 22 de ces 28 jours, pour 144 attendues (mesure du 8 novembre 2026 dans la table brute de production). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (23 captures), comme TVA et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Réparé en direct en trois temps : délai complet accordé à l'extracteur (aws-infra#677), puis service de déblocage en secours (#693, en production le 5 novembre à 15 h 42 UTC), puis, la navigation directe étant refusée par les sites, passage systématique par le service de déblocage avec cinq tentatives espacées (#705, en production le 8 novembre, #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
      "preuve": {
-      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-infra#705 · aws-refiners#337 · mesure du 8 novembre 2026 dans la table brute de production · journaux de production du 14 sept."
+      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-infra#705 · aws-refiners#337 · mesure du 8 novembre 2026 dans la table brute de production · journaux de production du 14 sept. · mesure du 15 novembre 2026"
      }
     },
     {
@@ -190,6 +190,12 @@
      "fin": "2026-06-30",
      "jours": 21,
      "cause": "pages « salle d'attente » Quebecor sur une partie des créneaux — Unes non archivées, perte partielle définitive"
+    },
+    {
+     "debut": "2026-08-15",
+     "fin": "2026-08-26",
+     "jours": 12,
+     "cause": "Collecte dégradée : 44 à 104 captures par jour pour 144 attendues (table brute de production, mesure du 15 nov. 2026) — rejouable depuis les pages d'accueil archivées, rejeu à faire (aws-refiners#337)"
     },
     {
      "debut": "2026-10-08",
@@ -232,9 +238,9 @@
      "debut": "2026-06-03",
      "fin": "2026-11-05",
      "statut": "surveillance",
-     "resume": "Bascule de l'extracteur le 3 juin 2026 : les Unes de juin ne sont pas exploitables (aucun accord sur les jours audités) et restent à reconstruire depuis la Wayback Machine ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités ; de nouveau dégradé du 8 octobre au 4 novembre : 25 à 140 captures par jour, moins de 100 sur 14 de ces 28 jours, pour 144 attendues (mesure du 8 novembre 2026 dans la table brute de production). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (25 captures), comme JDM et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Hors panne, TVA perdait déjà 5 à 8 % de ses captures de cette façon. Réparé en direct en trois temps : délai complet accordé à l'extracteur (aws-infra#677), puis service de déblocage en secours (#693, en production le 5 novembre à 15 h 42 UTC), puis, la navigation directe étant refusée par les sites, passage systématique par le service de déblocage avec cinq tentatives espacées (#705, en production le 8 novembre, #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
+     "resume": "Bascule de l'extracteur le 3 juin 2026 : du 4 au 30 juin, les Unes sont perdues pour de bon : les pages d'accueil archivées sont des coquilles vides (blocage anti-robot du site) et la Wayback Machine n'a que 3 captures de la page d'accueil pour tout le mois (vérifié le 15 novembre 2026) ; du 1er au 22 juillet, 10 à 22 captures par jour seulement, puis des jours partiels jusqu'au 26 août (40 à 138 captures) : ces jours sont rejouables, les pages d'accueil archivées étant complètes dès le 1er juillet (mesure du 15 novembre 2026, rejeu à faire, aws-refiners#338) ; volume revenu à 126-137 captures par jour au 12 septembre, jours suivants non audités ; de nouveau dégradé du 8 octobre au 4 novembre : 25 à 140 captures par jour, moins de 100 sur 14 de ces 28 jours, pour 144 attendues (mesure du 8 novembre 2026 dans la table brute de production). Aucune Une captée le 13 septembre de 0 h à midi environ (heure de Montréal) et presque aucune le 15 octobre (25 captures), comme JDM et le Toronto Star : les trois extracteurs passent par un navigateur et un mandataire. Cause trouvée dans les journaux de production : le mandataire (proxy) ne fournissait pas d'adresse de sortie et chaque navigation expirait, dans un délai trop court pour l'extracteur. Hors panne, TVA perdait déjà 5 à 8 % de ses captures de cette façon. Réparé en direct en trois temps : délai complet accordé à l'extracteur (aws-infra#677), puis service de déblocage en secours (#693, en production le 5 novembre à 15 h 42 UTC), puis, la navigation directe étant refusée par les sites, passage systématique par le service de déblocage avec cinq tentatives espacées (#705, en production le 8 novembre, #706). La fenêtre du 8 octobre au 4 novembre reste telle quelle dans les données : trou historique, rejouable depuis les pages d'accueil archivées (rejeu à faire).",
      "preuve": {
-      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-infra#705 · aws-refiners#335 (inventaire) · mesure du 8 novembre 2026 dans la table brute de production · journaux de production du 14 sept."
+      "reference": "aws-infra#484 (fermée le 8 nov. 2026) · aws-infra#705 · aws-refiners#335 (inventaire) · mesure du 8 novembre 2026 dans la table brute de production · journaux de production du 14 sept. · aws-refiners#338 · mesure du 15 novembre 2026 (table brute et pages archivées)"
      }
     },
     {
@@ -261,16 +267,16 @@
      "cause": "panne du hub d'archivage"
     },
     {
-     "debut": "2026-06-01",
+     "debut": "2026-06-04",
      "fin": "2026-06-30",
-     "jours": 30,
-     "cause": "Unes de juin non exploitables après la bascule de l'extracteur — reconstruction depuis la Wayback Machine à faire"
+     "jours": 27,
+     "cause": "pages d'accueil archivées vides (coquilles, blocage anti-robot du site) ; 3 captures seulement dans la Wayback Machine — perte définitive (aws-refiners#338, vérifié le 15 nov. 2026)"
     },
     {
      "debut": "2026-07-01",
      "fin": "2026-07-22",
      "jours": 22,
-     "cause": "Collecte quasi vide : 10 à 26 captures par jour pour 144 attendues (mesure du 28 octobre 2026 sur le brut de production) — à reconstruire avec juin, juillet et août (aws-refiners#338)"
+     "cause": "Collecte quasi vide : 10 à 22 captures par jour pour 144 attendues (table brute de production, mesure du 15 nov. 2026) — rejouable : pages d'accueil archivées complètes dès le 1er juillet, rejeu à faire (aws-refiners#338)"
     },
     {
      "debut": "2026-06-03",
@@ -423,10 +429,10 @@
      "debut": "2024-05-28",
      "fin": "2026-08-10",
      "statut": "valide",
-     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10",
+     "resume": "Collecte de production auditée par rejeu contre les pages d'accueil archivées — campagne sur deux ans, 1 439 verdicts, close le 2026-08-10 Note du 15 novembre 2026 : Unes exactes, mais collecte partielle certains jours d'octobre 2025 au 1er mars 2026 : 38 jours à moins de 100 captures sur 144 attendues, dont 1 seule le 11 février 2026, 29 le 21 février et 16 le 1er mars (table brute de production). Les pages d'accueil archivées sont complètes ces jours-là : rejouable, rejeu à faire (aws-refiners#339).",
      "preuve": {
       "precision_pct": 96.8,
-      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08)"
+      "reference": "aws-refiners#207 (campagne V4, 2024-06 → 2026-08) · aws-refiners#339 · mesure du 15 novembre 2026"
      }
     },
     {
