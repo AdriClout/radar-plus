@@ -162,7 +162,7 @@ Un **objet médiatique** est une entité nommée, identifiable et suivie dans le
 
 Toutes les 4 heures, le titre et le texte de chaque Une sont analysés par un **grand modèle de langue**, qui en extrait les objets saillants (personnes, enjeux, institutions, lieux) sans s'appuyer sur une liste fermée — ce qui permet de détecter un nouvel acteur ou une crise inattendue. Le même modèle harmonise les variantes d'un objet (*Donald J. Trump*, *Trump*, *le président américain*) et ses correspondances entre le français et l'anglais (*Cour suprême* / *Supreme Court*), une étape essentielle pour comparer des médias de langues différentes. Depuis mai 2025, ce modèle est **GPT-4o** (OpenAI).
 
-Le regroupement des Unes en **événements** (les articles de plusieurs médias qui traitent de la même nouvelle) est confié à **Claude Sonnet 5** (Anthropic) depuis la fin d'août 2026. La série des événements depuis mai 2025 a été recalculée avec ce même modèle, à l'exception de la période du 23 juillet au 26 août 2026, regroupée par GPT-4o.
+Le regroupement des Unes en **événements** (les articles de plusieurs médias qui traitent de la même nouvelle) est confié à **Claude Sonnet 5** (Anthropic). Sur le site, les événements du 16 octobre 2025 au 15 octobre 2026 sont ceux de l'**année de référence** publiée avec l'article scientifique de Radar+ : une série recalculée d'un seul tenant, avec ce modèle et les règles décrites ici. À partir du 16 octobre 2026, ce sont ceux de la série calculée en direct.
 
 Une seconde chaîne, **entièrement locale**, analyse les mêmes Unes en parallèle : **GLiNER**, un modèle ouvert de reconnaissance d'entités, puis **Gemma 3** (Google DeepMind), exécuté sur nos serveurs, pour la normalisation bilingue. Elle sert aujourd'hui à l'analyse de la tonalité. L'objectif de l'équipe est de lui confier aussi l'extraction des objets, pour la souveraineté des données, l'indépendance commerciale et la reproductibilité; ce n'est pas encore le cas, faute d'une validation terminée.
 
@@ -271,7 +271,7 @@ Radar+ permet d'analyser les indices selon plusieurs **fenêtres temporelles**, 
 | **1 mois** | ~180 blocs | Quels sujets ont dominé le mois écoulé? |
 | **1 année** | ~2 190 blocs | Quelles sont les grandes lignes annuelles de la couverture? |
 
-La fenêtre **hebdomadaire** est calculée à partir d'un point de coupure configurable (par défaut **vendredi 16:00 UTC**), choisi pour minimiser les artefacts de fin de semaine. Le choix de fenêtre influence considérablement les interprétations : un sujet peut être premier sur 4 h sans figurer dans le top 20 hebdomadaire.
+La fenêtre **hebdomadaire** est calculée à partir d'un point de coupure configurable (par défaut **vendredi 16:00 UTC**), choisi pour minimiser les artefacts de fin de semaine. Le choix de fenêtre influence considérablement les interprétations : un sujet peut être premier sur 4 h sans figurer dans le top 20 hebdomadaire. Les **points** d'une période additionnent les notes d'édition (sur 100) de tous les événements de chaque édition, pas seulement des trois premiers : un événement compte dès qu'il occupe la Une d'au moins un média de la région.
 
 ---
 

@@ -178,7 +178,7 @@ function auneBand(region, value) {
   AUNE_BANDS.forEach(function(b) { if (typeof th[b] === 'number' && value >= th[b]) band = b; });
   return band;
 }
-var AUNE_FIRST_YEAR = 2026; // début du suivi des événements : 23 juillet 2026
+var AUNE_FIRST_YEAR = 2025; // année publiée de l'article 2 (série recalculée, 16 oct. 2025 →), puis le direct ; un fichier d'année absent est traité comme vide
 function auneYears() {
   var y1 = new Date().getUTCFullYear();
   var out = []; for (var y = AUNE_FIRST_YEAR; y <= y1; y++) out.push(y); return out;

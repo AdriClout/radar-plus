@@ -37,6 +37,20 @@ OUT_DIR <- tryCatch({
 })
 
 CSV_FILE <- file.path(OUT_DIR, "headline_events.csv")
+# Année publiée de l'article 2 (fetch_data.py archive, AWS DEV) et relevé complet des
+# événements (headline_storylines) : les points des périodes se comptent sur TOUS les
+# événements de chaque édition, comme dans l'article ; le podium (cartes) garde
+# l'affichage par bloc et le cumul 24 h (calibré sur le podium, ref-A1).
+ARCHIVE_CFG        <- file.path(OUT_DIR, "archive_these.json")
+ARCHIVE_EVENTS     <- file.path(OUT_DIR, "archive_events.csv")
+STORYLINE_FILES    <- c(file.path(OUT_DIR, "archive_storylines.csv"), file.path(OUT_DIR, "storylines.csv"))
+ARCHIVE <- if (file.exists(ARCHIVE_CFG)) jsonlite::fromJSON(ARCHIVE_CFG, simplifyVector = TRUE) else NULL
+if (!is.null(ARCHIVE)) {
+  # Même règle que fetch_data.py : fenêtres prêtes, contiguës depuis le début.
+  pret <- if ("pret" %in% names(ARCHIVE$fenetres)) ARCHIVE$fenetres$pret else rep(TRUE, nrow(ARCHIVE$fenetres))
+  n_ok <- if (all(pret)) length(pret) else which(!pret)[1] - 1L
+  ARCHIVE <- if (n_ok > 0) { ARCHIVE$fin <- ARCHIVE$fenetres$fin[n_ok]; ARCHIVE } else NULL
+}
 V2_DIR   <- file.path(OUT_DIR, "out_r2", "v2", "events")
 dir.create(V2_DIR, recursive = TRUE, showWarnings = FALSE)
 
@@ -46,7 +60,7 @@ write_v2 <- function(x, ...) {
   jsonlite::write_json(x, path, auto_unbox = TRUE, pretty = FALSE, null = "null", na = "null")
 }
 
-REGIME_FROM    <- "2026-07-23"
+REGIME_FROM    <- if (!is.null(ARCHIVE) && file.exists(ARCHIVE_EVENTS)) ARCHIVE$debut else "2026-07-23"
 REGION_OF      <- c(QC = "QC", ROC = "CAN")   # clé de la table → clé du site
 TOP_PER_BLOCK  <- 3L
 EV_MAX_ARTICLES <- 12L
@@ -139,9 +153,15 @@ period_label <- function(key) {
 
 ## --- Lecture -------------------------------------------------------------------
 cat("Lecture headline_events.csv...\n")
-df <- readr::read_csv(CSV_FILE, show_col_types = FALSE,
-                      col_types = readr::cols(.default = readr::col_character()))
+read_chr <- function(f) readr::read_csv(f, show_col_types = FALSE,
+                                        col_types = readr::cols(.default = readr::col_character()))
+df <- read_chr(CSV_FILE)
 cat("  ->", nrow(df), "lignes\n")
+if (file.exists(ARCHIVE_EVENTS)) {
+  df_arch <- read_chr(ARCHIVE_EVENTS)
+  cat("Année publiée (archive_events.csv) :", nrow(df_arch), "cartes,", ARCHIVE$debut, "→", ARCHIVE$fin, "\n")
+  df <- bind_rows(df_arch, df)
+}
 
 num <- function(x) suppressWarnings(as.numeric(x))
 df <- df |>
@@ -158,6 +178,42 @@ df <- df |>
     rank_source = suppressWarnings(as.integer(event_rank_in_region))
   ) |>
   filter(!is.na(titre), !is.na(block_ts), !is.na(sid))
+
+st_files <- STORYLINE_FILES[file.exists(STORYLINE_FILES)]
+st_df <- if (length(st_files)) bind_rows(lapply(st_files, read_chr)) else tibble::tibble()
+if (nrow(st_df)) {
+  st_df <- st_df |>
+    mutate(
+      date_utc   = substr(date_utc, 1, 10),
+      start_h    = suppressWarnings(as.integer(sub("-.*$", "", time_interval_utc))),
+      block_ts   = as.POSIXct(paste0(date_utc, " ", sprintf("%02d", start_h), ":00:00"), tz = "UTC"),
+      period_key = paste0(date_utc, "_", time_interval_utc),
+      titre      = na_if(trimws(event_title_raw), ""),
+      sid        = coalesce(na_if(storyline_id, ""), event_id),
+      idx_qc     = num(salience_index_qc)  * 100,
+      idx_roc    = num(salience_index_roc) * 100
+    ) |>
+    filter(!is.na(block_ts), !is.na(sid))
+  cat("Relevé complet (", paste(basename(st_files), collapse = " + "), ") :", nrow(st_df), "lignes\n")
+}
+
+# Points des périodes : relevé complet (tous les événements de l'édition, note de la
+# région > 0), sinon les cartes. Une ligne par (bloc, event_id), la plus forte.
+series_rows <- function(rk, d) {
+  cards <- d |> transmute(period_key, block_ts, sid, event_id, index, titre, event_label, first_seen_utc)
+  if (!nrow(st_df)) return(cards)
+  col <- if (rk == "QC") "idx_qc" else "idx_roc"
+  full <- st_df |>
+    mutate(index = round(.data[[col]], 3)) |>
+    filter(!is.na(index), index > 0) |>
+    group_by(period_key, event_id) |>
+    slice_max(index, n = 1, with_ties = FALSE) |>
+    ungroup() |>
+    transmute(period_key, block_ts, sid, event_id, index, titre, event_label, first_seen_utc)
+  # Blocs sans relevé complet (journées en direct tant que ses colonnes manquent au
+  # catalogue de production) : le podium.
+  bind_rows(full, cards |> filter(!period_key %in% unique(full$period_key)))
+}
 
 ## --- Par région : indice publié, dédoublonnage, top 3 --------------------------
 prep_region <- function(rk) {
@@ -217,18 +273,21 @@ for (rk in c("QC", "ROC")) {
   d <- prep_region(rk)
   cat(sprintf("Région %s (%s) : %d lignes retenues, %d blocs\n", rk, reg, nrow(d), length(unique(d$period_key))))
   if (nrow(d) == 0) next
-  all_periods <- union(all_periods, unique(d$period_key))
+  sr <- series_rows(rk, d)
+  all_periods <- union(all_periods, union(unique(d$period_key), unique(sr$period_key)))
   dates_by_region[[reg]] <- sort(unique(d$date_utc))
 
-  # -- Cumul 24 h par storyline (6 blocs, demi-vie 10 h, ÷ RWT) --
-  by_bs <- d |> group_by(period_key, block_ts, sid) |> summarise(sumVal = sum(index), .groups = "drop")
+  # Série par bloc (points des périodes) : relevé complet.
+  by_bs <- sr |> group_by(period_key, block_ts, sid) |> summarise(sumVal = sum(index), .groups = "drop")
+  # -- Cumul 24 h par storyline (6 blocs, demi-vie 10 h, ÷ RWT), sur le podium --
+  by_bs_cards <- d |> group_by(period_key, block_ts, sid) |> summarise(sumVal = sum(index), .groups = "drop")
   blocks_desc <- d |> distinct(period_key, block_ts) |> arrange(desc(block_ts))
   n <- nrow(blocks_desc)
   sum24h <- list()
   if (n >= WINDOW_BLOCKS) {
     for (i in seq_len(n - WINDOW_BLOCKS + 1L)) {
       win <- blocks_desc[i:(i + WINDOW_BLOCKS - 1L), ]
-      w <- by_bs |> filter(period_key %in% win$period_key)
+      w <- by_bs_cards |> filter(period_key %in% win$period_key)
       if (nrow(w) == 0) next
       newest <- max(win$block_ts)
       wt <- 2^(as.numeric(difftime(w$block_ts, newest, units = "hours")) / HALF_LIFE_H)
@@ -250,35 +309,54 @@ for (rk in c("QC", "ROC")) {
   }
 
   # -- Fiches storylines par année (année du premier bloc) --
-  meta_story <- d |>
-    arrange(desc(block_ts), desc(index)) |>
-    group_by(sid) |>
-    summarise(
-      label      = first(na.omit(c(na_if(event_label, ""), NA_character_))),
-      # Trois titres par histoire (le raffineur en écrit un par bloc) :
-      #   title_last  = dernière apparition (bloc le plus récent) — aussi `title`, rétrocompatible ;
-      #   title_peak  = bloc du pic (indice le plus fort) ;
-      #   title_first = première apparition. Le site montre le pic dans les vues
-      #   cumulatives (semaine/mois/année) et la dernière apparition dans les vues 24h.
-      title      = first(titre),
-      title_last = first(titre),
-      title_peak = titre[which.max(index)],
-      title_first = titre[which.min(block_ts)],
-      peak_key   = period_key[which.max(index)],
-      issue_fr   = first(na.omit(c(main_issue_text_fr, NA_character_))),
-      issue_en   = first(na.omit(c(main_issue_text_en, NA_character_))),
-      first_key  = min(period_key),
-      last_key   = max(period_key),
-      peak       = max(index),
-      n_blocks   = n_distinct(period_key),
-      first_seen = { v <- first_seen_utc[!is.na(first_seen_utc)]; if (length(v)) min(v) else NA_character_ },
-      .groups = "drop"
-    )
+  # Trois titres par histoire (le raffineur en écrit un par bloc) :
+  #   title_last  = dernière apparition (bloc le plus récent) — aussi `title`, rétrocompatible ;
+  #   title_peak  = bloc du pic (points du bloc les plus forts) ;
+  #   title_first = première apparition. Le site montre le pic dans les vues
+  #   cumulatives (semaine/mois/année) et la dernière apparition dans les vues 24h.
+  # Pic, bornes et nombre de blocs : la série (relevé complet). Titres, enjeux et
+  # manchette : le podium quand l'histoire y est passée, sinon le titre du relevé.
+  first_or_na <- function(x) { v <- x[!is.na(x) & nzchar(x)]; if (length(v)) v[1] else NA_character_ }
+  peaks <- by_bs |> group_by(sid) |>
+    summarise(peak = max(sumVal), peak_key = period_key[which.max(sumVal)],
+              first_key = min(period_key), last_key = max(period_key),
+              n_blocks = n_distinct(period_key), .groups = "drop")
+  meta_series <- sr |> arrange(desc(block_ts), desc(index)) |> group_by(sid) |>
+    summarise(label_s = first_or_na(event_label), title_s_last = first_or_na(titre),
+              title_s_first = titre[which.min(block_ts)],
+              first_seen_s = { v <- first_seen_utc[!is.na(first_seen_utc)]; if (length(v)) min(v) else NA_character_ },
+              last_event_s = first(event_id), .groups = "drop")
+  meta_cards <- d |> arrange(desc(block_ts), desc(index)) |> group_by(sid) |>
+    summarise(label_c = first_or_na(event_label), title_c_last = first(titre),
+              title_c_first = titre[which.min(block_ts)],
+              issue_fr = first(na.omit(c(main_issue_text_fr, NA_character_))),
+              issue_en = first(na.omit(c(main_issue_text_en, NA_character_))),
+              first_seen_c = { v <- first_seen_utc[!is.na(first_seen_utc)]; if (length(v)) min(v) else NA_character_ },
+              .groups = "drop")
+  titles_at_peak <- bind_rows(d |> transmute(sid, period_key, titre, index, src = 1L),
+                              sr |> transmute(sid, period_key, titre, index, src = 2L)) |>
+    inner_join(peaks |> select(sid, period_key = peak_key), by = c("sid", "period_key")) |>
+    filter(!is.na(titre)) |> arrange(src, desc(index)) |> group_by(sid) |>
+    summarise(title_peak = first(titre), .groups = "drop")
+  meta_story <- peaks |>
+    left_join(meta_series, by = "sid") |>
+    left_join(meta_cards, by = "sid") |>
+    left_join(titles_at_peak, by = "sid") |>
+    mutate(label       = coalesce(label_c, label_s),
+           title_last  = coalesce(title_c_last, title_s_last, label_c, label_s),
+           title       = title_last,
+           title_first = coalesce(title_c_first, title_s_first),
+           title_peak  = coalesce(title_peak, title_last),
+           first_seen  = coalesce(first_seen_c, first_seen_s)) |>
+    filter(!is.na(title))
   series_df <- by_bs |> arrange(block_ts)
-  # Manchette représentative la plus récente par storyline (pour les lignes cliquables).
+  # Manchette représentative la plus récente par storyline (pour les lignes cliquables) :
+  # seulement les histoires passées au podium (le relevé complet ne porte pas d'URL).
   last_rows <- d |> arrange(desc(block_ts), desc(index)) |> group_by(sid) |>
     summarise(url = first(representative_url), media = first(representative_media_id),
-              last_event_id = first(event_id), .groups = "drop")
+              last_event_id = first(event_id), .groups = "drop") |>
+    right_join(meta_story |> select(sid, last_event_s), by = "sid") |>
+    mutate(last_event_id = coalesce(last_event_id, last_event_s))
   stories_by_year <- list()
   for (j in seq_len(nrow(meta_story))) {
     s <- meta_story$sid[j]
@@ -358,6 +436,8 @@ write_v2(list(generated_at = generated_at, regions = I(names(latest_by_region)),
 write_v2(list(
   generated_at         = generated_at,
   source_table         = "vitrine_datamart-headline_events_4h",
+  series_source        = if (nrow(st_df)) "vitrine_datamart-headline_storylines (relevé complet)" else "vitrine_datamart-headline_events_4h (podium)",
+  annee_publiee        = if (!is.null(ARCHIVE) && file.exists(ARCHIVE_EVENTS)) list(debut = ARCHIVE$debut, fin = ARCHIVE$fin, code = ARCHIVE$code) else NULL,
   regime_from          = REGIME_FROM,
   top_per_region_block = TOP_PER_BLOCK,
   half_life_h          = HALF_LIFE_H,
