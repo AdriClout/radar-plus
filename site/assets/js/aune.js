@@ -379,8 +379,8 @@ function auneRanking(region, range, limit, win) {
       var peakIn = st.peak_key && periodStartUtc(st.peak_key) >= start && periodStartUtc(st.peak_key) <= now;
       var ttl = (peakIn && st.title_peak) ? st.title_peak : (st.title_last || st.title || '');
       if (!cur) acc[sid] = { storyline: sid, title: ttl, titleFrom: peakIn && st.title_peak ? 'peak' : 'last', titleKey: peakIn ? st.peak_key : st.last_key,
-                             issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
-      else { cur.points += pts; cur.blocks += blocks; if (peak > cur.peak) cur.peak = peak; }
+                             issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, outlets: (st.outlets || []).slice(), points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
+      else { cur.points += pts; cur.blocks += blocks; if (peak > cur.peak) cur.peak = peak; (st.outlets || []).forEach(function(m) { if (cur.outlets.indexOf(m) === -1) cur.outlets.push(m); }); }
     });
   });
   var list = Object.keys(acc).map(function(k) { return acc[k]; });
@@ -491,7 +491,18 @@ function auneFicheUrl(c, region) { return './statistiques.html?evenement=' + enc
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
 function auneHeadlines(c, ev, max) {
   var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, max) : [];
-  if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
+  // La manchette représentative peut venir d'un média d'une autre région (carte transrégionale) :
+  // on ne la garde que si son média est dans la liste de la région.
+  var outs = Array.isArray(c.outlets) ? c.outlets : null;
+  if (!arts.length && c.url && (!outs || !outs.length || outs.indexOf(c.media) !== -1)) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
+  // Tous les médias qui ont porté l'histoire (fiche storyline, toute sa vie) : quand leur
+  // article n'est pas dans les fichiers du jour chargés (longues périodes), la puce mène à
+  // la fiche de l'événement plutôt que d'être omise (Adrien, 15 nov. 2026).
+  var seen = {}; arts.forEach(function(a) { if (a) seen[a.media_id] = true; });
+  (Array.isArray(c.outlets) ? c.outlets : []).forEach(function(m) {
+    if (arts.length >= max || seen[m]) return;
+    seen[m] = true; arts.push({ url: auneFicheUrl(c, cfg.country), media_id: m, title: c.title });
+  });
   return arts;
 }
 // Clic sur un titre ou une illustration : un média au hasard parmi ceux qui ont
