@@ -326,7 +326,7 @@
 </ul>
 <h3 id="pipeline-dextraction">3.2 Pipeline d’extraction</h3>
 <p>Toutes les 4 heures, le titre et le texte de chaque Une sont analysés par un <strong>grand modèle de langue</strong>, qui en extrait les objets saillants (personnes, enjeux, institutions, lieux) sans s’appuyer sur une liste fermée — ce qui permet de détecter un nouvel acteur ou une crise inattendue. Le même modèle harmonise les variantes d’un objet (<em>Donald J. Trump</em>, <em>Trump</em>, <em>le président américain</em>) et ses correspondances entre le français et l’anglais (<em>Cour suprême</em> / <em>Supreme Court</em>), une étape essentielle pour comparer des médias de langues différentes. Depuis mai 2025, ce modèle est <strong>GPT-4o</strong> (OpenAI).</p>
-<p>Le regroupement des Unes en <strong>événements</strong> (les articles de plusieurs médias qui traitent de la même nouvelle) est confié à <strong>Claude Sonnet 5</strong> (Anthropic) depuis la fin d’août 2026. La série des événements depuis mai 2025 a été recalculée avec ce même modèle, à l’exception de la période du 23 juillet au 26 août 2026, regroupée par GPT-4o.</p>
+<p>Le regroupement des Unes en <strong>événements</strong> (les articles de plusieurs médias qui traitent de la même nouvelle) est confié à <strong>Claude Sonnet 5</strong> (Anthropic). Sur le site, les événements du 16 octobre 2025 au 15 octobre 2026 sont ceux de l’<strong>année de référence</strong> publiée avec l’article scientifique de Radar+ : une série recalculée d’un seul tenant, avec ce modèle et les règles décrites ici. À partir du 16 octobre 2026, ce sont ceux de la série calculée en direct.</p>
 <p>Une seconde chaîne, <strong>entièrement locale</strong>, analyse les mêmes Unes en parallèle : <strong>GLiNER</strong>, un modèle ouvert de reconnaissance d’entités, puis <strong>Gemma 3</strong> (Google DeepMind), exécuté sur nos serveurs, pour la normalisation bilingue. Elle sert aujourd’hui à l’analyse de la tonalité. L’objectif de l’équipe est de lui confier aussi l’extraction des objets, pour la souveraineté des données, l’indépendance commerciale et la reproductibilité; ce n’est pas encore le cas, faute d’une validation terminée.</p>
 <h3 id="validation-humaine">3.3 Validation humaine</h3>
 <p>L’extraction des objets est comparée à une <strong>annotation humaine de référence</strong> (environ 300 articles annotés par l’équipe). Ce banc sert à choisir les modèles et à mesurer leur écart au jugement humain; ses résultats et ses limites sont détaillés dans l’article scientifique associé à Radar+, en préparation.</p>
@@ -419,6 +419,7 @@
 </tr>
 </tbody>
 </table>
+<p>L’année de référence (16 octobre 2025 au 15 octobre 2026) utilise une table recalculée sur la même base que les minutes comptées dans une édition de 4 heures (mai à juillet 2026 : de 59 minutes pour TVA Nouvelles à 158 pour le Vancouver Sun). La série en direct l’adoptera à sa prochaine mise à jour.</p>
 <p>À partir de cette base, deux pondérations sont calculées pour chaque manchette :</p>
 <ul>
 <li>la <strong>pondération intra-média</strong> : <code>pond_time = headline_minutes / mean_time_média</code>, qui ramène le temps en Une à la moyenne du média;</li>
@@ -496,7 +497,7 @@
 </tr>
 </tbody>
 </table>
-<p>Sur le site, chaque bloc est nommé par l’heure de parution de son <strong>édition</strong>, une heure après la fin du bloc (« l’édition de 20h »). Une <strong>journée</strong> réunit les éditions parues ce jour-là, de minuit à 20h, à l’heure de Montréal. La <strong>semaine</strong> va du lundi au dimanche ; le mois et l’année suivent le calendrier. Le choix de fenêtre influence considérablement les interprétations : un sujet peut être premier sur 4 h sans figurer dans le top 20 hebdomadaire.</p>
+<p>Sur le site, chaque bloc est nommé par l’heure de parution de son <strong>édition</strong>, une heure après la fin du bloc (« l’édition de 20h »). Une <strong>journée</strong> réunit les éditions parues ce jour-là, de minuit à 20h, à l’heure de Montréal. La <strong>semaine</strong> va du lundi au dimanche ; le mois et l’année suivent le calendrier. Le choix de fenêtre influence considérablement les interprétations : un sujet peut être premier sur 4 h sans figurer dans le top 20 hebdomadaire. Les <strong>points</strong> d’une période additionnent les notes d’édition (sur 100) de tous les événements de chaque édition, pas seulement des trois premiers : un événement compte dès qu’il occupe la Une d’au moins un média de la région.</p>
 <hr />
 <h2 id="validation-et-fiabilité">7. Validation et fiabilité</h2>
 <h3 id="taux-de-fiabilité">7.1 Taux de fiabilité</h3>
@@ -712,7 +713,7 @@
 </ul>
 <h3 id="en-pipeline">3.2 Extraction pipeline</h3>
 <p>Every 4 hours, the headline and text of each front-page story are analyzed by a <strong>large language model</strong>, which extracts the salient objects (people, issues, institutions, places) without relying on a closed list — so a new actor or an unexpected crisis can be detected. The same model harmonizes the variants of an object (<em>Donald J. Trump</em>, <em>Trump</em>, <em>the U.S. president</em>) and its French–English correspondences (<em>Cour suprême</em> / <em>Supreme Court</em>), an essential step to compare outlets in different languages. Since May 2025, this model is <strong>GPT-4o</strong> (OpenAI).</p>
-<p>Grouping front pages into <strong>events</strong> (articles from several outlets covering the same story) is done by <strong>Claude Sonnet 5</strong> (Anthropic) since late August 2026. The event series since May 2025 was recomputed with the same model, except for 23 July to 26 August 2026, grouped by GPT-4o.</p>
+<p>Grouping front pages into <strong>events</strong> (articles from several outlets covering the same story) is done by <strong>Claude Sonnet 5</strong> (Anthropic). On the site, events from 16 October 2025 to 15 October 2026 are those of the <strong>reference year</strong> released with the Radar+ scientific article: a series recomputed in one pass, with this model and the rules described here. From 16 October 2026 on, they are those of the series computed live.</p>
 <p>A second, <strong>fully local</strong> chain analyzes the same front pages in parallel: <strong>GLiNER</strong>, an open named-entity recognition model, then <strong>Gemma 3</strong> (Google DeepMind), run on our own servers, for bilingual normalization. It is currently used for tone analysis. The team’s goal is to entrust it with object extraction as well, for data sovereignty, commercial independence and reproducibility; this is not the case yet, as its validation is not finished.</p>
 <h3 id="en-validation">3.3 Human validation</h3>
 <p>Object extraction is compared with a <strong>human reference annotation</strong> (about 300 articles annotated by the team). This benchmark is used to choose models and to measure their gap with human judgment; its results and limits are detailed in the scientific article associated with Radar+, in preparation.</p>
@@ -760,6 +761,7 @@
 <tr class="odd"><td>Vancouver Sun</td><td style="text-align: right;">505.3</td></tr>
 </tbody>
 </table>
+<p>The reference year (16 October 2025 to 15 October 2026) uses a table recomputed on the same basis as the minutes counted within a 4-hour edition (May to July 2026: from 59 minutes for TVA Nouvelles to 158 for the Vancouver Sun). The live series will adopt it at its next update.</p>
 <p>From this base, two weightings are computed for each headline:</p>
 <ul>
 <li>the <strong>intra-outlet weighting</strong>: <code>pond_time = headline_minutes / mean_time_outlet</code>, which scales front-page time relative to the outlet’s average;</li>
@@ -837,7 +839,7 @@
 </tr>
 </tbody>
 </table>
-<p>On the site, each block is named after the release time of its <strong>edition</strong>, one hour after the block ends (“the 8 p.m. edition”). A <strong>day</strong> gathers the editions released that day, from midnight to 8 p.m., Montreal time. The <strong>week</strong> runs from Monday to Sunday; months and years follow the calendar. The choice of window strongly influences interpretations: a topic can rank first on a 4h block without making the weekly top 20.</p>
+<p>On the site, each block is named after the release time of its <strong>edition</strong>, one hour after the block ends (“the 8 p.m. edition”). A <strong>day</strong> gathers the editions released that day, from midnight to 8 p.m., Montreal time. The <strong>week</strong> runs from Monday to Sunday; months and years follow the calendar. The choice of window strongly influences interpretations: a topic can rank first on a 4h block without making the weekly top 20. The <strong>points</strong> of a period add up the edition scores (out of 100) of every event in each edition, not only the top three: an event counts as soon as it leads the front page of at least one outlet of the region.</p>
 <hr />
 <h2 id="en-validation-fiabilite">7. Validation and reliability</h2>
 <h3 id="en-fiabilite">7.1 Reliability rate</h3>

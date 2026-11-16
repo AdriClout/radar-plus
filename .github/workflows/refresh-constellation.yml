@@ -79,6 +79,17 @@ jobs:
           pip install boto3 --quiet
           python3 pipeline/fetch_data.py constellation
 
+      # Année publiée de l'article 2 (pipeline/archive_these.json) : cartes et relevé
+      # complet des tables `_these*` de DEV, jusqu'à la fin déclarée ; la PROD ne
+      # fournit ensuite que les journées qui suivent. Le site et l'article donnent
+      # ainsi les mêmes points sur l'année (décision d'Adrien, 15 nov. 2026).
+      - name: Fetch année publiée de l'article 2 (AWS DEV, tables _these*)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          AWS_DEFAULT_REGION: ca-central-1
+        run: python3 pipeline/fetch_data.py archive
+
       - name: Fetch Athena data — histoires (AWS PROD, comme la Vitrine)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}

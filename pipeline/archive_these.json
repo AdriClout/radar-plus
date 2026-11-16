@@ -1,0 +1,78 @@
+{
+  "note": "Année publiée de l'article 2 (série recalculée par le pilote de la thèse, aws-refiners#207) : tables suffixées de DEV, une fenêtre de calcul par plage de journées de Montréal (blocs 03-07 … 23-03), la fenêtre amont garde les jours de chevauchement. Mêmes tables que gel_v2 (8 nov. 2026), prolongées par annee4a et annee4b (lancées le 15 nov. 2026). Le site lit ces tables jusqu'à `fin`, puis la production. Une fenêtre n'est lue que si `pret` vaut true (calcul fini et vérifié) ; la fin effective est celle de la dernière fenêtre prête.",
+  "code": "aws-refiners pilote/these-2026-11-heure @ 58a5d6c",
+  "debut": "2025-10-16",
+  "fin": "2026-11-15",
+  "fenetres": [
+    {
+      "nom": "annee1a",
+      "suffixe": "_theseannee1a",
+      "debut": "2025-10-16",
+      "fin": "2025-11-30",
+      "pret": true
+    },
+    {
+      "nom": "annee1b",
+      "suffixe": "_theseannee1b",
+      "debut": "2025-12-01",
+      "fin": "2026-01-14",
+      "pret": true
+    },
+    {
+      "nom": "annee2a",
+      "suffixe": "_theseannee2a",
+      "debut": "2026-01-15",
+      "fin": "2026-03-05",
+      "pret": true
+    },
+    {
+      "nom": "annee2b",
+      "suffixe": "_theseannee2b",
+      "debut": "2026-03-06",
+      "fin": "2026-04-24",
+      "pret": true
+    },
+    {
+      "nom": "printemps",
+      "suffixe": "_theseprintemps",
+      "debut": "2026-04-25",
+      "fin": "2026-05-31",
+      "pret": true
+    },
+    {
+      "nom": "annee3",
+      "suffixe": "_theseannee3",
+      "debut": "2026-06-01",
+      "fin": "2026-07-31",
+      "pret": true
+    },
+    {
+      "nom": "annee3b",
+      "suffixe": "_theseannee3b",
+      "debut": "2026-08-01",
+      "fin": "2026-09-14",
+      "pret": true
+    },
+    {
+      "nom": "automne",
+      "suffixe": "_these",
+      "debut": "2026-09-15",
+      "fin": "2026-10-15",
+      "pret": true
+    },
+    {
+      "nom": "annee4a",
+      "suffixe": "_theseannee4a",
+      "debut": "2026-10-16",
+      "fin": "2026-10-31",
+      "pret": false
+    },
+    {
+      "nom": "annee4b",
+      "suffixe": "_theseannee4b",
+      "debut": "2026-11-01",
+      "fin": "2026-11-15",
+      "pret": false
+    }
+  ]
+}

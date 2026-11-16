@@ -25,7 +25,7 @@
     tres_elevee: { line: 'rgba(255,143,92,0.70)',  text: 'rgba(255,200,160,0.98)' },
     extreme:     { line: 'rgba(255,90,90,0.80)',   text: 'rgba(255,180,180,1)' }
   };
-  var FIRST_YEAR = 2026;
+  var FIRST_YEAR = 2025;   // année publiée de l'article 2 (16 oct. 2025 →), puis le direct
   var TOP_N = 10;
 
   var store = { index: null, storylines: {}, loading: {} };
