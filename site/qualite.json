@@ -1,5 +1,5 @@
 {
- "genere_le": "2026-11-15T22:30:00+00:00",
+ "genere_le": "2026-11-16T19:30:00+00:00",
  "version": 2,
  "note": "Chaque statut est traçable à un verdict chiffré (aws-refiners#207). Un segment non audité est affiché « sous surveillance », jamais « validé ».",
  "note_concordance": "Le taux de concordance compare la Une enregistrée à ce que la chaîne d'extraction actuelle retrouve sur la page d'accueil archivée au même moment. Il mesure la cohérence de la collecte, pas l'accord éditorial sur ce qu'est une Une. Le résidu tient surtout aux deux minutes qui séparent les deux captures : si la Une change dans cet intervalle, les deux sources diffèrent sans que l'une ait tort.",
@@ -166,7 +166,7 @@
      "debut": "2026-11-05",
      "fin": null,
      "statut": "surveillance",
-     "resume": "Collecte courante avec l'extracteur corrigé (aws-infra#484, #705) : 144 captures les 5 et 6 novembre, 130 le 7, puis 76 sur les 96 créneaux écoulés le 8 à 16 h UTC (mesure du 8 novembre 2026 dans la table brute de production). Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
+     "resume": "Collecte courante avec l'extracteur corrigé (aws-infra#484, #705) : 144 captures les 5 et 6 novembre, 130 le 7, puis 76 sur les 96 créneaux écoulés le 8 à 16 h UTC (mesure du 8 novembre 2026 dans la table brute de production). Nouvelle baisse dès le 12 novembre : 129 captures le 12, puis 81 à 105 du 13 au 15, et 61 sur les 96 créneaux écoulés le 16 à 16 h UTC (mesure du 16 novembre 2026 ; voir le trou). Un jour non audité n'est jamais « validé » ; veillée en continu par le garde-Une quotidien et le sonar du pipeline.",
      "preuve": {
       "reference": "aws-infra#484 · aws-infra#705 · mesure du 8 novembre 2026 dans la table brute de production · aws-refiners#286 (garde-Une) · sonar-pipeline"
      }
@@ -202,6 +202,12 @@
      "fin": "2026-11-04",
      "jours": 28,
      "cause": "Collecte dégradée : 23 à 134 captures par jour, moins de 100 sur 22 des 28 jours, pour 144 attendues (table brute de production, mesure du 8 nov. 2026 ; extracteur réparé le 5 nov., aws-infra#484) — trou historique rejouable depuis les pages d'accueil archivées, rejeu à faire"
+    },
+    {
+     "debut": "2026-11-12",
+     "fin": "2026-11-16",
+     "jours": 5,
+     "cause": "Collecte de nouveau dégradée : 129 captures le 12 novembre, 81 le 13, 89 le 14, 105 le 15, puis 61 sur les 96 créneaux écoulés le 16 à 16 h UTC, pour 144 attendues (table brute de production, mesure du 16 nov. 2026). Les pages d'accueil sont archivées (143 à 144 par jour) : c'est la lecture de l'article qui échoue. En cours au 16 novembre ; rejouable depuis les pages archivées, rejeu à faire"
     }
    ],
    "concordance": {
@@ -907,6 +913,12 @@
      "fin": "2024-04-08",
      "jours": 12,
      "cause": "panne du hub d'archivage"
+    },
+    {
+     "debut": "2026-10-31",
+     "fin": "2026-11-01",
+     "jours": 2,
+     "cause": "Aucune Une enregistrée du 31 octobre à 7 h 57 UTC au 2 novembre à 1 h 57 UTC (48 captures le 31, aucune le 1er novembre, pour 144 attendues par jour ; table brute de production, mesure du 16 nov. 2026). La collecte reprend à la même minute que celle de CNN. Les 144 pages d'accueil de chaque jour sont archivées : rejouable, rejeu à faire"
     }
    ],
    "concordance": {
