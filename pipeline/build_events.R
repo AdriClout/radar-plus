@@ -357,11 +357,16 @@ for (rk in c("QC", "ROC")) {
   series_df <- by_bs |> arrange(block_ts)
   # Médias de la région qui ont porté l'histoire sur toute sa vie, du plus fréquent au
   # moins fréquent (puces du Classement quand les fichiers du jour ne sont pas chargés).
-  med_long <- bind_rows(sr |> select(sid, meds), d |> transmute(sid, meds = if (rk == "QC") media_ids_qc else media_ids_roc))
+  # Les médias des autres régions (et des États-Unis) qui ont aussi porté l'histoire suivent,
+  # à part (`outlets_other`), pour montrer qu'elle a franchi la frontière (Adrien, 16 nov. 2026).
+  med_long <- bind_rows(sr |> select(sid, meds),
+                        d |> transmute(sid, meds = media_ids_qc),
+                        d |> transmute(sid, meds = media_ids_roc))
   med_long <- tibble::tibble(sid = rep(med_long$sid, lengths(m <- lapply(med_long$meds, ids_of))), media = unlist(m))
-  outlets_of <- med_long |> filter(media %in% PANEL_REGION[[rk]]) |> count(sid, media) |>
-    arrange(sid, desc(n), media) |> group_by(sid) |> summarise(outlets = list(media), .groups = "drop")
-  outlets_of <- setNames(outlets_of$outlets, outlets_of$sid)
+  ordered_list <- function(x) x |> count(sid, media) |> arrange(sid, desc(n), media) |>
+    group_by(sid) |> summarise(l = list(media), .groups = "drop") |> (\(t) setNames(t$l, t$sid))()
+  outlets_of       <- ordered_list(med_long |> filter(media %in% PANEL_REGION[[rk]]))
+  outlets_other_of <- ordered_list(med_long |> filter(!media %in% PANEL_REGION[[rk]], nzchar(media)))
   # Manchette représentative la plus récente par storyline (pour les lignes cliquables) :
   # seulement les histoires passées au podium (le relevé complet ne porte pas d'URL).
   last_rows <- d |> arrange(desc(block_ts), desc(index)) |> group_by(sid) |>
@@ -394,6 +399,7 @@ for (rk in c("QC", "ROC")) {
       url        = if (nrow(lr) && !is.na(lr$url[1])) lr$url[1] else NULL,
       media      = if (nrow(lr) && !is.na(lr$media[1])) lr$media[1] else NULL,
       outlets    = I(if (!is.null(outlets_of[[s]])) outlets_of[[s]] else character(0)),
+      outlets_other = I(if (!is.null(outlets_other_of[[s]])) outlets_other_of[[s]] else character(0)),
       last_event_id = if (nrow(lr)) lr$last_event_id[1] else NULL,
       series     = as.list(setNames(round(ser$sumVal, 3), ser$period_key)),
       sum24h     = if (!is.null(cum)) cum else setNames(list(), character(0)),

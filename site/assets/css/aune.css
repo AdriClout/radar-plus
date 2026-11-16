@@ -139,6 +139,9 @@
   background: rgba(20,40,110,0.3); transition: border-color 0.15s, color 0.15s;
 }
 .aune-media-chip:hover { border-color: var(--accent); color: #fff; }
+/* Média d'une autre région (ou des États-Unis) qui a aussi porté l'histoire : en retrait, pointillé. */
+.aune-media-chip.other { opacity: .55; border-style: dashed; }
+.aune-media-chip.other:hover { opacity: 1; }
 /* Score comme le Hot 20 : chiffre et variation, la barre, puis la part de l'actualité sous la barre */
 .aune-row-score { justify-self: end; width: 210px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: baseline; }
 /* Le nombre et son unité restent sur une ligne, même à quatre chiffres (« 1110.2 points cumulés »). */

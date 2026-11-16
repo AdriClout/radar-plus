@@ -637,6 +637,7 @@
       "custom": "Points summed by edition over the chosen period."
     },
     "open_random": "Open one of the outlets that covered this front page (at random)",
+    "other_region": "outlet from another region that also carried this event",
     "title_from": {
       "peak": "The title shown is the one from that block ({label}).",
       "last": "The title shown is the one from the latest appearance ({label})."

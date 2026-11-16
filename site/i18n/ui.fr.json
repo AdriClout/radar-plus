@@ -637,6 +637,7 @@
       "custom": "Points cumulés par édition sur la période choisie."
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
+    "other_region": "média d'une autre région, qui a aussi porté cet événement",
     "title_from": {
       "peak": "Le titre affiché est celui de ce bloc ({label}).",
       "last": "Le titre affiché est celui de la dernière apparition ({label})."
