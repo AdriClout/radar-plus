@@ -574,6 +574,9 @@
     "site_row": "Présenté sur le site",
     "site_objects": "L'indice des objets depuis le",
     "site_events": "les événements depuis le",
+    "site_events_first": "Les événements depuis le",
+    "site_events_ref": "(année de référence de l'article scientifique de Radar+, recalculée d'un seul tenant, puis la série en direct)",
+    "site_objects_after": "l'indice des objets depuis le",
     "site_rest": "Le corpus antérieur est collecté et vérifié, mais pas encore calculé avec l'indice actuel ; son recalcul avec la même formule est prévu."
   },
   "aune": {
