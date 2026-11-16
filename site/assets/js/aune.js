@@ -76,7 +76,8 @@ function auneDayStart(t) { var q = mtlParts(new Date(t)); return mtlMidnightUtc(
 // Périodes FIXES (Classement) : la campagne électorale québécoise 2026, du déclenchement (jeudi 27 août)
 // au lendemain du scrutin (mardi 6 octobre : résultats et réactions ; Adrien, 1er nov. 2026), et la période choisie au calendrier.
 // offset −1 = la période de même durée juste avant (sert au mouvement), comme les autres vues.
-var AUNE_FIXED = { elecqc2026: ['2026-08-27', '2026-10-06'], custom: null };
+// L'année de référence de l'article scientifique (16 oct. 2025 → 15 oct. 2026, fin incluse ; Adrien, 15 nov. 2026).
+var AUNE_FIXED = { elecqc2026: ['2026-08-27', '2026-10-06'], anneeref: ['2025-10-16', '2026-10-15'], custom: null };
 function auneIsFixed(range) { return Object.prototype.hasOwnProperty.call(AUNE_FIXED, range); }
 function auneFixedSpan(range) {
   var span = range === 'custom' ? (cfg.customFrom && cfg.customTo ? [cfg.customFrom, cfg.customTo] : null) : AUNE_FIXED[range];
@@ -87,7 +88,7 @@ function auneFixedSpan(range) {
 }
 // « Hot 20 » : semaine, mois, année, élections, et une période choisie d'au moins 7 jours.
 function auneIsHot(range, offset) {
-  if (['week', 'month', 'year', 'elecqc2026'].indexOf(range) !== -1) return true;
+  if (['week', 'month', 'year', 'elecqc2026', 'anneeref'].indexOf(range) !== -1) return true;
   if (range !== 'custom') return false;
   var w = auneWindow(range, offset || 0); return w[1] - w[0] >= 7 * 86400e3 - 3 * 3600e3;
 }
@@ -439,7 +440,10 @@ function auneNavLabelRaw(range, offset, lang, T) {
   if (range === 'year') return fmt(w[0] + 12 * 3600e3, { year: 'numeric' });
   if (auneIsFixed(range)) {
     if (w[1] - w[0] <= 26 * 3600e3) return fmt(w[0] + 12 * 3600e3, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); // une seule journée
-    var span = fmt(w[0] + 12 * 3600e3, { day: 'numeric', month: 'short' }) + ' – ' + fmt(w[1] - 12 * 3600e3, { day: 'numeric', month: 'short', year: 'numeric' });
+    // L'année du début n'est écrite que si elle diffère de celle de la fin (« 16 oct. 2025 – 15 oct. 2026 »).
+    var y0 = fmt(w[0] + 12 * 3600e3, { year: 'numeric' }), y1 = fmt(w[1] - 12 * 3600e3, { year: 'numeric' });
+    var span = fmt(w[0] + 12 * 3600e3, y0 === y1 ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' }) + ' – ' + fmt(w[1] - 12 * 3600e3, { day: 'numeric', month: 'short', year: 'numeric' });
+    if (range === 'anneeref' && !offset) return T('aune.ref_label') + ' · ' + span;
     return range === 'elecqc2026' && !offset ? T('aune.elec_label') + ' · ' + span : span;
   }
   return '';
@@ -450,6 +454,7 @@ function auneNavSub(range, offset, lang, T) { return auneFr1er(auneNavSubRaw(ran
 function auneNavSubRaw(range, offset, lang, T) {
   if (range === '24h') return T('classement.nav_sub_24h');
   if (range === 'elecqc2026' && !offset) return T('classement.nav_sub_elec');
+  if (range === 'anneeref' && !offset) return T('classement.nav_sub_ref');
   var w = auneWindow(range, offset), loc = lang === 'en' ? 'en-CA' : 'fr-CA';
   if (range === 'custom') { var f = function(t) { return new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(t)); }; var nd = Math.round((w[1] - w[0]) / 86400e3); return nd <= 1 ? T('classement.nav_sub_custom_day') : T('classement.nav_sub_custom', { from: f(w[0] + 12 * 3600e3), to: f(w[1] - 12 * 3600e3), days: nd }); }
   var date = new Intl.DateTimeFormat(loc, { timeZone: 'America/Montreal', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(w[0] + 12 * 3600e3));
@@ -957,6 +962,7 @@ function periodSlug(range, offset) {
   if (range === 'week') return 'semaine-' + p(auneIsoWeek(w[0] + 12 * 3600e3)) + '-' + mtlParts(new Date(w[1] - 12 * 3600e3)).y;
   if (range === 'month') return 'mois-' + q.y + '-' + p(q.m);
   if (range === 'elecqc2026') return 'elections-qc-2026';
+  if (range === 'anneeref') return 'annee-reference-2025-2026';
   if (range === 'custom') { var z = mtlParts(new Date(w[1] - 12 * 3600e3)); return 'du-' + q.y + '-' + p(q.m) + '-' + p(q.d) + '-au-' + z.y + '-' + p(z.m) + '-' + p(z.d); }
   return 'annee-' + q.y;
 }

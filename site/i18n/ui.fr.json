@@ -124,7 +124,7 @@
   },
   "country": {
     "QC": "Québec",
-    "CAN": "Canada",
+    "CAN": "Canada hors Québec",
     "USA": "États-Unis"
   },
   "period": {
@@ -188,7 +188,7 @@
     "header_articles": "Articles",
     "country_label": "Pays",
     "country_qc": "Québec",
-    "country_can": "Canada",
+    "country_can": "Canada hors Québec",
     "country_usa": "États-Unis",
     "next_update": "Prochaine mise à jour",
     "previous_week_aria": "Période précédente",
@@ -606,6 +606,7 @@
       "year": "Cette année",
       "today": "Aujourd'hui",
       "elecqc2026": "Élections QC 2026",
+      "anneeref": "Année de référence",
       "custom": "Période personnalisée"
     },
     "range_sub": {
@@ -632,6 +633,7 @@
       "year": "Points gagnés cette année (somme des éditions).",
       "today": "Points gagnés depuis minuit (somme des éditions).",
       "elecqc2026": "Points cumulés par édition pendant la campagne électorale, du 27 août au 6 octobre 2026 (lendemain du scrutin).",
+      "anneeref": "Points cumulés par édition sur l'année de référence de l'article scientifique de Radar+, du 16 octobre 2025 au 15 octobre 2026.",
       "custom": "Points cumulés par édition sur la période choisie."
     },
     "open_random": "Ouvrir un des médias qui ont couvert cette Une (au hasard)",
@@ -675,6 +677,7 @@
       "month": "mois",
       "year": "année",
       "elecqc2026": "période",
+      "anneeref": "période",
       "custom": "période"
     },
     "unit_many": {
@@ -684,6 +687,7 @@
       "month": "mois",
       "year": "années",
       "elecqc2026": "périodes",
+      "anneeref": "périodes",
       "custom": "périodes"
     },
     "vs": {
@@ -693,6 +697,7 @@
       "month": "mois dernier",
       "year": "an dernier",
       "elecqc2026": "40 jours avant",
+      "anneeref": "année précédente",
       "custom": "période préc."
     },
     "vs_prev": {
@@ -702,6 +707,7 @@
       "month": "mois préc.",
       "year": "an préc.",
       "elecqc2026": "période préc.",
+      "anneeref": "année préc.",
       "custom": "période préc."
     },
     "art_info": "Crédit de l'illustration",
@@ -741,9 +747,11 @@
       "month": "{pct} % du radar ce mois-ci",
       "year": "{pct} % du radar cette année",
       "elecqc2026": "{pct} % du radar pendant la campagne",
+      "anneeref": "{pct} % du radar sur l'année de référence",
       "custom": "{pct} % du radar sur la période"
     },
     "elec_label": "Élections québécoises 2026",
+    "ref_label": "Année de référence de l'article",
     "empty_period": "Aucune histoire en Une pour cette période.",
     "fallback": {
       "today": "Pas encore d'édition publiée aujourd'hui : voici les trois histoires qui ont dominé les Unes hier.",
@@ -769,6 +777,7 @@
       "month": "Le Hot 20 du mois : les histoires qui ont fait les Unes ce mois-ci, classées par points cumulés par édition.",
       "year": "Le Hot 20 de l'année : les histoires qui ont fait les Unes cette année, classées par points cumulés par édition.",
       "elecqc2026": "Le Hot 20 de la campagne électorale québécoise 2026 : du déclenchement (27 août) au lendemain du scrutin (6 octobre), classé par points cumulés par édition.",
+      "anneeref": "Le Hot 20 de l'année de référence de l'article scientifique de Radar+ (16 octobre 2025 au 15 octobre 2026), classé par points cumulés par édition.",
       "custom": "Les histoires de la période choisie, classées par points cumulés par édition."
     },
     "title_accent_objects": "des objets",
@@ -787,6 +796,7 @@
       "month": "Le Hot 20 du mois : les sujets, acteurs et lieux en Une ce mois-ci, classés par points cumulés par édition.",
       "year": "Le Hot 20 de l'année : les sujets, acteurs et lieux en Une cette année, classés par points cumulés par édition.",
       "elecqc2026": "Le Hot 20 des sujets, acteurs et lieux de la campagne électorale québécoise 2026, du 27 août au lendemain du scrutin (6 octobre).",
+      "anneeref": "Le Hot 20 des sujets, acteurs et lieux sur l'année de référence ; l'indice des objets n'est en ligne que depuis le 14 juillet 2026.",
       "custom": "Les sujets, acteurs et lieux de la période choisie, classés par points cumulés par édition."
     },
     "download": "Télécharger (CSV)",
@@ -823,6 +833,7 @@
       "foot_scan": "Voir le classement en ligne"
     },
     "nav_sub_elec": "Du déclenchement (27 août) au lendemain du scrutin (6 octobre)",
+    "nav_sub_ref": "Du 16 octobre 2025 au 15 octobre 2026, l'année étudiée par l'article scientifique de Radar+",
     "nav_sub_custom": "Points cumulés du {from} au {to} · {days} jours",
     "custom_from": "Du",
     "custom_to": "au",
@@ -890,7 +901,7 @@
     "band_tres_elevee": "Saillance très élevée",
     "band_extreme": "Saillance extrême",
     "region_QC": "Québec",
-    "region_CAN": "Canada",
+    "region_CAN": "Canada hors Québec",
     "loading": "Chargement…",
     "type_objects": "un objet (sujet, acteur, lieu)",
     "type_events": "un événement (une histoire)",

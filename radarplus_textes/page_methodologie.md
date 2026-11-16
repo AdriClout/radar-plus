@@ -122,7 +122,7 @@ Comme la page entière est archivée, la position et la taille de chaque titre r
 Au moment de la mise en ligne publique du site, Radar+ collecte les pages d'accueil de **15 médias actifs** répartis comme suit :
 
 - **Québec (6)** : Radio-Canada, La Presse, Le Devoir, TVA Nouvelles, Journal de Montréal, Montreal Gazette
-- **Canada anglophone (7)** : CBC, CTV News, Global News, Toronto Star, The Globe and Mail, National Post, Vancouver Sun
+- **Canada hors Québec (7)** : CBC, CTV News, Global News, Toronto Star, The Globe and Mail, National Post, Vancouver Sun
 - **États-Unis (2)** : CNN, Fox News
 
 D'autres sources américaines (*The New York Times*, *The Wall Street Journal*) ont été suivies par le passé puis débranchées, principalement pour des raisons d'accès et d'évolution de paywalls. Une expansion vers les médias britanniques, français et belges est en cours, ce qui portera la couverture à **41 médias** à terme.
@@ -249,7 +249,7 @@ Toutes les valeurs relatives d'une fenêtre somment donc à 100 %. Cette normali
 
 - des périodes différentes (un mois calme c. un mois électoral);
 - des médias différents (la saillance du climat à Radio-Canada c. à TVA Nouvelles);
-- des univers médiatiques différents (Québec c. Canada anglophone c. États-Unis).
+- des univers médiatiques différents (Québec c. Canada hors Québec c. États-Unis).
 
 Pour les classements (Hot 20), certains objets purement géographiques très englobants — comme « quebec », « montreal », « canada » — sont exclus, parce qu'ils figurent presque toujours en tête sans véritable signal éditorial.
 
