@@ -62,6 +62,10 @@ write_v2 <- function(x, ...) {
 
 REGIME_FROM    <- if (!is.null(ARCHIVE) && file.exists(ARCHIVE_EVENTS)) ARCHIVE$debut else "2026-07-23"
 REGION_OF      <- c(QC = "QC", ROC = "CAN")   # clé de la table → clé du site
+# Panel de chaque région : les médias qui ont couvert une histoire se lisent dans
+# le relevé complet (media_ids, toutes régions) et dans les cartes (media_ids_qc/_roc).
+PANEL_REGION   <- list(QC  = c("LAP", "JDM", "TVA", "RCI", "LED", "MG"),
+                       ROC = c("CBC", "CTV", "GN", "NP", "GAM", "TTS", "VS"))
 TOP_PER_BLOCK  <- 3L
 EV_MAX_ARTICLES <- 12L
 PAGES_PERMANENTES <- c(
@@ -200,7 +204,8 @@ if (nrow(st_df)) {
 # Points des périodes : relevé complet (tous les événements de l'édition, note de la
 # région > 0), sinon les cartes. Une ligne par (bloc, event_id), la plus forte.
 series_rows <- function(rk, d) {
-  cards <- d |> transmute(period_key, block_ts, sid, event_id, index, titre, event_label, first_seen_utc)
+  cards <- d |> transmute(period_key, block_ts, sid, event_id, index, titre, event_label, first_seen_utc,
+                          meds = if (rk == "QC") media_ids_qc else media_ids_roc)
   if (!nrow(st_df)) return(cards)
   col <- if (rk == "QC") "idx_qc" else "idx_roc"
   full <- st_df |>
@@ -209,7 +214,7 @@ series_rows <- function(rk, d) {
     group_by(period_key, event_id) |>
     slice_max(index, n = 1, with_ties = FALSE) |>
     ungroup() |>
-    transmute(period_key, block_ts, sid, event_id, index, titre, event_label, first_seen_utc)
+    transmute(period_key, block_ts, sid, event_id, index, titre, event_label, first_seen_utc, meds = media_ids)
   # Blocs sans relevé complet (journées en direct tant que ses colonnes manquent au
   # catalogue de production) : le podium.
   bind_rows(full, cards |> filter(!period_key %in% unique(full$period_key)))
@@ -350,6 +355,18 @@ for (rk in c("QC", "ROC")) {
            first_seen  = coalesce(first_seen_c, first_seen_s)) |>
     filter(!is.na(title))
   series_df <- by_bs |> arrange(block_ts)
+  # Médias de la région qui ont porté l'histoire sur toute sa vie, du plus fréquent au
+  # moins fréquent (puces du Classement quand les fichiers du jour ne sont pas chargés).
+  # Les médias des autres régions (et des États-Unis) qui ont aussi porté l'histoire suivent,
+  # à part (`outlets_other`), pour montrer qu'elle a franchi la frontière (Adrien, 16 nov. 2026).
+  med_long <- bind_rows(sr |> select(sid, meds),
+                        d |> transmute(sid, meds = media_ids_qc),
+                        d |> transmute(sid, meds = media_ids_roc))
+  med_long <- tibble::tibble(sid = rep(med_long$sid, lengths(m <- lapply(med_long$meds, ids_of))), media = unlist(m))
+  ordered_list <- function(x) x |> count(sid, media) |> arrange(sid, desc(n), media) |>
+    group_by(sid) |> summarise(l = list(media), .groups = "drop") |> (\(t) setNames(t$l, t$sid))()
+  outlets_of       <- ordered_list(med_long |> filter(media %in% PANEL_REGION[[rk]]))
+  outlets_other_of <- ordered_list(med_long |> filter(!media %in% PANEL_REGION[[rk]], nzchar(media)))
   # Manchette représentative la plus récente par storyline (pour les lignes cliquables) :
   # seulement les histoires passées au podium (le relevé complet ne porte pas d'URL).
   last_rows <- d |> arrange(desc(block_ts), desc(index)) |> group_by(sid) |>
@@ -381,6 +398,8 @@ for (rk in c("QC", "ROC")) {
       first_seen = if (!is.na(meta_story$first_seen[j])) meta_story$first_seen[j] else NULL,
       url        = if (nrow(lr) && !is.na(lr$url[1])) lr$url[1] else NULL,
       media      = if (nrow(lr) && !is.na(lr$media[1])) lr$media[1] else NULL,
+      outlets    = I(if (!is.null(outlets_of[[s]])) outlets_of[[s]] else character(0)),
+      outlets_other = I(if (!is.null(outlets_other_of[[s]])) outlets_other_of[[s]] else character(0)),
       last_event_id = if (nrow(lr)) lr$last_event_id[1] else NULL,
       series     = as.list(setNames(round(ser$sumVal, 3), ser$period_key)),
       sum24h     = if (!is.null(cum)) cum else setNames(list(), character(0)),

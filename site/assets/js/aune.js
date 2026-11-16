@@ -138,7 +138,9 @@ function aunePrevEditionStart() { var t = auneEditionStart(cfg.offset); return t
 // Clé 'AAAA-MM-JJ_HH-HH' (UTC) du bloc qui commence à t.
 function auneKeyAt(t) {
   var d = new Date(t), h = d.getUTCHours(), p = function(n) { return (n < 10 ? '0' : '') + n; };
-  return d.toISOString().slice(0, 10) + '_' + p(h) + '-' + p((h + 4) % 24);
+  // Le bloc qui finit à minuit s'écrit « 20-24 » dans les données (pas « 20-00 ») ; celui qui la
+  // franchit garde « 23-03 » (grille de l'année de référence).
+  return d.toISOString().slice(0, 10) + '_' + p(h) + '-' + p(h + 4 === 24 ? 24 : (h + 4) % 24);
 }
 // Niveau de l'indice 24h (seuils sum24h de events/index.json), pour une édition passée.
 // Clé de l'édition affichée : la dernière publiée (offset 0) ou une édition passée (Classement).
@@ -300,6 +302,7 @@ function auneRanking24hAt(region, t, limit) {
     var st = auneStoryline(region, sid) || {};
     var ttl = (st.peak_key && st.peak_key <= key && st.title_peak) ? st.title_peak : (st.title_last || st.title || '');
     return { storyline: sid, title: ttl, issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media,
+             outlets: st.outlets, outlets_other: st.outlets_other,
              points: Number(vals[sid]) || 0, blocks: 0, band: auneBand24h(region, Number(vals[sid]) || 0), lastKey: key, first_key: st.first_key, is24h: true };
   }).filter(function(it) { return it.points > 0; });
   list.sort(function(a, b) { return b.points - a.points; });
@@ -351,10 +354,13 @@ function auneDeltaHtml(c, T) {
   // L'unité suit toujours le chiffre (Adrien, 31 oct. 2026)
   return '<span class="inc ' + cls + ' hot20-hint" data-tip="' + escapeHtml(tip) + '">' + txt + ' <span class="pts">' + escapeHtml(T('aune.points_short')) + '</span></span>';
 }
-function auneRanking24h(latest, limit) {
+function auneRanking24h(latest, limit, region) {
   var cur = (latest && latest.current) || [];
   return cur.slice().sort(function(a, b) { return (b.sum24h || 0) - (a.sum24h || 0); }).slice(0, limit).map(function(c) {
+    // Médias de la fiche (région, puis ailleurs), comme pour les autres périodes (Adrien, 16 nov. 2026).
+    var st = (region && auneStoryline(region, c.storyline)) || {};
     return { storyline: c.storyline, title: c.title || '', issue_fr: c.issue_fr, issue_en: c.issue_en, url: c.url, media: c.media,
+             outlets: st.outlets, outlets_other: st.outlets_other,
              points: Number(c.sum24h) || 0, blocks: c.n_blocks || 0, band: c.band24h || 'aucune', lastKey: c.last_key, first_key: c.first_key, is24h: true };
   });
 }
@@ -379,8 +385,8 @@ function auneRanking(region, range, limit, win) {
       var peakIn = st.peak_key && periodStartUtc(st.peak_key) >= start && periodStartUtc(st.peak_key) <= now;
       var ttl = (peakIn && st.title_peak) ? st.title_peak : (st.title_last || st.title || '');
       if (!cur) acc[sid] = { storyline: sid, title: ttl, titleFrom: peakIn && st.title_peak ? 'peak' : 'last', titleKey: peakIn ? st.peak_key : st.last_key,
-                             issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
-      else { cur.points += pts; cur.blocks += blocks; if (peak > cur.peak) cur.peak = peak; }
+                             issue_fr: st.issue_fr, issue_en: st.issue_en, url: st.url, media: st.media, outlets: (st.outlets || []).slice(), outlets_other: (st.outlets_other || []).slice(), points: pts, blocks: blocks, peak: peak, lastKey: lastKey };
+      else { cur.points += pts; cur.blocks += blocks; if (peak > cur.peak) cur.peak = peak; (st.outlets || []).forEach(function(m) { if (cur.outlets.indexOf(m) === -1) cur.outlets.push(m); }); (st.outlets_other || []).forEach(function(m) { if (cur.outlets_other.indexOf(m) === -1) cur.outlets_other.push(m); }); }
     });
   });
   var list = Object.keys(acc).map(function(k) { return acc[k]; });
@@ -491,7 +497,23 @@ function auneFicheUrl(c, region) { return './statistiques.html?evenement=' + enc
 function auneIssue(c, lang) { return lang === 'en' ? (c.issue_en || c.issue_fr) : (c.issue_fr || c.issue_en); }
 function auneHeadlines(c, ev, max) {
   var arts = ev && Array.isArray(ev.articles) ? ev.articles.slice(0, max) : [];
-  if (!arts.length && c.url) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
+  // La manchette représentative peut venir d'un média d'une autre région (carte transrégionale) :
+  // on ne la garde que si son média est dans la liste de la région.
+  var outs = Array.isArray(c.outlets) ? c.outlets : null;
+  if (!arts.length && c.url && (!outs || !outs.length || outs.indexOf(c.media) !== -1)) arts = [{ url: c.url, media_id: c.media || '', title: c.title }];
+  // Tous les médias qui ont porté l'histoire (fiche storyline, toute sa vie) : quand leur
+  // article n'est pas dans les fichiers du jour chargés (longues périodes), la puce mène à
+  // la fiche de l'événement plutôt que d'être omise (Adrien, 15 nov. 2026).
+  var seen = {}; arts.forEach(function(a) { if (a) seen[a.media_id] = true; });
+  (Array.isArray(c.outlets) ? c.outlets : []).forEach(function(m) {
+    if (arts.length >= max || seen[m]) return;
+    seen[m] = true; arts.push({ url: auneFicheUrl(c, cfg.country), media_id: m, title: c.title });
+  });
+  // Puis les médias des autres régions qui ont aussi porté l'histoire, en retrait (Adrien, 16 nov. 2026).
+  (Array.isArray(c.outlets_other) ? c.outlets_other : []).forEach(function(m) {
+    if (arts.length >= max || seen[m]) return;
+    seen[m] = true; arts.push({ url: auneFicheUrl(c, cfg.country), media_id: m, title: c.title, other: true });
+  });
   return arts;
 }
 // Clic sur un titre ou une illustration : un média au hasard parmi ceux qui ont
@@ -510,7 +532,9 @@ function auneRandomAttr(urls, T) {
 function auneChipsHtml(arts) {
   if (!arts.length) return '';
   return '<span class="aune-chips">' + arts.map(function(a) {
-    return '<a class="aune-media-chip" href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener" title="' + escapeHtml(a.title || '').replace(/"/g, '&quot;') + '">' + escapeHtml(a.media_id || '') + '</a>';
+    // Pastille en retrait : média d'une autre région (ou des États-Unis) qui a aussi porté l'histoire.
+    var tip = (a.title || '') + (a.other ? ' — ' + (window.t ? window.t('aune.other_region') : '') : '');
+    return '<a class="aune-media-chip' + (a.other ? ' other' : '') + '" href="' + escapeHtml(a.url) + '" target="_blank" rel="noopener" title="' + escapeHtml(tip).replace(/"/g, '&quot;') + '">' + escapeHtml(a.media_id || '') + '</a>';
   }).join('') + '</span>';
 }
 // Illustration de la Vitrine pour CETTE histoire, si elle a été archivée (fetch_art.py) ;
@@ -553,7 +577,7 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
   var band = c.is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
   // Étiquette « Actuellement : … » / « Sommet : … » + « i » : à droite, au-dessus des points (Adrien, 31 oct. 2026).
   var tagHtml = salBadgeHtml(c, region, T);
-  var arts = auneHeadlines(c, ev, 12);
+  var arts = auneHeadlines(c, ev, 15);
   var metaHtml = '<div class="aune-row-meta">' +
       // « Dans le radar depuis … » (première Une captée) et « sommet … » (meilleur bloc de la
       // période, avec son moment) plutôt que des comptes de blocs (Adrien, 31 oct. 2026).
@@ -730,7 +754,7 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
   var rows = items.map(function(c, i) {
     var ev = byStory && byStory[c.storyline], urls = auneUrls(c, ev), rnd = auneRandomAttr(urls, T);
     var band = is24h ? (c.band || 'aucune') : (c.peakBand || 'aucune');
-    var arts = auneHeadlines(c, ev, 12);
+    var arts = auneHeadlines(c, ev, 15);
     var stats = auneChartFor(region, cfg.range, cfg.offset, c.storyline);
     var delta = is24h ? c.points - (c.prev24h || 0) : null;
     var rank = c.rank || (i + 1);
@@ -834,7 +858,7 @@ function renderALaUne() {
   }
   var past24h = is24h && cfg.offset < 0;
   var items = past24h ? auneRanking24hAt(region, auneEditionStart(cfg.offset), 1e9)
-            : is24h ? auneRanking24h(latest, 1e9) : auneRanking(region, cfg.range, 1e9);
+            : is24h ? auneRanking24h(latest, 1e9, region) : auneRanking(region, cfg.range, 1e9);
   items.forEach(function(it, i) { it.rank = i + 1; }); // rang réel, gardé même quand un filtre réduit la liste
   // Filtre de recherche (page Classement) : titre ou thème, sans accents ni casse.
   var q = auneQuery();
