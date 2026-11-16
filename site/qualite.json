@@ -207,7 +207,7 @@
      "debut": "2026-11-12",
      "fin": "2026-11-16",
      "jours": 5,
-     "cause": "Collecte de nouveau dégradée : 129 captures le 12 novembre, 81 le 13, 89 le 14, 105 le 15, puis 61 sur les 96 créneaux écoulés le 16 à 16 h UTC, pour 144 attendues (table brute de production, mesure du 16 nov. 2026). Les pages d'accueil sont archivées (143 à 144 par jour) : c'est la lecture de l'article qui échoue. En cours au 16 novembre ; rejouable depuis les pages archivées, rejeu à faire"
+     "cause": "Collecte de nouveau dégradée : 129 captures le 12 novembre, 81 le 13, 89 le 14, 105 le 15, puis 61 sur les 96 créneaux écoulés le 16 à 16 h UTC, pour 144 attendues (table brute de production, mesure du 16 nov. 2026). Les pages d'accueil sont archivées (143 à 144 par jour) : c'est la lecture de l'article qui échoue : le service de déblocage expire après 50 secondes ou répond en erreur (journaux de l'extracteur, 16 nov.). En cours au 16 novembre ; rejouable depuis les pages archivées, rejeu à faire"
     }
    ],
    "concordance": {
