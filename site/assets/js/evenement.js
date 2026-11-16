@@ -20,7 +20,7 @@ var FALLBACK = {
   'fiche.editions_list': "Toutes les éditions", 'fiche.col_edition': "Édition", 'fiche.col_index': "Indice", 'fiche.col_index24h': "Indice 24h", 'fiche.col_title': "Titre à cette édition",
   'fiche.title_peak': "Titre au sommet", 'fiche.in_ranking': "Voir dans le classement →", 'fiche.not_found': "Événement introuvable dans les données publiées.",
   'fiche.band_aucune': "Sous le radar", 'fiche.band_faible': "Saillance faible", 'fiche.band_moderee': "Saillance modérée", 'fiche.band_elevee': "Saillance élevée", 'fiche.band_tres_elevee': "Saillance très élevée", 'fiche.band_extreme': "Saillance extrême",
-  'fiche.region_QC': "Québec", 'fiche.region_CAN': "Canada", 'fiche.loading': "Chargement…",
+  'fiche.region_QC': "Québec", 'fiche.region_CAN': "Canada hors Québec", 'fiche.loading': "Chargement…",
   'fiche.type_label': "Je cherche", 'fiche.type_objects': "un objet (sujet, acteur, lieu)", 'fiche.type_events': "un événement (une histoire)", 'fiche.search_placeholder': "Rechercher un événement (un mot du titre ou du thème)…",
   'fiche.search_empty': "Recherchez un événement pour afficher sa fiche.", 'fiche.search_none': "Aucun événement ne correspond.", 'fiche.search_hint': "Exemples : cycliste, Carney, budget, grève.",
   'fiche.page_title_events': "Statistiques", 'fiche.page_lead_events': "Un événement : son parcours dans les Unes, édition par édition.",

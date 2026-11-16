@@ -106,7 +106,7 @@
       </div>
       <div class="country-tabs" id="aune-country-tabs">
         <button type="button" class="country-tab active" data-country="QC" data-i18n="country.QC">Québec</button>
-        <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada</button>
+        <button type="button" class="country-tab" data-country="CAN" data-i18n="country.CAN">Canada hors Québec</button>
         <button type="button" class="country-tab obj-only" data-country="USA" data-i18n="country.USA">États-Unis</button>
       </div>
       <div class="aune-tabs" id="aune-tabs" role="tablist">
@@ -116,6 +116,7 @@
         <button type="button" class="aune-tab" data-range="month" data-i18n="aune.range.month">Ce mois-ci</button>
         <button type="button" class="aune-tab" data-range="year" data-i18n="aune.range.year">Cette année</button>
         <button type="button" class="aune-tab cl-tab-elec" data-range="elecqc2026" data-i18n="aune.range.elecqc2026">Élections QC 2026</button>
+        <button type="button" class="aune-tab cl-tab-elec" data-range="anneeref" data-i18n="aune.range.anneeref">Année de référence</button>
         <button type="button" class="aune-tab cl-tab-custom" data-range="custom" id="cl-custom-btn" data-i18n="aune.range.custom">Période personnalisée</button>
       </div>
       <!-- Période personnalisée : deux dates, fin incluse ; le classement additionne les points de chaque édition de la période (Adrien, 31 oct. 2026) -->
@@ -197,7 +198,7 @@
     countries.querySelectorAll('.country-tab').forEach(function(b) { b.classList.toggle('active', b.dataset.country === country); });
   } else country = 'QC';
   window.RadarAune.init({
-    limits: { '24h': 20, today: 20, week: 20, month: 20, year: 20, elecqc2026: 20, custom: 20 }, // Hot 20, événements et objets (Adrien, 31 oct. 2026) ; la recherche fouille toute la liste
+    limits: { '24h': 20, today: 20, week: 20, month: 20, year: 20, elecqc2026: 20, anneeref: 20, custom: 20 }, // Hot 20, événements et objets (Adrien, 31 oct. 2026) ; la recherche fouille toute la liste
     proportionalMax: 0, // jamais de hauteur proportionnelle ni d'illustration : liste serrée
     searchId: 'cl-search', countId: 'cl-count', navId: 'cl-nav', table: true, moreId: 'cl-more',
     subtitleKeys: 'classement.range_sub.',
