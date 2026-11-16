@@ -574,6 +574,9 @@
     "site_row": "Presented on the site",
     "site_objects": "The object index since",
     "site_events": "events since",
+    "site_events_first": "Events since",
+    "site_events_ref": "(the reference year of the Radar+ scientific article, recomputed in one pass, then the live series)",
+    "site_objects_after": "the object index since",
     "site_rest": "The earlier corpus is collected and verified, but not yet computed with the current index; its recomputation with the same formula is planned."
   },
   "aune": {

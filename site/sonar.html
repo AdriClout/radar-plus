@@ -354,11 +354,18 @@
       }
 
       function bulleSite(f) {
-        var corps = t('sonarq.site_objects', "L'indice des objets depuis le") + ' ' + fmtDate(f.objets) +
-          (f.evenements ? ', ' + t('sonarq.site_events', 'les événements depuis le') + ' ' + fmtDate(f.evenements) : '') + '. ' +
+        // Événements depuis l'année de référence de l'article (16 oct. 2025), objets sur
+        // la fenêtre glissante : le plus ancien des deux ouvre le cadre.
+        var evAvant = f.evenements && f.evenements < f.objets;
+        var corps = (evAvant
+            ? t('sonarq.site_events_first', "Les événements depuis le") + ' ' + fmtDate(f.evenements) + ' ' +
+              t('sonarq.site_events_ref', "(année de référence de l'article scientifique de Radar+, recalculée d'un seul tenant, puis la série en direct)") + ', ' +
+              t('sonarq.site_objects_after', "l'indice des objets depuis le") + ' ' + fmtDate(f.objets)
+            : t('sonarq.site_objects', "L'indice des objets depuis le") + ' ' + fmtDate(f.objets) +
+              (f.evenements ? ', ' + t('sonarq.site_events', 'les événements depuis le') + ' ' + fmtDate(f.evenements) : '')) + '. ' +
           t('sonarq.site_rest', "Le corpus antérieur est collecté et vérifié, mais pas encore calculé avec l'indice actuel ; son recalcul avec la même formule est prévu.");
         return '<strong>' + t('sonarq.site_row', 'Présenté sur le site') + '</strong>' +
-               '<div class="quand">' + fmtDate(f.objets) + ' → ' + fmtDate(null) + '</div>' +
+               '<div class="quand">' + fmtDate(f.debut) + ' → ' + fmtDate(null) + '</div>' +
                '<div>' + corps + '</div>';
       }
 
@@ -402,7 +409,7 @@
           bs.className = 'barre';
           var seg = document.createElement('div');
           seg.className = 'seg site';
-          var gs = pct(fenetreSite.objets);
+          var gs = pct(fenetreSite.debut);
           seg.style.left = gs + '%';
           seg.style.width = Math.max(0.4, 100 - gs) + '%';
           seg.addEventListener('mousemove', function (ev) { montreBulle(ev, bulleSite(fenetreSite)); });
@@ -469,7 +476,7 @@
             if (fenetreSite) {
               var cadre = document.createElement('div');
               cadre.className = 'fenetre-site';
-              cadre.style.width = Math.max(0.4, 100 - pct(fenetreSite.objets)) + '%';
+              cadre.style.width = Math.max(0.4, 100 - pct(fenetreSite.debut)) + '%';
               barre.appendChild(cadre);
             }
 
@@ -545,7 +552,7 @@
           var d = dates[k] && dates[k][0];
           if (d && (!ev || d < ev)) ev = d;
         });
-        return { objets: debut, evenements: ev };
+        return { objets: debut, evenements: ev, debut: ev && ev < debut ? ev : debut };
       }).catch(function () { return null; }) : Promise.resolve(null);
 
       Promise.all([
