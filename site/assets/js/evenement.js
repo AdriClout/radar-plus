@@ -8,7 +8,7 @@
 var params = new URLSearchParams(window.location.search);
 var sid = params.get('evenement') || null;
 var region = (params.get('region') || '').toUpperCase(); if (region !== 'CAN') region = 'QC';
-var FIRST_YEAR = 2026, BLOCK_MS = 4 * 3600e3, BANDS = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
+var FIRST_YEAR = 2025 /* année publiée de l'article 2, puis le direct */, BLOCK_MS = 4 * 3600e3, BANDS = ['faible', 'moderee', 'elevee', 'tres_elevee', 'extreme'];
 
 function T(k, v) { var t = window.t ? window.t(k, v) : null; return (t && t !== k) ? t : (FALLBACK[k] || k).replace(/\{(\w+)\}/g, function(m, n) { return v && v[n] != null ? v[n] : m; }); }
 var FALLBACK = {
