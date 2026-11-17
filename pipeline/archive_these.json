@@ -1,5 +1,5 @@
 {
-  "note": "Année publiée de l'article 2 (série recalculée par le pilote de la thèse, aws-refiners#207) : tables suffixées de DEV, une fenêtre de calcul par plage de journées de Montréal (blocs 03-07 … 23-03), la fenêtre amont garde les jours de chevauchement. Mêmes tables que gel_v2 (8 nov. 2026), prolongées par annee4a et annee4b (lancées le 15 nov. 2026). Le site lit ces tables jusqu'à `fin`, puis la production. Une fenêtre n'est lue que si `pret` vaut true (calcul fini et vérifié) ; la fin effective est celle de la dernière fenêtre prête.",
+  "note": "Année publiée de l'article 2 (série recalculée par le pilote de la thèse, aws-refiners#207) : tables suffixées de DEV, une fenêtre de calcul par plage de journées de Montréal (blocs 03-07 … 23-03), la fenêtre amont garde les jours de chevauchement. Mêmes tables que gel_v2 (8 nov. 2026), prolongées par annee4a et annee4b (calculées les 15 et 16 nov. 2026, vérifiées le 16 nov.). Le site lit ces tables jusqu'à `fin`, puis la production. Une fenêtre n'est lue que si `pret` vaut true (calcul fini et vérifié) ; la fin effective est celle de la dernière fenêtre prête.",
   "code": "aws-refiners pilote/these-2026-11-heure @ 58a5d6c",
   "debut": "2025-10-16",
   "fin": "2026-11-15",
@@ -65,14 +65,14 @@
       "suffixe": "_theseannee4a",
       "debut": "2026-10-16",
       "fin": "2026-10-31",
-      "pret": false
+      "pret": true
     },
     {
       "nom": "annee4b",
       "suffixe": "_theseannee4b",
       "debut": "2026-11-01",
       "fin": "2026-11-15",
-      "pret": false
+      "pret": true
     }
   ]
 }
