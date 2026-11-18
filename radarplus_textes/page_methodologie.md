@@ -251,7 +251,11 @@ Toutes les valeurs relatives d'une fenêtre somment donc à 100 %. Cette normali
 - des médias différents (la saillance du climat à Radio-Canada c. à TVA Nouvelles);
 - des univers médiatiques différents (Québec c. Canada hors Québec c. États-Unis).
 
-Pour les classements (Hot 20), certains objets purement géographiques très englobants — comme « quebec », « montreal », « canada » — sont exclus, parce qu'ils figurent presque toujours en tête sans véritable signal éditorial.
+Les classements d'objets (Hot 10, Hot 20, page Classement) écartent les lieux du Canada, au Québec comme dans le reste du Canada : ils situent la nouvelle sans en être l'objet. Sans cette règle, cinq des vingt premiers objets du Canada hors Québec, du 14 juillet au 15 octobre 2026, seraient des lieux (Ontario, Colombie-Britannique, Toronto, Alberta et Québec). La liste compte 36 noms, les mêmes que dans l'article scientifique de Radar+ : le pays (« canada »), ses provinces et territoires (« quebec », « ontario », « british columbia », « alberta », « saskatchewan », « manitoba », « new brunswick », « nova scotia », « prince edward island », « newfoundland and labrador », « newfoundland », « labrador », « yukon », « northwest territories », « nunavut ») et vingt villes (« montreal », « ottawa », « toronto », « vancouver », « calgary », « edmonton », « winnipeg », « quebec city », « laval », « halifax », « victoria », « regina », « saskatoon », « longueuil », « gatineau », « sherbrooke », « mississauga », « surrey », « hamilton », « brampton »). Les noms d'objets sont en anglais, et la comparaison ignore les majuscules et les accents. Cette règle s'applique depuis novembre 2026; avant, seuls les objets du paragraphe suivant étaient écartés.
+
+Cette règle ne touche que les classements. Ces objets restent mesurés : on les trouve par la recherche de la page Évolution, et chacun garde sa fiche. Quelques objets font exception et sont retirés de toutes les pages, parce qu'ils nomment le territoire même que l'on mesure : « quebec », « montreal » et « canada » au Québec, « canada » et « ottawa » dans le reste du Canada, « united states » (et sa variante « usa ») et « washington dc » aux États-Unis, où le nom des deux médias suivis (« cnn », « fox news ») est aussi retiré.
+
+Deux limites. Un lieu peut être lui-même la nouvelle (un référendum en Alberta, par exemple) : il n'apparaît alors au classement que par ses acteurs et ses événements. Et la règle ne vise que le Canada : les lieux étrangers, « united states » en tête, restent classés.
 
 ### 5.4 Pourquoi deux indices
 

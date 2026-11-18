@@ -778,8 +778,12 @@
   function getGD(country, key) {
     const g = graphs[country]?.[key];
     if (!g) return { nodes:[], links:[] };
-    let nodes = g.nodes.map(n=>({...n}));
-    let links = g.links.map(l=>({...l}));
+    // Palmarès (Hot 10, graphique classé) : lieux du Canada écartés, comme le Classement et l'article
+    // (radar-data.js). Un lieu que le lecteur a choisi de suivre reste tracé ; la recherche lit `graphs`
+    // directement et le propose toujours (« alberta », « toronto »).
+    const cadre = id => { id = (id && id.id) || id; return window.radarData.estCadre(country, id) && !trackedObjects.has(id); };
+    let nodes = g.nodes.filter(n => !cadre(n.id)).map(n=>({...n}));
+    let links = g.links.filter(l => !cadre(l.source) && !cadre(l.target)).map(l=>({...l}));
 
 
     nodes.sort((a,b)=>b.size-a.size);
@@ -1670,8 +1674,9 @@
     const wp = getRankedWindowPeriods();
     wp.forEach(p => {
       if (p.isSynthetic || p.isFuture) return;
-      const g = (p.isDay || p.isVeille) ? getWinPeriodGD(currentCountry, p) : getGD(currentCountry, p.key);
-      (g.nodes || []).forEach(n => ids.add(n.id));
+      // Lecture directe (pas getGD) : les lieux du Canada, écartés des palmarès, restent proposés à la recherche.
+      const keys = (p.isDay && Array.isArray(p.periodKeys) && p.periodKeys.length) ? p.periodKeys : [p.key];
+      keys.forEach(k => { (graphs[currentCountry]?.[k]?.nodes || []).forEach(n => ids.add(n.id)); });
     });
     return [...ids].sort();
   }
