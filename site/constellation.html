@@ -628,7 +628,8 @@
   try {
     // Données découpées (#59) : la fenêtre « graph » (14 jours, liens et
     // événements) est recomposée depuis days/ et articles/ par radar-data.js.
-    graphData = await window.radarData.graph();
+    // Carte et Hot 10 : lieux du Canada écartés, comme le Classement et l'article (radar-data.js)
+    graphData = window.radarData.sansCadre(await window.radarData.graph());
   } catch(e) {
     const loading = document.getElementById('loading-text');
     if (window.location.protocol === 'file:') {
