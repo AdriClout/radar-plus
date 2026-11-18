@@ -261,6 +261,23 @@ Deux limites. Un lieu peut être lui-même la nouvelle (un référendum en Alber
 
 L'indice **absolu** garde la trace de l'intensité réelle d'un événement; l'indice **relatif** rend les comparaisons rigoureuses. Les deux sont nécessaires pour répondre à des questions différentes : *À quel point ce sujet a-t-il dominé?* vs *Comparativement à quoi?*
 
+### 5.5 Lire les points d'un événement
+Le total de points d'un événement est la somme des notes (de 0 à 100) qu'il obtient à chaque édition de 4 heures où il est en Une. Pour aider à lire ce total, Radar+ reprend les cinq tranches de l'article scientifique de Radar+. Les bornes (50, 100, 500 et 1 000 points) sont des chiffres ronds, choisis pour se lire : c'est une convention, pas un seuil mesuré. Ce qui est mesuré, c'est le contenu de chaque tranche. Le tableau donne, pour l'année de référence (du 16 octobre 2025 au 15 octobre 2026; 7 560 événements au Québec, 7 053 dans le reste du Canada), la part des événements de chaque tranche et son événement médian : le plus grand nombre de médias qui le placent en Une dans une même édition, le nombre de jours où il est en Une, et les heures pendant lesquelles au moins un média l'y place.
+
+
+| Tranche | Québec : part | médias à la fois | jours | heures | Canada hors Québec : part | médias à la fois | jours | heures |
+|---|---|---|---|---|---|---|---|---|
+| Moins de 50 points | 68,2 % | 1 | 1 | 1,5 | 66,5 % | 1 | 1 | 1,8 |
+| 50 à 99 points | 19 % | 1 | 2 | 5,7 | 18,6 % | 1 | 2 | 7,5 |
+| 100 à 499 points | 11,8 % | 3 | 2 | 12 | 13,6 % | 2 | 2 | 16 |
+| 500 à 999 points | 0,8 % | 4 | 5 | 41 | 1,1 % | 5 | 5 | 51 |
+| 1 000 points et plus | 0,3 % | 6 | 8,5 | 83 | 0,3 % | 6 | 8 | 100 |
+
+Un événement de 1 000 points et plus est dit « majeur » : il y en a eu 20 au Québec et 19 dans le reste du Canada pendant l'année de référence. La tranche s'affiche sur la fiche de chaque événement et au survol de son total dans le Classement.
+
+Deux précisions. La tranche décrit la taille d'un événement sur toute sa durée; elle ne dit rien de sa force à un moment donné, que donnent les niveaux de saillance (§ 10 et 11). Et elle ne vaut que pour les événements du Québec et du Canada hors Québec : les objets n'ont pas de tranches.
+
+
 ---
 
 ## 6. Fenêtres temporelles

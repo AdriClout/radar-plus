@@ -583,7 +583,7 @@ function auneRowHtml(c, i, region, lang, T, byStory, prevRanks, prevStart, dense
       // période, avec son moment) plutôt que des comptes de blocs (Adrien, 31 oct. 2026).
       (c.firstKey ? '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.since_tip', { label: auneBlockLabel(c.firstKey, lang) })) + '">' + escapeHtml(T('aune.since_label', { when: auneWhen(c.firstKey, lang) })) + '</span>' : '') +
       '<span class="hot20-hint" data-tip="' + escapeHtml(T(c.is24h ? 'aune.peak_tip_24h' : 'aune.peak_tip') + titleTip) + '">' + escapeHtml(T('aune.peak_label', { when: auneEditionWhen(c.peakKey, lang, c.peakNow), points: auneFmt(c.peak) })) + '</span>' +
-      (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip')) + '">' + escapeHtml(T('aune.total_label', { points: auneFmt(c.total) })) + '</span>') +
+      (c.is24h ? '' : '<span class="hot20-hint" data-tip="' + escapeHtml(T('aune.score_tip') + auneTailleTxt(c.total, region, lang)) + '">' + escapeHtml(T('aune.total_label', { points: auneFmt(c.total) })) + '</span>') +
       auneChipsHtml(arts) +
     '</div>';
   // La mesure de la vue (l'en-tête la nomme : indice 24h ou points) et, à côté, la part
@@ -742,6 +742,16 @@ function auneFmt(x, d) {
   if (!AUNE_FMT[k]) AUNE_FMT[k] = new Intl.NumberFormat(lang, { minimumFractionDigits: d, maximumFractionDigits: d });
   return AUNE_FMT[k].format(Number(x) || 0);
 }
+// Taille d'un événement (tranches de l'article, radar-data.js) : dite au survol du total, sans rien déplacer.
+function auneTailleTxt(total, region, lang) {
+  var t = window.radarData && window.radarData.tailleEvenement ? window.radarData.tailleEvenement(total, region, lang) : null;
+  return t ? ' ' + t.court : '';
+}
+function auneTailleHint(html, total, region, lang) {
+  var txt = auneTailleTxt(total, region, lang);
+  // Bulle native (title) : la bulle du site, placée au-dessus, est coupée par l'en-tête collant sur la première ligne.
+  return txt ? '<span class="aune-taille" title="' + escapeHtml(txt.trim()) + '">' + html + '</span>' : html;
+}
 function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is24h) {
   var esc = escapeHtml;
   var th = function(k, cls) { return '<th class="' + (cls || '') + '">' + esc(T(k)) + '</th>'; };
@@ -766,7 +776,7 @@ function auneTableHtml(items, region, lang, T, byStory, prevRanks, prevStart, is
         '<span class="sub">' + esc(auneIssue(c, lang) || '') + '</span>' + auneChipsHtml(arts) + '</div></div></td>' +
       '<td class="num strong">' + auneNumUnit(auneFmt(c.points), is24h ? T('aune.index24h_label') : T('aune.points')) + '</td>' +
       (is24h ? '<td class="num ' + (delta >= 0.05 ? 'up' : delta <= -0.05 ? 'down' : '') + '">' + auneNumUnit((delta > 0 ? '+' : '') + auneFmt(delta), T('aune.points')) + '</td>'
-             : '<td class="num">' + auneNumUnit(auneFmt(c.total), T('aune.points')) + '</td>') +
+             : '<td class="num">' + auneTailleHint(auneNumUnit(auneFmt(c.total), T('aune.points')), c.total, region, lang) + '</td>') +
       '<td class="num">' + auneNumUnit(Math.round(c.sharePct || 0), '%') + '</td>' +
       '<td class="num">' + auneNumUnit(auneFmt(c.peak), T('aune.points')) + '<span class="sub">' + esc(auneWhen(c.peakKey, lang)) + '</span></td>' +
       '<td>' + esc(c.firstKey ? auneWhen(c.firstKey, lang) : '') + '</td>' +
