@@ -29,6 +29,10 @@
 .ev-rank { margin-top: 10px; font-size: 13px; color: var(--muted); line-height: 1.35; }
 .ev-rank b { color: #ffc857; font-weight: 700; font-size: 15px; }
 .ev-hero-num:hover .ev-rank { color: #cfe1ff; }
+/* Taille de l'événement : tranche de points de l'article, sous le total */
+.ev-size { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(120,170,255,0.18); font-size: 12px; line-height: 1.45; color: var(--muted); }
+.ev-size b { display: block; color: #cfe1ff; font-weight: 600; font-size: 13px; }
+.ev-size.size-majeur b { color: #ffc857; }
 .ev-story { font-size: clamp(15px, 1.5vw, 18px); line-height: 1.55; color: #dbe6ff; margin: 0; }
 .ev-story b { color: #fff; font-weight: 700; }
 .ev-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 6px; }
