@@ -330,8 +330,43 @@
     return res;
   }
 
+  // Taille d'un événement : les cinq tranches de points de l'article scientifique de Radar+ (« lire les points »),
+  // appliquées au TOTAL de points d'un événement (somme de ses notes d'édition), jamais à la note d'une édition
+  // (qui a ses niveaux, calés sur l'année de référence). Bornes 50, 100, 500 et 1 000 : chiffres ronds, choisis
+  // pour se lire. Part des événements et événement médian de chaque tranche (médias à la fois, jours, heures en
+  // tête) : année de référence, 16 oct. 2025 → 15 oct. 2026, par région (CAN = Canada hors Québec).
+  // Source : doctorat/4_these/index/data/tabledata_a2_lecture_points.csv (code/tab_a2_lecture_points.R), relu le
+  // 17 nov. 2026 ; les totaux publiés par le site redonnent ces tranches (QC : 5 152 / 1 435 / 889 / 60 / 20).
+  // Seul nom propre : « événement majeur » (1 000 points et plus), celui de l'article. Méthodologie § 5.5.
+  var TRANCHES = [
+    { id: 'lt50', min: 0,    fr: 'Moins de 50 points',  en: 'Fewer than 50 points', QC: [68.2, 1, 1, 1.5],  CAN: [66.5, 1, 1, 1.8] },
+    { id: 't50',  min: 50,   fr: '50 à 99 points',      en: '50 to 99 points',      QC: [19, 1, 2, 5.7],    CAN: [18.6, 1, 2, 7.5] },
+    { id: 't100', min: 100,  fr: '100 à 499 points',    en: '100 to 499 points',    QC: [11.8, 3, 2, 12],   CAN: [13.6, 2, 2, 16] },
+    { id: 't500', min: 500,  fr: '500 à 999 points',    en: '500 to 999 points',    QC: [0.8, 4, 5, 41],    CAN: [1.1, 5, 5, 51] },
+    { id: 'majeur', min: 1000, fr: 'Événement majeur : 1 000 points et plus', en: 'Major event: 1,000 points or more', QC: [0.3, 6, 8.5, 83], CAN: [0.3, 6, 8, 100] }
+  ];
+  // { id, label, tip } pour un total de points, une région (QC, CAN) et une langue ; null hors de ces régions.
+  function tailleEvenement(points, region, lang) {
+    var p = Number(points); if (!(p >= 0)) return null;
+    var t = TRANCHES[0]; TRANCHES.forEach(function (x) { if (p >= x.min) t = x; });
+    var v = t[region]; if (!v) return null;
+    var en = String(lang || 'fr').slice(0, 2) === 'en';
+    var n = function (x) { return en ? String(x) : String(x).replace('.', ','); };
+    var tip = en
+      ? v[0] + '% of the events of the reference year (Oct. 16, 2025 – Oct. 15, 2026) fall in this band. Its median event: ' +
+        v[1] + (v[1] > 1 ? ' outlets' : ' outlet') + ' at once, ' + v[2] + (v[2] > 1 ? ' days' : ' day') + ' and ' + v[3] + ' hours in the lead position.'
+      : n(v[0]) + ' % des événements de l\'année de référence (16 oct. 2025 – 15 oct. 2026) sont dans cette tranche. Son événement médian : ' +
+        n(v[1]) + (v[1] > 1 ? ' médias' : ' média') + ' à la fois, ' + n(v[2]) + (v[2] > 1 ? ' jours' : ' jour') + ' et ' + n(v[3]) + ' heures en tête des pages d\'accueil.';
+    // Version courte, pour une info-bulle de tableau
+    var court = en
+      ? (t.en + ' (' + v[0] + '% of events). Median event: ' + v[1] + (v[1] > 1 ? ' outlets' : ' outlet') + ' at once, ' + v[2] + (v[2] > 1 ? ' days' : ' day') + ', ' + v[3] + ' h in the lead.')
+      : (t.fr + ' (' + n(v[0]) + ' % des événements). Événement médian : ' + n(v[1]) + (v[1] > 1 ? ' médias' : ' média') + ' à la fois, ' + n(v[2]) + (v[2] > 1 ? ' jours' : ' jour') + ', ' + n(v[3]) + ' h en tête.');
+    return { id: t.id, label: en ? t.en : t.fr, tip: tip, court: court };
+  }
+
   window.radarData = {
     base: base,
+    tailleEvenement: tailleEvenement,
     estCadre: estCadre, sansCadre: sansCadre, lieuxCadre: CADRE,
     eventsIndex: eventsIndex, eventsLatest: eventsLatest, eventsDay: eventsDay, eventsStorylines: eventsStorylines,
     index: index, latest: latest, periods: periods,

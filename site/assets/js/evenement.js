@@ -369,6 +369,7 @@ function render(sec, data) {
   };
   var artUrl = u.artUrl ? u.artUrl(sid) : '';
   var artHtml = artUrl ? '<figure class="ev-art"><img src="' + esc(artUrl) + '" alt="" onload="this.parentNode.classList.add(\'ok\')" onerror="this.parentNode.remove()"><span class="aune-art-i" tabindex="0" aria-label="' + esc(T('aune.art_info')) + '">i</span><figcaption>' + esc(T('aune.art_credit')) + '</figcaption></figure>' : '';
+  var taille = window.radarData.tailleEvenement ? window.radarData.tailleEvenement(total, region, L) : null;
   var html = '<div class="ev-head">' + artHtml +
       '<div class="ev-top">' + (issue ? '<span class="ev-issue">' + esc(issue) + '</span>' : '') + '<span class="ev-region">' + esc(T('fiche.region_' + region)) + '</span></div>' +
       '<h2 class="ev-title">' + esc(bestTitle) + '</h2>' +
@@ -378,6 +379,8 @@ function render(sec, data) {
       '<a class="ev-hero-num" href="./classement.html?range=year&country=' + region + '">' +
         '<span class="ev-big">' + fmt1(total) + '</span><span class="ev-big-unit">' + esc(T('fiche.points_cumul')) + '</span>' +
         '<span class="ev-rank">' + T('fiche.rank_line', { rank: esc(ordinal(rank, L)), year: esc(year), region: esc(T('fiche.region_' + region)), n: esc(String(totals.length)) }) + '</span>' +
+        // Taille de l'événement : tranche de points de l'article (radar-data.js), sur son total
+        (taille ? '<span class="ev-size size-' + taille.id + '"><b>' + esc(taille.label) + '</b>' + esc(taille.tip) + '</span>' : '') +
       '</a>' +
       '<p class="ev-story">' + story + '</p>' +
     '</div>' +
