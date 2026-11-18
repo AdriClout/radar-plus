@@ -10,7 +10,7 @@ var LEVEL_BAND = { eleve: 'elevee', tres_eleve: 'tres_elevee', extreme: 'extreme
 var LEVEL_RANK = { none: 0, eleve: 1, tres_eleve: 2, extreme: 3 };
 
 function load() {
-  if (!loading) loading = window.radarData.timeseries().then(function(d) { data = d; }).catch(function(e) { console.warn('Classement objets : données indisponibles', e); data = { meta: { periods: [] }, graphs: {} }; });
+  if (!loading) loading = window.radarData.timeseries().then(function(d) { data = window.radarData.sansCadre(d); }) /* lieux du Canada écartés du classement, comme l'article (radar-data.js) */.catch(function(e) { console.warn('Classement objets : données indisponibles', e); data = { meta: { periods: [] }, graphs: {} }; });
   return loading;
 }
 // Clés des éditions d'une fenêtre [début, fin[ ; pour « Dernières heures », la seule édition choisie.

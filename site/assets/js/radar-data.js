@@ -288,8 +288,51 @@
   function eventsDay(region, date) { return fetchJson('events/' + region + '/' + date + '.json'); }
   function eventsStorylines(region, year) { return fetchJson('events/storylines/' + region + '/' + year + '.json'); }
 
+  // Lieux du Canada écartés des palmarès d'objets (Hot 10, Hot 20, Classement), au Québec comme dans le
+  // reste du Canada : le pays, ses provinces et territoires et ses plus grandes villes situent la
+  // nouvelle sans en être l'objet. MÊME LISTE que l'article scientifique de Radar+ (36 noms ;
+  // doctorat/4_these/code/fig_a2_objets_annee.R) : la changer ici, c'est la changer là-bas, et dans
+  // methodologie.html (§ 5, « Objets écartés des classements »). Les données gardent ces objets :
+  // on les trouve encore par la recherche d'Évolution et sur leur fiche (Adrien, 17 nov. 2026).
+  // Pas de liste pour les États-Unis : le pipeline y retire déjà « united states ».
+  var LIEUX_CANADA = ['canada', 'quebec', 'ontario', 'british columbia', 'alberta', 'saskatchewan', 'manitoba',
+    'new brunswick', 'nova scotia', 'prince edward island', 'newfoundland and labrador', 'newfoundland', 'labrador',
+    'yukon', 'northwest territories', 'nunavut',
+    'montreal', 'ottawa', 'toronto', 'vancouver', 'calgary', 'edmonton', 'winnipeg', 'quebec city', 'laval', 'halifax',
+    'victoria', 'regina', 'saskatoon', 'longueuil', 'gatineau', 'sherbrooke', 'mississauga', 'surrey', 'hamilton', 'brampton'];
+  var CADRE = { QC: LIEUX_CANADA, CAN: LIEUX_CANADA };
+  var cadreSet = {};
+  Object.keys(CADRE).forEach(function (c) { cadreSet[c] = {}; CADRE[c].forEach(function (x) { cadreSet[c][x] = true; }); });
+  // Comparaison sans majuscules ni accents : « Québec » et « montréal » sont écartés comme « quebec » et « montreal ».
+  function estCadre(country, id) {
+    var set = cadreSet[country]; if (!set || id == null) return false;
+    var k = String(id).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    return set[k] === true;
+  }
+  // Copie de { meta, graphs } sans les objets de cadre (ni leurs liens) : pour les pages qui ne montrent que des palmarès.
+  function sansCadre(d) {
+    if (!d || !d.graphs) return d;
+    var graphs = {};
+    Object.keys(d.graphs).forEach(function (country) {
+      var src = d.graphs[country] || {}, out = graphs[country] = {};
+      if (!cadreSet[country]) { Object.keys(src).forEach(function (k) { out[k] = src[k]; }); return; }
+      var idOf = function (x) { return (x && x.id) || x; };
+      Object.keys(src).forEach(function (k) {
+        var g = src[k] || {}, copy = {};
+        for (var f in g) copy[f] = g[f];
+        copy.nodes = (g.nodes || []).filter(function (n) { return !estCadre(country, n.id); });
+        if (g.links) copy.links = g.links.filter(function (l) { return !estCadre(country, idOf(l.source)) && !estCadre(country, idOf(l.target)); });
+        out[k] = copy;
+      });
+    });
+    var res = {}; for (var f2 in d) res[f2] = d[f2];
+    res.graphs = graphs;
+    return res;
+  }
+
   window.radarData = {
     base: base,
+    estCadre: estCadre, sansCadre: sansCadre, lieuxCadre: CADRE,
     eventsIndex: eventsIndex, eventsLatest: eventsLatest, eventsDay: eventsDay, eventsStorylines: eventsStorylines,
     index: index, latest: latest, periods: periods,
     day: day, articlesDay: articlesDay, series: series, episodes: episodes,

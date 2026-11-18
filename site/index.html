@@ -1770,8 +1770,9 @@ async function loadData() {
       window.radarData.latestAsGraph().catch(function() { return null; }),
       window.radarData.timeseries().catch(function() { return null; })
     ]);
-    graphData = results[0];
-    timeseriesData = results[1];
+    // Hot 10 : lieux du Canada écartés, comme le Classement et l'article (radar-data.js)
+    graphData = window.radarData.sansCadre(results[0]);
+    timeseriesData = window.radarData.sansCadre(results[1]);
     buildAllTimeScores();
   } catch (e) { console.error('Data load error', e); }
   buildPeriods();
