@@ -74,8 +74,10 @@ Régions : `QC` et `CAN` (= `ROC` de la table).
 **Environnement AWS (#53, depuis le 4 nov. 2026).** Les histoires sont lues en
 **PROD**, la base de la Vitrine : mêmes identifiants d'histoire, mêmes titres, et
 l'illustration de la Vitrine se pose sur la bonne Une. Les objets
-(`salient_index`, `salient_headlines_objects`) restent lus en **DEV** jusqu'à la
-bascule après le recompute (aws-refiners#207). Le ticker lit PROD.
+(`salient_index`, `salient_headlines_objects`) sont lus en **PROD** depuis le
+21 nov. 2026 : les raffineurs ne tournent plus en DEV (aws-infra#770) et ses
+tables d'objets sont figées à cette date. Seule l'année publiée de l'article 2
+(tables `_these*`, au repos) reste lue en **DEV**. Le ticker lit PROD.
 
 | Fichier | Contenu |
 |---|---|

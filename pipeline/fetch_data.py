@@ -10,8 +10,9 @@ Usage: fetch_data.py [all|constellation|events|archive]   (défaut : all)
 `events` lit alors en PROD seulement les journées qui suivent sa fin.
 
 L'environnement AWS est celui des clés fournies. Le refresh (refresh-constellation.yml)
-lit `constellation` en DEV et `events` en PROD, la base de la Vitrine (#53) ; en local,
-choisir le profil : AWS_PROFILE=ellipse-prod python3 pipeline/fetch_data.py events
+lit `constellation` et `events` en PROD, la base de la Vitrine (#53 ; objets en PROD
+depuis le 21 nov. 2026, les raffineurs ne tournant plus en DEV), et `archive` en DEV ;
+en local, choisir le profil : AWS_PROFILE=ellipse-prod python3 pipeline/fetch_data.py events
 """
 
 import boto3
