@@ -135,3 +135,4 @@ wrangler.toml
 pipeline/out_r2/
 pipeline/headline_events.csv
 !site/assets/img/robot.png
+!site/sagas.html

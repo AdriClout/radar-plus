@@ -107,6 +107,11 @@ jobs:
       - name: Build events data (R, sorties v2)
         run: Rscript pipeline/build_events.R
 
+      # Sagas (maquette en dev) : appartenance lue dans la couche de la thèse,
+      # points recalculés sur les fiches d'événements que build_events.R vient d'écrire.
+      - name: Build sagas (v2/sagas)
+        run: python3 pipeline/build_sagas.py
+
       - name: Illustration de la Une (Vitrine, public, archivée par storyline)
         run: python3 pipeline/fetch_art.py
 
