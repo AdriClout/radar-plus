@@ -381,7 +381,7 @@
         if (state.stories[region] !== undefined) return Promise.resolve();
         state.stories[region] = null;
         var y = new Date().getFullYear();
-        return fetch(base + '/events/storylines/' + region + '/' + y + '.json').then(function(r) { return r.ok ? r.json() : null; })
+        return window.radarData.eventsStorylines(region, y)
           .then(function(f) { state.stories[region] = f; }).catch(function() { state.stories[region] = null; });
       }
       function render() {

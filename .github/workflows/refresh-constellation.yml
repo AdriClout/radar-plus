@@ -115,6 +115,11 @@ jobs:
       - name: Illustration de la Une (Vitrine, public, archivée par storyline)
         run: python3 pipeline/fetch_art.py
 
+      # Version allégée des fiches d'événements pour le site (~2 fois plus légère) ;
+      # le script recompose chaque fichier et échoue au moindre écart de chiffre.
+      - name: Fiches d'événements allégées (v2/events/storylines-light)
+        run: python3 pipeline/build_storylines_light.py
+
       - name: Vérifier les JSON produits
         run: |
           set -euo pipefail

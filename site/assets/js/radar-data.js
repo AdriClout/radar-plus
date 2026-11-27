@@ -19,6 +19,7 @@
 //   radarData.graph()                     → { meta, graphs } comme l'ancien graph.json (fenêtre liens)
 //   radarData.articles(country, periodKeys) → { periodKey: { objet: [articles] } } pour ces périodes
 //   radarData.latestAsGraph()             → { meta, graphs } réduit à la dernière période (menu, badges)
+//   radarData.eventsStorylines(région, année) → fiches d'événements de l'année (version allégée recomposée)
 (function () {
   'use strict';
 
@@ -286,7 +287,56 @@
   function eventsIndex() { return fetchJson('events/index.json', { noStore: true, bust: true }); }
   function eventsLatest() { return fetchJson('events/latest.json', { noStore: true, bust: true }); }
   function eventsDay(region, date) { return fetchJson('events/' + region + '/' + date + '.json'); }
-  function eventsStorylines(region, year) { return fetchJson('events/storylines/' + region + '/' + year + '.json'); }
+  // Fiches d'événements de l'année : version allégée (events/storylines-light/, ~2 fois plus
+  // légère, pipeline/build_storylines_light.py) recomposée ici dans la forme du fichier complet,
+  // aux mêmes chiffres. Repli sur le fichier complet si la version allégée manque.
+  var storyCache = Object.create(null);
+  function eventsStorylines(region, year) {
+    var key = region + '/' + year;
+    if (!storyCache[key]) {
+      storyCache[key] = fetchJson('events/storylines-light/' + key + '.json')
+        .then(decodeStorylinesLight)
+        .catch(function () { return fetchJson('events/storylines/' + key + '.json'); })
+        .catch(function (err) { delete storyCache[key]; throw err; });
+    }
+    return storyCache[key];
+  }
+  // Miroir exact de decode() dans pipeline/build_storylines_light.py.
+  function storyDerived(series) {
+    var ks = Object.keys(series).sort();
+    if (!ks.length) return {};
+    for (var i0 = 0; i0 < ks.length; i0++) if (typeof series[ks[i0]] !== 'number') return {};
+    var pk = ks[0];
+    for (var i = 1; i < ks.length; i++) if (series[ks[i]] > series[pk]) pk = ks[i];
+    return { first_key: ks[0], last_key: ks[ks.length - 1], peak_key: pk, peak: series[pk], n_blocks: ks.length };
+  }
+  function decodeStorylinesLight(light) {
+    if (!light || light.format !== 'storylines-light-1') throw new Error('radar-data : format allégé inconnu');
+    // Boucles simples : ~6 700 fiches par fichier, la recomposition doit rester sous ~0,1 s.
+    var P = light.periods, I = light.issues, S = light.storylines, out = {};
+    var FILL = ['title_last', 'title_peak'], DER = ['first_key', 'last_key', 'peak_key', 'peak', 'n_blocks'];
+    for (var sid in S) {
+      var e = S[sid], s = {}, absent = {}, k, i, v;
+      if (e._absent) for (i = 0; i < e._absent.length; i++) absent[e._absent[i]] = true;
+      for (k in e) {
+        v = e[k];
+        if (k === 'series' || k === 'sum24h') {
+          var m = {};
+          for (var a = 0; a < v.length; a++) { var r = v[a], st = r[0] - 1; for (var j = 1; j < r.length; j++) m[P[st + j]] = r[j]; }
+          s[k] = m;
+        } else if ((k === 'first_key' || k === 'last_key' || k === 'peak_key') && typeof v === 'number') s[k] = P[v];
+        else if (k === 'issue') { s.issue_fr = I[v][0]; s.issue_en = I[v][1]; }
+        else if (k !== '_absent') s[k] = v;
+      }
+      if ('title' in s) for (i = 0; i < FILL.length; i++) if (!(FILL[i] in s) && !absent[FILL[i]]) s[FILL[i]] = s.title;
+      if (s.series && typeof s.series === 'object') {
+        var d = null;
+        for (i = 0; i < DER.length; i++) if (!(DER[i] in s) && !absent[DER[i]]) { d = d || storyDerived(s.series); if (DER[i] in d) s[DER[i]] = d[DER[i]]; }
+      }
+      out[sid] = s;
+    }
+    return { region: light.region, year: light.year, storylines: out };
+  }
 
   // Lieux du Canada écartés des palmarès d'objets (Hot 10, Hot 20, Classement), au Québec comme dans le
   // reste du Canada : le pays, ses provinces et territoires et ses plus grandes villes situent la
@@ -368,7 +418,7 @@
     base: base,
     tailleEvenement: tailleEvenement,
     estCadre: estCadre, sansCadre: sansCadre, lieuxCadre: CADRE,
-    eventsIndex: eventsIndex, eventsLatest: eventsLatest, eventsDay: eventsDay, eventsStorylines: eventsStorylines,
+    eventsIndex: eventsIndex, eventsLatest: eventsLatest, eventsDay: eventsDay, eventsStorylines: eventsStorylines, decodeStorylinesLight: decodeStorylinesLight,
     index: index, latest: latest, periods: periods,
     day: day, articlesDay: articlesDay, series: series, episodes: episodes,
     timeseries: timeseries, graph: graph, articles: articles, latestAsGraph: latestAsGraph,
