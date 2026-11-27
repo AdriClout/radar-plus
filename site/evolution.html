@@ -2563,7 +2563,7 @@
   // Fenêtre de la vue, en blocs, pour le module événements (veille exclue ; blocs
   // futurs du jour gardés pour l'axe ; semaine+ = tous les blocs des jours).
   function eventsWindowPeriods() {
-    if (rankedGranularity === 'total') return periods.map(p => ({ key: p.key, future: false }));
+    if (rankedGranularity === 'total') return rankedBasePeriods().map(p => ({ key: p.key, future: false }));
     const out = [];
     getRankedWindowPeriods().forEach(p => {
       if (p.isVeille) return;
@@ -3247,6 +3247,25 @@
     tt.style.left = tx + 'px'; tt.style.top = ty + 'px'; tt.style.display = 'block';
   }
 
+  // Base de la navigation du classement. Vue Objets : la série des objets (130 jours).
+  // Vue Événements : TOUTES les éditions publiées des événements (depuis le 16 oct. 2025),
+  // jointes à la série des objets pour les éditions les plus récentes ; la vue Année couvre
+  // ainsi le 1er janvier → aujourd'hui, comme le Classement (Adrien, 27 nov. 2026).
+  let eventsBaseCache = null;
+  function rankedBasePeriods() {
+    const ts = tsData?.meta?.periods || [];
+    if (rankedView !== 'events') return ts;
+    const ev = window.radarEvents?.allPeriods?.();
+    if (!ev || !ev.length) return ts;
+    if (eventsBaseCache && eventsBaseCache.ev === ev && eventsBaseCache.ts === ts) return eventsBaseCache.out;
+    const byKey = new Map();
+    ev.forEach(p => byKey.set(p.key, p));
+    ts.forEach(p => { if (!byKey.has(p.key)) byKey.set(p.key, p); });
+    const out = [...byKey.values()].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+    eventsBaseCache = { ev, ts, out };
+    return out;
+  }
+
   function syncRankedNavigationState(sourcePeriods = periods) {
     buildRankedSlots(sourcePeriods);
     syncRankedSlotToCurrentPeriod();
@@ -3305,7 +3324,7 @@
       graphs  = tsData.graphs;
       periods = tsData.meta.periods;
       currentIdx = Math.min(graphIdx, periods.length - 1);
-      syncRankedNavigationState(periods);
+      syncRankedNavigationState(rankedBasePeriods());
     }
 
     const evoView = document.getElementById('evolution-view');
@@ -3348,7 +3367,7 @@
       renderTrackedList();
       renderEvolutionChart();
     } else {
-      syncRankedNavigationState(tsData.meta.periods);
+      syncRankedNavigationState(rankedBasePeriods());
       applyTimelineHeat(currentCountry);
       updatePeriodSummary(currentCountry, currentIdx);
       const gd = getGD(currentCountry, periods[currentIdx]?.key);
@@ -3625,7 +3644,7 @@
       clearRankedSeriesCache();
       applyTimelineHeat(currentCountry);
       if (currentMode === 'ranked') {
-        syncRankedNavigationState(tsData.meta.periods);
+        syncRankedNavigationState(rankedBasePeriods());
       } else {
         const trackingBasePeriods = (tsData?.meta?.periods || []);
         buildRankedSlots(trackingBasePeriods);
@@ -3674,6 +3693,18 @@
   // Mode par défaut : Événements (les grandes histoires) ; ?mode=objets pour le HOT 10
   setMode((new URLSearchParams(window.location.search).get('mode') || '').toLowerCase() === 'objets' ? 'ranked' : 'events');
   renderTrackedList();
+  // Dès que l'index des événements est là, la navigation de la vue Événements s'étend à
+  // toutes les éditions publiées (même requête que le module des événements : rien de plus).
+  window.radarEvents?.ensureIndex?.().then(() => {
+    if (currentMode !== 'ranked' || rankedView !== 'events') return;
+    const keepKey = rankedSlots[rankedSlotIdx]?.key;
+    syncRankedNavigationState(rankedBasePeriods());
+    const again = rankedSlots.findIndex(sl => sl.key === keepKey);
+    if (again >= 0) { rankedSlotIdx = again; slider.value = again; }
+    renderRankedChart(getGD(currentCountry, periods[currentIdx]?.key), null);
+    updateWindowUI();
+    updatePeriodNavLabel();
+  }).catch(() => { /* index indisponible : la navigation garde la série des objets */ });
 
   // ── Timer live : EN DIRECT avance chaque 30s ─────────────────────────────
   setInterval(() => {
