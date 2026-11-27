@@ -64,7 +64,8 @@ def unruns(rr, periods):
 
 def derived(series):
     """first_key, last_key, peak_key, peak, n_blocks déduits de la série (premier maximum)."""
-    if not series:
+    # Valeur non numérique (null, texte) : rien n'est déduit, tout est écrit en clair.
+    if not series or any(type(v) not in (int, float) for v in series.values()):
         return {}
     ks = sorted(series)
     pk = ks[0]

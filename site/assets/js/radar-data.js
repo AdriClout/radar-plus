@@ -305,6 +305,7 @@
   function storyDerived(series) {
     var ks = Object.keys(series).sort();
     if (!ks.length) return {};
+    for (var i0 = 0; i0 < ks.length; i0++) if (typeof series[ks[i0]] !== 'number') return {};
     var pk = ks[0];
     for (var i = 1; i < ks.length; i++) if (series[ks[i]] > series[pk]) pk = ks[i];
     return { first_key: ks[0], last_key: ks[ks.length - 1], peak_key: pk, peak: series[pk], n_blocks: ks.length };
