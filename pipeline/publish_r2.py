@@ -11,9 +11,17 @@ JAMAIS supprimées (les jours anciens restent servis).
 
 Variables d'environnement :
     CLOUDFLARE_ACCOUNT_ID   compte Cloudflare (endpoint S3 de R2)
+    CLOUDFLARE_API_TOKEN    (optionnel) jeton avec « Cache Purge » sur la zone radarplus.org
+    CLOUDFLARE_ZONE_ID      (optionnel) zone radarplus.org ; avec le jeton, vide le cache
+                            de chaque fichier envoyé (échec = sortie en erreur)
+    R2_PUBLIC_BASE          (défaut : https://data.radarplus.org)
     R2_ACCESS_KEY_ID        jeton R2 « Object Read & Write » sur le bucket
     R2_SECRET_ACCESS_KEY
     R2_BUCKET               (défaut : radar-plus-data)
+
+Cache Cloudflare (27 nov. 2026) : les fichiers v2/ sont gardés 4 h en bordure (règle de
+cache de la zone) ; ce script vide le cache des fichiers qu'il vient d'envoyer, pour
+qu'aucun visiteur ne voie une version périmée.
 
 Cache-Control par préfixe : les fichiers « vivants » (index, agrégats du mois
 courant, ticker) 60 s ; les fichiers de jour (immuables une fois le jour
@@ -21,6 +29,9 @@ passé) 300 s. Tout est public via data.radarplus.org.
 """
 import argparse
 import hashlib
+import json
+import urllib.error
+import urllib.request
 import mimetypes
 import os
 import sys
@@ -42,6 +53,30 @@ def cache_control_for(key: str) -> str:
     if key.endswith("index.json") or key.startswith("ticker") or "/agg/" in key:
         return "public, max-age=60"
     return "public, max-age=300"
+
+
+def purge_cache(urls: list[str]) -> None:
+    """Vide le cache Cloudflare de ces adresses (30 par appel). Lève une erreur si un appel échoue."""
+    token = os.environ.get("CLOUDFLARE_API_TOKEN")
+    zone = os.environ.get("CLOUDFLARE_ZONE_ID")
+    if not (token and zone):
+        print("::warning::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ZONE_ID absents : cache non vidé")
+        return
+    api = f"https://api.cloudflare.com/client/v4/zones/{zone}/purge_cache"
+    for i in range(0, len(urls), 30):
+        batch = urls[i:i + 30]
+        req = urllib.request.Request(
+            api, data=json.dumps({"files": batch}).encode(), method="POST",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                body = json.load(r)
+        except urllib.error.HTTPError as e:
+            body = {"success": False, "errors": e.read().decode(errors="replace")[:500]}
+        if not body.get("success"):
+            raise RuntimeError(f"vidage du cache refusé : {body.get('errors')}")
+    print(f"✓ cache vidé pour {len(urls)} fichiers")
 
 
 def main() -> int:
@@ -106,6 +141,13 @@ def main() -> int:
             ExtraArgs={"ContentType": ctype, "CacheControl": cache_control_for(key)},
         )
     print(f"✓ {len(to_send)} fichiers publiés")
+    if to_send:
+        public = os.environ.get("R2_PUBLIC_BASE", "https://data.radarplus.org").rstrip("/")
+        try:
+            purge_cache([f"{public}/{key}" for _, key in to_send])
+        except Exception as e:  # noqa: BLE001 — tout échec doit faire échouer le refresh
+            print(f"::error::{e}")
+            return 1
     return 0
 
 
