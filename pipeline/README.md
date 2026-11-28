@@ -74,8 +74,10 @@ Régions : `QC` et `CAN` (= `ROC` de la table).
 **Environnement AWS (#53, depuis le 4 nov. 2026).** Les histoires sont lues en
 **PROD**, la base de la Vitrine : mêmes identifiants d'histoire, mêmes titres, et
 l'illustration de la Vitrine se pose sur la bonne Une. Les objets
-(`salient_index`, `salient_headlines_objects`) restent lus en **DEV** jusqu'à la
-bascule après le recompute (aws-refiners#207). Le ticker lit PROD.
+(`salient_index`, `salient_headlines_objects`) sont lus en **PROD** depuis le
+21 nov. 2026 : les raffineurs ne tournent plus en DEV (aws-infra#770) et ses
+tables d'objets sont figées à cette date. Seule l'année publiée de l'article 2
+(tables `_these*`, au repos) reste lue en **DEV**. Le ticker lit PROD.
 
 | Fichier | Contenu |
 |---|---|
@@ -83,6 +85,7 @@ bascule après le recompute (aws-refiners#207). Le ticker lit PROD.
 | `events/latest.json` | par région : `period`, `events` (top 3 du dernier bloc, avec manchettes) et `current` (storylines du cumul 24 h courant, triées, avec `band24h`) → accueil « À la Une » |
 | `events/{QC\|CAN}/{AAAA-MM-JJ}.json` | `periods[key] = [événement…]` : `id`, `storyline`, `title`, `text`, `issue*`, `index`, `band`, `rank`, `outlets`, `media_ids`, `articles[]` (titre, url, média, minutes), `url`, `media`, `first_seen`, `convergence` |
 | `events/storylines/{région}/{AAAA}.json` | fiches storylines : `series` (indice par bloc), `sum24h` (cumul par bloc), `band24h`, `peak`, `peak_key`, `n_blocks`, `first_key`/`last_key`, `url`/`media`/`last_event_id` (manchette la plus récente), `title_first`/`title_peak`/`title_last` (titre à la première apparition, au pic, à la dernière apparition ; `title` = `title_last`) → La Une des Unes (pic dans les vues cumulatives, dernière apparition dans les vues 24h) |
+| `events/storylines-light/{région}/{AAAA}.json` | **ce que le site charge** : les mêmes fiches, ~2 fois plus légères (`build_storylines_light.py`) — clés d'édition écrites une fois (`periods`) et désignées par leur rang, séries en suites consécutives, titres et clés déductibles omis, sans `last_event_id`/`first_seen`/`title_first`. Recomposées dans `radar-data.js` (`decodeStorylinesLight`) ; le script vérifie l'égalité champ par champ avec le fichier complet et échoue au moindre écart |
 
 Cadrage d'affichage (rapport PR #46) : par bloc, 1 à 3 événements suffisent ; sur le
 cumul 24 h, top 3 au Québec et top 5 au Canada couvrent « Modérée+ ». Les manchettes

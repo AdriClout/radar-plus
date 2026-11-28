@@ -60,7 +60,7 @@ Prérequis : identifiants AWS lecture seule (profil `default`, `aws sso login` s
 le jeton a expiré), R 4.4 + packages du pipeline, Python 3 + boto3.
 
 ```bash
-python3 pipeline/fetch_data.py constellation                 # objets : AWS DEV (profil default)
+AWS_PROFILE=ellipse-prod python3 pipeline/fetch_data.py constellation  # objets : AWS PROD depuis le 21 nov. 2026
 AWS_PROFILE=ellipse-prod python3 pipeline/fetch_data.py events  # histoires : AWS PROD, comme la Vitrine (#53)
 Rscript  pipeline/build_data.R     # CSV → site/*.json + pipeline/out_r2/v2/
 Rscript  pipeline/build_events.R && python3 pipeline/fetch_art.py   # histoires + illustration

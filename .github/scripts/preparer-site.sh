@@ -25,6 +25,17 @@ rsync -a \
   --exclude='ticker.json' \
   site/ "${out}/"
 
+# Pages de dev seulement (maquettes) : une page qui porte
+# <meta name="radar-plus-env" content="dev-only" /> est publiée sur dev.radarplus.org
+# et retirée du site de prod, pour qu'une promotion develop → main ne la publie pas.
+if [ "${env}" = "prod" ]; then
+  find "${out}" -maxdepth 1 -name '*.html' -print0 | while IFS= read -r -d '' f; do
+    if grep -q 'name="radar-plus-env" content="dev-only"' "${f}"; then
+      rm -f "${f}"
+      echo "Page de dev seulement retirée de la prod : $(basename "${f}")"
+    fi
+  done
+fi
 
 # Version des ressources : Pages sert les .js/.css avec max-age=14400 (4 h), donc
 # un navigateur peut garder l'ancien script sous un HTML neuf → page cassée après

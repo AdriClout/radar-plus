@@ -106,6 +106,7 @@
   // courbe = indice 24h par bloc (0 quand l'histoire est absente).
   function computeItems(country, periods) {
     var keys = periods.map(function (p) { return p.key; });
+    var keySet = {}; keys.forEach(function (k) { keySet[k] = true; });
     var acc = {};
     years().forEach(function (y) {
       var f = store.storylines[country + '/' + y]; if (!f || !f.storylines) return;
@@ -118,7 +119,10 @@
         var peak = 0, peakI = -1;
         vals.forEach(function (v, i) { if (v !== null && v > peak) { peak = v; peakI = i; } });
         var cur = acc[sid];
-        if (!cur) acc[sid] = { sid: sid, title: st.title_peak || st.title || sid, url: st.url || null, gain: gain, vals: vals, peak: peak, peakI: peakI, firstKey: st.first_key };
+        // Même titre que le Classement (aune.js) : celui du sommet si le sommet tombe dans la
+        // fenêtre, sinon le dernier titre connu (Adrien, 27 nov. 2026 : mêmes données partout).
+        var ttl = (st.peak_key && keySet[st.peak_key] && st.title_peak) ? st.title_peak : (st.title_last || st.title || sid);
+        if (!cur) acc[sid] = { sid: sid, title: ttl, url: st.url || null, gain: gain, vals: vals, peak: peak, peakI: peakI, firstKey: st.first_key };
         else { cur.gain += gain; }
       });
     });
@@ -360,5 +364,15 @@
   }
 
   // focus(sid) : met une histoire en évidence (lien depuis sa fiche, ?evenement=).
-  window.radarEvents = { render: render, hover: hover, click: click, reset: function () { focused = null; hoverIdx = null; }, focus: function (sid) { focused = sid || null; render(); } };
+  // Toutes les éditions publiées des événements (depuis le 16 oct. 2025), pour que les vues
+  // Semaine, Mois, Année et Total couvrent la même période que le Classement, et pas seulement
+  // les 130 jours de la série des objets. Aucun fichier de plus : index.json est déjà lu ici.
+  function allPeriods() { return store.index && Array.isArray(store.index.periods) ? store.index.periods : null; }
+  function ensureIndex() {
+    if (store.index) return Promise.resolve(store.index);
+    if (!store.loading.index) store.loading.index = window.radarData.eventsIndex().then(function (i) { store.index = i; });
+    return store.loading.index.then(function () { return store.index; });
+  }
+
+  window.radarEvents = { allPeriods: allPeriods, ensureIndex: ensureIndex, render: render, hover: hover, click: click, reset: function () { focused = null; hoverIdx = null; }, focus: function (sid) { focused = sid || null; render(); } };
 })();

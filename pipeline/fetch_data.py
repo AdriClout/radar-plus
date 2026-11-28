@@ -10,8 +10,9 @@ Usage: fetch_data.py [all|constellation|events|archive]   (défaut : all)
 `events` lit alors en PROD seulement les journées qui suivent sa fin.
 
 L'environnement AWS est celui des clés fournies. Le refresh (refresh-constellation.yml)
-lit `constellation` en DEV et `events` en PROD, la base de la Vitrine (#53) ; en local,
-choisir le profil : AWS_PROFILE=ellipse-prod python3 pipeline/fetch_data.py events
+lit `constellation` et `events` en PROD, la base de la Vitrine (#53 ; objets en PROD
+depuis le 21 nov. 2026, les raffineurs ne tournant plus en DEV), et `archive` en DEV ;
+en local, choisir le profil : AWS_PROFILE=ellipse-prod python3 pipeline/fetch_data.py events
 """
 
 import boto3
@@ -123,6 +124,17 @@ def fetch_archive(athena, s3, script_dir):
     loc = run_query(athena, union_these("headline_storylines", STORY_COLS, archive))
     s3_download(s3, loc, os.path.join(script_dir, "archive_storylines.csv"))
     print("  -> saved archive_storylines.csv")
+    # Couche des sagas calculée pour la thèse (table DEV écrite le 8 nov. 2026) :
+    # appartenance d'un événement (storyline_id) à une saga, avec son nom et son
+    # type. Facultative : sans elle, build_sagas.py ne publie rien.
+    out_s = os.path.join(script_dir, "sagas_these.csv")
+    loc = run_query(athena, """SELECT storyline_id, saga_id, titre_saga, nom_affaire, type_affaire, saga_douteuse
+        FROM "vitrine_datamart-headline_sagas_these" WHERE saga_id IS NOT NULL AND saga_id <> ''""", optional=True)
+    if loc:
+        s3_download(s3, loc, out_s)
+        print("  -> saved sagas_these.csv")
+    elif os.path.exists(out_s):
+        os.remove(out_s)
 
 
 def fetch_events(athena, s3, script_dir, history_start):
