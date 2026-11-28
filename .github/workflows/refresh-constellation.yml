@@ -154,8 +154,10 @@ jobs:
       - name: Publier les sorties v2 dans R2
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Vidage du cache des fichiers envoyés (gardés 4 h en bordure, règle de cache de la zone).
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Vidage du cache des fichiers envoyés : jeton dédié (droit Zone → Cache Purge sur
+          # radarplus.org). CLOUDFLARE_API_TOKEN n'a pas ce droit (refusé le 28 nov. 2026).
+          # Absent : simple avertissement, et la règle de cache reste à 5 min.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_PURGE_TOKEN }}
           CLOUDFLARE_ZONE_ID: 0dd173360eb78aab85db7c561193cc11
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
