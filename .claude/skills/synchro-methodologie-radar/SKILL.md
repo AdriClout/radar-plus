@@ -90,6 +90,24 @@ passages correspondants de `radarplus.html`, `presentation.html` et de l'info-bu
 Rafraîchir ce tableau à chaque vérification ; un chiffre sans source n'entre pas
 dans la page (cas « plus de 5 millions de captures », retiré le 26 oct. 2026).
 
+## Où vit chaque définition des classements (vérifié le 27 nov. 2026)
+
+Avant de comparer le site à un raffineur, à la Vitrine ou à la thèse, partir d'ici
+plutôt que de relire le code à la main.
+
+| Définition | Valeur | Où elle vit |
+|---|---|---|
+| Bornes des périodes | heure de Montréal : jour = minuit, semaine = **lundi 0 h** (ISO), mois = 1er, année = 1er janv. ; décalage d'édition `AUNE_EDITION_LAG` | `site/assets/js/aune.js` (`auneWindowCal`, `auneWindow`) |
+| Semaine, partout | lundi 0 h aussi pour le Slack Hot 20 et les archives (décision du 27 nov. 2026 ; le Hot 20 coupe encore au vendredi tant que le recompute n'est pas fait) | aws-refiners#422 |
+| Régions | `QC`, `CAN` = Canada hors Québec = `ROC` de la table des événements (CBC, CTV, GN, GAM, NP, TTS, VS — même panel pour les objets), `USA` (objets seulement) | `pipeline/build_events.R` (`REGION_OF`, panels) |
+| Points d'un événement sur une période | somme des indices par édition sur **tous** les événements de chaque édition (`headline_storylines`), pas seulement le podium (`headline_events_4h`, réservé aux cartes et au cumul 24 h) | `pipeline/build_events.R` (en-tête, `STORYLINE_FILES`), `pipeline/fetch_data.py` |
+| Titre affiché | titre au sommet si le sommet tombe dans la période, sinon dernier titre | `aune.js`, `evolution-events.js` (même règle) |
+| Top N | Classement : top 20 (`CHART_N`, « au classement ») ; Accueil : 3 (`cfg.limits`) ; Évolution : 10 | `aune.js`, `evolution.html` |
+| Année publiée | 16 oct. 2025 → 15 oct. 2026, recalcul de la thèse | `events/index.json` (`annee_publiee`) |
+
+Cible : ces définitions passent dans le raffineur Hot 20 réformé (aws-refiners#422),
+qui deviendra la source unique ; mettre ce tableau à jour à ce moment-là.
+
 ## Procédure
 
 1. **Lire le diff** et repérer les sections touchées avec la carte ci-dessus.
