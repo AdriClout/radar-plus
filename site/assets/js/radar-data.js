@@ -16,6 +16,7 @@
 //   radarData.series(country, year)       → series/{country}/{year}.json
 //   radarData.episodes(country, year)     → episodes/{country}/{year}.json
 //   radarData.timeseries()                → { meta, graphs } comme l'ancien timeseries.json
+//   radarData.timeseries({countries:[c]}) → idem, ce(s) pays seulement ; ensureTimeseriesCountry(ts, c) ajoute un pays
 //   radarData.graph()                     → { meta, graphs } comme l'ancien graph.json (fenêtre liens)
 //   radarData.articles(country, periodKeys) → { periodKey: { objet: [articles] } } pour ces périodes
 //   radarData.latestAsGraph()             → { meta, graphs } réduit à la dernière période (menu, badges)
@@ -133,42 +134,65 @@
   }
 
   // Ancien timeseries.json : nœuds (sans articles) pour toutes les périodes.
-  function timeseries() {
-    if (cache.__timeseries) return cache.__timeseries;
-    cache.__timeseries = index().then(function (idx) {
-      return periods().then(function (periodList) {
-        var graphs = {};
-        return Promise.all(idx.countries.map(function (country) {
-          graphs[country] = {};
-          periodList.forEach(function (p) { graphs[country][p.key] = { nodes: [], links: [] }; });
-          return Promise.all(idx.years.map(function (year) {
-            return Promise.all([series(country, year), episodes(country, year)]).then(function (res) {
-              var ser = res[0], epIdx = episodeIndex(res[1]);
-              Object.keys(ser.objects).forEach(function (id) {
-                ser.objects[id].forEach(function (pt) {
-                  var key = ser.periods[pt[0]];
-                  if (!graphs[country][key]) return;
-                  var date = key.slice(0, 10);
-                  var node = { id: id, size: pt[1], n: pt[2] };
-                  var af = alertFieldsFor(epIdx, id, date);
-                  // Le niveau du bloc vient de la série (il peut différer de l'épisode : none hors épisode).
-                  af.alert_level = LEVELS[pt[3]] || 'none';
-                  af.alert_active = af.alert_level !== 'none';
-                  for (var k in af) node[k] = af[k];
-                  graphs[country][key].nodes.push(node);
-                });
-              });
-              Object.keys(graphs[country]).forEach(function (key) {
-                graphs[country][key].nodes.sort(function (a, b) { return b.size - a.size; });
-              });
-            });
-          }));
-        })).then(function () {
-          return { meta: metaFrom(idx, periodList, 'timeseries'), graphs: graphs };
+  // Séries d'objets recomposées pays par pays : une page qui n'affiche qu'un pays (Évolution)
+  // ne télécharge que lui — timeseries({ countries: ['QC'] }) — et ajoute les autres à la
+  // demande avec ensureTimeseriesCountry(ts, pays). Sans argument : tous les pays, comme avant.
+  var tsCountry = Object.create(null);
+  function timeseriesCountry(idx, periodList, country) {
+    if (tsCountry[country]) return tsCountry[country];
+    var g = {};
+    periodList.forEach(function (p) { g[p.key] = { nodes: [], links: [] }; });
+    tsCountry[country] = Promise.all(idx.years.map(function (year) {
+      return Promise.all([series(country, year), episodes(country, year)]).then(function (res) {
+        var ser = res[0], epIdx = episodeIndex(res[1]);
+        Object.keys(ser.objects).forEach(function (id) {
+          ser.objects[id].forEach(function (pt) {
+            var key = ser.periods[pt[0]];
+            if (!g[key]) return;
+            var date = key.slice(0, 10);
+            var node = { id: id, size: pt[1], n: pt[2] };
+            var af = alertFieldsFor(epIdx, id, date);
+            // Le niveau du bloc vient de la série (il peut différer de l'épisode : none hors épisode).
+            af.alert_level = LEVELS[pt[3]] || 'none';
+            af.alert_active = af.alert_level !== 'none';
+            for (var k in af) node[k] = af[k];
+            g[key].nodes.push(node);
+          });
         });
       });
+    })).then(function () {
+      Object.keys(g).forEach(function (key) { g[key].nodes.sort(function (a, b) { return b.size - a.size; }); });
+      return g;
+    }).catch(function (err) { delete tsCountry[country]; throw err; });
+    return tsCountry[country];
+  }
+  function timeseriesBase() {
+    if (!cache.__tsBase) {
+      cache.__tsBase = index().then(function (idx) {
+        return periods().then(function (periodList) {
+          return { idx: idx, periodList: periodList, meta: metaFrom(idx, periodList, 'timeseries') };
+        });
+      }).catch(function (err) { delete cache.__tsBase; throw err; });
+    }
+    return cache.__tsBase;
+  }
+  function ensureTimeseriesCountry(ts, country) {
+    if (ts.graphs[country]) return Promise.resolve(ts);
+    return timeseriesBase().then(function (b) {
+      if (b.idx.countries.indexOf(country) === -1) return ts;
+      return timeseriesCountry(b.idx, b.periodList, country).then(function (g) { ts.graphs[country] = g; return ts; });
     });
-    return cache.__timeseries;
+  }
+  function timeseries(opts) {
+    var only = opts && opts.countries;
+    var key = only ? '__timeseries:' + only.slice().sort().join(',') : '__timeseries';
+    if (cache[key]) return cache[key];
+    cache[key] = timeseriesBase().then(function (b) {
+      var want = only ? b.idx.countries.filter(function (c) { return only.indexOf(c) !== -1; }) : b.idx.countries;
+      var ts = { meta: b.meta, graphs: {} };
+      return Promise.all(want.map(function (c) { return ensureTimeseriesCountry(ts, c); })).then(function () { return ts; });
+    });
+    return cache[key];
   }
 
   // Jours de la fenêtre « graph » (liens + événements), les plus récents.
@@ -421,7 +445,7 @@
     eventsIndex: eventsIndex, eventsLatest: eventsLatest, eventsDay: eventsDay, eventsStorylines: eventsStorylines, decodeStorylinesLight: decodeStorylinesLight,
     index: index, latest: latest, periods: periods,
     day: day, articlesDay: articlesDay, series: series, episodes: episodes,
-    timeseries: timeseries, graph: graph, articles: articles, latestAsGraph: latestAsGraph,
+    timeseries: timeseries, ensureTimeseriesCountry: ensureTimeseriesCountry, graph: graph, articles: articles, latestAsGraph: latestAsGraph,
     articleStore: articleStore
   };
 })();

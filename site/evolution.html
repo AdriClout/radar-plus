@@ -735,7 +735,13 @@
     return Array.isArray(fallbackNodeArticles) ? fallbackNodeArticles : [];
   }
   try {
-    tsData = await window.radarData.timeseries();
+    // Seulement le pays affiché (~250 Ko de moins) ; les autres se chargent au changement d'onglet.
+    {
+      const askC = new URLSearchParams(window.location.search).get('country') || 'QC';
+      tsData = await window.radarData.timeseries({ countries: [askC] });
+      const okC = tsData.meta.countries.includes(askC) ? askC : (tsData.meta.countries.includes('QC') ? 'QC' : tsData.meta.countries[0]);
+      if (okC !== askC) await window.radarData.ensureTimeseriesCountry(tsData, okC);
+    }
     // Préchargement non-bloquant des articles des derniers jours pour le pays
     // courant → le panneau s'ouvre instantanément dans le cas courant.
     {
@@ -3632,13 +3638,18 @@
     }
   });
   document.getElementById('object-overlay')?.addEventListener('click', closeObjectPanel);
+  let countryClickToken = 0;
   document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
+    tab.addEventListener('click', async () => {
+      // Le pays choisi n'est chargé qu'au premier clic ; un clic plus récent l'emporte.
+      const wanted = tab.dataset.country, token = ++countryClickToken;
+      try { await window.radarData.ensureTimeseriesCountry(tsData, wanted); } catch (e) { return; }
+      if (token !== countryClickToken) return;
       document.querySelectorAll('.tab').forEach(t => {
         t.classList.remove('active');
         t.setAttribute('aria-selected', 'false');
       });
-      tab.classList.add('active'); currentCountry=tab.dataset.country;
+      tab.classList.add('active'); currentCountry=wanted;
       tab.setAttribute('aria-selected', 'true');
       selectedPeriodIdx = null;
       clearRankedSeriesCache();
