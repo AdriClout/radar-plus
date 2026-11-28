@@ -30,6 +30,13 @@ dans develop est actif au prochain cron, avant la promotion).
 
 ## 1. Branche et vérification locale
 
+**Avant d'ajouter un calcul dans `pipeline/` ou dans une page** (agréger, classer,
+cumuler), vérifier qu'aucun raffineur ne le fait ou ne doit le faire : `aws-refiners`,
+issues ouvertes (`gh issue list --repo ellipse-science/aws-refiners --search <mot>`).
+Les scripts de `pipeline/` sont temporaires (leur README) ; un deuxième calcul finit
+par diverger. Vécu le 27 nov. 2026 : des « tops précalculés » proposés dans
+`pipeline/` alors que le Hot 20 devait déjà les produire (aws-refiners#422).
+
 ```bash
 git checkout develop && git pull --ff-only origin develop
 git checkout -b feat/<issue>-<sujet>
@@ -95,6 +102,22 @@ navigateur intégré : requêtes vers `data.radarplus.org` (préfixe `v2/` seule
 pour une page migrée), zéro erreur console, un geste réel (recherche, clic sur une
 cellule, ouverture d'un panneau).
 
+**Une page qui affiche un classement d'événements** (Évolution, Accueil, Alertes,
+Statistiques) : comparer ses rangs et ses points à ceux du Classement pour la même
+période (Année, Total, ‹ année précédente). C'est ce contrôle qui a trouvé, le
+27 nov. 2026, un « Total » encore limité à 130 jours.
+
+**Poids et équivalence**, pour tout changement de chargement des données :
+- relever les fichiers chargés avant et après :
+  `performance.getEntriesByType('resource').filter(e => e.name.includes('data.radarplus'))`
+  (les tailles inter-domaines y valent 0 : mesurer le poids compressé avec
+  `curl -s -o /dev/null -w '%{size_download}' -H 'Accept-Encoding: br, gzip' <url>`) ;
+- comparer l'empreinte du texte affiché à l'ancienne version (dev ou prod), vue par vue :
+  `crypto.subtle.digest('SHA-256', …)` sur `innerText` du tableau ou de la liste — le
+  `localStorage` ne passe pas d'un domaine à l'autre, comparer les empreintes ;
+- au-delà de ~300 Ko de données pour une page, le dire avant la promotion
+  (Évolution : ~2,2 Mo le 27 nov. 2026 au matin, ~1,05 Mo le soir).
+
 Pièges du navigateur intégré :
 - **Onglet caché** = pas d'animation : le bandeau d'alertes n'obtient jamais sa
   classe `.ready` (il attend un `requestAnimationFrame`) et les captures échouent.
@@ -114,6 +137,12 @@ son propre regard sur dev.** Après le déploiement dev, lui donner l'adresse
 exacte à regarder (page, onglet, geste) et attendre son GO ; ne pas ouvrir ni
 fusionner la promotion avant. Seuls les changements invisibles (pipeline,
 workflows, docs, skills) se promeuvent sur vérification technique.
+
+**Maquettes : `<meta name="radar-plus-env" content="dev-only" />`.** Une page qui
+porte ce marqueur est publiée sur dev et retirée de la prod par `preparer-site.sh`
+(#179, 27 nov. 2026) : une promotion peut donc embarquer une maquette sans la
+publier. Avant de promouvoir, lire le corps des PR en attente : une PR qui dit « ne
+pas promouvoir » sans ce marqueur bloque la promotion.
 
 **Une promotion embarque TOUT ce qui attend sur develop**, pas seulement le
 changement qu'on veut publier (vécu le 25 oct. 2026 : un correctif de Sonar
@@ -175,6 +204,10 @@ Vérifier ensuite https://radarplus.org comme pour dev.
 - Tester un changement de pipeline avant fusion :
   `gh workflow run refresh-constellation.yml --ref <branche>` (publie dans R2 les
   mêmes données que la prod, et archive `out_r2` en artefact sur lancement manuel).
+  **Ce lancement manuel demande le feu vert explicite d'Adrien dans la conversation**
+  (en mode auto, il est refusé sans ça ; vécu le 27 nov. 2026). Sinon : fusionner et
+  vérifier au cron suivant (heures de Montréal : 0, 4, 8, 12, 16, 20 h), en gardant
+  un repli côté site tant que le nouveau fichier n'est pas publié.
 - Une attente de run : `gh run watch <id> --exit-status --interval 15`.
 - `curl … | grep -q` casse sous `set -o pipefail` (grep ferme le tube, curl sort
   en erreur 23) : télécharger dans un fichier puis grep.
@@ -183,6 +216,14 @@ Vérifier ensuite https://radarplus.org comme pour dev.
   l'image qui a bougé, changer la clé (`r-constellation-vN`).
 
 ## 6. Cloudflare (une seule fois, déjà fait)
+
+**Cache des données** (règle posée le 27 nov. 2026, zone radarplus.org → Caching →
+Cache Rules) : `data.radarplus.org/*` est servi depuis le cache selon le
+`Cache-Control` de `publish_r2.py` (60 s pour index, agrégats et ticker, 300 s pour le
+reste) ; les 404 ne sont jamais mis en cache. Un fichier tout juste publié peut donc
+rester ancien jusqu'à 5 min : pour le voir tout de suite, ajouter `?t=<n'importe quoi>`
+(chaque paramètre a sa propre entrée de cache). Pas d'accès wrangler en local : la
+règle se change dans le tableau de bord.
 
 Projets Pages `radar-plus` et `radar-plus-dev`, bucket R2 `radar-plus-data`,
 zone `radarplus.org` (compte `capp`). Si un jour il faut recréer un projet Pages
